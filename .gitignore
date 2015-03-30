@@ -1,0 +1,8 @@
+*.sw?
+*.pyc
+__pycache__
+env
+
+build
+dist
+todoman.egg-info/
