@@ -176,7 +176,7 @@ class Database:
         else:
             # Save a new entry:
             c = icalendar.Calendar()
-            c.add('prodid', 'io.barrera.taskman')
+            c.add('prodid', 'io.barrera.todoman')
             c.add('version', '2.0')
             c.add_component(todo.todo)
 

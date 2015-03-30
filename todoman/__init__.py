@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 
-"""Taskman.
+"""Todoman.
 
 Usage:
-  taskman
-  taskman new
-  taskman edit ID
-  taskman show ID
-  taskman help | -h | --help
-  taskman --version
+  todo
+  todo new
+  todo edit ID
+  todo show ID
+  todo help | -h | --help
+  todo --version
 
 """
 
@@ -21,20 +21,10 @@ from os.path import join
 from docopt import docopt
 import xdg.BaseDirectory
 
-from model import Database, Todo
-from ui import TodoEditor, TodoFormatter
+from .model import Database, Todo
+from .ui import TodoEditor, TodoFormatter
 
 logging.basicConfig(level=logging.DEBUG)
-
-# Output sample:
-# [ ] ! 2015-04-30 Close bank account (0%)
-# [ ] !            Send minipimer back for warranty replacement (0%)
-# [ ]   2015-03-29 Buy soy milk (0%)
-# [ ]              Fix the iPad's screen (0%)
-# [ ]              Fix the Touchad battery (0%)
-
-date_format = "%Y-%m-%d"
-calendar_directory = os.path.abspath(os.path.dirname(__name__))
 
 
 def load_config():
@@ -48,8 +38,8 @@ def load_config():
     raise Exception("No configuration file found")
 
 
-if __name__ == "__main__":
-    arguments = docopt(__doc__, version='Taskman')  # TODO: Append version
+def main():
+    arguments = docopt(__doc__, version='Todoman')  # TODO: Append version
 
     config = load_config()
     database = Database(os.path.expanduser(config["main"]["path"]))
@@ -87,3 +77,6 @@ if __name__ == "__main__":
         for todo in database.todos:
             i += 1
             print("{:2d}. {}".format(i, formatter.compact(todo)))
+
+if __name__ == "__main__":
+    main()
