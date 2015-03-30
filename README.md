@@ -38,6 +38,7 @@ Requirements
  * icalendar
  * urwid
  * pyxdg
+ * atomicwrites
 
 Installation
 ------------

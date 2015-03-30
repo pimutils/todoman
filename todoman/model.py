@@ -1,8 +1,10 @@
-import icalendar
 import logging
 import os
 from uuid import uuid4
 from datetime import datetime, timedelta
+
+import icalendar
+from atomicwrites import AtomicWriter
 
 logger = logging.getLogger(name=__name__)
 # logger.addHandler(logging.FileHandler('model.log'))
@@ -190,8 +192,8 @@ class Database:
                     if component.get('uid', None) == todo.uid:
                         cal.subcomponents[index] = todo.todo
 
-            with open(path, 'wb') as f:
-                f.write(cal.to_ical())
+            with AtomicWriter(path, overwrite=True).open() as f:
+                f.write(cal.to_ical().decode("UTF-8"))
         else:
             # Save a new entry:
             c = icalendar.Calendar()
@@ -199,5 +201,5 @@ class Database:
             c.add('version', '2.0')
             c.add_component(todo.todo)
 
-            with open(path, 'wb') as f:
-                f.write(c.to_ical())
+            with AtomicWriter(path).open() as f:
+                f.write(cal.to_ical().decode("UTF-8"))
