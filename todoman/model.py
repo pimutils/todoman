@@ -50,25 +50,32 @@ class Todo:
             logger.debug("Setting field %s to %s.", name, value)
             self.todo.add(name, value)
 
-    def get_summary(self):
+    @property
+    def summary(self):
         return self.todo.get('summary', "")
 
-    def set_summary(self, summary):
+    @summary.setter
+    def summary(self, summary):
         self._set_field('summary', summary)
 
-    def get_description(self):
+    @property
+    def description(self):
         return self.todo.get('description', "")
 
-    def set_description(self, description):
+    @description.setter
+    def description(self, description):
         self._set_field('description', description)
 
-    def get_location(self):
+    @property
+    def location(self):
         return self.todo.get('location', "")
 
-    def set_location(self, location):
+    @location.setter
+    def location(self, location):
         self._set_field('location', location)
 
-    def get_due(self):
+    @property
+    def due(self):
         """
         Returns the due date, as a datetime object, if set, or None.
         """
@@ -77,37 +84,36 @@ class Todo:
         else:
             return self.todo.decoded('due')
 
-    def set_due(self, due):
+    @due.setter
+    def due(self, due):
         self._set_field('due', due)
 
-    def get_completed(self):
+    @property
+    def completed(self):
         if self.todo.get('completed', None) is None:
             return None
         else:
             return self.todo.decoded('completed')
 
-    def set_completed(self, completed):
+    @completed.setter
+    def completed(self, completed):
         self._set_field('completed', completed)
 
-    def get_percent_complete(self):
+    @property
+    def percent_complete(self):
         return int(self.todo.get('percent-complete', 0))
 
-    def set_percent_complete(self, percent_complete):
+    @percent_complete.setter
+    def percent_complete(self, percent_complete):
         self._set_field('percent-complete', percent_complete, force=True)
 
-    def get_priority(self):
+    @property
+    def priority(self):
         return self.todo.get('priority', None)
 
-    def set_priority(self, priority):
+    @priority.setter
+    def priority(self, priority):
         self._set_field('priority', priority, force=True)
-
-    summary = property(get_summary, set_summary)
-    description = property(get_description, set_description)
-    location = property(get_location, set_location)
-    due = property(get_due, set_due)
-    completed = property(get_completed, set_completed)
-    percent_complete = property(get_percent_complete, set_percent_complete)
-    priority = property(get_priority, set_priority)
 
     @property
     def uid(self):
@@ -150,14 +156,14 @@ class Database:
                     logger.warn("Failed to read entry %s: %s.", entry, e)
         self.todos.sort(key=self._sort_func)
 
-    def set_path(self, path):
-        self._path = path
-        self._read()
-
-    def get_path(self):
+    @property
+    def path(self):
         return self._path
 
-    path = property(get_path, set_path)
+    @path.setter
+    def path(self, path):
+        self._path = path
+        self._read()
 
     @staticmethod
     def _sort_func(todo):
