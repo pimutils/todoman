@@ -176,6 +176,6 @@ class TodoFormatter:
 
     def unformat_date(self, date):
         if date:
-            return datetime.strptime(self.date_format)
+            return datetime.strptime(date, self.date_format)
         else:
             return None
