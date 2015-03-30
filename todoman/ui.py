@@ -70,6 +70,8 @@ class TodoEditor:
         self.todo.location = self.location
         if self.due:
             self.todo.due = self.formatter.unformat_date(self.due)
+        else:
+            self.todo.due = None
 
         if not self.todo.completed and self._completed.get_state():
             self.todo.completed = datetime.now()
