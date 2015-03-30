@@ -76,7 +76,7 @@ def main():
         i = 0
         for todo in database.todos:
             i += 1
-            print("{:2d}. {}".format(i, formatter.compact(todo)))
+            print("{:2d} {}".format(i, formatter.compact(todo)))
 
 if __name__ == "__main__":
     main()

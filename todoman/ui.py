@@ -122,8 +122,8 @@ class TodoEditor:
 class TodoFormatter:
 
     # This one looks good with [X]
-    # compact_format = "[{completed}] {urgent} {due} {summary}"
-    compact_format = "{completed} {urgent}  {due}  {summary}"
+    compact_format = "[{completed}] {urgent} {due} {summary} ({percent}%)"
+    # compact_format = "{completed} {urgent}  {due}  {summary}"
     detailed_format = """\
 {summary}
 {due}{done}{urgent}
@@ -141,13 +141,16 @@ class TodoFormatter:
 
         :param Todo todo: The todo component.
         """
-        completed = "✓" if todo.percent_complete == 100 else " "
+        # completed = "✓" if todo.percent_complete == 100 else " "
+        completed = "X" if todo.percent_complete == 100 else " "
+        percent = todo.percent_complete
         urgent = " " if todo.priority == 0 else "!"
         due = self.format_date(todo.due)
         summary = todo.summary
 
         return self.compact_format.format(completed=completed, urgent=urgent,
-                                          due=due, summary=summary)
+                                          due=due, summary=summary,
+                                          percent=percent)
 
     def detailed(self, todo):
         """
