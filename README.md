@@ -83,4 +83,4 @@ tool for this.
 LICENCE
 -------
 
-Todoman is licensed under the MIT licence. See LICENCE.md for details.
+Todoman is licensed under the MIT licence. See LICENCE for details.
