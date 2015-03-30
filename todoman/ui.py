@@ -74,10 +74,9 @@ class TodoEditor:
             self.todo.due = None
 
         if not self.todo.completed and self._completed.get_state():
-            self.todo.completed = datetime.now()
-            self.todo.percent_complete = 100
-        elif not self.todo.completed:
-            self.todo.percent_complete = 0
+            self.todo.complete()
+        elif self.todo.completed and not self._completed.get_state():
+            self.todo.undo()
 
         # If it was already non-zero, keep it that way. Let's not overwrite
         # values 1 thru 8.

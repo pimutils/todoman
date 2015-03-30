@@ -7,6 +7,7 @@ Usage:
   todo new
   todo edit ID
   todo show ID
+  todo done ID
   todo help | -h | --help
   todo --version
 
@@ -16,7 +17,7 @@ import logging
 import os
 import sys
 from configparser import ConfigParser
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 from os.path import join
 
 from docopt import docopt
@@ -25,7 +26,7 @@ import xdg.BaseDirectory
 from .model import Database, Todo
 from .ui import TodoEditor, TodoFormatter
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 
 
 def load_config():
@@ -72,11 +73,14 @@ def main():
             database.save(todo)
     elif arguments["show"]:
         print(formatter.detailed(todo))
+    elif arguments["done"]:
+        todo.complete()
+        database.save(todo)
     else:  # "list" or nothing.
         # TODO: skip entries complete over two days ago
         for index, todo in enumerate(database.todos):
             if not todo.completed or \
-               todo.completed + timedelta(days=7) >= date.today():
+               todo.completed + timedelta(days=7) >= datetime.today():
                 print("{:2d} {}".format(index + 1, formatter.compact(todo)))
 
 if __name__ == "__main__":

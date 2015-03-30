@@ -79,7 +79,10 @@ class Todo:
         self._set_field('due', due)
 
     def get_completed(self):
-        return self.todo.get('completed', None)
+        if self.todo.get('completed', None) is None:
+            return None
+        else:
+            return self.todo.decoded('completed')
 
     def set_completed(self, completed):
         self._set_field('completed', completed)
@@ -108,8 +111,18 @@ class Todo:
     def uid(self):
         return self.todo.get('uid')
 
+    # XXX: Unused?
     def to_ical(self):
         return self.todo.to_ical()
+
+    def complete(self):
+        self.completed = datetime.now()
+        self.percent_complete = 100
+
+    def undo(self):
+        for name in ['completed', 'percent-complete']:
+            if name in self.todo:
+                del(self.todo[name])
 
 
 class Database:
