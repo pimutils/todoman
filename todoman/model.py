@@ -85,10 +85,10 @@ class Todo:
         self._set_field('completed', completed)
 
     def get_percent_complete(self):
-        return int(self.todo.get('percent_complete', 0))
+        return int(self.todo.get('percent-complete', 0))
 
     def set_percent_complete(self, percent_complete):
-        self._set_field('percent_complete', percent_complete, force=True)
+        self._set_field('percent-complete', percent_complete, force=True)
 
     def get_priority(self):
         return self.todo.get('priority', None)
