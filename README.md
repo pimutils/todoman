@@ -71,6 +71,15 @@ Usage is rater simple:
 When no arguments are passed, Todoman will list all todos, along with their
 IDs. IDs are not immutable, and will change as you add/delete new entries.
 
+Sample output:
+
+    Output sample:
+    [ ] ! 2015-04-30 Close bank account (0%)
+    [ ] !            Send minipimer back for warranty replacement (0%)
+    [X]   2015-03-29 Buy soy milk (100%)
+    [ ]              Fix the iPad's screen (0%)
+    [ ]              Fix the Touchad battery (0%)
+
 If you want to synchronize your todos, you'll needs something that syncs via
 CalDav. [vdirsyncer](https://github.com/untitaker/vdirsyncer) is the recomended
 tool for this.
