@@ -161,20 +161,17 @@ class Database:
 
     @staticmethod
     def _sort_func(todo):
-        """ Auxiliary function used to sort todos.  """
+        """
+        Auxiliary function used to sort todos.
 
-        # Timestamps are strings, so this uses string comparison, so appending
-        # infront doesn't have the effect you'd expect when doing that with
-        # integers.
+        We put the most important items on the bottom of the list because the
+        terminal scrolls with the output.
+        """
 
-        if todo.due and todo.priority not in [None, 0]:
-            return "0" + todo.due.strftime("%s")
-        elif todo.priority not in [None, 0]:
-            return "3"
-        elif todo.due:
-            return "6" + todo.due.strftime("%s")
-        else:
-            return "9"
+        rv = (todo.priority or 0),
+        if todo.due:
+            rv += (todo.due,)
+        return rv
 
     def get_nth(self, n):
         if n < len(self.todos) + 1:
