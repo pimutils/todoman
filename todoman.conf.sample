@@ -1,0 +1,3 @@
+[main]
+path = ~/.local/share/calendars/personal
+date_format = %Y-%m-%d
