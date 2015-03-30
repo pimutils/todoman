@@ -94,7 +94,7 @@ class Todo:
         return self.todo.get('priority', None)
 
     def set_priority(self, priority):
-        self._set_field('priority', priority)
+        self._set_field('priority', priority, force=True)
 
     summary = property(get_summary, set_summary)
     description = property(get_description, set_description)

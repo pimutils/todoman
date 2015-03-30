@@ -146,7 +146,7 @@ class TodoFormatter:
         # completed = "✓" if todo.percent_complete == 100 else " "
         completed = "X" if todo.percent_complete == 100 else " "
         percent = todo.percent_complete
-        urgent = " " if todo.priority == 0 else "!"
+        urgent = " " if todo.priority in [None, 0] else "!"
         due = self.format_date(todo.due)
         summary = todo.summary
 
@@ -161,7 +161,7 @@ class TodoFormatter:
         :param Todo todo: The todo component.
         """
         done = "Done " if todo.percent_complete == 100 else ""
-        urgent = "" if todo.priority == 0 else "Urgent "
+        urgent = "" if todo.priority in [None, 0] else "Urgent "
         if todo.due:
             due = "Due: {} ".format(self.format_date(todo.due))
         else:
