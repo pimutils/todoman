@@ -16,6 +16,7 @@ import logging
 import os
 import sys
 from configparser import ConfigParser
+from datetime import date, timedelta
 from os.path import join
 
 from docopt import docopt
@@ -72,11 +73,11 @@ def main():
     elif arguments["show"]:
         print(formatter.detailed(todo))
     else:  # "list" or nothing.
-        global i
-        i = 0
-        for todo in database.todos:
-            i += 1
-            print("{:2d} {}".format(i, formatter.compact(todo)))
+        # TODO: skip entries complete over two days ago
+        for index, todo in enumerate(database.todos):
+            if not todo.completed or \
+               todo.completed + timedelta(days=7) >= date.today():
+                print("{:2d} {}".format(index + 1, formatter.compact(todo)))
 
 if __name__ == "__main__":
     main()
