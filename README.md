@@ -30,10 +30,6 @@ Support for the `percent-completed` attribute is incomplete. Todoman can only
 mark todos as completed (100%), and will nor reflect nor allow editing for
 values for `percent > 0 ^ percent < 100`.
 
-Due to developer lazyness, todos that have a due-date past the year 3000 may
-not be properly sorted between those that do not expire. It is expected that
-this issue be fixed before we start reaching that year.
-
 Requirements
 ------------
 

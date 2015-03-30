@@ -148,12 +148,18 @@ class Database:
     def _sort_func(todo):
         """ Auxiliary function used to sort todos.  """
 
-        # TODO: Take urgency into consideration!
-        if todo.due:
-            return todo.due.strftime("%s")
+        # Timestamps are strings, so this uses string comparison, so appending
+        # infront doesn't have the effect you'd expect when doing that with
+        # integers.
+
+        if todo.due and todo.priority not in [None, 0]:
+            return "0" + todo.due.strftime("%s")
+        elif todo.priority not in [None, 0]:
+            return "3"
+        elif todo.due:
+            return "6" + todo.due.strftime("%s")
         else:
-            # This is the largest representable timestamp
-            return "9" * 11
+            return "9"
 
     def get_nth(self, n):
         if n < len(self.todos) + 1:
