@@ -119,10 +119,6 @@ class Todo:
     def uid(self):
         return self.todo.get('uid')
 
-    # XXX: Unused?
-    def to_ical(self):
-        return self.todo.to_ical()
-
     def complete(self):
         self.completed = datetime.now()
         self.percent_complete = 100
