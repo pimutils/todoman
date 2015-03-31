@@ -12,7 +12,9 @@ Features
 --------
 
  * Listing, editing and creating todos.
- * Todos are read from individual ics files from the configured directory.
+ * Todos are read from individual ics files from the configured directory. This
+   matches the [vdir](https://vdirsyncer.readthedocs.org/en/latest/vdir.html)
+   specification.
  * There's support for the most common TODO features for now (summary,
    description, location, due date and priority) for now.
  * Todoman should run on any major operating system.
