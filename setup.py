@@ -2,10 +2,11 @@
 
 from setuptools import setup
 
+import todoman
+
 setup(
     name='todoman',
-    # TODO: Move this to VERSION:
-    version='1.0.0',
+    version=todoman.__version__,
     description='A simple CalDav-based todo manager.',
     author='Hugo Osvaldo Barrera',
     author_email='hugo@barrera.io',
@@ -14,7 +15,7 @@ setup(
     packages=['todoman'],
     entry_points={
         'console_scripts': [
-            'todo = todoman:main',
+            'todo = todoman.main:main',
         ]
     },
     install_requires=[
