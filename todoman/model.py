@@ -1,7 +1,7 @@
 import logging
 import os
 from uuid import uuid4
-from datetime import datetime, timedelta
+from datetime import date, time, datetime, timedelta
 
 import icalendar
 from atomicwrites import AtomicWriter
@@ -88,7 +88,7 @@ class Todo:
         if self.todo.get('due', None) is None:
             return None
         else:
-            return self._make_date_tz_aware(self.todo.decoded('due'))
+            return self._normalize_datetime(self.todo.decoded('due'))
 
     @due.setter
     def due(self, due):
@@ -99,7 +99,7 @@ class Todo:
         if self.todo.get('completed', None) is None:
             return None
         else:
-            return self._make_date_tz_aware(self.todo.decoded('completed'))
+            return self._normalize_datetime(self.todo.decoded('completed'))
 
     @completed.setter
     def completed(self, completed):
@@ -126,7 +126,7 @@ class Todo:
         return self.todo.get('uid')
 
     def complete(self):
-        self.completed = self._make_date_tz_aware(datetime.now())
+        self.completed = self._normalize_datetime(datetime.now())
         self.percent_complete = 100
 
     def undo(self):
@@ -134,10 +134,23 @@ class Todo:
             if name in self.todo:
                 del(self.todo[name])
 
-    def _make_date_tz_aware(self, date):
-        if not date.tzinfo:
-            return date.replace(tzinfo=self._localtimezone)
-        return date
+    def _normalize_datetime(self, x):
+        '''
+        Eliminate several differences between dates, times and datetimes which
+        are hindering comparison:
+
+        - Convert everything to datetime
+        - Add missing timezones
+        '''
+        if isinstance(x, date):
+            x = datetime(x.year, x.month, x.day)
+        elif isinstance(x, time):
+            x = datetime(now.year, now.month, now.day,
+                         x.hour, x.minute, x.second, tzinfo=x.tzinfo)
+
+        if not x.tzinfo:
+            x = x.replace(tzinfo=self._localtimezone)
+        return x
 
 
 class Database:
@@ -183,7 +196,7 @@ class Database:
 
         rv = (todo.priority or 0),
         if todo.due:
-            rv += (todo.due,)
+            rv += todo.due,
         return rv
 
     def get_nth(self, n):
