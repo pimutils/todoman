@@ -166,8 +166,7 @@ class Todo:
         if isinstance(x, date):
             x = datetime(x.year, x.month, x.day)
         elif isinstance(x, time):
-            x = datetime(now.year, now.month, now.day,
-                         x.hour, x.minute, x.second, tzinfo=x.tzinfo)
+            x = datetime.combine(date.today(), x)
 
         if not x.tzinfo:
             x = x.replace(tzinfo=self._localtimezone)
