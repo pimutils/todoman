@@ -20,6 +20,7 @@ from configparser import ConfigParser
 from datetime import datetime, timedelta
 from os.path import join
 
+from dateutil.tz import tzlocal
 from docopt import docopt
 import xdg.BaseDirectory
 
@@ -80,7 +81,7 @@ def main():
         # TODO: skip entries complete over two days ago
         for index, todo in enumerate(database.todos):
             if not todo.completed or \
-               todo.completed + timedelta(days=7) >= datetime.today():
+               todo.completed + timedelta(days=7) >= datetime.now(tzlocal()):
                 print("{:2d} {}".format(index + 1, formatter.compact(todo)))
 
 if __name__ == "__main__":

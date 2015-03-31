@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 import icalendar
 from atomicwrites import AtomicWriter
+from dateutil.tz import tzlocal
 
 logger = logging.getLogger(name=__name__)
 # logger.addHandler(logging.FileHandler('model.log'))
@@ -18,6 +19,8 @@ class Todo:
     they are not defined.
     Date attributes are treated as datetime objects, and None will be returned
     if they are not defined.
+    All datetime objects have tzinfo, either the one defined in the file, or
+    the local system's one.
     """
 
     def __init__(self, todo=None, filename=None):
@@ -31,17 +34,20 @@ class Todo:
         if todo:
             self.todo = todo
         else:
+            now = datetime.now(tzlocal())
             self.todo = icalendar.Todo()
             self.todo.add('uid', uuid4())
-            self.todo.add('due', datetime.today() + timedelta(days=1))
+            self.todo.add('due', now + timedelta(days=1))
             self.todo.add('percent-complete', 0)
             self.todo.add('priority', 0)
-            self.todo.add('created', datetime.now())
+            self.todo.add('created', now)
 
         if filename:
             self.filename = filename
         else:
             self.filename = "{}.ics".format(self.todo.get('uid'))
+
+        self._localtimezone = tzlocal()
 
     def _set_field(self, name, value, force=False):
         if name in self.todo:
@@ -82,7 +88,7 @@ class Todo:
         if self.todo.get('due', None) is None:
             return None
         else:
-            return self.todo.decoded('due')
+            return self._make_date_tz_aware(self.todo.decoded('due'))
 
     @due.setter
     def due(self, due):
@@ -93,7 +99,7 @@ class Todo:
         if self.todo.get('completed', None) is None:
             return None
         else:
-            return self.todo.decoded('completed')
+            return self._make_date_tz_aware(self.todo.decoded('completed'))
 
     @completed.setter
     def completed(self, completed):
@@ -120,13 +126,18 @@ class Todo:
         return self.todo.get('uid')
 
     def complete(self):
-        self.completed = datetime.now()
+        self.completed = self._make_date_tz_aware(datetime.now())
         self.percent_complete = 100
 
     def undo(self):
         for name in ['completed', 'percent-complete']:
             if name in self.todo:
                 del(self.todo[name])
+
+    def _make_date_tz_aware(self, date):
+        if not date.tzinfo:
+            return date.replace(tzinfo=self._localtimezone)
+        return date
 
 
 class Database:
@@ -201,4 +212,4 @@ class Database:
             c.add_component(todo.todo)
 
             with AtomicWriter(path).open() as f:
-                f.write(cal.to_ical().decode("UTF-8"))
+                f.write(c.to_ical().decode("UTF-8"))

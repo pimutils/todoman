@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import urwid
+from dateutil.tz import tzlocal
 
 
 class TodoEditor:
@@ -134,6 +135,7 @@ class TodoFormatter:
     def __init__(self, date_format):
         self.date_format = date_format
         self.empty_date = " " * len(self.format_date(datetime.now()))
+        self._localtimezone = tzlocal()
 
     def compact(self, todo):
         """
@@ -180,6 +182,7 @@ class TodoFormatter:
 
     def unformat_date(self, date):
         if date:
-            return datetime.strptime(date, self.date_format)
+            date = datetime.strptime(date, self.date_format)
+            return date.replace(tzinfo=self._localtimezone)
         else:
             return None
