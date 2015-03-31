@@ -71,7 +71,9 @@ class Todo:
     @is_completed.setter
     def is_completed(self, val):
         if val:
-            self.completed_at = self._normalize_datetime(datetime.now())
+            # Don't fiddle with completed_at if this was already completed:
+            if not self.is_completed:
+                self.completed_at = self._normalize_datetime(datetime.now())
             self.percent_complete = 100
             self.status = 'COMPLETED'
         else:
@@ -148,12 +150,6 @@ class Todo:
     @property
     def uid(self):
         return self.todo.get('uid')
-
-    def undo(self):  # XXX: Deprecate
-        self.is_completed = False
-
-    def complete(self):  # XXX: Deprecate
-        self.is_completed = True
 
     def _normalize_datetime(self, x):
         '''

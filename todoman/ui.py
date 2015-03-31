@@ -29,7 +29,7 @@ class TodoEditor:
                                        multiline=True)
         self._location = urwid.Edit(edit_text=todo.location)
         self._due = urwid.Edit(edit_text=due)
-        self._completed = urwid.CheckBox("", state=todo.completed is not None)
+        self._completed = urwid.CheckBox("", state=todo.is_completed)
         self._urgent = urwid.CheckBox("", state=todo.priority not in [None, 0])
 
         save_btn = urwid.Button('Save', on_press=self._save)
@@ -74,10 +74,7 @@ class TodoEditor:
         else:
             self.todo.due = None
 
-        if not self.todo.completed and self._completed.get_state():
-            self.todo.complete()
-        elif self.todo.completed and not self._completed.get_state():
-            self.todo.undo()
+        self.todo.is_completed = self._completed.get_state()
 
         # If it was already non-zero, keep it that way. Let's not overwrite
         # values 1 thru 8.
@@ -145,7 +142,7 @@ class TodoFormatter:
         :param Todo todo: The todo component.
         """
         # completed = "✓" if todo.percent_complete == 100 else " "
-        completed = "X" if todo.percent_complete == 100 else " "
+        completed = "X" if todo.is_completed else " "
         percent = todo.percent_complete
         urgent = " " if todo.priority in [None, 0] else "!"
         due = self.format_date(todo.due)
@@ -161,7 +158,7 @@ class TodoFormatter:
 
         :param Todo todo: The todo component.
         """
-        done = "Done " if todo.percent_complete == 100 else ""
+        done = "Done " if todo.is_completed else ""
         urgent = "" if todo.priority in [None, 0] else "Urgent "
         if todo.due:
             due = "Due: {} ".format(self.format_date(todo.due))
