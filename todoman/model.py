@@ -57,6 +57,30 @@ class Todo:
             self.todo.add(name, value)
 
     @property
+    def status(self):
+        return self.todo.get('status', 'NEEDS-ACTION')
+
+    @status.setter
+    def status(self, value):
+        self._set_field('status', value)
+
+    @property
+    def is_completed(self):
+        return self.completed_at or self.status in ('CANCELLED', 'COMPLETED')
+
+    @is_completed.setter
+    def is_completed(self, val):
+        if val:
+            self.completed_at = self._normalize_datetime(datetime.now())
+            self.percent_complete = 100
+            self.status = 'COMPLETED'
+        else:
+            for name in ['completed', 'percent-complete']:
+                if name in self.todo:
+                    del(self.todo[name])
+            self.status = 'NEEDS-ACTION'
+
+    @property
     def summary(self):
         return self.todo.get('summary', "")
 
@@ -95,14 +119,14 @@ class Todo:
         self._set_field('due', due)
 
     @property
-    def completed(self):
+    def completed_at(self):
         if self.todo.get('completed', None) is None:
             return None
         else:
             return self._normalize_datetime(self.todo.decoded('completed'))
 
-    @completed.setter
-    def completed(self, completed):
+    @completed_at.setter
+    def completed_at(self, completed):
         self._set_field('completed', completed)
 
     @property
@@ -125,14 +149,11 @@ class Todo:
     def uid(self):
         return self.todo.get('uid')
 
-    def complete(self):
-        self.completed = self._normalize_datetime(datetime.now())
-        self.percent_complete = 100
+    def undo(self):  # XXX: Deprecate
+        self.is_completed = False
 
-    def undo(self):
-        for name in ['completed', 'percent-complete']:
-            if name in self.todo:
-                del(self.todo[name])
+    def complete(self):  # XXX: Deprecate
+        self.is_completed = True
 
     def _normalize_datetime(self, x):
         '''
