@@ -80,9 +80,16 @@ def main():
     else:  # "list" or nothing.
         # TODO: skip entries complete over two days ago
         for index, todo in enumerate(database.todos):
-            if not todo.completed or \
-               todo.completed + timedelta(days=7) >= datetime.now(tzlocal()):
-                print("{:2d} {}".format(index + 1, formatter.compact(todo)))
+            try:
+                if not todo.is_completed or (
+                    todo.completed_at and
+                    todo.completed_at + timedelta(days=7) >=
+                    datetime.now(tzlocal())
+                ):
+                    print("{:2d} {}"
+                          .format(index + 1, formatter.compact(todo)))
+            except Exception as e:
+                print("Error while showing {}: {}".format(todo.filename, e))
 
 if __name__ == "__main__":
     main()

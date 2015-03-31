@@ -1,7 +1,7 @@
 import logging
 import os
 from uuid import uuid4
-from datetime import datetime, timedelta
+from datetime import date, time, datetime, timedelta
 
 import icalendar
 from atomicwrites import AtomicWriter
@@ -57,6 +57,30 @@ class Todo:
             self.todo.add(name, value)
 
     @property
+    def status(self):
+        return self.todo.get('status', 'NEEDS-ACTION')
+
+    @status.setter
+    def status(self, value):
+        self._set_field('status', value)
+
+    @property
+    def is_completed(self):
+        return self.completed_at or self.status in ('CANCELLED', 'COMPLETED')
+
+    @is_completed.setter
+    def is_completed(self, val):
+        if val:
+            self.completed_at = self._normalize_datetime(datetime.now())
+            self.percent_complete = 100
+            self.status = 'COMPLETED'
+        else:
+            for name in ['completed', 'percent-complete']:
+                if name in self.todo:
+                    del(self.todo[name])
+            self.status = 'NEEDS-ACTION'
+
+    @property
     def summary(self):
         return self.todo.get('summary', "")
 
@@ -88,21 +112,21 @@ class Todo:
         if self.todo.get('due', None) is None:
             return None
         else:
-            return self._make_date_tz_aware(self.todo.decoded('due'))
+            return self._normalize_datetime(self.todo.decoded('due'))
 
     @due.setter
     def due(self, due):
         self._set_field('due', due)
 
     @property
-    def completed(self):
+    def completed_at(self):
         if self.todo.get('completed', None) is None:
             return None
         else:
-            return self._make_date_tz_aware(self.todo.decoded('completed'))
+            return self._normalize_datetime(self.todo.decoded('completed'))
 
-    @completed.setter
-    def completed(self, completed):
+    @completed_at.setter
+    def completed_at(self, completed):
         self._set_field('completed', completed)
 
     @property
@@ -125,19 +149,29 @@ class Todo:
     def uid(self):
         return self.todo.get('uid')
 
-    def complete(self):
-        self.completed = self._make_date_tz_aware(datetime.now())
-        self.percent_complete = 100
+    def undo(self):  # XXX: Deprecate
+        self.is_completed = False
 
-    def undo(self):
-        for name in ['completed', 'percent-complete']:
-            if name in self.todo:
-                del(self.todo[name])
+    def complete(self):  # XXX: Deprecate
+        self.is_completed = True
 
-    def _make_date_tz_aware(self, date):
-        if not date.tzinfo:
-            return date.replace(tzinfo=self._localtimezone)
-        return date
+    def _normalize_datetime(self, x):
+        '''
+        Eliminate several differences between dates, times and datetimes which
+        are hindering comparison:
+
+        - Convert everything to datetime
+        - Add missing timezones
+        '''
+        if isinstance(x, date):
+            x = datetime(x.year, x.month, x.day)
+        elif isinstance(x, time):
+            x = datetime(now.year, now.month, now.day,
+                         x.hour, x.minute, x.second, tzinfo=x.tzinfo)
+
+        if not x.tzinfo:
+            x = x.replace(tzinfo=self._localtimezone)
+        return x
 
 
 class Database:
@@ -183,7 +217,7 @@ class Database:
 
         rv = (todo.priority or 0),
         if todo.due:
-            rv += (todo.due,)
+            rv += todo.due,
         return rv
 
     def get_nth(self, n):

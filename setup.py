@@ -22,6 +22,7 @@ setup(
         'icalendar',
         'urwid',
         'pyxdg',
+        'atomicwrites'
     ],
     # TODO: classifiers
 )
