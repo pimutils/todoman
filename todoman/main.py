@@ -73,7 +73,7 @@ def main():
     elif arguments["show"]:
         print(formatter.detailed(todo))
     elif arguments["done"]:
-        todo.complete()
+        todo.is_completed = True
         database.save(todo)
     else:  # "list" or nothing.
         # TODO: skip entries complete over two days ago
