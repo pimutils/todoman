@@ -141,7 +141,7 @@ class Todo:
 
     @property
     def priority(self):
-        return self.todo.get('priority', None)
+        return self.todo.get('priority', 0)
 
     @priority.setter
     def priority(self, priority):
@@ -210,7 +210,7 @@ class Database:
         terminal scrolls with the output.
         """
 
-        rv = (todo.priority or 0),
+        rv = (todo.priority),
         if todo.due:
             rv += todo.due,
         return rv

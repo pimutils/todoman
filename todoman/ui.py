@@ -30,7 +30,7 @@ class TodoEditor:
         self._location = urwid.Edit(edit_text=todo.location)
         self._due = urwid.Edit(edit_text=due)
         self._completed = urwid.CheckBox("", state=todo.is_completed)
-        self._urgent = urwid.CheckBox("", state=todo.priority not in [None, 0])
+        self._urgent = urwid.CheckBox("", state=todo.priority is not 0)
 
         save_btn = urwid.Button('Save', on_press=self._save)
         cancel_btn = urwid.Button('Cancel', on_press=self._cancel)
@@ -80,7 +80,7 @@ class TodoEditor:
         # values 1 thru 8.
         if self._urgent.get_state() and not self.todo.priority:
             self.todo.priority = 9
-        else:
+        elif not self._urgent.get_state():
             self.todo.priority = 0
 
         # TODO: categories
