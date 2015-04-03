@@ -170,7 +170,7 @@ class Todo:
 
 class Database:
     """
-    This class is essentially a wrapper around the a directory which contains a
+    This class is essentially a wrapper around a directory which contains a
     bunch of ical files. While not a traditional SQL database, it's still *our*
     database.
     """
