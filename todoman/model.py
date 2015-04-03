@@ -23,6 +23,8 @@ class Todo:
     the local system's one.
     """
 
+    _localtimezone = tzlocal()
+
     def __init__(self, todo=None, filename=None):
         """
         :param icalendar.Todo todo: The icalendar component object on which
@@ -34,7 +36,7 @@ class Todo:
         if todo:
             self.todo = todo
         else:
-            now = datetime.now(tzlocal())
+            now = datetime.now(self._localtimezone)
             self.todo = icalendar.Todo()
             self.todo.add('uid', uuid4())
             self.todo.add('due', now + timedelta(days=1))
@@ -42,16 +44,12 @@ class Todo:
             self.todo.add('priority', 0)
             self.todo.add('created', now)
 
-        if filename:
-            self.filename = filename
-        else:
-            self.filename = "{}.ics".format(self.todo.get('uid'))
-
-        self._localtimezone = tzlocal()
+        self.filename = filename or "{}.ics".format(self.todo.get('uid'))
 
     def _set_field(self, name, value, force=False):
         if name in self.todo:
             del(self.todo[name])
+        # XXX: Do I really want this check? What good does it do?
         if value or force:
             logger.debug("Setting field %s to %s.", name, value)
             self.todo.add(name, value)
