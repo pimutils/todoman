@@ -180,7 +180,9 @@ class Database:
 
     def _read(self):
         self.todos = []
-        for entry in [f for f in os.listdir(self.path) if f.endswith(".ics")]:
+        for entry in os.listdir(self.path):
+            if not entry.endswith(".ics"):
+                continue
             with open(os.path.join(self.path, entry), 'rb') as f:
                 try:
                     cal = icalendar.Calendar.from_ical(f.read())
