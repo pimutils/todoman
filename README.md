@@ -49,18 +49,25 @@ values for `percent > 0 ^ percent < 100`.
 Requirements
 ------------
 
- * python
+Running setup.py (as described below, in Installation) should install all
+necessary dependencies via pip. The only pre-requisite for this is python3,
+which ships with most modern distributions.
+
+ * python3 (tested on 3.4, should work on any version > 3.0)
  * docopt
  * icalendar
  * urwid
  * pyxdg
  * atomicwrites
 
+Todoman will not work with python2. However, keep in mind that python2 and
+python3 can coexist (and most distributions actually ship both).
+
 Installation
 ------------
 
 If todoman is not in your distribution's repositories, to install it run
-`python setup.py install`. 
+`python3 setup.py install`. 
 
 Usage
 -----
