@@ -1,31 +1,34 @@
 Todoman
 =======
 
-Todoman is a simple, standards-based,
-[cli](https://en.wikipedia.org/wiki/Command-line_interface) todo (aka: task)
-manager. Todos are stored into [ical](https://tools.ietf.org/html/rfc5545)
-files, which means you can sync them via
-[CalDav](http://en.wikipedia.org/wiki/CalDAV) using, for example,
-[vdirsyncer](https://github.com/untitaker/vdirsyncer).
+Todoman is a simple, standards-based, [cli][1] todo (aka: task) manager. Todos
+are stored into [icalendar][2] files, which means you can sync them via
+[CalDAV][3] using, for example, [vdirsyncer][4].
+
+[1]: https://en.wikipedia.org/wiki/Command-line_interface
+[2]: https://tools.ietf.org/html/rfc5545
+[3]: http://en.wikipedia.org/wiki/CalDAV
+[4]: https://github.com/untitaker/vdirsyncer
 
 Features
 --------
 
  * Listing, editing and creating todos.
  * Todos are read from individual ics files from the configured directory. This
-   matches the [vdir](https://vdirsyncer.readthedocs.org/en/latest/vdir.html)
-   specification.
+   matches the [vdir][vdir] specification.
  * There's support for the most common TODO features for now (summary,
    description, location, due date and priority) for now.
  * Todoman should run on any major operating system.
  * Unsupported fields may not be shown but are *never* deleted or altered.
 
+[vdir]: https://vdirsyncer.readthedocs.org/en/latest/vdir.html
+
 Planned Features
 ----------------
 
- * Keep a sql cache of all the entries, and update this only when the mtime of
-   the ics files changes. This design is inspired (identical, really) to what
-   khal does
+ * Keep a SQL cache of all the entries, and update this only when the
+   modification time of the ics files changes. This design is inspired
+   (identical, really) to what khal does.
  * Interactive mode. Including a list of todos, and easy selection for marking
    done and editing.
  * Support for other icalendar fields which are not implemented yet.
@@ -37,7 +40,7 @@ project [issue tracker](https://git.barrera.io/hobarrera/todoman/issues)
 Caveats
 -------
 
-Priority granularity hasn't been completely implemented yet. icalendar
+Priority granularity hasn't been completely implemented yet. Icalendar
 supports priorities 1-9 or none. Todoman supports only none or 1 (highest).
 
 Due dates are generally shown and editable as dates with no time component.
@@ -49,8 +52,8 @@ values for `percent > 0 ^ percent < 100`.
 Requirements
 ------------
 
-Running setup.py (as described below, in Installation) should install all
-necessary dependencies via pip. The only pre-requisite for this is python3,
+Running `setup.py` (as described below, in Installation) should install all
+necessary dependencies via pip. The only pre-requisite for this is python 3,
 which ships with most modern distributions.
 
  * python3 (tested on 3.4, should work on any version > 3.0)
@@ -60,8 +63,8 @@ which ships with most modern distributions.
  * pyxdg
  * atomicwrites
 
-Todoman will not work with python2. However, keep in mind that python2 and
-python3 can coexist (and most distributions actually ship both).
+Todoman will not work with python 2. However, keep in mind that python 2 and
+python 3 can coexist (and most distributions actually ship both).
 
 Installation
 ------------
@@ -79,7 +82,7 @@ The configuration file should be placed in
 `$XDG_CONFIG_DIR/todoman/todoman.conf`. `$XDG_CONFIG_DIR` will be `~/.config`
 is most situations.
 
-Usage is rater simple:
+Usage is rather simple:
 
     todo
     todo new
@@ -101,8 +104,8 @@ Sample output:
     [ ]              Fix the Touchad battery (0%)
 
 If you want to synchronize your todos, you'll needs something that syncs via
-CalDav. [vdirsyncer](https://github.com/untitaker/vdirsyncer) is the recomended
-tool for this.
+CalDAV. [vdirsyncer](https://github.com/untitaker/vdirsyncer) is the
+recommended tool for this.
 
 LICENCE
 -------
