@@ -64,7 +64,8 @@ class Todo:
 
     @property
     def is_completed(self):
-        return self.completed_at or self.status in ('CANCELLED', 'COMPLETED')
+        return bool(self.completed_at) or \
+            self.status in ('CANCELLED', 'COMPLETED')
 
     @is_completed.setter
     def is_completed(self, val):
@@ -188,7 +189,7 @@ class Database:
                         self.todos.append(todo)
                 except Exception as e:
                     logger.warn("Failed to read entry %s: %s.", entry, e)
-        self.todos.sort(key=self._sort_func)
+        self.todos.sort(key=self._sort_func, reverse=True)
 
     @property
     def path(self):
@@ -206,11 +207,16 @@ class Database:
 
         We put the most important items on the bottom of the list because the
         terminal scrolls with the output.
+
+        Items with an immediate due date are considered more important that
+        those for which we have more time.
         """
 
-        rv = (todo.priority),
+        rv = (-todo.priority, todo.is_completed),
         if todo.due:
-            rv += todo.due,
+            rv += 0, todo.due,
+        else:
+            rv += 1,
         return rv
 
     def get_nth(self, n):
