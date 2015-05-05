@@ -61,7 +61,8 @@ class TodoEditor:
         Shows the UI for editing a given todo. Returns True if modifications
         were saved.
         """
-        loop = urwid.MainLoop(self._ui, unhandled_input=self._keypress)
+        loop = urwid.MainLoop(self._ui, unhandled_input=self._keypress,
+                              handle_mouse=False)
         loop.run()
         return self.saved
 
