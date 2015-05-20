@@ -16,7 +16,9 @@ import os
 import sys
 from configparser import ConfigParser
 from datetime import datetime, timedelta
-from os.path import join
+import glob
+from os.path import expanduser, join
+import json
 
 from dateutil.tz import tzlocal
 from docopt import docopt
@@ -27,10 +29,12 @@ from .ui import TodoEditor, TodoFormatter
 
 logging.basicConfig(level=logging.ERROR)
 
+ID_FILE = join(xdg.BaseDirectory.xdg_cache_home, 'todoman', 'ids')
+
 
 def load_config():
     for d in xdg.BaseDirectory.xdg_config_dirs:
-        path = join(join(d, 'todoman'), 'todoman.conf')
+        path = join(d, 'todoman', 'todoman.conf')
         if os.path.exists(path):
             config = ConfigParser(interpolation=None)
             config.read(path)
@@ -39,17 +43,68 @@ def load_config():
     raise Exception("No configuration file found")
 
 
+def load_idfile():
+    try:
+        with open(ID_FILE) as f:
+            rv = json.load(f)
+            if isinstance(rv, dict):
+                return rv
+    except (OSError, IOError):
+        pass
+
+    return {}
+
+
+def dump_idfile(ids):
+    assert isinstance(ids, dict)
+    dirname = os.path.dirname(ID_FILE)
+    if not os.path.isdir(dirname):
+        os.makedirs(dirname)
+    with open(ID_FILE, 'w') as f:
+        json.dump(ids, f)
+
+
+def task_sort_func(todo):
+    """
+    Auxiliary function used to sort todos.
+
+    We put the most important items on the bottom of the list because the
+    terminal scrolls with the output.
+
+    Items with an immediate due date are considered more important that
+    those for which we have more time.
+    """
+
+    rv = (-todo.priority, todo.is_completed),
+    if todo.due:
+        rv += 0, todo.due,
+    else:
+        rv += 1,
+    return rv
+
+
 def main():
     arguments = docopt(__doc__, version='Todoman')  # TODO: Append version
 
     config = load_config()
-    database = Database(os.path.expanduser(config["main"]["path"]))
+    databases = {}
     formatter = TodoFormatter(config["main"]["date_format"])
 
+    for path in glob.iglob(expanduser(config["main"]["path"])):
+        databases[path] = Database(path)
+
     if arguments["ID"]:
-        todo_id = int(arguments["ID"])
-        todo = database.get_nth(todo_id)
-        if not todo:
+        ids = load_idfile()
+        if not ids:
+            print("List all tasks with `todo` first.")
+            sys.exit(1)
+
+        try:
+            db_path, todo_filename = ids[arguments["ID"]]
+            database = databases[db_path]
+            todo = database.todos[todo_filename]
+        except KeyError:
+            raise
             print("Invalid todo id.")
             sys.exit(-1)
 
@@ -77,17 +132,31 @@ def main():
         database.save(todo)
     else:  # "list" or nothing.
         # TODO: skip entries complete over two days ago
-        for index, todo in enumerate(database.todos):
-            try:
+        todos = sorted(
+            (
+                (database, todo)
+                for database in databases.values()
+                for todo in database.todos.values()
                 if not todo.is_completed or (
                     todo.completed_at and
                     todo.completed_at + timedelta(days=7) >=
                     datetime.now(tzlocal())
-                ):
-                    print("{:2d} {}"
-                          .format(index + 1, formatter.compact(todo)))
+                )
+            ),
+            key=lambda x: task_sort_func(x[1]),
+            reverse=True
+        )
+        ids = {}
+
+        for index, (database, todo) in enumerate(todos, start=1):
+            ids[index] = (database.path, todo.filename)
+            try:
+                print("{:2d} {}".format(index, formatter.compact(todo)))
             except Exception as e:
-                print("Error while showing {}: {}".format(todo.filename, e))
+                print("Error while showing {}: {}"
+                      .format(join(database.path, todo.filename), e))
+
+        dump_idfile(ids)
 
 if __name__ == "__main__":
     main()

@@ -170,59 +170,39 @@ class Todo:
 
 class Database:
     """
-    This class is essentially a wrapper around the a directory which contains a
+    This class is essentially a wrapper around a directory which contains a
     bunch of ical files. While not a traditional SQL database, it's still *our*
     database.
     """
 
     def __init__(self, path):
         self.path = path
+        self._todos = None
 
-    def _read(self):
-        self.todos = []
-        for entry in [f for f in os.listdir(self.path) if f.endswith(".ics")]:
+    @property
+    def todos(self):
+        if self._todos:
+            return self._todos
+
+        self._todos = {}
+
+        for entry in os.listdir(self.path):
+            if not entry.endswith(".ics"):
+                continue
             with open(os.path.join(self.path, entry), 'rb') as f:
                 try:
                     cal = icalendar.Calendar.from_ical(f.read())
                     for component in cal.walk('VTODO'):
                         todo = Todo(component, entry)
-                        self.todos.append(todo)
+                        self._todos[entry] = todo
                 except Exception as e:
                     logger.warn("Failed to read entry %s: %s.", entry, e)
-        self.todos.sort(key=self._sort_func, reverse=True)
 
-    @property
-    def path(self):
-        return self._path
+        return self._todos
 
-    @path.setter
-    def path(self, path):
-        self._path = path
-        self._read()
-
-    @staticmethod
-    def _sort_func(todo):
-        """
-        Auxiliary function used to sort todos.
-
-        We put the most important items on the bottom of the list because the
-        terminal scrolls with the output.
-
-        Items with an immediate due date are considered more important that
-        those for which we have more time.
-        """
-
-        rv = (-todo.priority, todo.is_completed),
-        if todo.due:
-            rv += 0, todo.due,
-        else:
-            rv += 1,
-        return rv
-
-    def get_nth(self, n):
-        if n < len(self.todos) + 1:
-            return self.todos[n - 1]
-        return None
+    @todos.setter
+    def todos(self, val):
+        self._todos = val
 
     def save(self, todo):
         path = os.path.join(self.path, todo.filename)
