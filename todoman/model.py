@@ -177,9 +177,15 @@ class Database:
 
     def __init__(self, path):
         self.path = path
+        self._todos = None
 
-    def _read(self):
-        self.todos = []
+    @property
+    def todos(self):
+        if self._todos:
+            return self._todos
+
+        self._todos = {}
+
         for entry in os.listdir(self.path):
             if not entry.endswith(".ics"):
                 continue
@@ -188,43 +194,15 @@ class Database:
                     cal = icalendar.Calendar.from_ical(f.read())
                     for component in cal.walk('VTODO'):
                         todo = Todo(component, entry)
-                        self.todos.append(todo)
+                        self._todos[entry] = todo
                 except Exception as e:
                     logger.warn("Failed to read entry %s: %s.", entry, e)
-        self.todos.sort(key=self._sort_func, reverse=True)
 
-    @property
-    def path(self):
-        return self._path
+        return self._todos
 
-    @path.setter
-    def path(self, path):
-        self._path = path
-        self._read()
-
-    @staticmethod
-    def _sort_func(todo):
-        """
-        Auxiliary function used to sort todos.
-
-        We put the most important items on the bottom of the list because the
-        terminal scrolls with the output.
-
-        Items with an immediate due date are considered more important that
-        those for which we have more time.
-        """
-
-        rv = (-todo.priority, todo.is_completed),
-        if todo.due:
-            rv += 0, todo.due,
-        else:
-            rv += 1,
-        return rv
-
-    def get_nth(self, n):
-        if n < len(self.todos) + 1:
-            return self.todos[n - 1]
-        return None
+    @todos.setter
+    def todos(self, val):
+        self._todos = val
 
     def save(self, todo):
         path = os.path.join(self.path, todo.filename)
