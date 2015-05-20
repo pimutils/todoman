@@ -9,12 +9,13 @@ class TodoEditor:
     The UI for a single todo entry.
     """
 
-    def __init__(self, todo, formatter):
+    def __init__(self, todo, databases, formatter):
         """
         :param model.Todo todo: The todo object which will be edited.
         """
 
         self.todo = todo
+        self.databases = databases
         self.formatter = formatter
         self.saved = False
 

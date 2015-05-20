@@ -1,5 +1,6 @@
 import logging
 import os
+from os.path import split, normpath
 from uuid import uuid4
 from datetime import date, time, datetime, timedelta
 
@@ -226,3 +227,10 @@ class Database:
 
             with AtomicWriter(path).open() as f:
                 f.write(c.to_ical().decode("UTF-8"))
+
+    @property
+    def name(self):
+        return split(normpath(self.path))[1]
+
+    def __str__(self):
+        return self.name

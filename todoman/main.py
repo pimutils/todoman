@@ -113,7 +113,7 @@ def main():
     if arguments["--version"]:
         pass  # TODO!
     elif arguments["edit"]:
-        ui = TodoEditor(todo, formatter)
+        ui = TodoEditor(todo, databases.values(), formatter)
 
         if ui.edit():
             database.save(todo)
@@ -121,7 +121,7 @@ def main():
         pass
     elif arguments["new"]:
         todo = Todo()
-        ui = TodoEditor(todo, formatter)
+        ui = TodoEditor(todo, databases.values(), formatter)
 
         if ui.edit():
             database.save(todo)
