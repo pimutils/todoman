@@ -15,11 +15,11 @@ setup(
     packages=['todoman'],
     entry_points={
         'console_scripts': [
-            'todo = todoman.main:main',
+            'todo = todoman.cli:run',
         ]
     },
     install_requires=[
-        'docopt',
+        'click',
         'icalendar',
         'urwid',
         'pyxdg',
