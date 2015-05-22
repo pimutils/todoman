@@ -18,6 +18,7 @@ with_id_arg = click.argument('id', type=click.IntRange(0))
 @click.pass_context
 def cli(ctx):
     config = load_config()
+    ctx.obj = {}
     ctx.obj['config'] = config
     ctx.obj['formatter'] = TodoFormatter(config["main"]["date_format"])
     ctx.obj['db'] = {path: Database(path) for path in
@@ -96,4 +97,4 @@ def list(ctx):
 
 
 def run():
-    cli(obj={})
+    cli()
