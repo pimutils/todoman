@@ -14,33 +14,15 @@ Usage:
 import logging
 import os
 import sys
-from configparser import ConfigParser
-from datetime import datetime, timedelta
-import glob
-from os.path import expanduser, join
+from os.path import join
 import json
 
-from dateutil.tz import tzlocal
-from docopt import docopt
 import xdg.BaseDirectory
 
-from .model import Database, Todo
-from .ui import TodoEditor, TodoFormatter
 
 logging.basicConfig(level=logging.ERROR)
 
 ID_FILE = join(xdg.BaseDirectory.xdg_cache_home, 'todoman', 'ids')
-
-
-def load_config():
-    for d in xdg.BaseDirectory.xdg_config_dirs:
-        path = join(d, 'todoman', 'todoman.conf')
-        if os.path.exists(path):
-            config = ConfigParser(interpolation=None)
-            config.read(path)
-            return config
-
-    raise Exception("No configuration file found")
 
 
 def load_idfile():
@@ -83,80 +65,19 @@ def task_sort_func(todo):
     return rv
 
 
-def main():
-    arguments = docopt(__doc__, version='Todoman')  # TODO: Append version
-
-    config = load_config()
-    databases = {}
-    formatter = TodoFormatter(config["main"]["date_format"])
-
-    for path in glob.iglob(expanduser(config["main"]["path"])):
-        databases[path] = Database(path)
-
-    if arguments["ID"]:
+def get_todo(databases, todo_id):
+    if todo_id:
         ids = load_idfile()
         if not ids:
             print("List all tasks with `todo` first.")
             sys.exit(1)
 
         try:
-            db_path, todo_filename = ids[arguments["ID"]]
+            db_path, todo_filename = ids[str(todo_id)]
             database = databases[db_path]
             todo = database.todos[todo_filename]
+            return todo, database
         except KeyError:
-            raise
-            print("Invalid todo id.")
-            sys.exit(-1)
-
-    if arguments["help"] or arguments["-h"] or arguments["--help"]:
-        print(__doc__)
-    if arguments["--version"]:
-        pass  # TODO!
-    elif arguments["edit"]:
-        ui = TodoEditor(todo, databases.values(), formatter)
-
-        if ui.edit():
-            database.save(todo)
-    elif arguments["help"]:
-        pass
-    elif arguments["new"]:
-        todo = Todo()
-        ui = TodoEditor(todo, databases.values(), formatter)
-
-        if ui.edit():
-            database.save(todo)
-    elif arguments["show"]:
-        print(formatter.detailed(todo))
-    elif arguments["done"]:
-        todo.is_completed = True
-        database.save(todo)
-    else:  # "list" or nothing.
-        # TODO: skip entries complete over two days ago
-        todos = sorted(
-            (
-                (database, todo)
-                for database in databases.values()
-                for todo in database.todos.values()
-                if not todo.is_completed or (
-                    todo.completed_at and
-                    todo.completed_at + timedelta(days=7) >=
-                    datetime.now(tzlocal())
-                )
-            ),
-            key=lambda x: task_sort_func(x[1]),
-            reverse=True
-        )
-        ids = {}
-
-        for index, (database, todo) in enumerate(todos, start=1):
-            ids[index] = (database.path, todo.filename)
-            try:
-                print("{:2d} {}".format(index, formatter.compact(todo)))
-            except Exception as e:
-                print("Error while showing {}: {}"
-                      .format(join(database.path, todo.filename), e))
-
-        dump_idfile(ids)
-
-if __name__ == "__main__":
-    main()
+            print("No todo with id {}.".format(todo_id))
+            sys.exit(-2)
+            # raise ValueError("No such todo {}.".format(todo_id)) from e
