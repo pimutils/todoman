@@ -73,9 +73,11 @@ def get_todo(databases, todo_id):
             sys.exit(1)
 
         try:
-            db_path, todo_filename = ids[todo_id]
+            db_path, todo_filename = ids[str(todo_id)]
             database = databases[db_path]
             todo = database.todos[todo_filename]
             return todo, database
         except KeyError:
-            return None
+            print("No todo with id {}.".format(todo_id))
+            sys.exit(-2)
+            # raise ValueError("No such todo {}.".format(todo_id)) from e

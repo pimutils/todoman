@@ -11,6 +11,9 @@ from .model import Database, Todo
 from .ui import TodoFormatter, TodoEditor
 
 
+with_id_arg = click.argument('id', type=click.IntRange(0))
+
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 def cli(ctx):
@@ -37,7 +40,7 @@ def new(ctx):
 
 @cli.command()
 @click.pass_context
-@click.argument('id')
+@with_id_arg
 def edit(ctx, id):
     todo, database = get_todo(ctx.obj['db'], id)
     ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
@@ -47,7 +50,7 @@ def edit(ctx, id):
 
 @cli.command()
 @click.pass_context
-@click.argument('id')
+@with_id_arg
 def show(ctx, id):
     todo = get_todo(ctx.obj['db'], id)[0]
     print(ctx.obj['formatter'].detailed(todo))
@@ -55,7 +58,7 @@ def show(ctx, id):
 
 @cli.command()
 @click.pass_context
-@click.argument('id')
+@with_id_arg
 def done(ctx, id):
     todo, database = get_todo(ctx.obj['db'], id)
     todo.is_completed = True
