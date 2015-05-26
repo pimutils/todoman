@@ -114,7 +114,10 @@ def list(ctx, lists):
     for index, (database, todo) in enumerate(todos, start=1):
         ids[index] = (database.name, todo.filename)
         try:
-            print("{:2d} {}".format(index, ctx.obj['formatter'].compact(todo)))
+            print("{:2d} {}".format(
+                index,
+                ctx.obj['formatter'].compact(todo, database)
+            ))
         except Exception as e:
             print("Error while showing {}: {}"
                   .format(join(database.name, todo.filename), e))
