@@ -214,7 +214,6 @@ class Database:
 
         return rv
 
-
     def save(self, todo):
         path = os.path.join(self.path, todo.filename)
 
