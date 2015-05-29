@@ -206,7 +206,10 @@ class Database:
                 continue
             with open(os.path.join(self.path, entry), 'rb') as f:
                 try:
-                    cal = icalendar.Calendar.from_ical(f.read())
+                    cal = f.read()
+                    if b'\nBEGIN:VTODO' not in cal:
+                        continue
+                    cal = icalendar.Calendar.from_ical(cal)
                     for component in cal.walk('VTODO'):
                         rv[entry] = Todo(component, entry)
                 except Exception as e:
