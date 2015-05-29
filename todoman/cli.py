@@ -79,7 +79,7 @@ def _validate_lists_arg(ctx, lists):
             else:
                 raise click.BadParameter(
                     "List {} not found, these are the lists found: {}"
-                    .format(e, ', '.join(ctx.obj['db']))
+                    .format(l, ', '.join(ctx.obj['db']))
                 )
         return databases
     else:
