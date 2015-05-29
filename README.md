@@ -107,6 +107,17 @@ If you want to synchronize your todos, you'll needs something that syncs via
 CalDAV. [vdirsyncer](https://github.com/untitaker/vdirsyncer) is the
 recommended tool for this.
 
+Advanced configuration
+----------------------
+
+You can set a color for each task list by creating a `color` file containing a
+colorcode in the format `#RRGGBB`. To show those colors in the terminal, you'll
+need a [terminal supporting
+TrueColor](https://gist.github.com/XVilka/8346728#now-supporting-truecolor).
+
+See also [this issue about metadata for collections in
+vdirsyncer](https://github.com/untitaker/vdirsyncer/issues/125).
+
 LICENCE
 -------
 

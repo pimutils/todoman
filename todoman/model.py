@@ -5,11 +5,30 @@ from uuid import uuid4
 from datetime import date, time, datetime, timedelta
 
 import icalendar
+from ansi.colour.rgb import rgb8
 from atomicwrites import AtomicWriter
 from dateutil.tz import tzlocal
 
 logger = logging.getLogger(name=__name__)
 # logger.addHandler(logging.FileHandler('model.log'))
+
+_missing = object()
+
+class cached_property:
+    '''A read-only @property that is only evaluated once. Only usable on class
+    instances' methods.
+    '''
+    def __init__(self, fget, doc=None):
+        self.__name__ = fget.__name__
+        self.__module__ = fget.__module__
+        self.__doc__ = doc or fget.__doc__
+        self.fget = fget
+
+    def __get__(self, obj, cls):
+        if obj is None:  # pragma: no cover
+            return self
+        obj.__dict__[self.__name__] = result = self.fget(obj)
+        return result
 
 
 class Todo:
@@ -178,14 +197,10 @@ class Database:
 
     def __init__(self, path):
         self.path = path
-        self._todos = None
 
-    @property
+    @cached_property
     def todos(self):
-        if self._todos:
-            return self._todos
-
-        self._todos = {}
+        rv = {}
 
         for entry in os.listdir(self.path):
             if not entry.endswith(".ics"):
@@ -194,16 +209,12 @@ class Database:
                 try:
                     cal = icalendar.Calendar.from_ical(f.read())
                     for component in cal.walk('VTODO'):
-                        todo = Todo(component, entry)
-                        self._todos[entry] = todo
+                        rv[entry] = Todo(component, entry)
                 except Exception as e:
                     logger.warn("Failed to read entry %s: %s.", entry, e)
 
-        return self._todos
+        return rv
 
-    @todos.setter
-    def todos(self, val):
-        self._todos = val
 
     def save(self, todo):
         path = os.path.join(self.path, todo.filename)
@@ -232,5 +243,41 @@ class Database:
     def name(self):
         return split(normpath(self.path))[1]
 
+    @cached_property
+    def color_raw(self):
+        '''
+        The color is a file whose content is of the format `#RRGGBB`.
+        '''
+
+        try:
+            with open(os.path.join(self.path, 'color')) as f:
+                return f.read().strip()
+        except (OSError, IOError):
+            pass
+
+    @cached_property
+    def color_rgb(self):
+        rv = self.color_raw
+        if rv:
+            return _parse_color(rv)
+
+    @cached_property
+    def color_ansi(self):
+        rv = self.color_rgb
+        if rv:
+            return rgb8(*rv)
+
     def __str__(self):
         return self.name
+
+
+def _parse_color(color):
+    if not color.startswith('#'):
+        return
+
+    r = color[1:3]
+    g = color[3:5]
+    b = color[5:8]
+
+    if len(r) == len(g) == len(b) == 2:
+        return int(r, 16), int(g, 16), int(b, 16)

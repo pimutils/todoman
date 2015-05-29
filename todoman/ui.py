@@ -1,6 +1,8 @@
 from datetime import datetime
 
 import urwid
+import ansi.colour.fx
+import ansi.sequence
 from dateutil.tz import tzlocal
 
 
@@ -123,10 +125,11 @@ class TodoEditor:
 class TodoFormatter:
 
     # This one looks good with [X]
-    compact_format = "[{completed}] {urgent} {due} {summary} ({percent}%)"
+    compact_format = \
+        "[{completed}] {urgent} {due} {summary} {list} ({percent}%)"
     # compact_format = "{completed} {urgent}  {due}  {summary}"
     detailed_format = """\
-{summary}
+{summary} {list}
 {due}{done}{urgent}
 
 {description}"""
@@ -136,7 +139,7 @@ class TodoFormatter:
         self.empty_date = " " * len(self.format_date(datetime.now()))
         self._localtimezone = tzlocal()
 
-    def compact(self, todo):
+    def compact(self, todo, database):
         """
         Returns a brief representation of a task, suitable for displaying
         on-per-line.
@@ -149,12 +152,13 @@ class TodoFormatter:
         urgent = " " if todo.priority in [None, 0] else "!"
         due = self.format_date(todo.due)
         summary = todo.summary
+        list = self.format_database(database)
 
         return self.compact_format.format(completed=completed, urgent=urgent,
-                                          due=due, summary=summary,
+                                          due=due, summary=summary, list=list,
                                           percent=percent)
 
-    def detailed(self, todo):
+    def detailed(self, todo, database):
         """
         Returns a detailed representation of a task.
 
@@ -168,9 +172,10 @@ class TodoFormatter:
             due = ""
         summary = todo.summary
         description = todo.description
+        list = self.format_database(database)
 
-        return self.detailed_format.format(done=done, urgent=urgent,
-                                           due=due, summary=summary,
+        return self.detailed_format.format(done=done, urgent=urgent, due=due,
+                                           summary=summary, list=list,
                                            description=description)
 
     def format_date(self, date):
@@ -185,3 +190,8 @@ class TodoFormatter:
             return date.replace(tzinfo=self._localtimezone)
         else:
             return None
+
+    def format_database(self, database):
+        return '{}@{}{}'.format(database.color_ansi or '',
+                                database.name,
+                                ansi.colour.fx.reset)

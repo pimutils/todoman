@@ -28,10 +28,8 @@ ID_FILE = join(xdg.BaseDirectory.xdg_cache_home, 'todoman', 'ids')
 def load_idfile():
     try:
         with open(ID_FILE) as f:
-            rv = json.load(f)
-            if isinstance(rv, dict):
-                return rv
-    except (OSError, IOError):
+            return dict(json.load(f))
+    except (ValueError, OSError, IOError):
         pass
 
     return {}
@@ -43,7 +41,7 @@ def dump_idfile(ids):
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
     with open(ID_FILE, 'w') as f:
-        json.dump(ids, f)
+        json.dump(list(ids.items()), f)
 
 
 def task_sort_func(todo):
@@ -66,18 +64,17 @@ def task_sort_func(todo):
 
 
 def get_todo(databases, todo_id):
-    if todo_id:
-        ids = load_idfile()
-        if not ids:
-            print("List all tasks with `todo` first.")
-            sys.exit(1)
+    ids = load_idfile()
+    if not ids:
+        print("List all tasks with `todo` first.")
+        sys.exit(1)
 
-        try:
-            db_path, todo_filename = ids[str(todo_id)]
-            database = databases[db_path]
-            todo = database.todos[todo_filename]
-            return todo, database
-        except KeyError:
-            print("No todo with id {}.".format(todo_id))
-            sys.exit(-2)
-            # raise ValueError("No such todo {}.".format(todo_id)) from e
+    try:
+        db_name, todo_filename = ids[todo_id]
+        database = databases[db_name]
+        todo = database.todos[todo_filename]
+        return todo, database
+    except KeyError:
+        print("No todo with id {}.".format(todo_id))
+        sys.exit(-2)
+        # raise ValueError("No such todo {}.".format(todo_id)) from e
