@@ -251,9 +251,13 @@ class Database:
             with AtomicWriter(path).open() as f:
                 f.write(c.to_ical().decode("UTF-8"))
 
-    @property
+    @cached_property
     def name(self):
-        return split(normpath(self.path))[1]
+        try:
+            with open(os.path.join(self.path, 'displayname')) as f:
+                return f.read().strip()
+        except (OSError, IOError):
+            return split(normpath(self.path))[1]
 
     @cached_property
     def color_raw(self):
