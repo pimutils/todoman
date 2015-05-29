@@ -166,6 +166,17 @@ class Todo:
         self._set_field('priority', priority, force=True)
 
     @property
+    def created_at(self):
+        if self.todo.get('created', None) is None:
+            return None
+        else:
+            return self._normalize_datetime(self.todo.decoded('created'))
+
+    @created_at.setter
+    def created_at(self, created):
+        self._set_field('created', created)
+
+    @property
     def uid(self):
         return self.todo.get('uid')
 

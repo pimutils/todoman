@@ -55,11 +55,13 @@ def task_sort_func(todo):
     those for which we have more time.
     """
 
-    rv = (-todo.priority, todo.is_completed),
-    if todo.due:
-        rv += 0, todo.due,
-    else:
-        rv += 1,
+    rv = (
+        -todo.priority,
+        todo.is_completed,
+        (todo.due.timestamp() if todo.due else float('inf')),
+        (-todo.created_at.timestamp() if todo.created_at else 0),
+        todo.uid  # make ordering deterministic, even if it makes no sense
+    )
     return rv
 
 
