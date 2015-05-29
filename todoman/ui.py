@@ -126,13 +126,8 @@ class TodoFormatter:
 
     # This one looks good with [X]
     compact_format = \
-        "[{completed}] {urgent} {due} {summary} {list} ({percent}%)"
+        "[{completed}] {urgent} {due} {summary} {list}{percent}"
     # compact_format = "{completed} {urgent}  {due}  {summary}"
-    detailed_format = """\
-{summary} {list}
-{due}{done}{urgent}
-
-{description}"""
 
     def __init__(self, date_format):
         self.date_format = date_format
@@ -148,7 +143,9 @@ class TodoFormatter:
         """
         # completed = "✓" if todo.percent_complete == 100 else " "
         completed = "X" if todo.is_completed else " "
-        percent = todo.percent_complete
+        percent = todo.percent_complete or ''
+        if percent:
+            percent = " ({}%)".format(percent)
         urgent = " " if todo.priority in [None, 0] else "!"
         due = self.format_date(todo.due)
         summary = todo.summary
@@ -164,19 +161,10 @@ class TodoFormatter:
 
         :param Todo todo: The todo component.
         """
-        done = "Done " if todo.is_completed else ""
-        urgent = "" if todo.priority in [None, 0] else "Urgent "
-        if todo.due:
-            due = "Due: {} ".format(self.format_date(todo.due))
-        else:
-            due = ""
-        summary = todo.summary
-        description = todo.description
-        list = self.format_database(database)
-
-        return self.detailed_format.format(done=done, urgent=urgent, due=due,
-                                           summary=summary, list=list,
-                                           description=description)
+        rv = self.compact(todo, database)
+        if todo.description:
+            rv = "{}\n\n{}".format(rv, todo.description)
+        return rv
 
     def format_date(self, date):
         if date:

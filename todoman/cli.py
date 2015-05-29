@@ -57,8 +57,8 @@ def edit(ctx, id):
 @click.pass_context
 @with_id_arg
 def show(ctx, id):
-    todo = get_todo(ctx.obj['db'], id)[0]
-    print(ctx.obj['formatter'].detailed(todo))
+    todo, database = get_todo(ctx.obj['db'], id)
+    print(ctx.obj['formatter'].detailed(todo, database))
 
 
 @cli.command()
