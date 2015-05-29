@@ -12,7 +12,6 @@ from dateutil.tz import tzlocal
 logger = logging.getLogger(name=__name__)
 # logger.addHandler(logging.FileHandler('model.log'))
 
-_missing = object()
 
 class cached_property:
     '''A read-only @property that is only evaluated once. Only usable on class
