@@ -82,6 +82,9 @@ def new(ctx, summary, list, due):
 @click.pass_context
 @with_id_arg
 def edit(ctx, id):
+    '''
+    Edit a task interactively.
+    '''
     todo, database = get_todo(ctx.obj['db'], id)
     ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
     if ui.edit():
@@ -92,6 +95,9 @@ def edit(ctx, id):
 @click.pass_context
 @with_id_arg
 def show(ctx, id):
+    '''
+    Show details about a task.
+    '''
     todo, database = get_todo(ctx.obj['db'], id)
     print(ctx.obj['formatter'].detailed(todo, database))
 
@@ -100,6 +106,9 @@ def show(ctx, id):
 @click.pass_context
 @with_id_arg
 def done(ctx, id):
+    '''
+    Mark a task as done.
+    '''
     todo, database = get_todo(ctx.obj['db'], id)
     todo.is_completed = True
     database.save(todo)
@@ -110,7 +119,11 @@ def done(ctx, id):
 @click.argument('lists', nargs=-1, default=())
 def list(ctx, lists):
     """
-    List unfinished tasks from the given task lists (all by default).
+    List unfinished tasks.
+
+      - `todo list` shows all unfinished tasks from all lists.
+
+      - `todo list work` shows all unfinished tasks from the list `work`.
     """
 
     lists = _validate_lists_param(ctx, lists)

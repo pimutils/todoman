@@ -68,7 +68,7 @@ def task_sort_func(todo):
 def get_todo(databases, todo_id):
     ids = load_idfile()
     if not ids:
-        print("List all tasks with `todo` first.")
+        print("List all tasks with `todo` to know the task number.")
         sys.exit(1)
 
     try:
