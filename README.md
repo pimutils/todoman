@@ -111,9 +111,7 @@ Advanced configuration
 ----------------------
 
 You can set a color for each task list by creating a `color` file containing a
-colorcode in the format `#RRGGBB`. To show those colors in the terminal, you'll
-need a [terminal supporting
-TrueColor](https://gist.github.com/XVilka/8346728#now-supporting-truecolor).
+colorcode in the format `#RRGGBB`.
 
 See also [this issue about metadata for collections in
 vdirsyncer](https://github.com/untitaker/vdirsyncer/issues/125).
