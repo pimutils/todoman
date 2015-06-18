@@ -14,6 +14,31 @@ from .ui import TodoFormatter, TodoEditor
 with_id_arg = click.argument('id', type=click.IntRange(0))
 
 
+def _validate_lists_param(ctx, lists):
+    if lists:
+        databases = []
+        for l in set(lists):
+            databases.append(_validate_list_param(ctx, l))
+        return databases
+    else:
+        return ctx.obj['db'].values()
+
+
+def _validate_list_param(ctx, l):
+    if l in ctx.obj['db']:
+        return ctx.obj['db'][l]
+    else:
+        raise click.BadParameter(
+            "List {} not found, these are the lists found: {}"
+            .format(l, ', '.join(ctx.obj['db']))
+        )
+
+
+def _validate_due_param(ctx, s):
+    if s:
+        return datetime.strptime(s, ctx.obj['config']['main']['date_format'])
+
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 def cli(ctx):
@@ -33,14 +58,24 @@ def cli(ctx):
 
 
 @cli.command()
+@click.argument('summary')
+@click.option('--list', '-l', help='The list to create the task in.')
+@click.option('--due', '-d', default='',
+              help=('The due date of the task, in the format specified in the '
+                    'configuration file.'))
 @click.pass_context
-def new(ctx):
-    database = sorted(ctx.obj['db'].values())[0]  # FIXME: Allow selection!!
-    todo = Todo()
-    ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
+def new(ctx, summary, list, due):
+    '''
+    Create a new task with SUMMARY.
+    '''
+    database = _validate_list_param(ctx, list)
+    due = _validate_due_param(ctx, due)
 
-    if ui.edit():
-        database.save(todo)
+    todo = Todo()
+    todo.summary = summary
+    todo.due = due
+    database.save(todo)
+    print(ctx.obj['formatter'].detailed(todo, database))
 
 
 @cli.command()
@@ -70,22 +105,6 @@ def done(ctx, id):
     database.save(todo)
 
 
-def _validate_lists_arg(ctx, lists):
-    if lists:
-        databases = []
-        for l in set(lists):
-            if l in ctx.obj['db']:
-                databases.append(ctx.obj['db'][l])
-            else:
-                raise click.BadParameter(
-                    "List {} not found, these are the lists found: {}"
-                    .format(l, ', '.join(ctx.obj['db']))
-                )
-        return databases
-    else:
-        return ctx.obj['db'].values()
-
-
 @cli.command()
 @click.pass_context
 @click.argument('lists', nargs=-1, default=())
@@ -94,7 +113,7 @@ def list(ctx, lists):
     List unfinished tasks from the given task lists (all by default).
     """
 
-    lists = _validate_lists_arg(ctx, lists)
+    lists = _validate_lists_param(ctx, lists)
     todos = sorted(
         (
             (database, todo)
