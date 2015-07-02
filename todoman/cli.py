@@ -58,13 +58,15 @@ def cli(ctx):
 
 
 @cli.command()
-@click.argument('summary')
+@click.argument('summary', nargs=-1)
 @click.option('--list', '-l', help='The list to create the task in.')
 @click.option('--due', '-d', default='',
               help=('The due date of the task, in the format specified in the '
                     'configuration file.'))
+@click.option('--interactive', '-i', is_flag=True,
+              help='Go into interactive mode before saving the task.')
 @click.pass_context
-def new(ctx, summary, list, due):
+def new(ctx, summary, list, due, interactive):
     '''
     Create a new task with SUMMARY.
     '''
@@ -72,8 +74,19 @@ def new(ctx, summary, list, due):
     due = _validate_due_param(ctx, due)
 
     todo = Todo()
-    todo.summary = summary
+    todo.summary = ' '.join(summary)
     todo.due = due
+
+    if interactive:
+        ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
+        if not ui.edit():
+            ctx.exit(1)
+        click.echo()  # work around lines going missing after urwid
+
+    if not todo.summary:
+        click.echo('Empty summary.', err=True)
+        ctx.exit(2)
+
     database.save(todo)
     print(ctx.obj['formatter'].detailed(todo, database))
 
