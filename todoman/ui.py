@@ -2,6 +2,7 @@ from datetime import datetime
 
 import urwid
 import ansi.colour.fx
+import ansi.colour.fg
 import ansi.sequence
 from dateutil.tz import tzlocal
 
@@ -131,8 +132,9 @@ class TodoFormatter:
 
     def __init__(self, date_format):
         self.date_format = date_format
-        self.empty_date = " " * len(self.format_date(datetime.now()))
         self._localtimezone = tzlocal()
+        self.now = datetime.now().replace(tzinfo=self._localtimezone)
+        self.empty_date = " " * len(self.format_date(self.now))
 
     def compact(self, todo, database):
         """
@@ -147,7 +149,11 @@ class TodoFormatter:
         if percent:
             percent = " ({}%)".format(percent)
         urgent = " " if todo.priority in [None, 0] else "!"
+
         due = self.format_date(todo.due)
+        if todo.due and todo.due <= self.now and not todo.is_completed:
+            due = '{}{}{}'.format(ansi.colour.fg.red, due, ansi.colour.fx.reset)
+
         summary = todo.summary
         list = self.format_database(database)
 
@@ -168,7 +174,8 @@ class TodoFormatter:
 
     def format_date(self, date):
         if date:
-            return date.strftime(self.date_format)
+            rv = date.strftime(self.date_format)
+            return rv
         else:
             return self.empty_date
 
