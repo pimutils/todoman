@@ -117,7 +117,7 @@ def show(ctx, id):
 
 @cli.command()
 @click.pass_context
-@click.argument('ids', nargs=-1, type=click.IntRange(0))
+@click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
 def done(ctx, ids):
     '''
     Mark a task as done.
