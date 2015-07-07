@@ -117,14 +117,15 @@ def show(ctx, id):
 
 @cli.command()
 @click.pass_context
-@with_id_arg
-def done(ctx, id):
+@click.argument('ids', nargs=-1, type=click.IntRange(0))
+def done(ctx, ids):
     '''
     Mark a task as done.
     '''
-    todo, database = get_todo(ctx.obj['db'], id)
-    todo.is_completed = True
-    database.save(todo)
+    for id in ids:
+        todo, database = get_todo(ctx.obj['db'], id)
+        todo.is_completed = True
+        database.save(todo)
 
 
 @cli.command()
