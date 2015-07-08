@@ -57,6 +57,13 @@ def cli(ctx):
         ctx.invoke(cli.commands["list"])
 
 
+try:
+    import click_repl
+    click_repl.register_repl(cli)
+except ImportError:
+    pass
+
+
 @cli.command()
 @click.argument('summary', nargs=-1)
 @click.option('--list', '-l', help='The list to create the task in.')
