@@ -107,14 +107,23 @@ If you want to synchronize your todos, you'll needs something that syncs via
 CalDAV. [vdirsyncer](https://github.com/untitaker/vdirsyncer) is the
 recommended tool for this.
 
-Advanced configuration
-----------------------
+Color and displayname
+---------------------
 
-You can set a color for each task list by creating a `color` file containing a
-colorcode in the format `#RRGGBB`.
+- You can set a color for each task list by creating a `color` file containing
+  a colorcode in the format `#RRGGBB`.
+- A file named `displayname` decides how the task list should be named. The
+  default is the directory name.
 
 See also [this issue about metadata for collections in
 vdirsyncer](https://github.com/untitaker/vdirsyncer/issues/125).
+
+Interactive shell
+-----------------
+
+If you install [click-repl](https://github.com/untitaker/click-repl), todoman
+gets a new command called `repl`, which lauches an interactive shell with
+tab-completion.
 
 LICENCE
 -------
