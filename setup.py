@@ -24,7 +24,8 @@ setup(
         'urwid',
         'pyxdg',
         'atomicwrites',
-        'ansi',
+        # https://github.com/tehmaze/ansi/pull/7
+        'ansi>=0.1.3',
     ],
     # TODO: classifiers
 )
