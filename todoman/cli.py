@@ -35,8 +35,7 @@ def _validate_list_param(ctx, l):
 
 
 def _validate_due_param(ctx, s):
-    if s:
-        return datetime.strptime(s, ctx.obj['config']['main']['date_format'])
+    return ctx.obj['formatter'].unformat_date(s)
 
 
 @click.group(invoke_without_command=True)
