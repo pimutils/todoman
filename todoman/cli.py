@@ -136,7 +136,7 @@ def done(ctx, ids):
 
 @cli.command()
 @click.pass_context
-@click.argument('lists', nargs=-1, default=())
+@click.argument('lists', nargs=-1)
 def list(ctx, lists):
     """
     List unfinished tasks.
