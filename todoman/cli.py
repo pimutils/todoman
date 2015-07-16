@@ -1,6 +1,6 @@
 import glob
 from datetime import datetime, timedelta
-from os.path import expanduser, join
+from os.path import expanduser, join, isdir
 
 import click
 from dateutil.tz import tzlocal
@@ -47,6 +47,8 @@ def cli(ctx):
     ctx.obj['formatter'] = TodoFormatter(config["main"]["date_format"])
     ctx.obj['db'] = databases = {}
     for path in glob.iglob(expanduser(config["main"]["path"])):
+        if not isdir(path):
+            continue
         db = Database(path)
         if databases.setdefault(db.name, db) is not db:
             raise RuntimeError('Detected two databases named {}'
