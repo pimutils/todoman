@@ -26,6 +26,7 @@ setup(
         'atomicwrites',
         # https://github.com/tehmaze/ansi/pull/7
         'ansi>=0.1.3',
+        'parsedatetime',
     ],
     # TODO: classifiers
 )

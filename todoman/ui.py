@@ -1,5 +1,7 @@
 from datetime import datetime
+from time import mktime
 
+import parsedatetime
 import urwid
 import ansi.colour.fx
 import ansi.colour.fg
@@ -130,11 +132,15 @@ class TodoFormatter:
         "[{completed}] {urgent} {due} {summary} {list}{percent}"
     # compact_format = "{completed} {urgent}  {due}  {summary}"
 
-    def __init__(self, date_format):
+    def __init__(self, date_format, human_time):
+        self.human_time = human_time
         self.date_format = date_format
         self._localtimezone = tzlocal()
         self.now = datetime.now().replace(tzinfo=self._localtimezone)
         self.empty_date = " " * len(self.format_date(self.now))
+
+        if human_time:
+            self._parsedatetime_calendar = parsedatetime.Calendar()
 
     def compact(self, todo, database):
         """
@@ -181,8 +187,20 @@ class TodoFormatter:
 
     def unformat_date(self, date):
         if date:
-            date = datetime.strptime(date, self.date_format)
-            return date.replace(tzinfo=self._localtimezone)
+            try:
+                rv = datetime.strptime(date, self.date_format)
+            except ValueError:
+                if not self.human_time:
+                    raise
+
+                rv, certainty = self._parsedatetime_calendar.parse(date)
+                if not certainty:
+                    raise ValueError('Time description not recognized: {}'
+                                     .format(date))
+                rv = datetime.fromtimestamp(mktime(rv))
+
+            return rv.replace(tzinfo=self._localtimezone)
+
         else:
             return None
 
