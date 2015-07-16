@@ -6,13 +6,7 @@ def test_basic(tmpdir, runner):
     assert not result.exception
     assert result.output == ''
 
-    foobar = tmpdir.mkdir('foobar')
-
-    result = runner.invoke(cli, ['list'])
-    assert not result.exception
-    assert result.output == ''
-
-    foobar.join('test.ics').write(
+    tmpdir.join('default/test.ics').write(
         'BEGIN:VCALENDAR\n'
         'BEGIN:VTODO\n'
         'SUMMARY:harhar\n'
@@ -22,3 +16,15 @@ def test_basic(tmpdir, runner):
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert 'harhar' in result.output
+
+
+def test_human(runner):
+    result = runner.invoke(cli, [
+        'new', '-l', 'default', '-d', 'tomorrow', 'hail belzebub'
+    ])
+    assert not result.exception
+    assert 'belzebub' in result.output
+
+    result = runner.invoke(cli, ['list'])
+    assert not result.exception
+    assert 'belzebub' in result.output

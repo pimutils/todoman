@@ -39,13 +39,20 @@ def _validate_due_param(ctx, s):
 
 
 @click.group(invoke_without_command=True)
+@click.option('--human-time/--no-human-time', default=True,
+              help=('Accept informal descriptions such as "tomorrow" instead '
+                    'of a properly formatted date.'))
 @click.pass_context
-def cli(ctx):
+def cli(ctx, human_time):
     config = load_config()
     ctx.obj = {}
     ctx.obj['config'] = config
-    ctx.obj['formatter'] = TodoFormatter(config["main"]["date_format"])
+    ctx.obj['formatter'] = TodoFormatter(
+        config["main"]["date_format"],
+        human_time
+    )
     ctx.obj['db'] = databases = {}
+
     for path in glob.iglob(expanduser(config["main"]["path"])):
         if not isdir(path):
             continue
