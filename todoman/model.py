@@ -251,6 +251,10 @@ class Database:
             with AtomicWriter(path).open() as f:
                 f.write(c.to_ical().decode("UTF-8"))
 
+    def delete(self, todo):
+        path = os.path.join(self.path, todo.filename)
+        os.remove(path)
+
     @cached_property
     def name(self):
         try:
