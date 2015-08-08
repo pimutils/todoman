@@ -10,6 +10,10 @@ are stored into [icalendar][2] files, which means you can sync them via
 [3]: http://en.wikipedia.org/wiki/CalDAV
 [4]: https://github.com/untitaker/vdirsyncer
 
+Official website and repository is hosted at [GitLab.com][website].
+
+[website]: https://gitlab.com/hobarrera/todoman
+
 Features
 --------
 
@@ -35,7 +39,7 @@ Planned Features
  * Customizable output format.
 
 Pull requests and patches are welcome! 😉 Please report any issues on the
-project [issue tracker](https://git.barrera.io/hobarrera/todoman/issues)
+project [issue tracker](https://gitlab.com/hobarrera/todoman/issues)
 
 Caveats
 -------
