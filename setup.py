@@ -28,5 +28,7 @@ setup(
         'ansi>=0.1.3',
         'parsedatetime',
     ],
+    use_scm_version={'version_scheme': 'post-release'},
+    setup_requires=['setuptools_scm'],
     # TODO: classifiers
 )
