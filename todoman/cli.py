@@ -43,6 +43,7 @@ def _validate_due_param(ctx, param, due):
               help=('Accept informal descriptions such as "tomorrow" instead '
                     'of a properly formatted date.'))
 @click.pass_context
+@click.version_option()
 def cli(ctx, human_time):
     config = load_config()
     ctx.obj = {}
