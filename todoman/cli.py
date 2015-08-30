@@ -16,26 +16,26 @@ with_id_arg = click.argument('id', type=click.IntRange(0))
 
 def _validate_lists_param(ctx, lists):
     if lists:
-        databases = []
-        for l in set(lists):
-            databases.append(_validate_list_param(ctx, l))
-        return databases
+        return [_validate_list_param(ctx, name=l) for l in lists]
     else:
         return ctx.obj['db'].values()
 
 
-def _validate_list_param(ctx, l):
-    if l in ctx.obj['db']:
-        return ctx.obj['db'][l]
+def _validate_list_param(ctx, param=None, name=None):
+    if name in ctx.obj['db']:
+        return ctx.obj['db'][name]
     else:
         raise click.BadParameter(
-            "List {} not found, these are the lists found: {}"
-            .format(l, ', '.join(ctx.obj['db']))
+            "{}. Available lists are: {}"
+            .format(name, ', '.join(ctx.obj['db']))
         )
 
 
-def _validate_due_param(ctx, s):
-    return ctx.obj['formatter'].unformat_date(s)
+def _validate_due_param(ctx, param, due):
+    try:
+        return ctx.obj['formatter'].unformat_date(due)
+    except ValueError as e:
+        raise click.BadParameter(e)
 
 
 @click.group(invoke_without_command=True)
@@ -74,8 +74,9 @@ except ImportError:
 
 @cli.command()
 @click.argument('summary', nargs=-1)
-@click.option('--list', '-l', help='The list to create the task in.')
-@click.option('--due', '-d', default='',
+@click.option('--list', '-l', callback=_validate_list_param,
+              help='The list to create the task in.', required=True)
+@click.option('--due', '-d', default='', callback=_validate_due_param,
               help=('The due date of the task, in the format specified in the '
                     'configuration file.'))
 @click.option('--interactive', '-i', is_flag=True,
@@ -85,8 +86,6 @@ def new(ctx, summary, list, due, interactive):
     '''
     Create a new task with SUMMARY.
     '''
-    database = _validate_list_param(ctx, list)
-    due = _validate_due_param(ctx, due)
 
     todo = Todo()
     todo.summary = ' '.join(summary)
@@ -99,11 +98,10 @@ def new(ctx, summary, list, due, interactive):
         click.echo()  # work around lines going missing after urwid
 
     if not todo.summary:
-        click.echo('Empty summary.', err=True)
-        ctx.exit(2)
+        raise click.UsageError('No SUMMARY specified')
 
-    database.save(todo)
-    print(ctx.obj['formatter'].detailed(todo, database))
+    list.save(todo)
+    print(ctx.obj['formatter'].detailed(todo, list))
 
 
 @cli.command()
