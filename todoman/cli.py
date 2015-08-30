@@ -148,9 +148,15 @@ def list(ctx, lists):
     """
     List unfinished tasks.
 
-      - `todo list` shows all unfinished tasks from all lists.
+    If no arguments are provided, all lists will be displayed. Otherwise, only
+    todos for the specified list will be displayed.
 
-      - `todo list work` shows all unfinished tasks from the list `work`.
+    eg:
+      \b
+      - `todo list' shows all unfinished tasks from all lists.
+      - `todo list work' shows all unfinished tasks from the list `work`.
+
+    This is the default action when running `todo'.
     """
 
     lists = _validate_lists_param(ctx, lists)
