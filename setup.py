@@ -18,6 +18,7 @@ setup(
     install_requires=[
         open('requirements.txt').readlines()
     ],
+    long_description=open('README.rst').read(),
     use_scm_version={'version_scheme': 'post-release'},
     setup_requires=['setuptools_scm'],
     # TODO: classifiers
