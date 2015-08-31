@@ -16,15 +16,7 @@ setup(
         ]
     },
     install_requires=[
-        'click',
-        'icalendar',
-        'urwid',
-        'pyxdg',
-        'atomicwrites',
-        # https://github.com/tehmaze/ansi/pull/7
-        'ansi>=0.1.3',
-        'parsedatetime',
-        'setuptools_scm',
+        open('requirements.txt').readlines()
     ],
     use_scm_version={'version_scheme': 'post-release'},
     setup_requires=['setuptools_scm'],

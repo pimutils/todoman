@@ -54,12 +54,7 @@ Running ``setup.py`` (as described below, in Installation) should install all
 necessary dependencies via pip. The only pre-requisite for this is python 3,
 which ships with most modern distributions.
 
-* python3 (tested on 3.4, should work on any version > 3.0)
-* docopt
-* icalendar
-* urwid
-* pyxdg
-* atomicwrites
+All python dependencies are listed under ``requirements.txt``.
 
 Todoman will not work with python 2. However, keep in mind that python 2 and
 python 3 can coexist (and most distributions actually ship both).
