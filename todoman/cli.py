@@ -142,10 +142,32 @@ def done(ctx, ids):
         database.save(todo)
 
 
+def _abort_if_false(ctx, param, value):
+    if not value:
+        ctx.abort()
+
+
 @cli.command()
 @click.pass_context
+@click.confirmation_option(
+    help='Are you sure you want to delete all done tasks?'
+)
+def flush(ctx):
+    '''
+    Delete done tasks.
+    '''
+    for database in ctx.obj['db'].values():
+        for todo in database.todos.values():
+            if todo.is_completed:
+                click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
+                database.delete(todo)
+
+
+@cli.command()
+@click.pass_context
+@click.option('--all', '-a', is_flag=True, help='Also show finished tasks.')
 @click.argument('lists', nargs=-1)
-def list(ctx, lists):
+def list(ctx, lists, all):
     """
     List unfinished tasks.
 
@@ -166,11 +188,7 @@ def list(ctx, lists):
             (database, todo)
             for database in lists
             for todo in database.todos.values()
-            if not todo.is_completed or (
-                todo.completed_at and
-                todo.completed_at + timedelta(days=7) >=
-                datetime.now(tzlocal())
-            )
+            if not todo.is_completed or all
         ),
         key=lambda x: task_sort_func(x[1]),
         reverse=True
