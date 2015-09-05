@@ -6,5 +6,6 @@ env
 build
 dist
 todoman.egg-info/
+.eggs
 
 .tox
