@@ -1,9 +1,7 @@
 import glob
-from datetime import datetime, timedelta
 from os.path import expanduser, join, isdir
 
 import click
-from dateutil.tz import tzlocal
 
 from .configuration import load_config
 from .main import task_sort_func, dump_idfile, get_todo
