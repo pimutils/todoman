@@ -2,6 +2,7 @@ from click.testing import CliRunner
 
 import pytest
 
+
 @pytest.fixture
 def config(tmpdir):
     path = tmpdir.join('config')

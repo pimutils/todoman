@@ -158,7 +158,11 @@ class TodoFormatter:
 
         due = self.format_date(todo.due)
         if todo.due and todo.due <= self.now and not todo.is_completed:
-            due = '{}{}{}'.format(ansi.colour.fg.red, due, ansi.colour.fx.reset)
+            due = '{}{}{}'.format(
+                ansi.colour.fg.red,
+                due,
+                ansi.colour.fx.reset
+            )
 
         summary = todo.summary
         list = self.format_database(database)
