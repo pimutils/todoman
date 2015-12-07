@@ -102,7 +102,7 @@ Sample output::
     [ ]              Fix the Touchad battery (0%)
 
 If you want to synchronize your todos, you'll needs something that syncs via
-CalDAV. `vdirsyncer <https://github.com/untitaker/vdirsyncer>`_ is the
+CalDAV. `vdirsyncer`_ is the
 recommended tool for this.
 
 Color and displayname
