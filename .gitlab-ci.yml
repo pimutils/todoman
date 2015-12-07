@@ -4,5 +4,3 @@ before_script:
 test:
   script:
     - tox
-
-
