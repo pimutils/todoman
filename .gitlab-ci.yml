@@ -1,6 +1,24 @@
-image: python:3.4.3
+image: hobarrera/python:latest
+
 before_script:
   - pip install tox setuptools
-test:
+
+py33:
+  stage: test
   script:
-    - tox
+    - tox -e py33
+
+py34:
+  stage: test
+  script:
+    - tox -e py34
+
+py35:
+  stage: test
+  script:
+    - tox -e py35
+
+style:
+  stage: test
+  script:
+    - tox -e style
