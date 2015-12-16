@@ -8,6 +8,11 @@ from configparser import ConfigParser
 def load_config():
     custom_path = environ.get('TODOMAN_CONFIG')
     if custom_path:
+        if not exists(custom_path):
+            raise Exception(
+                "Configuration file %s does not exist" %
+                custom_path
+            )
         return _load_config_impl(custom_path)
 
     for d in xdg.BaseDirectory.xdg_config_dirs:
