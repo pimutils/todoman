@@ -1,6 +1,21 @@
 Todoman
 =======
 
+.. image:: https://ci.gitlab.com/projects/7057/status.png?ref=master
+  :target: https://ci.gitlab.com/projects/7057?ref=master
+  :alt: build status
+
+.. image:: https://readthedocs.org/projects/todoman/badge/
+  :target: https://todoman.rtfd.org/
+  :alt: documentation
+
+.. image:: https://img.shields.io/pypi/v/todoman.svg
+  :target: https://pypi.python.org/pypi/todoman
+  :alt: version on pypi
+
+.. image:: https://img.shields.io/pypi/l/todoman.svg
+  :alt: licence
+
 Todoman is a simple, standards-based, cli todo (aka: task) manager. Todos
 are stored into `icalendar <https://tools.ietf.org/html/rfc5545>`_ files, which
 means you can sync them via `CalDAV <http://en.wikipedia.org/wiki/CalDAV>`_
