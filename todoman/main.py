@@ -1,16 +1,3 @@
-"""Todoman.
-
-Usage:
-  todo
-  todo new
-  todo edit ID
-  todo show ID
-  todo done ID
-  todo help | -h | --help
-  todo --version
-
-"""
-
 import logging
 import os
 import sys
