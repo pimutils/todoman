@@ -220,7 +220,3 @@ def list(ctx, lists, all, urgent, location, category, grep):
                   .format(join(database.name, todo.filename), e))
 
     dump_idfile(ids)
-
-
-def run():
-    cli()

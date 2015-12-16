@@ -12,7 +12,7 @@ setup(
     packages=['todoman'],
     entry_points={
         'console_scripts': [
-            'todo = todoman.cli:run',
+            'todo = todoman.cli:cli',
         ]
     },
     install_requires=[
