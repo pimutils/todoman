@@ -68,6 +68,7 @@ def cli(ctx, human_time):
 try:
     import click_repl
     click_repl.register_repl(cli)
+    click_repl.register_repl(cli, name="shell")
 except ImportError:
     pass
 
