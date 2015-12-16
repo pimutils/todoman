@@ -9,3 +9,4 @@ todoman.egg-info/
 .eggs
 
 .tox
+docs/_build/
