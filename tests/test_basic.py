@@ -78,12 +78,6 @@ def test_human(runner):
 
 @pytest.mark.xfail(reason='issue#9')
 def test_two_events(tmpdir, runner):
-    result = runner.invoke(cli, [
-        'list'
-    ])
-    assert not result.exception
-    assert result.output == ''
-
     tmpdir.join('default/test.ics').write(
         'BEGIN:VCALENDAR\n'
         'BEGIN:VTODO\n'
@@ -102,10 +96,6 @@ def test_two_events(tmpdir, runner):
 
 
 def test_default_command(tmpdir, runner):
-    result = runner.invoke(cli, catch_exceptions=False)
-    assert not result.exception
-    assert result.output == ''
-
     tmpdir.join('default/test.ics').write(
         'BEGIN:VCALENDAR\n'
         'BEGIN:VTODO\n'
