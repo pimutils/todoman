@@ -1,5 +1,6 @@
-import glob
 from os.path import expanduser, join, isdir
+import glob
+import re
 
 import click
 
@@ -12,7 +13,7 @@ from .ui import TodoFormatter, TodoEditor
 with_id_arg = click.argument('id', type=click.IntRange(0))
 
 
-def _validate_lists_param(ctx, lists):
+def _validate_lists_param(ctx, param=None, lists=None):
     if lists:
         return [_validate_list_param(ctx, name=l) for l in lists]
     else:
@@ -164,8 +165,12 @@ def flush(ctx):
 @cli.command()
 @click.pass_context
 @click.option('--all', '-a', is_flag=True, help='Also show finished tasks.')
-@click.argument('lists', nargs=-1)
-def list(ctx, lists, all):
+@click.argument('lists', nargs=-1, callback=_validate_lists_param)
+@click.option('--urgent', is_flag=True, help='Only show urgent tasks.')
+@click.option('--location', help='Only show tasks with location containg TEXT')
+@click.option('--category', help='Only show tasks with category containg TEXT')
+@click.option('--grep', help='Only show tasks with message containg TEXT')
+def list(ctx, lists, all, urgent, location, category, grep):
     """
     List unfinished tasks.
 
@@ -180,13 +185,21 @@ def list(ctx, lists, all):
     This is the default action when running `todo'.
     """
 
-    lists = _validate_lists_param(ctx, lists)
+    pattern = re.compile(grep) if grep else None
+
     todos = sorted(
         (
             (database, todo)
             for database in lists
             for todo in database.todos.values()
-            if not todo.is_completed or all
+            if (not todo.is_completed or all) and
+               (not urgent or todo.priority) and
+               (not location or location in todo.location) and
+               (not category or category in todo.category) and
+               (not pattern or (
+                   pattern.search(todo.summary) or
+                   pattern.search(todo.description)
+                   ))
         ),
         key=lambda x: task_sort_func(x[1]),
         reverse=True
