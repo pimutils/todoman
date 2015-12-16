@@ -21,5 +21,13 @@ setup(
     long_description=open('README.rst').read(),
     use_scm_version={'version_scheme': 'post-release'},
     setup_requires=['setuptools_scm'],
-    # TODO: classifiers
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Console',
+        'Environment :: Console :: Curses',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: POSIX',
+        'Topic :: Office/Business :: Scheduling',
+        'Topic :: Utilities',
+    ]
 )
