@@ -19,7 +19,10 @@ setup(
         open('requirements.txt').readlines()
     ],
     long_description=open('README.rst').read(),
-    use_scm_version={'version_scheme': 'post-release'},
+    use_scm_version={
+        'version_scheme': 'post-release',
+        'write_to': 'todoman/version.py',
+    },
     setup_requires=['setuptools_scm'],
     classifiers=[
         'Development Status :: 4 - Beta',

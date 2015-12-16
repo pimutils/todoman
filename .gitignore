@@ -11,3 +11,5 @@ todoman.egg-info/
 .tox
 docs/_build/
 .coverage
+
+todoman/version.py
