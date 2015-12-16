@@ -7,7 +7,7 @@ build
 dist
 todoman.egg-info/
 .eggs
-
+.cache
 .tox
 docs/_build/
 .coverage
