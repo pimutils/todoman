@@ -1,3 +1,5 @@
+import pytest
+
 from todoman.cli import cli
 
 
@@ -28,3 +30,28 @@ def test_human(runner):
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert 'belzebub' in result.output
+
+
+@pytest.mark.xfail(reason='issue#9')
+def test_two_events(tmpdir, runner):
+    result = runner.invoke(cli, [
+        'list'
+    ])
+    assert not result.exception
+    assert result.output == ''
+
+    tmpdir.join('default/test.ics').write(
+        'BEGIN:VCALENDAR\n'
+        'BEGIN:VTODO\n'
+        'SUMMARY:task one\n'
+        'END:VTODO\n'
+        'BEGIN:VTODO\n'
+        'SUMMARY:task two\n'
+        'END:VTODO\n'
+        'END:VCALENDAR'
+    )
+    result = runner.invoke(cli, ['list'])
+    assert not result.exception
+    assert len(result.output.splitlines()) == 2
+    assert 'task one' in result.output
+    assert 'task two' in result.output

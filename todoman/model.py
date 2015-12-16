@@ -210,6 +210,10 @@ class Database:
 
     @cached_property
     def todos(self):
+        """
+        Returns a map of TODOs, where each key is the filename, and value a
+        Todo object.
+        """
         rv = {}
 
         for entry in os.listdir(self.path):
