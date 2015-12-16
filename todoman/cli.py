@@ -186,6 +186,8 @@ def list(ctx, lists, all, urgent, location, category, grep):
     """
 
     pattern = re.compile(grep) if grep else None
+    # FIXME: When running with no command, this somehow ends up empty:
+    lists = lists or ctx.obj['db'].values()
 
     todos = sorted(
         (
