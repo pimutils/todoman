@@ -3,6 +3,9 @@ from os.path import exists, join
 
 import xdg.BaseDirectory
 from configparser import ConfigParser
+from click import ClickException
+
+from . import __documentation__
 
 
 def load_config():
@@ -20,7 +23,11 @@ def load_config():
         if exists(path):
             return _load_config_impl(path)
 
-    raise Exception("No configuration file found")
+    raise ClickException(
+        "No configuration file found.\n"
+        "For details on the configuration format and a sample file, see\n"
+        "{}/configure.html".format(__documentation__)
+    )
 
 
 def _load_config_impl(path):
