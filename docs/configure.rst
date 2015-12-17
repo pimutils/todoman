@@ -1,18 +1,33 @@
 Configuring
 ===========
 
-You'll need to configure Todoman before the first usage. Required values are a
-path where your todos are stored and the date format you prefer.
+You'll need to configure Todoman before the first usage, using its simple
+ini-like configuration file.
 
+Configuration File
+------------------
 
 The configuration file should be placed in
 ``$XDG_CONFIG_DIR/todoman/todoman.conf``. ``$XDG_CONFIG_DIR`` defaults to
-``~/.config`` is most situations.
+``~/.config`` is most situations, so this will generally be
+``~/.config/todoman/todoman.conf``.
 
-The below example should serve as a reference.
+Main section
+~~~~~~~~~~~~
+
+ * ``path``: The path to where your todos are located. It can also be a glob
+   expresion if you wish to include mutiple directories.
+ * ``date_format``: The date format used both for displaying dates, and parsing
+   input dates.
+   If this option is not specified the ISO-8601 (``%Y-%m-%d``) format is used.
 
 Sample configuration
 --------------------
+
+The below example should serve as a reference. It will read ics files from any
+directory inside ``~/.local/share/calendars/``, and use the ISO-8601 date
+format (note that this is the default format, so this particular declaration is
+redundant).
 
 .. literalinclude:: ../todoman.conf.sample
   :language: ini
