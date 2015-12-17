@@ -48,7 +48,7 @@ def cli(ctx, human_time):
     ctx.obj = {}
     ctx.obj['config'] = config
     ctx.obj['formatter'] = TodoFormatter(
-        config["main"]["date_format"],
+        config.get('main', 'date_format', fallback='%Y-%m-%d'),
         human_time
     )
     ctx.obj['db'] = databases = {}
