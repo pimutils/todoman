@@ -5,7 +5,7 @@ from os.path import expanduser, isdir, join
 import click
 
 from .configuration import load_config
-from .main import dump_idfile, get_todo, task_sort_func
+from .main import dump_idfile, get_task_sort_function, get_todo
 from .model import Database, Todo
 from .ui import EditState, TodoEditor, TodoFormatter
 
@@ -190,7 +190,8 @@ def delete(ctx, ids):
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
-def list(ctx, lists, all, urgent, location, category, grep):
+@click.option('--sort', help='Sort tasks using these fields')
+def list(ctx, lists, all, urgent, location, category, grep, sort):
     """
     List unfinished tasks.
 
@@ -208,6 +209,7 @@ def list(ctx, lists, all, urgent, location, category, grep):
     pattern = re.compile(grep) if grep else None
     # FIXME: When running with no command, this somehow ends up empty:
     lists = lists or ctx.obj['db'].values()
+    sort = sort.split(',') if sort else None
 
     todos = sorted(
         (
@@ -223,7 +225,7 @@ def list(ctx, lists, all, urgent, location, category, grep):
                    pattern.search(todo.description)
                    ))
         ),
-        key=lambda x: task_sort_func(x[1]),
+        key=get_task_sort_function(fields=sort),
         reverse=True
     )
     ids = {}
