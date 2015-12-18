@@ -31,25 +31,45 @@ def dump_idfile(ids):
         json.dump(list(ids.items()), f)
 
 
-def task_sort_func(todo):
-    """
-    Auxiliary function used to sort todos.
+def get_task_sort_function(fields):
+    if not fields:
+        fields = [
+            '-priority',
+            'is_completed',
+            'due',
+            '-created_at',
+        ]
 
-    We put the most important items on the bottom of the list because the
-    terminal scrolls with the output.
+    def sort_func(args):
+        """
+        Auxiliary function used to sort todos.
 
-    Items with an immediate due date are considered more important that
-    those for which we have more time.
-    """
+        We put the most important items on the bottom of the list because the
+        terminal scrolls with the output.
 
-    rv = (
-        -todo.priority,
-        todo.is_completed,
-        (todo.due.timestamp() if todo.due else float('inf')),
-        (-todo.created_at.timestamp() if todo.created_at else 0),
-        todo.uid  # make ordering deterministic, even if it makes no sense
-    )
-    return rv
+        Items with an immediate due date are considered more important that
+        those for which we have more time.
+        """
+        db, todo = args
+        rv = []
+        for field in fields:
+            neg = field.startswith('-')
+            if neg:
+                # Remove that '-'
+                field = field[1:]
+            if field == 'due':
+                # TODO: Some better method to deal with these special cases?
+                value = todo.due.timestamp() if todo.due else float('inf')
+            elif field == 'created_at':
+                value = todo.created_at.timestamp() if todo.created_at else 0
+            else:
+                value = getattr(todo, field, "")
+            value = -value if neg and value else value
+            rv.append(value)
+
+        return rv
+
+    return sort_func
 
 
 def get_todo(databases, todo_id):
