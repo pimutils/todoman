@@ -117,6 +117,15 @@ class Todo:
         self._set_field('description', description)
 
     @property
+    def categories(self):
+        categories = self.todo.get('categories', '').split(',')
+        return filter(None, categories)
+
+    @categories.setter
+    def categories(self, categories):
+        self._set_field('categories', ','.join(categories))
+
+    @property
     def location(self):
         return self.todo.get('location', "")
 

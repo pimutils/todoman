@@ -198,7 +198,7 @@ def list(ctx, lists, all, urgent, location, category, grep):
             if (not todo.is_completed or all) and
                (not urgent or todo.priority) and
                (not location or location in todo.location) and
-               (not category or category in todo.category) and
+               (not category or category in todo.categories) and
                (not pattern or (
                    pattern.search(todo.summary) or
                    pattern.search(todo.description)
