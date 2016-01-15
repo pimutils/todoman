@@ -3,45 +3,36 @@ import pytest
 from todoman.cli import cli
 
 
-def test_basic(tmpdir, runner):
+def test_basic(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
     assert result.output == ''
 
-    tmpdir.join('default/test.ics').write(
-        'BEGIN:VCALENDAR\n'
-        'BEGIN:VTODO\n'
+    create(
+        'test.ics',
         'SUMMARY:harhar\n'
-        'END:VTODO\n'
-        'END:VCALENDAR'
     )
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert 'harhar' in result.output
 
 
-def test_percent(tmpdir, runner):
-    tmpdir.join('default/test.ics').write(
-        'BEGIN:VCALENDAR\n'
-        'BEGIN:VTODO\n'
+def test_percent(tmpdir, runner, create):
+    create(
+        'test.ics',
         'SUMMARY:harhar\n'
         'PERCENT-COMPLETE:78\n'
-        'END:VTODO\n'
-        'END:VCALENDAR'
     )
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert '78%' in result.output
 
 
-def test_show_existing(tmpdir, runner):
-    tmpdir.join('default/test.ics').write(
-        'BEGIN:VCALENDAR\n'
-        'BEGIN:VTODO\n'
+def test_show_existing(tmpdir, runner, create):
+    create(
+        'test.ics',
         'SUMMARY:harhar\n'
         'DESCRIPTION:Lots of text. Yum!\n'
-        'END:VTODO\n'
-        'END:VCALENDAR'
     )
     result = runner.invoke(cli, ['list'])
     result = runner.invoke(cli, ['show', '1'])
@@ -50,13 +41,10 @@ def test_show_existing(tmpdir, runner):
     assert 'Lots of text. Yum!' in result.output
 
 
-def test_show_inexistant(tmpdir, runner):
-    tmpdir.join('default/test.ics').write(
-        'BEGIN:VCALENDAR\n'
-        'BEGIN:VTODO\n'
+def test_show_inexistant(tmpdir, runner, create):
+    create(
+        'test.ics',
         'SUMMARY:harhar\n'
-        'END:VTODO\n'
-        'END:VCALENDAR'
     )
     result = runner.invoke(cli, ['list'])
     result = runner.invoke(cli, ['show', '2'])
@@ -95,13 +83,10 @@ def test_two_events(tmpdir, runner):
     assert 'task two' in result.output
 
 
-def test_default_command(tmpdir, runner):
-    tmpdir.join('default/test.ics').write(
-        'BEGIN:VCALENDAR\n'
-        'BEGIN:VTODO\n'
+def test_default_command(tmpdir, runner, create):
+    create(
+        'test.ics',
         'SUMMARY:harhar\n'
-        'END:VTODO\n'
-        'END:VCALENDAR'
     )
     result = runner.invoke(cli)
     assert not result.exception

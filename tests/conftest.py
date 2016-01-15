@@ -19,3 +19,17 @@ def runner(config):
     return CliRunner(env={
         'TODOMAN_CONFIG': str(config)
     })
+
+
+@pytest.fixture
+def create(tmpdir):
+    def inner(name, content):
+        tmpdir.join('default').join(name).write(
+            'BEGIN:VCALENDAR\n'
+            'BEGIN:VTODO\n' +
+            content +
+            'END:VTODO\n'
+            'END:VCALENDAR'
+        )
+
+    return inner
