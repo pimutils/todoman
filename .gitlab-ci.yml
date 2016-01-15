@@ -26,6 +26,9 @@ py35:
     - py35
 
 style:
+  image: python:latest
   stage: test
   script:
     - tox -e style
+  tags:
+    - python
