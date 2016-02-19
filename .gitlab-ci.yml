@@ -1,5 +1,9 @@
 before_script:
   - pip install tox setuptools
+stages:
+  - style
+  - test
+  - package
 
 py33:
   stage: test
@@ -25,10 +29,28 @@ py35:
   tags:
     - py35
 
-style:
+flake8:
   image: python:latest
-  stage: test
+  stage: style
   script:
-    - tox -e style
+    - tox -e flake8
   tags:
     - python
+
+wheel:
+  image: python:3.5
+  stage: package
+  script:
+    tox -e wheel
+  artifacts:
+    paths:
+      - dist/
+
+sdist:
+  image: python:3.5
+  stage: package
+  script:
+    tox -e sdist
+  artifacts:
+    paths:
+      - dist/
