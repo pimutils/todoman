@@ -65,11 +65,11 @@ class Todo:
 
         self.filename = filename or "{}.ics".format(self.todo.get('uid'))
 
-    def _set_field(self, name, value, force=False):
+    def _set_field(self, name, value):
         if name in self.todo:
             del(self.todo[name])
-        # XXX: Do I really want this check? What good does it do?
-        if value or force:
+        # We want to save things like [] or 0, but not null, or nullstrings
+        if value is not None and value is not '':
             logger.debug("Setting field %s to %s.", name, value)
             self.todo.add(name, value)
 
@@ -164,7 +164,7 @@ class Todo:
 
     @percent_complete.setter
     def percent_complete(self, percent_complete):
-        self._set_field('percent-complete', percent_complete, force=True)
+        self._set_field('percent-complete', percent_complete)
 
     @property
     def priority(self):
@@ -172,7 +172,7 @@ class Todo:
 
     @priority.setter
     def priority(self, priority):
-        self._set_field('priority', priority, force=True)
+        self._set_field('priority', priority)
 
     @property
     def created_at(self):
