@@ -1,0 +1,22 @@
+sudo: false
+language: python
+
+python:
+  - 3.3
+  - 3.4
+  - 3.5
+
+env:
+  - BUILD=py
+  - BUILD=flake8
+
+addons:
+  apt:
+    packages:
+      - language-pack-de
+
+install: 
+  - pip install tox
+
+script:
+  - tox -e $BUILD
