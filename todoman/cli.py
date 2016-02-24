@@ -1,14 +1,13 @@
-from os.path import expanduser, join, isdir
 import glob
 import re
+from os.path import expanduser, isdir, join
 
 import click
 
 from .configuration import load_config
-from .main import task_sort_func, dump_idfile, get_todo
+from .main import dump_idfile, get_todo, task_sort_func
 from .model import Database, Todo
-from .ui import TodoFormatter, TodoEditor
-
+from .ui import TodoEditor, TodoFormatter
 
 with_id_arg = click.argument('id', type=click.IntRange(0))
 

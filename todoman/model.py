@@ -1,8 +1,8 @@
 import logging
 import os
-from os.path import split, normpath
+from datetime import date, datetime, time, timedelta
+from os.path import normpath, split
 from uuid import uuid4
-from datetime import date, time, datetime, timedelta
 
 import icalendar
 from ansi.colour.rgb import rgb8

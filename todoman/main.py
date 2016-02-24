@@ -1,11 +1,10 @@
+import json
 import logging
 import os
 import sys
 from os.path import join
-import json
 
 import xdg.BaseDirectory
-
 
 logging.basicConfig(level=logging.ERROR)
 

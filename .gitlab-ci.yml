@@ -35,6 +35,13 @@ flake8:
   script:
     - tox -e flake8
   tags:
+
+isort:
+  image: python:latest
+  stage: style
+  script:
+    - tox -e isort
+  tags:
     - python
 
 wheel:

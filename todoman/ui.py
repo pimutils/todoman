@@ -1,11 +1,11 @@
 from datetime import datetime
 from time import mktime
 
+import ansi.colour.fg
+import ansi.colour.fx
+import ansi.sequence
 import parsedatetime
 import urwid
-import ansi.colour.fx
-import ansi.colour.fg
-import ansi.sequence
 from dateutil.tz import tzlocal
 
 

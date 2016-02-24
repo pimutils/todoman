@@ -1,8 +1,8 @@
+from configparser import ConfigParser
 from os import environ
 from os.path import exists, join
 
 import xdg.BaseDirectory
-from configparser import ConfigParser
 from click import ClickException
 
 from . import __documentation__
