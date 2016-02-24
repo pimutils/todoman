@@ -15,8 +15,17 @@ addons:
     packages:
       - language-pack-de
 
-install: 
+install:
   - pip install tox
 
 script:
   - tox -e $BUILD
+
+deploy:
+  provider: pypi
+  user: hobarrera
+  password:
+    secure: LXSgJZMZICS0Xv5qyR/IRgki1Wy23lurmdepsOsjzBM2fv7rgKPlU/MASVCUCmLi9vYYqZu+7ViHeT6uhJXLdwE0NisVYqTg6L4aD1kqDmbjkWFhLKA7DAz1QTAYxrk6TQYmDb+ZbNFZlF21g29nqvqtLwdC4dFnDjXGnupCoeU=
+  on:
+    tags: true
+  distributions: "sdist bdist_wheel"
