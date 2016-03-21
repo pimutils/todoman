@@ -18,7 +18,7 @@ Since *todoman* is written in python, you can use python's package managers,
 
 or the latest development version by executing::
 
-     pip install git+git://gitlab.com/hobarrera/todoman.git
+     pip install git+git://github.com/pimutils/todoman.git
 
 This should also take care of installing all required dependencies.
 
@@ -42,4 +42,4 @@ Todoman will not work with python 2. However, keep in mind that python 2 and
 python 3 can coexist (and most distributions actually ship both).
 
 
-.. _requirements.txt: https://gitlab.com/hobarrera/todoman/blob/master/requirements.txt
+.. _requirements.txt: https://github.com/pimutils/todoman/blob/master/requirements.txt

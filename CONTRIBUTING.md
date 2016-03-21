@@ -3,7 +3,7 @@ Contributing
 
 Bug reports and code and documentation patches are greatly appreciated. You can
 also help by using the development version of todoman and reporting any bugs
-you might encounter [here](https://www.gitlab.com/hobarrera/todoman/issues).
+you might encounter [here](https://github.com/pimutils/todoman/issues).
 
 
 Code and Documentation

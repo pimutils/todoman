@@ -5,13 +5,15 @@ Todoman is a simple, standards-based, cli todo (aka: task) manager. Todos
 are stored into icalendar_ files, which means you can sync them via CalDAV_
 using, for example, vdirsyncer_.
 
-Official website and repository is hosted at GitLab.com_.
+Todoman is now part of the ``pimutils`` project, and is hosted at GitHub_. The
+original location at GitLab.com_ is still kept as a mirror.
 
 
 .. _icalendar: https://tools.ietf.org/html/rfc5545
 .. _CalDav: http://en.wikipedia.org/wiki/CalDAV
 .. _vdirsyncer: https://vdirsyncer.readthedocs.org/
-.. _GitLab.com: https://gitlab.com/hobarrera/todoman/
+.. _GitHub: https://github.com/pimutils/todoman
+.. _GitLab.com: https://github.com/hobarrera/todoman/
 
 Features
 --------

@@ -7,7 +7,7 @@ setup(
     description='A simple CalDav-based todo manager.',
     author='Hugo Osvaldo Barrera',
     author_email='hugo@barrera.io',
-    url='https://gitlab.com/hobarrera/todoman',
+    url='https://github.com/pimutils/todoman',
     license='MIT',
     packages=['todoman'],
     entry_points={

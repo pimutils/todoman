@@ -3,7 +3,11 @@ Todoman
 
 .. image:: https://ci.gitlab.com/projects/7057/status.png?ref=master
   :target: https://ci.gitlab.com/projects/7057?ref=master
-  :alt: build status
+  :alt: GitLab CI build status
+
+.. image:: https://travis-ci.org/pimutils/todoman.svg?branch=master
+  :target: https://travis-ci.org/pimutils/todoman
+  :alt: Travis CI build status
 
 .. image:: https://readthedocs.org/projects/todoman/badge/
   :target: https://todoman.rtfd.org/
@@ -21,8 +25,9 @@ are stored into `icalendar <https://tools.ietf.org/html/rfc5545>`_ files, which
 means you can sync them via `CalDAV <http://en.wikipedia.org/wiki/CalDAV>`_
 using, for example, `vdirsyncer <https://vdirsyncer.readthedocs.org/>`_.
 
-Official website and repository is hosted at `GitLab.com
-<https://gitlab.com/hobarrera/todoman>`_.
+Todoman is now part of the ``pimutils`` project, and is hosted at `GitHub
+<https://github.com/pimutils/todoman>`_. The original location at `GitLab.com
+<https://gitlab.com/hobarrera/todoman>`_ is still kept as a mirror.
 
 Features
 --------
