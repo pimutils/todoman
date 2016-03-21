@@ -13,7 +13,7 @@ original location at GitLab.com_ is still kept as a mirror.
 .. _CalDav: http://en.wikipedia.org/wiki/CalDAV
 .. _vdirsyncer: https://vdirsyncer.readthedocs.org/
 .. _GitHub: https://github.com/pimutils/todoman
-.. _GitLab.com: https://github.com/hobarrera/todoman/
+.. _GitLab.com: https://gitlab.com/hobarrera/todoman/
 
 Features
 --------
