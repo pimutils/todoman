@@ -161,6 +161,21 @@ def flush(ctx):
                 click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
                 database.delete(todo)
 
+@cli.command()
+@click.pass_context
+@click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
+@click.confirmation_option(
+    help='Are you sure you want to delete all those tasks?'
+)
+def delete(ctx, ids):
+    '''
+    Delete tasks.
+    '''
+    for id in ids:
+        todo, database = get_todo(ctx.obj['db'], id)        
+        click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
+        database.delete(todo)
+
 
 @cli.command()
 @click.pass_context
