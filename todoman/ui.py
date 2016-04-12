@@ -7,13 +7,12 @@ import ansi.sequence
 import parsedatetime
 import urwid
 from dateutil.tz import tzlocal
-from enum import Enum
 
 
-class EditState(Enum):
-    none = 1
-    saved = 2
-    deleted = 3
+class EditState:
+    none = object()
+    saved = object()
+    deleted = object()
 
 
 class TodoEditor:
