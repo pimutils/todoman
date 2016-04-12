@@ -7,7 +7,8 @@ import click
 from .configuration import load_config
 from .main import dump_idfile, get_todo, task_sort_func
 from .model import Database, Todo
-from .ui import TodoEditor, TodoFormatter
+from .ui import TodoFormatter, TodoEditor, EditState
+
 
 with_id_arg = click.argument('id', type=click.IntRange(0))
 
@@ -93,7 +94,7 @@ def new(ctx, summary, list, due, interactive):
 
     if interactive:
         ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
-        if not ui.edit():
+        if ui.edit() != EditState.saved:
             ctx.exit(1)
         click.echo()  # work around lines going missing after urwid
 
@@ -113,8 +114,12 @@ def edit(ctx, id):
     '''
     todo, database = get_todo(ctx.obj['db'], id)
     ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
-    if ui.edit():
+    state = ui.edit()
+    if state == EditState.saved:
         database.save(todo)
+    elif state == EditState.deleted:
+        click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
+        database.delete(todo)
 
 
 @cli.command()
@@ -160,6 +165,22 @@ def flush(ctx):
             if todo.is_completed:
                 click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
                 database.delete(todo)
+
+
+@cli.command()
+@click.pass_context
+@click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
+@click.confirmation_option(
+    help='Are you sure you want to delete all those tasks?'
+)
+def delete(ctx, ids):
+    '''
+    Delete tasks.
+    '''
+    for id in ids:
+        todo, database = get_todo(ctx.obj['db'], id)
+        click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
+        database.delete(todo)
 
 
 @cli.command()

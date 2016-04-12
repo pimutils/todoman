@@ -93,5 +93,17 @@ def test_default_command(tmpdir, runner, create):
     assert 'harhar' in result.output
 
 
+def test_delete(tmpdir, runner, create):
+    create(
+        'test.ics',
+        'SUMMARY:harhar\n'
+    )
+    result = runner.invoke(cli, ['list'])
+    assert not result.exception
+    result = runner.invoke(cli, ['delete', '1', '--yes'])
+    result = runner.invoke(cli, ['list'])
+    assert not result.exception
+    assert len(result.output.splitlines()) == 0
+
 # TODO: test aware/naive datetime sorting
 # TODO: test --grep
