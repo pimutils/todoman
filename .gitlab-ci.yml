@@ -10,39 +10,30 @@ py33:
   image: python:3.3
   script:
     - tox -e py33
-  tags:
-    - py33
 
 py34:
   stage: test
   image: python:3.4
   script:
     - tox -e py34
-  tags:
-    - py34
 
 py35:
   stage: test
   image: python:3.5
   script:
     - tox -e py35
-  tags:
-    - py35
 
 flake8:
   image: python:latest
   stage: style
   script:
     - tox -e flake8
-  tags:
 
 isort:
   image: python:latest
   stage: style
   script:
     - tox -e isort
-  tags:
-    - python
 
 wheel:
   image: python:3.5
