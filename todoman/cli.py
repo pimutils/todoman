@@ -7,8 +7,7 @@ import click
 from .configuration import load_config
 from .main import dump_idfile, get_todo, task_sort_func
 from .model import Database, Todo
-from .ui import TodoFormatter, TodoEditor, EditState
-
+from .ui import EditState, TodoEditor, TodoFormatter
 
 with_id_arg = click.argument('id', type=click.IntRange(0))
 
