@@ -1,5 +1,8 @@
 before_script:
   - pip install tox setuptools
+cache:
+  paths:
+  - /root/.cache
 stages:
   - style
   - test
