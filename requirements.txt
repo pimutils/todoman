@@ -1,4 +1,4 @@
-click
+click>=6.0
 icalendar
 urwid
 pyxdg

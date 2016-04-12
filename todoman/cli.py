@@ -154,7 +154,7 @@ def _abort_if_false(ctx, param, value):
 @cli.command()
 @click.pass_context
 @click.confirmation_option(
-    help='Are you sure you want to delete all done tasks?'
+    prompt='Are you sure you want to delete all done tasks?'
 )
 def flush(ctx):
     '''
@@ -171,7 +171,7 @@ def flush(ctx):
 @click.pass_context
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
 @click.confirmation_option(
-    help='Are you sure you want to delete all those tasks?'
+    prompt='Are you sure you want to delete all those tasks?'
 )
 def delete(ctx, ids):
     '''
