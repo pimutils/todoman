@@ -4,7 +4,10 @@ import os
 import sys
 from os.path import join
 
+import click
 import xdg.BaseDirectory
+
+from . import model
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -39,6 +42,10 @@ def get_task_sort_function(fields):
             '-created_at',
         ]
 
+    for field in fields:
+        if not hasattr(model.Todo, field.lstrip('-')):
+            raise click.UsageError('Unknown task field: {}'.format(field))
+
     def sort_func(args):
         """
         Auxiliary function used to sort todos.
@@ -52,17 +59,15 @@ def get_task_sort_function(fields):
         db, todo = args
         rv = []
         for field in fields:
+            field = field.lower()
             neg = field.startswith('-')
             if neg:
                 # Remove that '-'
                 field = field[1:]
-            if field == 'due':
-                # TODO: Some better method to deal with these special cases?
-                value = todo.due.timestamp() if todo.due else float('inf')
-            elif field == 'created_at':
-                value = todo.created_at.timestamp() if todo.created_at else 0
-            else:
-                value = getattr(todo, field, "")
+
+            value = getattr(todo, field)
+            if field in ('due', 'created_at', 'completed_at'):
+                value = value.timestamp() if value else float('inf')
             value = -value if neg and value else value
             rv.append(value)
 
