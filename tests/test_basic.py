@@ -1,5 +1,11 @@
-import pytest
+import datetime
 
+import hypothesis.strategies as st
+import icalendar
+import pytest
+from hypothesis import given
+
+from todoman import model
 from todoman.cli import cli
 
 
@@ -104,6 +110,35 @@ def test_delete(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert len(result.output.splitlines()) == 0
+
+
+def test_sorting(tmpdir, runner):
+    for i in range(1, 10):
+        days = datetime.timedelta(days=i)
+
+        todo = icalendar.Todo()
+        todo['due'] = datetime.datetime.now() + days
+        todo['created_at'] = datetime.datetime.now() - days
+        todo['summary'] = 'harhar{}'.format(i)
+        ical = icalendar.Calendar()
+        ical.add_component(todo)
+
+        tmpdir.join('default/test{}.ics'.format(i)).write(ical.to_ical())
+
+    fields = tuple(field for field in dir(model.Todo) if not
+                   field.startswith('_'))
+
+    @given(sort_key=st.lists(
+        st.sampled_from(fields + tuple('-' + x for x in fields)),
+        unique=True
+    ))
+    def run_test(sort_key):
+        sort_key = ','.join(sort_key)
+        result = runner.invoke(cli, ['list', '--sort', sort_key])
+        assert not result.exception
+        assert result.exit_code == 0
+
+    run_test()
 
 # TODO: test aware/naive datetime sorting
 # TODO: test --grep
