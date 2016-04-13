@@ -1,8 +1,13 @@
+import datetime
+
+import hypothesis.strategies as st
+import icalendar
 import pytest
 import pytz
+from hypothesis import given
 
 from todoman.cli import cli
-from todoman.model import Database
+from todoman.model import Database, Todo
 
 
 def test_basic(tmpdir, runner, create):
@@ -108,6 +113,7 @@ def test_delete(tmpdir, runner, create):
     assert len(result.output.splitlines()) == 0
 
 
+
 def test_dtstamp(tmpdir, runner, create):
     """
     Test that we add the DTSTAMP to new entries as per RFC5545.
@@ -119,6 +125,35 @@ def test_dtstamp(tmpdir, runner, create):
     todo = list(db.todos.values())[0]
     assert todo.dtstamp is not None
     assert todo.dtstamp.tzinfo is pytz.utc
+
+
+def test_sorting(tmpdir, runner):
+    for i in range(1, 10):
+        days = datetime.timedelta(days=i)
+
+        todo = icalendar.Todo()
+        todo['due'] = datetime.datetime.now() + days
+        todo['created_at'] = datetime.datetime.now() - days
+        todo['summary'] = 'harhar{}'.format(i)
+        ical = icalendar.Calendar()
+        ical.add_component(todo)
+
+        tmpdir.join('default/test{}.ics'.format(i)).write(ical.to_ical())
+
+    fields = tuple(field for field in dir(Todo) if not
+                   field.startswith('_'))
+
+    @given(sort_key=st.lists(
+        st.sampled_from(fields + tuple('-' + x for x in fields)),
+        unique=True
+    ))
+    def run_test(sort_key):
+        sort_key = ','.join(sort_key)
+        result = runner.invoke(cli, ['list', '--sort', sort_key])
+        assert not result.exception
+        assert result.exit_code == 0
+
+    run_test()
 
 # TODO: test aware/naive datetime sorting
 # TODO: test --grep
