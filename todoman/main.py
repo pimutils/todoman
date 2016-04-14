@@ -1,3 +1,4 @@
+import functools
 import json
 import logging
 import os
@@ -68,7 +69,14 @@ def get_task_sort_function(fields):
             value = getattr(todo, field)
             if field in ('due', 'created_at', 'completed_at'):
                 value = value.timestamp() if value else float('inf')
-            value = -value if neg and value else value
+
+            if neg and value:
+                # This "negates" the value, whichever type. The lambda is the
+                # same as Python 2's `cmp` builtin, but with inverted output
+                # (-1 instead of 1 etc).
+                value = functools.cmp_to_key(
+                    lambda a, b: -((a > b) - (a < b)))(value)
+
             rv.append(value)
 
         return rv
