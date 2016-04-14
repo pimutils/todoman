@@ -119,7 +119,7 @@ class Todo:
     @property
     def categories(self):
         categories = self.todo.get('categories', '').split(',')
-        return filter(None, categories)
+        return tuple(filter(None, categories))
 
     @categories.setter
     def categories(self, categories):
