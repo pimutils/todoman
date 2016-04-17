@@ -63,6 +63,9 @@ class Todo:
             self.todo.add('priority', 0)
             self.todo.add('created', now)
 
+        if self.todo.get('dtstamp', None) is None:
+            self.todo.add('dtstamp', datetime.utcnow())
+
         self.filename = filename or "{}.ics".format(self.todo.get('uid'))
 
     def _set_field(self, name, value):
