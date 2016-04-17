@@ -169,15 +169,30 @@ def test_sorting_output(tmpdir, runner, create):
         'SUMMARY:bbb\n'
         'DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n'
     )
-    result = runner.invoke(cli, ['list', '--sort', '-summary'])
-    assert not result.exception
-    assert 'aaa' in result.output.splitlines()[0]
-    assert 'bbb' in result.output.splitlines()[1]
 
-    result = runner.invoke(cli, ['list', '--sort', 'due'])
-    assert not result.exception
-    assert 'aaa' in result.output.splitlines()[0]
-    assert 'bbb' in result.output.splitlines()[1]
+    examples = [
+        ('-summary', ['aaa', 'bbb']),
+        ('due', ['aaa', 'bbb'])
+    ]
+
+    # Normal sorting, reversed by default
+    all_examples = [(['--sort', key], order) for key, order in examples]
+
+    # Testing --reverse, same exact output
+    all_examples.extend((['--reverse', '--sort', key], order)
+                        for key, order in examples)
+
+    # Testing --no-reverse
+    all_examples.extend((['--no-reverse', '--sort', key], reversed(order))
+                        for key, order in examples)
+
+    for args, order in all_examples:
+        result = runner.invoke(cli, ['list'] + args)
+        assert not result.exception
+        lines = result.output.splitlines()
+        for i, task in enumerate(order):
+            assert task in lines[i]
+
 
 # TODO: test aware/naive datetime sorting
 # TODO: test --grep

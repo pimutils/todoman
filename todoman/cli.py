@@ -191,7 +191,10 @@ def delete(ctx, ids):
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
 @click.option('--sort', help='Sort tasks using these fields')
-def list(ctx, lists, all, urgent, location, category, grep, sort):
+@click.option('--reverse/--no-reverse', default=True,
+              help='Sort tasks in reverse order (see --sort). '
+              'Defaults to true.')
+def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
     """
     List unfinished tasks.
 
@@ -226,7 +229,7 @@ def list(ctx, lists, all, urgent, location, category, grep, sort):
                    ))
         ),
         key=get_task_sort_function(fields=sort),
-        reverse=True
+        reverse=reverse
     )
     ids = {}
 
