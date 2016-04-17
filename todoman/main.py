@@ -1,10 +1,14 @@
+import functools
 import json
 import logging
 import os
 import sys
 from os.path import join
 
+import click
 import xdg.BaseDirectory
+
+from . import model
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -30,25 +34,54 @@ def dump_idfile(ids):
         json.dump(list(ids.items()), f)
 
 
-def task_sort_func(todo):
-    """
-    Auxiliary function used to sort todos.
+def get_task_sort_function(fields):
+    if not fields:
+        fields = [
+            '-priority',
+            'is_completed',
+            'due',
+            '-created_at',
+        ]
 
-    We put the most important items on the bottom of the list because the
-    terminal scrolls with the output.
+    for field in fields:
+        if not hasattr(model.Todo, field.lstrip('-')):
+            raise click.UsageError('Unknown task field: {}'.format(field))
 
-    Items with an immediate due date are considered more important that
-    those for which we have more time.
-    """
+    def sort_func(args):
+        """
+        Auxiliary function used to sort todos.
 
-    rv = (
-        -todo.priority,
-        todo.is_completed,
-        (todo.due.timestamp() if todo.due else float('inf')),
-        (-todo.created_at.timestamp() if todo.created_at else 0),
-        todo.uid  # make ordering deterministic, even if it makes no sense
-    )
-    return rv
+        We put the most important items on the bottom of the list because the
+        terminal scrolls with the output.
+
+        Items with an immediate due date are considered more important that
+        those for which we have more time.
+        """
+        db, todo = args
+        rv = []
+        for field in fields:
+            field = field.lower()
+            neg = field.startswith('-')
+            if neg:
+                # Remove that '-'
+                field = field[1:]
+
+            value = getattr(todo, field)
+            if field in ('due', 'created_at', 'completed_at'):
+                value = value.timestamp() if value else float('inf')
+
+            if neg and value:
+                # This "negates" the value, whichever type. The lambda is the
+                # same as Python 2's `cmp` builtin, but with inverted output
+                # (-1 instead of 1 etc).
+                value = functools.cmp_to_key(
+                    lambda a, b: -((a > b) - (a < b)))(value)
+
+            rv.append(value)
+
+        return rv
+
+    return sort_func
 
 
 def get_todo(databases, todo_id):
