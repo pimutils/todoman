@@ -1,7 +1,6 @@
 import datetime
 
 import hypothesis.strategies as st
-import icalendar
 import pytest
 import pytz
 from hypothesis import given
@@ -126,7 +125,7 @@ def test_dtstamp(tmpdir, runner, create):
     assert todo.dtstamp.tzinfo is pytz.utc
 
 
-def test_sorting_fields(tmpdir, runner):
+def test_sorting_fields(tmpdir, runner, default_database):
     tasks = []
     for i in range(1, 10):
         days = datetime.timedelta(days=i)
@@ -137,9 +136,7 @@ def test_sorting_fields(tmpdir, runner):
         todo.summary = 'harhar{}'.format(i)
         tasks.append(todo)
 
-        ical = icalendar.Calendar()
-        ical.add_component(todo.todo)
-        tmpdir.join('default/test{}.ics'.format(i)).write(ical.to_ical())
+        default_database.save(todo)
 
     fields = tuple(field for field in dir(Todo) if not
                    field.startswith('_'))
