@@ -131,14 +131,14 @@ def test_sorting_fields(tmpdir, runner):
     for i in range(1, 10):
         days = datetime.timedelta(days=i)
 
-        todo = icalendar.Todo()
-        todo['due'] = datetime.datetime.now() + days
-        todo['created_at'] = datetime.datetime.now() - days
-        todo['summary'] = 'harhar{}'.format(i)
+        todo = Todo()
+        todo.due = datetime.datetime.now() + days
+        todo.created_at = datetime.datetime.now() - days
+        todo.summary = 'harhar{}'.format(i)
         tasks.append(todo)
-        ical = icalendar.Calendar()
-        ical.add_component(todo)
 
+        ical = icalendar.Calendar()
+        ical.add_component(todo.todo)
         tmpdir.join('default/test{}.ics'.format(i)).write(ical.to_ical())
 
     fields = tuple(field for field in dir(Todo) if not
