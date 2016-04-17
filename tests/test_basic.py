@@ -113,7 +113,6 @@ def test_delete(tmpdir, runner, create):
     assert len(result.output.splitlines()) == 0
 
 
-
 def test_dtstamp(tmpdir, runner, create):
     """
     Test that we add the DTSTAMP to new entries as per RFC5545.
@@ -127,7 +126,7 @@ def test_dtstamp(tmpdir, runner, create):
     assert todo.dtstamp.tzinfo is pytz.utc
 
 
-def test_sorting(tmpdir, runner):
+def test_sorting_fields(tmpdir, runner):
     for i in range(1, 10):
         days = datetime.timedelta(days=i)
 
@@ -154,6 +153,28 @@ def test_sorting(tmpdir, runner):
         assert result.exit_code == 0
 
     run_test()
+
+
+def test_sorting_output(tmpdir, runner, create):
+    create(
+        'test.ics',
+        'SUMMARY:aaa\n'
+        'DUE;VALUE=DATE-TIME;TZID=ART:20160102T000000\n'
+    )
+    create(
+        'test2.ics',
+        'SUMMARY:bbb\n'
+        'DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n'
+    )
+    result = runner.invoke(cli, ['list', '--sort', '-summary'])
+    assert not result.exception
+    assert 'aaa' in result.output.splitlines()[0]
+    assert 'bbb' in result.output.splitlines()[1]
+
+    result = runner.invoke(cli, ['list', '--sort', 'due'])
+    assert not result.exception
+    assert 'aaa' in result.output.splitlines()[0]
+    assert 'bbb' in result.output.splitlines()[1]
 
 # TODO: test aware/naive datetime sorting
 # TODO: test --grep
