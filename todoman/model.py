@@ -192,6 +192,10 @@ class Todo:
     def uid(self):
         return self.todo.get('uid')
 
+    @property
+    def dtstamp(self):
+        return self.todo.decoded('dtstamp')
+
     def _normalize_datetime(self, x):
         '''
         Eliminate several differences between dates, times and datetimes which
