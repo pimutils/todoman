@@ -1,6 +1,8 @@
 import pytest
+import pytz
 
 from todoman.cli import cli
+from todoman.model import Database
 
 
 def test_basic(tmpdir, runner, create):
@@ -104,6 +106,19 @@ def test_delete(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert len(result.output.splitlines()) == 0
+
+
+def test_dtstamp(tmpdir, runner, create):
+    """
+    Test that we add the DTSTAMP to new entries as per RFC5545.
+    """
+    result = runner.invoke(cli, ['new', '-l', 'default', 'test event'])
+    assert not result.exception
+
+    db = Database(str(tmpdir + '/default'))
+    todo = list(db.todos.values())[0]
+    assert todo.dtstamp is not None
+    assert todo.dtstamp.tzinfo is pytz.utc
 
 # TODO: test aware/naive datetime sorting
 # TODO: test --grep
