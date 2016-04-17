@@ -127,6 +127,7 @@ def test_dtstamp(tmpdir, runner, create):
 
 
 def test_sorting_fields(tmpdir, runner):
+    tasks = []
     for i in range(1, 10):
         days = datetime.timedelta(days=i)
 
@@ -134,6 +135,7 @@ def test_sorting_fields(tmpdir, runner):
         todo['due'] = datetime.datetime.now() + days
         todo['created_at'] = datetime.datetime.now() - days
         todo['summary'] = 'harhar{}'.format(i)
+        tasks.append(todo)
         ical = icalendar.Calendar()
         ical.add_component(todo)
 
@@ -151,6 +153,7 @@ def test_sorting_fields(tmpdir, runner):
         result = runner.invoke(cli, ['list', '--sort', sort_key])
         assert not result.exception
         assert result.exit_code == 0
+        assert len(result.output.strip().splitlines()) == len(tasks)
 
     run_test()
 
