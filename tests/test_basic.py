@@ -191,5 +191,23 @@ def test_sorting_output(tmpdir, runner, create):
             assert task in lines[i]
 
 
+def test_sorting_null_values(tmpdir, runner, create):
+    create(
+        'test.ics',
+        'SUMMARY:aaa\n'
+        'PRIORITY:9\n'
+    )
+    create(
+        'test2.ics',
+        'SUMMARY:bbb\n'
+        'DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n'
+    )
+
+    result = runner.invoke(cli)
+    assert not result.exception
+    assert 'bbb' in result.output.splitlines()[0]
+    assert 'aaa' in result.output.splitlines()[1]
+
+
 # TODO: test aware/naive datetime sorting
 # TODO: test --grep
