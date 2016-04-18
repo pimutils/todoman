@@ -1,10 +1,6 @@
 Todoman
 =======
 
-.. image:: https://ci.gitlab.com/projects/7057/status.png?ref=master
-  :target: https://ci.gitlab.com/projects/7057?ref=master
-  :alt: GitLab CI build status
-
 .. image:: https://travis-ci.org/pimutils/todoman.svg?branch=master
   :target: https://travis-ci.org/pimutils/todoman
   :alt: Travis CI build status
