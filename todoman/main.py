@@ -70,7 +70,7 @@ def get_task_sort_function(fields):
             if field in ('due', 'created_at', 'completed_at'):
                 value = value.timestamp() if value else float('inf')
 
-            if neg and value:
+            if neg:
                 # This "negates" the value, whichever type. The lambda is the
                 # same as Python 2's `cmp` builtin, but with inverted output
                 # (-1 instead of 1 etc).
