@@ -37,8 +37,8 @@ def dump_idfile(ids):
 def get_task_sort_function(fields):
     if not fields:
         fields = [
-            '-priority',
             'is_completed',
+            '-priority',
             'due',
             '-created_at',
         ]
