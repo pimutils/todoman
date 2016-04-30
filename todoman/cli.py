@@ -40,9 +40,14 @@ def _validate_due_param(ctx, param, due):
 @click.option('--human-time/--no-human-time', default=True,
               help=('Accept informal descriptions such as "tomorrow" instead '
                     'of a properly formatted date.'))
+@click.option('--colour', '--color', default=None,
+              help=('By default todoman will disable colored output if stdout '
+                    'is not a TTY (value `auto`). Set to `never` to disable '
+                    'colored output entirely, or `always` to enable it '
+                    'regardless.'))
 @click.pass_context
 @click.version_option(prog_name='todoman')
-def cli(ctx, human_time):
+def cli(ctx, human_time, color):
     config = load_config()
     ctx.obj = {}
     ctx.obj['config'] = config
@@ -51,6 +56,15 @@ def cli(ctx, human_time):
         human_time
     )
     ctx.obj['db'] = databases = {}
+
+    color = color or ctx.obj['config']['main'].get('color', 'auto')
+    if color == 'always':
+        ctx.color = True
+    elif color == 'never':
+        ctx.color = False
+    elif color != 'auto':
+        raise click.UsageError('Invalid color setting: Choose from always, '
+                               'never, auto.')
 
     for path in glob.iglob(expanduser(config["main"]["path"])):
         if not isdir(path):
@@ -101,7 +115,7 @@ def new(ctx, summary, list, due, interactive):
         raise click.UsageError('No SUMMARY specified')
 
     list.save(todo)
-    print(ctx.obj['formatter'].detailed(todo, list))
+    click.echo(ctx.obj['formatter'].detailed(todo, list))
 
 
 @cli.command()
@@ -129,7 +143,7 @@ def show(ctx, id):
     Show details about a task.
     '''
     todo, database = get_todo(ctx.obj['db'], id)
-    print(ctx.obj['formatter'].detailed(todo, database))
+    click.echo(ctx.obj['formatter'].detailed(todo, database))
 
 
 @cli.command()
@@ -236,12 +250,12 @@ def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
     for index, (database, todo) in enumerate(todos, start=1):
         ids[index] = (database.name, todo.filename)
         try:
-            print("{:2d} {}".format(
+            click.echo("{:2d} {}".format(
                 index,
                 ctx.obj['formatter'].compact(todo, database)
             ))
         except Exception as e:
-            print("Error while showing {}: {}"
-                  .format(join(database.name, todo.filename), e))
+            click.echo("Error while showing {}: {}"
+                       .format(join(database.name, todo.filename), e))
 
     dump_idfile(ids)
