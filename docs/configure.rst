@@ -20,6 +20,10 @@ Main section
  * ``date_format``: The date format used both for displaying dates, and parsing
    input dates.
    If this option is not specified the ISO-8601 (``%Y-%m-%d``) format is used.
+ * ``color``: By default todoman will disable colored output if stdout is not a
+   TTY (value ``auto``). Set to ``never`` to disable colored output entirely,
+   or ``always`` to enable it regardless. This can be overridden with the
+   ``--color`` option.
 
 Sample configuration
 --------------------
