@@ -57,7 +57,7 @@ done via the command line yet.
 .. _tui: https://en.wikipedia.org/wiki/Text-based_user_interface
 
 
-Sinchronization
+Synchronization
 ---------------
 
 If you want to synchronize your tasks, you'll needs something that syncs via
