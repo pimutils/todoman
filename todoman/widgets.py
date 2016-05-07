@@ -22,6 +22,7 @@
 
 import re
 
+import click
 import urwid
 
 
@@ -40,9 +41,12 @@ class ExtendedEdit(urwid.Edit):
             self._goto_end_of_line()
         elif key == 'ctrl d':
             self._delete_forward_letter()
+        elif key == 'ctrl i':
+            # Allow editing in $EDITOR
+            self._editor()
         # TODO: alt b, alt f
         else:
-            return super(ExtendedEdit, self).keypress(size, key)
+            return super().keypress(size, key)
 
     def _delete_forward_letter(self):
         text = self.get_edit_text()
@@ -101,3 +105,9 @@ class ExtendedEdit(urwid.Edit):
         if eol == -1:
             eol = len(text)
         self.set_edit_pos(eol)
+
+    def _editor(self):
+        self._parent._loop.screen.clear()
+        new_text = click.edit(self.get_edit_text())
+        if new_text is not None:
+            self.set_edit_text(new_text)
