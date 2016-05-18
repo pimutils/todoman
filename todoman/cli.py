@@ -9,7 +9,8 @@ from .main import dump_idfile, get_task_sort_function, get_todo
 from .model import Database, Todo
 from .ui import EditState, TodoEditor, TodoFormatter
 
-with_id_arg = click.argument('id', type=click.IntRange(0))
+TODO_ID_MIN = 1
+with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
 
 
 def _validate_lists_param(ctx, param=None, lists=None):
@@ -247,7 +248,7 @@ def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
     )
     ids = {}
 
-    for index, (database, todo) in enumerate(todos, start=1):
+    for index, (database, todo) in enumerate(todos, start=TODO_ID_MIN):
         ids[index] = (database.name, todo.filename)
         try:
             click.echo("{:2d} {}".format(
