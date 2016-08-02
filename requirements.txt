@@ -5,4 +5,3 @@ pyxdg
 atomicwrites
 ansi>=0.1.3
 parsedatetime
-setuptools_scm
