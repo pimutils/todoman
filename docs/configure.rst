@@ -15,8 +15,8 @@ The configuration file should be placed in
 Main section
 ~~~~~~~~~~~~
 
- * ``path``: The path to where your todos are located. It can also be a glob
-   expresion if you wish to include mutiple directories.
+ * ``path``: A glob pattern matching the directories where your todos are
+   located.
  * ``date_format``: The date format used both for displaying dates, and parsing
    input dates.
    If this option is not specified the ISO-8601 (``%Y-%m-%d``) format is used.
