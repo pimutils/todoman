@@ -5,6 +5,9 @@ Bug reports and code and documentation patches are greatly appreciated. You can
 also help by using the development version of todoman and reporting any bugs
 you might encounter [here](https://github.com/pimutils/todoman/issues).
 
+Note that all participants must follow the [pimutils Code of
+Conduct](http://pimutils.org/coc).
+
 
 Code and Documentation
 ----------------------
