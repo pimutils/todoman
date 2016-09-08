@@ -4,6 +4,7 @@ from time import mktime
 import ansi.colour.fg
 import ansi.colour.fx
 import ansi.sequence
+import click
 import parsedatetime
 import urwid
 from dateutil.tz import tzlocal
@@ -13,6 +14,26 @@ class EditState:
     none = object()
     saved = object()
     deleted = object()
+
+
+class TextField(urwid.Edit):
+    """
+    A textfield with an extra shortcut to allow editing in $EDITOR
+    """
+
+    def __init__(self, parent, *a, **kw):
+        self._parent = parent
+        super().__init__(*a, **kw)
+
+    def keypress(self, size, key):
+        if key == "ctrl i":
+            # Force the screen to be redrawn
+            self._parent._loop.screen.clear()
+            new_text = click.edit(self.get_edit_text())
+            if new_text is not None:
+                self.set_edit_text(new_text)
+        else:
+            return super().keypress(size, key)
 
 
 class TodoEditor:
@@ -29,6 +50,7 @@ class TodoEditor:
         self.databases = databases
         self.formatter = formatter
         self.saved = EditState.none
+        self._loop = None
 
         if todo.due:
             # TODO: use proper date_format
@@ -36,11 +58,11 @@ class TodoEditor:
         else:
             due = ""
 
-        self._summary = urwid.Edit(edit_text=todo.summary)
-        self._description = urwid.Edit(edit_text=todo.description,
-                                       multiline=True)
-        self._location = urwid.Edit(edit_text=todo.location)
-        self._due = urwid.Edit(edit_text=due)
+        self._summary = TextField(self, edit_text=todo.summary)
+        self._description = TextField(self, edit_text=todo.description,
+                                      multiline=True)
+        self._location = TextField(self, edit_text=todo.location)
+        self._due = TextField(self, edit_text=due)
         self._completed = urwid.CheckBox("", state=todo.is_completed)
         self._urgent = urwid.CheckBox("", state=todo.priority != 0)
 
@@ -74,9 +96,16 @@ class TodoEditor:
         Shows the UI for editing a given todo. Returns True if modifications
         were saved.
         """
-        loop = urwid.MainLoop(self._ui, unhandled_input=self._keypress,
-                              handle_mouse=False)
-        loop.run()
+        self._loop = urwid.MainLoop(self._ui, unhandled_input=self._keypress,
+                                    handle_mouse=False)
+        try:
+            self._loop.run()
+        except Exception:
+            try:  # Try to leave terminal in usable state
+                self._loop.stop()
+            except Exception:
+                pass
+        self._loop = None
         return self.saved
 
     def _save(self, btn):
