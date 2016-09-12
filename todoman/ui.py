@@ -31,6 +31,7 @@ class TodoEditor:
         self.databases = databases
         self.formatter = formatter
         self.saved = EditState.none
+        self._loop = None
 
         if todo.due:
             # TODO: use proper date_format
@@ -78,9 +79,19 @@ class TodoEditor:
         Shows the UI for editing a given todo. Returns True if modifications
         were saved.
         """
-        loop = urwid.MainLoop(self._ui, unhandled_input=self._keypress,
-                              handle_mouse=False)
-        loop.run()
+        self._loop = urwid.MainLoop(
+            self._ui,
+            unhandled_input=self._keypress,
+            handle_mouse=False,
+        )
+        try:
+            self._loop.run()
+        except Exception:
+            try:  # Try to leave terminal in usable state
+                self._loop.stop()
+            except Exception:
+                pass
+        self._loop = None
         return self.saved
 
     def _save(self, btn):
