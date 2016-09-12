@@ -8,6 +8,8 @@ import parsedatetime
 import urwid
 from dateutil.tz import tzlocal
 
+from . import widgets
+
 
 class EditState:
     none = object()
@@ -36,11 +38,13 @@ class TodoEditor:
         else:
             due = ""
 
-        self._summary = urwid.Edit(edit_text=todo.summary)
-        self._description = urwid.Edit(edit_text=todo.description,
-                                       multiline=True)
-        self._location = urwid.Edit(edit_text=todo.location)
-        self._due = urwid.Edit(edit_text=due)
+        self._summary = widgets.ExtendedEdit(edit_text=todo.summary)
+        self._description = widgets.ExtendedEdit(
+            edit_text=todo.description,
+            multiline=True,
+        )
+        self._location = widgets.ExtendedEdit(edit_text=todo.location)
+        self._due = widgets.ExtendedEdit(edit_text=due)
         self._completed = urwid.CheckBox("", state=todo.is_completed)
         self._urgent = urwid.CheckBox("", state=todo.priority != 0)
 
