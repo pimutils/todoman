@@ -125,6 +125,24 @@ def test_dtstamp(tmpdir, runner, create):
     assert todo.dtstamp.tzinfo is pytz.utc
 
 
+def test_default_list(tmpdir, runner, create):
+    """
+    Test the default_list config parameter
+    """
+    result = runner.invoke(cli, ['new', 'test default list'])
+    assert result.exception
+
+    path = tmpdir.join('config')
+    path.write('default_list = default\n', 'a')
+
+    result = runner.invoke(cli, ['new', 'test default list'])
+    assert not result.exception
+
+    db = Database(str(tmpdir + '/default'))
+    todo = list(db.todos.values())[0]
+    assert todo.summary == 'test default list'
+
+
 def test_sorting_fields(tmpdir, runner, default_database):
     tasks = []
     for i in range(1, 10):
