@@ -204,7 +204,7 @@ class Todo:
         - Convert everything to datetime
         - Add missing timezones
         '''
-        if isinstance(x, date):
+        if isinstance(x, date) and not isinstance(x, datetime):
             x = datetime(x.year, x.month, x.day)
         elif isinstance(x, time):
             x = datetime.combine(date.today(), x)

@@ -227,5 +227,26 @@ def test_sorting_null_values(tmpdir, runner, create):
     assert 'aaa' in result.output.splitlines()[1]
 
 
+@pytest.mark.parametrize('hours', [1, -1])
+def test_color_due_dates(tmpdir, runner, create, hours):
+    due = datetime.datetime.now() + datetime.timedelta(hours=hours)
+    create(
+        'test.ics',
+        'SUMMARY:aaa\n'
+        'STATUS:IN-PROGRESS\n'
+        'DUE;VALUE=DATE-TIME;TZID=ART:{}\n'
+        .format(due.strftime('%Y%m%dT%H%M%S'))
+    )
+
+    result = runner.invoke(cli, ['--color', 'always'])
+    assert not result.exception
+    if hours == 1:
+        assert result.output == \
+            ' 1 [ ]   2016-10-04 aaa @default\x1b[0m\n'
+    else:
+        assert result.output == \
+            ' 1 [ ]   \x1b[31m2016-10-04\x1b[0m aaa @default\x1b[0m\n'
+
+
 # TODO: test aware/naive datetime sorting
 # TODO: test --grep
