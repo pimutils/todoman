@@ -1,3 +1,5 @@
+import sys
+
 from datetime import datetime
 from time import mktime
 
@@ -9,6 +11,10 @@ import urwid
 from dateutil.tz import tzlocal
 
 from . import widgets
+
+_palette = [
+    ('error', 'light red', '')
+]
 
 
 class EditState:
@@ -32,6 +38,8 @@ class TodoEditor:
         self.formatter = formatter
         self.saved = EditState.none
         self._loop = None
+
+        self._msg_text = urwid.Text('')
 
         if todo.due:
             # TODO: use proper date_format
@@ -70,9 +78,12 @@ class TodoEditor:
         grid = urwid.Pile(pile_items)
         spacer = urwid.Divider()
 
-        items = [grid, spacer, buttons]
+        items = [grid, spacer, self._msg_text, buttons]
 
         self._ui = urwid.ListBox(items)
+
+    def message(self, text):
+        self._msg_text.set_text(text)
 
     def edit(self):
         """
@@ -81,20 +92,32 @@ class TodoEditor:
         """
         self._loop = urwid.MainLoop(
             self._ui,
+            palette=_palette,
             unhandled_input=self._keypress,
             handle_mouse=False,
         )
         try:
             self._loop.run()
-        except Exception:
+        except Exception as e:
+            tb = sys.exc_info()[-1]
             try:  # Try to leave terminal in usable state
                 self._loop.stop()
             except Exception:
                 pass
+            raise e.with_traceback(tb)
         self._loop = None
         return self.saved
 
     def _save(self, btn):
+        try:
+            self._save_inner()
+        except Exception as e:
+            self.message(('error', str(e)))
+        else:
+            self.saved = EditState.saved
+            raise urwid.ExitMainLoop()
+
+    def _save_inner(self):
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
@@ -119,9 +142,6 @@ class TodoEditor:
         # https://tools.ietf.org/html/rfc5545#section-3.8
         # geo (lat, lon)
         # RESOURCE: the main room
-
-        self.saved = EditState.saved
-        raise urwid.ExitMainLoop()
 
     def _delete(self, btn):
         self.saved = EditState.deleted
