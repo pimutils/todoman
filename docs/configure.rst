@@ -24,6 +24,9 @@ Main section
    TTY (value ``auto``). Set to ``never`` to disable colored output entirely,
    or ``always`` to enable it regardless. This can be overridden with the
    ``--color`` option.
+ * ``default_list``: The default list for adding a todo. If you do not specify
+   this option, you must use the ``--list`` / ``-l`` option every time you add
+   a todo.
 
 Sample configuration
 --------------------

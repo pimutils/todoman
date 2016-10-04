@@ -21,6 +21,14 @@ def _validate_lists_param(ctx, param=None, lists=None):
 
 
 def _validate_list_param(ctx, param=None, name=None):
+    if name is None:
+        if 'default_list' in ctx.obj['config']['main']:
+            name = ctx.obj['config']['main']['default_list']
+        else:
+            raise click.BadParameter(
+                "{}. You must set 'default_list' or use -l."
+                .format(name)
+            )
     if name in ctx.obj['db']:
         return ctx.obj['db'][name]
     else:
@@ -90,7 +98,7 @@ except ImportError:
 @cli.command()
 @click.argument('summary', nargs=-1)
 @click.option('--list', '-l', callback=_validate_list_param,
-              help='The list to create the task in.', required=True)
+              help='The list to create the task in.')
 @click.option('--due', '-d', default='', callback=_validate_due_param,
               help=('The due date of the task, in the format specified in the '
                     'configuration file.'))
