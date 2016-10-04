@@ -166,6 +166,7 @@ def done(ctx, ids):
         todo, database = get_todo(ctx.obj['db'], id)
         todo.is_completed = True
         database.save(todo)
+        click.echo(ctx.obj['formatter'].detailed(todo, database))
 
 
 def _abort_if_false(ctx, param, value):
