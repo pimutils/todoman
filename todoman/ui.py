@@ -1,5 +1,3 @@
-import sys
-
 from datetime import datetime
 from time import mktime
 
@@ -98,13 +96,12 @@ class TodoEditor:
         )
         try:
             self._loop.run()
-        except Exception as e:
-            tb = sys.exc_info()[-1]
+        except Exception:
             try:  # Try to leave terminal in usable state
                 self._loop.stop()
             except Exception:
                 pass
-            raise e.with_traceback(tb)
+            raise
         self._loop = None
         return self.saved
 
