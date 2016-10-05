@@ -240,12 +240,13 @@ def test_color_due_dates(tmpdir, runner, create, hours):
 
     result = runner.invoke(cli, ['--color', 'always'])
     assert not result.exception
+    due_str = due.strftime('%Y-%m-%d')
     if hours == 1:
         assert result.output == \
-            ' 1 [ ]   2016-10-04 aaa @default\x1b[0m\n'
+            ' 1 [ ]   {} aaa @default\x1b[0m\n'.format(due_str)
     else:
         assert result.output == \
-            ' 1 [ ]   \x1b[31m2016-10-04\x1b[0m aaa @default\x1b[0m\n'
+            ' 1 [ ]   \x1b[31m{}\x1b[0m aaa @default\x1b[0m\n'.format(due_str)
 
 
 # TODO: test aware/naive datetime sorting
