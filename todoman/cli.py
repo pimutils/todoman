@@ -203,6 +203,7 @@ def delete(ctx, ids, yes):
     for id in ids:
         todo, database = get_todo(ctx.obj['db'], id)
         click.echo(ctx.obj['formatter'].compact(todo, database))
+        todos.append(todo)
 
     if not yes:
         click.confirm('Do you want to delete those tasks?', abort=True)
