@@ -23,7 +23,7 @@ setup(
         'version_scheme': 'post-release',
         'write_to': 'todoman/version.py',
     },
-    setup_requires=['setuptools_scm', 'pytest-runner'],
+    setup_requires=['setuptools_scm != 1.12.0', 'pytest-runner'],
     tests_require=['pytest'],
     classifiers=[
         'Development Status :: 4 - Beta',
