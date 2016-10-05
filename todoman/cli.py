@@ -192,7 +192,8 @@ def flush(ctx):
 @cli.command()
 @click.pass_context
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
-def delete(ctx, ids):
+@click.option('--yes', is_flag=True, default=False)
+def delete(ctx, ids, yes):
     '''
     Delete tasks.
     '''
@@ -202,7 +203,8 @@ def delete(ctx, ids):
         todo, database = get_todo(ctx.obj['db'], id)
         click.echo(ctx.obj['formatter'].compact(todo, database))
 
-    click.confirm('Do you want to delete those tasks?', abort=True)
+    if not yes:
+        click.confirm('Do you want to delete those tasks?', abort=True)
 
     for todo in todos:
         click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
