@@ -107,6 +107,7 @@ def test_delete(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     result = runner.invoke(cli, ['delete', '1', '--yes'])
+    assert not result.exception
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert len(result.output.splitlines()) == 0
