@@ -139,9 +139,6 @@ def edit(ctx, id):
     state = ui.edit()
     if state == EditState.saved:
         database.save(todo)
-    elif state == EditState.deleted:
-        click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
-        database.delete(todo)
 
 
 @cli.command()
