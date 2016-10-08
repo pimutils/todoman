@@ -18,7 +18,6 @@ _palette = [
 class EditState:
     none = object()
     saved = object()
-    deleted = object()
 
 
 class TodoEditor:
@@ -56,10 +55,8 @@ class TodoEditor:
         self._urgent = urwid.CheckBox("", state=todo.priority != 0)
 
         save_btn = urwid.Button('Save', on_press=self._save)
-        delete_btn = urwid.Button('Delete', on_press=self._delete)
-        cancel_btn = urwid.Button('Cancel', on_press=self._cancel)
-        buttons = urwid.Columns([(10, cancel_btn), (8, save_btn),
-                                 (10, delete_btn)], dividechars=2)
+        cancel_text = urwid.Text('Hit Ctrl-C to cancel.')
+        buttons = urwid.Columns([(8, save_btn), cancel_text], dividechars=2)
 
         pile_items = []
         for label, field in [("Summary", self._summary),
@@ -139,10 +136,6 @@ class TodoEditor:
         # https://tools.ietf.org/html/rfc5545#section-3.8
         # geo (lat, lon)
         # RESOURCE: the main room
-
-    def _delete(self, btn):
-        self.saved = EditState.deleted
-        raise urwid.ExitMainLoop()
 
     def _cancel(self, btn):
         raise urwid.ExitMainLoop()
