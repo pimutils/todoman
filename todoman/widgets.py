@@ -28,6 +28,11 @@ import urwid
 
 class ExtendedEdit(urwid.Edit):
     """A text editing widget supporting some more editing commands"""
+
+    def __init__(self, parent, *a, **kw):
+        self._parent = parent
+        super().__init__(*a, **kw)
+
     def keypress(self, size, key):
         if key == 'ctrl w':
             self._delete_word()
@@ -41,7 +46,7 @@ class ExtendedEdit(urwid.Edit):
             self._goto_end_of_line()
         elif key == 'ctrl d':
             self._delete_forward_letter()
-        elif key == 'ctrl i':
+        elif key == 'ctrl o':
             # Allow editing in $EDITOR
             self._editor()
         # TODO: alt b, alt f
@@ -110,4 +115,4 @@ class ExtendedEdit(urwid.Edit):
         self._parent._loop.screen.clear()
         new_text = click.edit(self.get_edit_text())
         if new_text is not None:
-            self.set_edit_text(new_text)
+            self.set_edit_text(new_text.strip())
