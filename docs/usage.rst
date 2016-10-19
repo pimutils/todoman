@@ -4,26 +4,11 @@ Usage
 Todoman usage is `CLI`_ based (thought there are some TUI bits, and the
 intentions is to also provide a fully `TUI`_-based interface).
 
-First of all, the classic usage output::
+First of all, the classic usage output:
 
-    Usage: todo [OPTIONS] COMMAND [ARGS]...
+.. runblock:: console
 
-    Options:
-      --human-time / --no-human-time  Accept informal descriptions such as
-                                      "tomorrow" instead of a properly formatted
-                                      date.
-      --version                       Show the version and exit.
-      --help                          Show this message and exit.
-
-    Commands:
-      done   Mark a task as done.
-      edit   Edit a task interactively.
-      flush  Delete done tasks.
-      list   List unfinished tasks.
-      new    Create a new task with SUMMARY.
-      repl   Start an interactive shell.
-      shell  Start an interactive shell.
-      show   Show details about a task.
+    $ todo --help
 
 The default action is ``list``, which outputs all tasks for all calendars, each
 with a non-permanent unique id::
