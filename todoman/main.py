@@ -99,3 +99,12 @@ def get_todo(databases, todo_id):
         print("No todo with id {}.".format(todo_id))
         sys.exit(-2)
         # raise ValueError("No such todo {}.".format(todo_id)) from e
+
+
+def get_todos(ctx, ids):
+    todos = []
+    for id in ids:
+        todo, database = get_todo(ctx.obj['db'], id)
+        click.echo(ctx.obj['formatter'].compact(todo, database))
+        todos.append(todo)
+    return todos, database
