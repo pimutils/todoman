@@ -113,6 +113,24 @@ def test_delete(tmpdir, runner, create):
     assert len(result.output.splitlines()) == 0
 
 
+def test_copy(tmpdir, runner, create):
+    tmpdir.mkdir('other_list')
+    create(
+        'test.ics',
+        'SUMMARY:test_copy\n'
+    )
+    result = runner.invoke(cli, ['list'])
+    assert not result.exception
+    assert 'test_copy' in result.output
+    assert 'other_list' not in result.output
+    result = runner.invoke(cli, ['copy', '-l', 'other_list', '1'])
+    assert not result.exception
+    result = runner.invoke(cli, ['list'])
+    assert not result.exception
+    assert 'test_copy' in result.output
+    assert 'other_list' in result.output
+
+
 def test_dtstamp(tmpdir, runner, create):
     """
     Test that we add the DTSTAMP to new entries as per RFC5545.
