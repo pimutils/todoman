@@ -5,7 +5,7 @@ from os.path import expanduser, isdir, join
 import click
 
 from .configuration import load_config
-from .main import dump_idfile, get_task_sort_function, get_todo
+from .main import dump_idfile, get_task_sort_function, get_todo, get_todos
 from .model import Database, Todo
 from .ui import EditState, TodoEditor, TodoFormatter
 
@@ -196,11 +196,7 @@ def delete(ctx, ids, yes):
     Delete tasks.
     '''
 
-    todos = []
-    for id in ids:
-        todo, database = get_todo(ctx.obj['db'], id)
-        click.echo(ctx.obj['formatter'].compact(todo, database))
-        todos.append(todo)
+    todos, database = get_todos(ctx, ids)
 
     if not yes:
         click.confirm('Do you want to delete those tasks?', abort=True)
@@ -208,6 +204,24 @@ def delete(ctx, ids, yes):
     for todo in todos:
         click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
         database.delete(todo)
+
+
+@cli.command()
+@click.pass_context
+@click.option('--list', '-l', callback=_validate_list_param,
+              help='The list to copy the tasks to.')
+@click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
+def copy(ctx, list, ids):
+    '''
+    Copy tasks to another list.
+    '''
+
+    todos, database = get_todos(ctx, ids)
+
+    for todo in todos:
+        click.echo('Copying {} to {} ({})'.format(
+            todo.uid, list, todo.summary))
+        list.save(todo)
 
 
 @cli.command()
