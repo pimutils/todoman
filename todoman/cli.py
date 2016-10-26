@@ -226,6 +226,25 @@ def copy(ctx, list, ids):
 
 @cli.command()
 @click.pass_context
+@click.option('--list', '-l', callback=_validate_list_param,
+              help='The list to move the tasks to.')
+@click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
+def move(ctx, list, ids):
+    '''
+    Move tasks to another list.
+    '''
+
+    todos, database = get_todos(ctx, ids)
+
+    for todo in todos:
+        click.echo('Moving {} to {} ({})'.format(
+            todo.uid, list, todo.summary))
+        list.save(todo)
+        database.delete(todo)
+
+
+@cli.command()
+@click.pass_context
 @click.option('--all', '-a', is_flag=True, help='Also show finished tasks.')
 @click.argument('lists', nargs=-1, callback=_validate_lists_param)
 @click.option('--urgent', is_flag=True, help='Only show urgent tasks.')
