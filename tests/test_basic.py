@@ -122,12 +122,34 @@ def test_copy(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert 'test_copy' in result.output
+    assert 'default' in result.output
     assert 'other_list' not in result.output
     result = runner.invoke(cli, ['copy', '-l', 'other_list', '1'])
     assert not result.exception
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert 'test_copy' in result.output
+    assert 'default' in result.output
+    assert 'other_list' in result.output
+
+
+def test_move(tmpdir, runner, create):
+    tmpdir.mkdir('other_list')
+    create(
+        'test.ics',
+        'SUMMARY:test_move\n'
+    )
+    result = runner.invoke(cli, ['list'])
+    assert not result.exception
+    assert 'test_move' in result.output
+    assert 'default' in result.output
+    assert 'other_list' not in result.output
+    result = runner.invoke(cli, ['move', '-l', 'other_list', '1'])
+    assert not result.exception
+    result = runner.invoke(cli, ['list'])
+    assert not result.exception
+    assert 'test_move' in result.output
+    assert 'default' not in result.output
     assert 'other_list' in result.output
 
 
