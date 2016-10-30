@@ -5,7 +5,6 @@ from os.path import normpath, split
 from uuid import uuid4
 
 import icalendar
-from ansi.colour.rgb import rgb8
 from atomicwrites import AtomicWriter
 from dateutil.tz import tzlocal
 
@@ -305,7 +304,7 @@ class Database:
     def color_ansi(self):
         rv = self.color_rgb
         if rv:
-            return rgb8(*rv)
+            return '\33[38;2;{!s};{!s};{!s}m'.format(*rv)
 
     def __str__(self):
         return self.name
