@@ -1,3 +1,4 @@
+import functools
 import glob
 import re
 from os.path import expanduser, isdir, join
@@ -43,6 +44,25 @@ def _validate_due_param(ctx, param, due):
         return ctx.obj['formatter'].unformat_date(due)
     except ValueError as e:
         raise click.BadParameter(e)
+
+
+def _todo_property_options(command):
+    click.option(
+        '--due', '-d', default='', callback=_validate_due_param,
+        help=('The due date of the task, in the format specified in the '
+              'configuration file.'))(command)
+
+    @functools.wraps(command)
+    def command_wrap(*a, **kw):
+        kw['todo_properties'] = {key: kw.pop(key) for key in ('due',)}
+        return command(*a, **kw)
+
+    return command_wrap
+
+
+_interactive_option = click.option(
+    '--interactive', '-i', is_flag=True,
+    help='Go into interactive mode before saving the task.')
 
 
 @click.group(invoke_without_command=True)
@@ -99,20 +119,19 @@ except ImportError:
 @click.argument('summary', nargs=-1)
 @click.option('--list', '-l', callback=_validate_list_param,
               help='The list to create the task in.')
-@click.option('--due', '-d', default='', callback=_validate_due_param,
-              help=('The due date of the task, in the format specified in the '
-                    'configuration file.'))
-@click.option('--interactive', '-i', is_flag=True,
-              help='Go into interactive mode before saving the task.')
+@_todo_property_options
+@_interactive_option
 @click.pass_context
-def new(ctx, summary, list, due, interactive):
+def new(ctx, summary, list, todo_properties, interactive):
     '''
     Create a new task with SUMMARY.
     '''
 
     todo = Todo()
+    for key, value in todo_properties.items():
+        if value:
+            setattr(todo, key, value)
     todo.summary = ' '.join(summary)
-    todo.due = due
 
     if interactive:
         ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
@@ -129,16 +148,32 @@ def new(ctx, summary, list, due, interactive):
 
 @cli.command()
 @click.pass_context
+@_todo_property_options
+@_interactive_option
 @with_id_arg
-def edit(ctx, id):
+def edit(ctx, id, todo_properties, interactive):
     '''
-    Edit a task interactively.
+    Edit the task with id ID.
     '''
     todo, database = get_todo(ctx.obj['db'], id)
-    ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
-    state = ui.edit()
-    if state == EditState.saved:
+    changes = False
+    for key, value in todo_properties.items():
+        if value:
+            changes = True
+            setattr(todo, key, value)
+
+    if interactive:
+        ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
+        state = ui.edit()
+        if state == EditState.saved:
+            changes = True
+
+    if changes:
         database.save(todo)
+        click.echo(ctx.obj['formatter'].detailed(todo, database))
+    else:
+        click.echo('No changes.')
+        ctx.exit(1)
 
 
 @cli.command()
