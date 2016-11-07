@@ -1,6 +1,6 @@
+atomicwrites
 click>=6.0
 icalendar
-urwid
-pyxdg
-atomicwrites
 parsedatetime
+pyxdg
+urwid
