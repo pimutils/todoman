@@ -58,6 +58,7 @@ class Todo:
             self.todo = icalendar.Todo()
             self.todo.add('uid', uuid4())
             self.todo.add('due', now + timedelta(days=1))
+            self.todo.add('dtstart', now + timedelta(hours=2))
             self.todo.add('percent-complete', 0)
             self.todo.add('priority', 0)
             self.todo.add('created', now)
@@ -148,6 +149,20 @@ class Todo:
     @due.setter
     def due(self, due):
         self._set_field('due', due)
+
+    @property
+    def dtstart(self):
+        """
+        Returns the dtstart date, as a datetime object, if set, or None.
+        """
+        if self.todo.get('dtstart', None) is None:
+            return None
+        else:
+            return self._normalize_datetime(self.todo.decoded('dtstart'))
+
+    @dtstart.setter
+    def dtstart(self, dtstart):
+        self._set_field('dtstart', dtstart)
 
     @property
     def completed_at(self):

@@ -42,6 +42,12 @@ class TodoEditor:
         else:
             due = ""
 
+        if todo.dtstart:
+            # TODO: use proper date_format
+            dtstart = formatter.format_date(todo.dtstart)
+        else:
+            dtstart = ''
+
         self._summary = widgets.ExtendedEdit(parent=self,
                                              edit_text=todo.summary)
         self._description = widgets.ExtendedEdit(
@@ -54,6 +60,7 @@ class TodoEditor:
             edit_text=todo.location
         )
         self._due = widgets.ExtendedEdit(parent=self, edit_text=due)
+        self._dtstart = widgets.ExtendedEdit(parent=self, edit_text=dtstart)
         self._completed = urwid.CheckBox("", state=todo.is_completed)
         self._urgent = urwid.CheckBox("", state=todo.priority != 0)
 
@@ -66,6 +73,7 @@ class TodoEditor:
                              ("Description", self._description),
                              ("Location", self._location),
                              ("Due", self._due),
+                             ("Start", self._dtstart),
                              ("Completed", self._completed),
                              ("Urgent", self._urgent),
                              ]:
@@ -123,6 +131,11 @@ class TodoEditor:
         else:
             self.todo.due = None
 
+        if self.dtstart:
+            self.todo.dtstart = self.formatter.unformat_date(self.dtstart)
+        else:
+            self.todo.dtstart = None
+
         self.todo.is_completed = self._completed.get_state()
 
         # If it was already non-zero, keep it that way. Let's not overwrite
@@ -162,6 +175,10 @@ class TodoEditor:
     @property
     def due(self):
         return self._due.edit_text
+
+    @property
+    def dtstart(self):
+        return self._dtstart.edit_text
 
 
 class TodoFormatter:
