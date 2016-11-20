@@ -61,7 +61,7 @@ def _todo_property_options(command):
 
 
 _interactive_option = click.option(
-    '--interactive', '-i', is_flag=True,
+    '--interactive', '-i', is_flag=True, default=None,
     help='Go into interactive mode before saving the task.')
 
 
@@ -162,7 +162,7 @@ def edit(ctx, id, todo_properties, interactive):
             changes = True
             setattr(todo, key, value)
 
-    if interactive:
+    if interactive or (not changes and interactive is None):
         ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
         state = ui.edit()
         if state == EditState.saved:
