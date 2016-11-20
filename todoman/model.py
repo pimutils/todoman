@@ -58,7 +58,6 @@ class Todo:
             self.todo = icalendar.Todo()
             self.todo.add('uid', uuid4())
             self.todo.add('due', now + timedelta(days=1))
-            self.todo.add('dtstart', now + timedelta(hours=2))
             self.todo.add('percent-complete', 0)
             self.todo.add('priority', 0)
             self.todo.add('created', now)
