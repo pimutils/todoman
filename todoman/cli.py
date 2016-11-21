@@ -52,13 +52,13 @@ def _todo_property_options(command):
         help=('The due date of the task, in the format specified in the '
               'configuration file.'))(command)
     click.option(
-        '--dtstart', '-s', default='', callback=_validate_date_param,
+        '--start', '-s', default='', callback=_validate_date_param,
         help='When the task starts.')(command)
 
     @functools.wraps(command)
     def command_wrap(*a, **kw):
         kw['todo_properties'] = {key: kw.pop(key) for key in
-                                 ('due', 'dtstart')}
+                                 ('due', 'start')}
         return command(*a, **kw)
 
     return command_wrap

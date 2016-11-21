@@ -150,7 +150,7 @@ class Todo:
         self._set_field('due', due)
 
     @property
-    def dtstart(self):
+    def start(self):
         """
         Returns the dtstart date, as a datetime object, if set, or None.
         """
@@ -159,8 +159,8 @@ class Todo:
         else:
             return self._normalize_datetime(self.todo.decoded('dtstart'))
 
-    @dtstart.setter
-    def dtstart(self, dtstart):
+    @start.setter
+    def start(self, dtstart):
         self._set_field('dtstart', dtstart)
 
     @property
