@@ -42,9 +42,9 @@ class TodoEditor:
         else:
             due = ""
 
-        if todo.dtstart:
+        if todo.start:
             # TODO: use proper date_format
-            dtstart = formatter.format_date(todo.dtstart)
+            dtstart = formatter.format_date(todo.start)
         else:
             dtstart = ''
 
@@ -132,9 +132,9 @@ class TodoEditor:
             self.todo.due = None
 
         if self.dtstart:
-            self.todo.dtstart = self.formatter.unformat_date(self.dtstart)
+            self.todo.start = self.formatter.unformat_date(self.dtstart)
         else:
-            self.todo.dtstart = None
+            self.todo.start = None
 
         self.todo.is_completed = self._completed.get_state()
 
