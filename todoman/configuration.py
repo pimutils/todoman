@@ -1,11 +1,27 @@
-from configparser import ConfigParser
 from os import environ
 from os.path import exists, join
 
 import xdg.BaseDirectory
+import toml
 from click import ClickException
 
 from . import __documentation__
+
+
+defaults = {
+    'main': {
+        'color': 'auto',
+        'date_format': '%Y-%m-%d',
+    }
+}
+
+
+def merge_dicts(a, b):
+    for k, v in b.items():
+        if isinstance(v, dict) and k in a:
+            merge_dicts(a[k], v)
+        else:
+            a[k] = v
 
 
 def load_config():
@@ -19,7 +35,7 @@ def load_config():
         return _load_config_impl(custom_path)
 
     for d in xdg.BaseDirectory.xdg_config_dirs:
-        path = join(d, 'todoman', 'todoman.conf')
+        path = join(d, 'todoman', 'todoman.toml')
         if exists(path):
             return _load_config_impl(path)
 
@@ -31,6 +47,8 @@ def load_config():
 
 
 def _load_config_impl(path):
-    config = ConfigParser(interpolation=None)
-    config.read(path)
-    return config
+    with open(path) as conffile:
+        config = toml.loads(conffile.read())
+    # TODO: Validate required fields here (ie: path)
+    merge_dicts(defaults, config)
+    return defaults

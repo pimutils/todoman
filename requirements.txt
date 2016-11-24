@@ -3,4 +3,5 @@ click>=6.0
 icalendar
 parsedatetime
 pyxdg
+toml
 urwid

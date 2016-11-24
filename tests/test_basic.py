@@ -174,7 +174,7 @@ def test_default_list(tmpdir, runner, create):
     assert result.exception
 
     path = tmpdir.join('config')
-    path.write('default_list = default\n', 'a')
+    path.write('default_list = "default"\n', 'a')
 
     result = runner.invoke(cli, ['new', 'test default list'])
     assert not result.exception
