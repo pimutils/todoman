@@ -67,7 +67,7 @@ def get_task_sort_function(fields):
                 field = field[1:]
 
             value = getattr(todo, field)
-            if field in ('due', 'created_at', 'completed_at'):
+            if field in ('due', 'created_at', 'completed_at', 'start'):
                 value = value.timestamp() if value else float('inf')
 
             if neg:

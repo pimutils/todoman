@@ -39,22 +39,26 @@ def _validate_list_param(ctx, param=None, name=None):
         )
 
 
-def _validate_due_param(ctx, param, due):
+def _validate_date_param(ctx, param, val):
     try:
-        return ctx.obj['formatter'].unformat_date(due)
+        return ctx.obj['formatter'].unformat_date(val)
     except ValueError as e:
         raise click.BadParameter(e)
 
 
 def _todo_property_options(command):
     click.option(
-        '--due', '-d', default='', callback=_validate_due_param,
+        '--due', '-d', default='', callback=_validate_date_param,
         help=('The due date of the task, in the format specified in the '
               'configuration file.'))(command)
+    click.option(
+        '--start', '-s', default='', callback=_validate_date_param,
+        help='When the task starts.')(command)
 
     @functools.wraps(command)
     def command_wrap(*a, **kw):
-        kw['todo_properties'] = {key: kw.pop(key) for key in ('due',)}
+        kw['todo_properties'] = {key: kw.pop(key) for key in
+                                 ('due', 'start')}
         return command(*a, **kw)
 
     return command_wrap
