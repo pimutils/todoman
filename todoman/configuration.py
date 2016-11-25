@@ -1,11 +1,38 @@
+import copy
 from os import environ
 from os.path import exists, join
 
-import xdg.BaseDirectory
 import toml
+import xdg.BaseDirectory
 from click import ClickException
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 
 from . import __documentation__
+
+
+schema = {
+    'type': 'object',
+    'properties': {
+        'main': {
+            'type': 'object',
+            'properties': {
+                'color': {'type': 'string'},
+                'path': {'type': 'string'},
+                'date_format': {'type': 'string'},
+                'default_list': {'type': 'string'},
+            },
+            'required': [
+                'path',
+            ],
+            'additionalProperties': False
+        }
+    },
+    'required': [
+        'main',
+    ],
+    'additionalProperties': False
+}
 
 
 defaults = {
@@ -14,6 +41,10 @@ defaults = {
         'date_format': '%Y-%m-%d',
     }
 }
+
+
+class ConfigurationError(Exception):
+    pass
 
 
 def merge_dicts(a, b):
@@ -47,8 +78,14 @@ def load_config():
 
 
 def _load_config_impl(path):
+    config = copy.deepcopy(defaults)
     with open(path) as conffile:
-        config = toml.loads(conffile.read())
-    # TODO: Validate required fields here (ie: path)
-    merge_dicts(defaults, config)
-    return defaults
+        explicit = toml.loads(conffile.read())
+    merge_dicts(config, explicit)
+    try:
+        validate(config, schema)
+    except ValidationError as e:
+        message_parts = str(e).split('\n\n')
+        message = '{}\n\n{}'.format(message_parts[0], message_parts[2])
+        raise ConfigurationError(message) from e
+    return config
