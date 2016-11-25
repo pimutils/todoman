@@ -1,19 +1,21 @@
 Configuring
 ===========
 
-You'll need to configure Todoman before the first usage, using its simple
-ini-like configuration file.
+You'll need to configure todoman before the first usage. The configuration file
+,uses TOML_, and is described below.
+
+.. _TOML: https://github.com/toml-lang/toml
 
 Configuration File
 ------------------
 
 The configuration file should be placed in
-``$XDG_CONFIG_DIR/todoman/todoman.conf``. ``$XDG_CONFIG_DIR`` defaults to
+``$XDG_CONFIG_DIR/todoman/todoman.toml``. ``$XDG_CONFIG_DIR`` defaults to
 ``~/.config`` is most situations, so this will generally be
-``~/.config/todoman/todoman.conf``.
+``~/.config/todoman/todoman.toml``.
 
-Main section
-~~~~~~~~~~~~
+Main table
+~~~~~~~~~~
 
  * ``path``: A glob pattern matching the directories where your todos are
    located.
@@ -36,8 +38,8 @@ directory inside ``~/.local/share/calendars/``, and use the ISO-8601 date
 format (note that this is the default format, so this particular declaration is
 redundant).
 
-.. literalinclude:: ../todoman.conf.sample
-  :language: ini
+.. literalinclude:: ../todoman.toml.sample
+  :language: toml
 
 Color and displayname
 ---------------------
