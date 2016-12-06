@@ -1,7 +1,8 @@
-import pickle
 import logging
-import os
 import errno
+import os
+import pickle
+import socket
 from datetime import date, datetime, time, timedelta
 from os.path import normpath, split
 from uuid import uuid4
@@ -58,8 +59,9 @@ class Todo:
             self.todo = todo
         else:
             now = datetime.now(self._localtimezone)
+            uid = uuid4().hex + socket.gethostname()
             self.todo = icalendar.Todo()
-            self.todo.add('uid', uuid4())
+            self.todo.add('uid', uid)
             self.todo.add('due', now + timedelta(days=1))
             self.todo.add('percent-complete', 0)
             self.todo.add('priority', 0)
