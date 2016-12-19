@@ -172,9 +172,7 @@ class TodoEditor:
         raise urwid.ExitMainLoop()
 
     def _keypress(self, key):
-        if key in ('q', 'Q'):
-            raise urwid.ExitMainLoop()
-        elif key.lower() == 'f1':
+        if key.lower() == 'f1':
             self._toggle_help()
 
     @property
