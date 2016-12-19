@@ -65,7 +65,7 @@ class TodoEditor:
         self._urgent = urwid.CheckBox("", state=todo.priority != 0)
 
         save_btn = urwid.Button('Save', on_press=self._save)
-        cancel_text = urwid.Text('Hit Ctrl-C to cancel.')
+        cancel_text = urwid.Text('Hit Ctrl-C to cancel, F1 for help.')
         buttons = urwid.Columns([(8, save_btn), cancel_text], dividechars=2)
 
         pile_items = []
@@ -84,9 +84,24 @@ class TodoEditor:
         grid = urwid.Pile(pile_items)
         spacer = urwid.Divider()
 
-        items = [grid, spacer, self._msg_text, buttons]
-
+        self._ui_content = items = [grid, spacer, self._msg_text, buttons]
         self._ui = urwid.ListBox(items)
+
+        self._help_text = urwid.Text(
+            '\n\nGlobal:\n'
+            ' F1: Toggle help\n'
+            ' Ctrl-C: Cancel\n\n'
+            'In Textfields:\n'
+            + '\n'.join(' {}: {}'.format(k, v) for k, v
+                        in widgets.ExtendedEdit.HELP)
+        )
+
+    def _toggle_help(self):
+        if self._ui_content[-1] is self._help_text:
+            self._ui_content.pop()
+        else:
+            self._ui_content.append(self._help_text)
+        self._loop.draw_screen()
 
     def message(self, text):
         self._msg_text.set_text(text)
@@ -157,8 +172,8 @@ class TodoEditor:
         raise urwid.ExitMainLoop()
 
     def _keypress(self, key):
-        if key in ('q', 'Q'):
-            raise urwid.ExitMainLoop()
+        if key.lower() == 'f1':
+            self._toggle_help()
 
     @property
     def summary(self):

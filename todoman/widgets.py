@@ -29,6 +29,16 @@ import urwid
 class ExtendedEdit(urwid.Edit):
     """A text editing widget supporting some more editing commands"""
 
+    HELP = [
+        ('Ctrl-W', 'Delete word'),
+        ('Ctrl-U', 'Delete until beginning of line'),
+        ('Ctrl-K', 'Delete until end of line'),
+        ('Ctrl-A', 'Go to beginning of line'),
+        ('Ctrl-E', 'Go to end of line'),
+        ('Ctrl-D', 'Delete forward letter'),
+        ('Ctrl-O', 'Edit in $EDITOR'),
+    ]
+
     def __init__(self, parent, *a, **kw):
         self._parent = parent
         super().__init__(*a, **kw)
