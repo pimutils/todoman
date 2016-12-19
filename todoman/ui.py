@@ -65,7 +65,7 @@ class TodoEditor:
         self._urgent = urwid.CheckBox("", state=todo.priority != 0)
 
         save_btn = urwid.Button('Save', on_press=self._save)
-        cancel_text = urwid.Text('Hit Ctrl-C to cancel, f1 for help.')
+        cancel_text = urwid.Text('Hit Ctrl-C to cancel, F1 for help.')
         buttons = urwid.Columns([(8, save_btn), cancel_text], dividechars=2)
 
         pile_items = []
@@ -89,7 +89,7 @@ class TodoEditor:
 
         self._help_text = urwid.Text(
             '\n\nGlobal:\n'
-            ' f1: Toggle help\n'
+            ' F1: Toggle help\n'
             ' Ctrl-C: Cancel\n\n'
             'In Textfields:\n'
             + '\n'.join(' {}: {}'.format(k, v) for k, v
