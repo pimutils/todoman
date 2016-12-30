@@ -259,6 +259,7 @@ class Database:
                 continue
 
             with open(entry_path, 'rb') as f:
+                new_cache[cache_key] = None
                 try:
                     cal = f.read()
                     if b'\nBEGIN:VTODO' in cal:
