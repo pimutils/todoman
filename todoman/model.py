@@ -1,6 +1,7 @@
 import pickle
 import logging
 import os
+import errno
 from datetime import date, datetime, time, timedelta
 from os.path import normpath, split
 from uuid import uuid4
@@ -8,6 +9,7 @@ from uuid import uuid4
 import icalendar
 from atomicwrites import AtomicWriter
 from dateutil.tz import tzlocal
+import xdg
 
 logger = logging.getLogger(name=__name__)
 # logger.addHandler(logging.FileHandler('model.log'))
@@ -237,7 +239,9 @@ class Database:
 
     def __init__(self, path):
         self.path = path
-        self._cache_path = os.path.join(self.path, '.todoman-cache')
+        self._cache_path = os.path.join(xdg.BaseDirectory.xdg_cache_home,
+                                        'todoman/vdir-caches/',
+                                        os.path.basename(path) + '.pickle')
 
     @cached_property
     def todos(self):
@@ -275,6 +279,12 @@ class Database:
                 if todo is not None}
 
     def _get_cache(self):
+        try:
+            os.makedirs(os.path.dirname(self._cache_path))
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
         try:
             with open(self._cache_path, 'rb') as f:
                 return pickle.load(f)
