@@ -1,3 +1,4 @@
+import pickle
 import logging
 import os
 from datetime import date, datetime, time, timedelta
@@ -236,6 +237,7 @@ class Database:
 
     def __init__(self, path):
         self.path = path
+        self._cache_path = os.path.join(self.path, '.todoman-cache')
 
     @cached_property
     def todos(self):
@@ -243,23 +245,44 @@ class Database:
         Returns a map of TODOs, where each key is the filename, and value a
         Todo object.
         """
-        rv = {}
+        cache = self._get_cache()
+        new_cache = {}
 
         for entry in os.listdir(self.path):
             if not entry.endswith(".ics"):
                 continue
-            with open(os.path.join(self.path, entry), 'rb') as f:
+            entry_path = os.path.join(self.path, entry)
+            mtime = _getmtime(entry_path)
+            cache_key = (entry, mtime)
+            if cache_key in cache:
+                new_cache[cache_key] = cache[cache_key]
+                continue
+
+            with open(entry_path, 'rb') as f:
                 try:
                     cal = f.read()
-                    if b'\nBEGIN:VTODO' not in cal:
-                        continue
-                    cal = icalendar.Calendar.from_ical(cal)
-                    for component in cal.walk('VTODO'):
-                        rv[entry] = Todo(component, entry)
+                    if b'\nBEGIN:VTODO' in cal:
+                        cal = icalendar.Calendar.from_ical(cal)
+                        for component in cal.walk('VTODO'):
+                            new_cache[cache_key] = Todo(component, entry)
                 except Exception as e:
                     logger.warn("Failed to read entry %s: %s.", entry, e)
+                    continue
 
-        return rv
+        self._set_cache(new_cache)
+        return {entry: todo for (entry, mtime), todo in new_cache.items()
+                if todo is not None}
+
+    def _get_cache(self):
+        try:
+            with open(self._cache_path, 'rb') as f:
+                return pickle.load(f)
+        except (IOError, pickle.UnpicklingError):
+            return {}
+
+    def _set_cache(self, cache):
+        with open(self._cache_path, 'wb+') as f:
+            pickle.dump(cache, f)
 
     def save(self, todo):
         path = os.path.join(self.path, todo.filename)
@@ -334,3 +357,8 @@ def _parse_color(color):
 
     if len(r) == len(g) == len(b) == 2:
         return int(r, 16), int(g, 16), int(b, 16)
+
+
+def _getmtime(path):
+    stat = os.stat(path)
+    return getattr(stat, 'st_mtime_ns', stat.st_mtime)
