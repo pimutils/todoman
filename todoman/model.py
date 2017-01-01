@@ -293,7 +293,7 @@ class Database:
 
     def _set_cache(self, cache):
         with open(self._cache_path, 'wb+') as f:
-            pickle.dump(cache, f)
+            pickle.dump(cache, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     def save(self, todo):
         path = os.path.join(self.path, todo.filename)
