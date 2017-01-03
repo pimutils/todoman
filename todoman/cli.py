@@ -1,5 +1,6 @@
 import functools
 import glob
+import logging
 from datetime import timedelta
 from os.path import expanduser, isdir
 
@@ -7,8 +8,13 @@ import click
 
 from . import model
 from .configuration import ConfigurationException, load_config
+from .interactive import TodomanInteractive
 from .model import Database, FileTodo
 from .ui import EditState, PorcelainFormatter, TodoEditor, TodoFormatter
+
+
+logging.basicConfig()
+logger = logging.getLogger()
 
 TODO_ID_MIN = 1
 with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
@@ -186,6 +192,16 @@ def edit(ctx, id, todo_properties, interactive):
     else:
         click.echo('No changes.')
         ctx.exit(1)
+
+
+@cli.command()
+@click.pass_context
+def interactive(ctx):
+    '''
+    Provide an interactive, curses-based interface to Todoman.
+    '''
+    TodomanInteractive(ctx.obj['db'], ctx.obj['formatter'])
+    ctx.exit(1)
 
 
 @cli.command()
