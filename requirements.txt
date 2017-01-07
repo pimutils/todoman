@@ -4,5 +4,5 @@ icalendar
 jsonschema
 parsedatetime
 pyxdg
-toml
+pytoml
 urwid

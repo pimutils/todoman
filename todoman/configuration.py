@@ -2,7 +2,7 @@ import copy
 from os import environ
 from os.path import exists, join
 
-import toml
+import pytoml
 import xdg.BaseDirectory
 from click import ClickException
 from jsonschema import validate
@@ -80,7 +80,7 @@ def load_config():
 def _load_config_impl(path):
     config = copy.deepcopy(defaults)
     with open(path) as conffile:
-        explicit = toml.loads(conffile.read())
+        explicit = pytoml.loads(conffile.read())
     merge_dicts(config, explicit)
     try:
         validate(config, schema)
