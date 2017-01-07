@@ -40,6 +40,14 @@ There is very little unit test coverage for now, and they can be run via
 [tox][tox]. Any bugfixes should include a test which would fail without the fix
 applied.
 
+Authors
+-------
+
+We don't manually track authors (eg: via an AUTHORS.txt file), however, all
+contributors retain copyright to their contributions.
+
+All authors can be listed via `git shortlog -sne`.
+
 [requirements]: requirements.txt
 [pep8]: http://python.org/dev/peps/pep-0008/
 [tox]: http://tox.testrun.org
