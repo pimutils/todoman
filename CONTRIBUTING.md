@@ -40,6 +40,11 @@ There is very little unit test coverage for now, and they can be run via
 [tox][tox]. Any bugfixes should include a test which would fail without the fix
 applied.
 
+Authorship
+----------
+
+If contributing to the project, please add yourself to ``AUTHORS.rst``.
+
 [requirements]: requirements.txt
 [pep8]: http://python.org/dev/peps/pep-0008/
 [tox]: http://tox.testrun.org
