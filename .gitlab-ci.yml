@@ -32,6 +32,12 @@ py36:
   script:
     - tox -e py36
 
+docs:
+  stage: test
+  image: python:3.6
+  script:
+    - tox -e docs
+
 flake8:
   image: python:latest
   stage: style
