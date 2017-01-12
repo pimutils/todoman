@@ -1,4 +1,7 @@
+from datetime import datetime, timedelta
+
 from todoman.cli import cli
+from todoman.model import Database
 
 
 def test_all(tmpdir, runner, create):
@@ -154,3 +157,45 @@ def test_filtering_lists(tmpdir, runner, create):
     assert not result.exception
     assert len(result.output.splitlines()) == 1
     assert 'todo two' in result.output
+
+
+def test_due_aware(tmpdir, runner, create):
+    now = datetime.now()
+
+    for i in [1, 23, 25, 48]:
+        due = now + timedelta(hours=i)
+        create(
+            'test_{}.ics'.format(i),
+            'SUMMARY:{}\n'
+            'DUE;VALUE=DATE-TIME;TZID=CET:{}\n'.format(
+                i, due.strftime("%Y%m%dT%H%M%S"),
+            )
+        )
+
+    db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
+    todos = list(db.todos(due=24))
+
+    assert len(todos) == 2
+    assert todos[0].summary == "23"
+    assert todos[1].summary == "1"
+
+
+def test_due_naive(tmpdir, runner, create):
+    now = datetime.now()
+
+    for i in [1, 23, 25, 48]:
+        due = now + timedelta(hours=i)
+        create(
+            'test_{}.ics'.format(i),
+            'SUMMARY:{}\n'
+            'DUE;VALUE=DATE-TIME:{}\n'.format(
+                i, due.strftime("%Y%m%dT%H%M%S"),
+            )
+        )
+
+    db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
+    todos = list(db.todos(due=24))
+
+    assert len(todos) == 2
+    assert todos[0].summary == "23"
+    assert todos[1].summary == "1"

@@ -502,7 +502,7 @@ class Cache:
         )
 
     def todos(self, all=False, lists=[], urgent=False, location='',
-              category='', grep='', sort=[], reverse=True):
+              category='', grep='', sort=[], reverse=True, due=None):
         list_map = {list.name: list for list in self.lists()}
 
         extra_where = []
@@ -532,6 +532,10 @@ class Cache:
             # params.append(grep)
             extra_where.append('AND summary LIKE ?')
             params.append('%{}%'.format(grep))
+        if due:
+            max_due = datetime.now() + timedelta(hours=due)
+            extra_where.append('AND due IS NOT NULL AND due < ?')
+            params.append(max_due)
 
         if sort:
             order = []
