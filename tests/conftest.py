@@ -2,7 +2,7 @@ import os
 
 import pytest
 from click.testing import CliRunner
-from hypothesis import HealthCheck, Verbosity, settings
+from hypothesis import HealthCheck, settings, Verbosity
 
 from todoman import model
 

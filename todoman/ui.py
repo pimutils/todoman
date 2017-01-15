@@ -1,7 +1,7 @@
 from datetime import datetime
 from time import mktime
-import click
 
+import click
 import parsedatetime
 import urwid
 from dateutil.tz import tzlocal
