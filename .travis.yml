@@ -10,7 +10,6 @@ python:
 env:
   - BUILD=py
   - BUILD=flake8
-  - BUILD=isort
   - BUILD=docs
 
 matrix:
