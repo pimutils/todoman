@@ -44,12 +44,6 @@ flake8:
   script:
     - tox -e flake8
 
-isort:
-  image: python:latest
-  stage: style
-  script:
-    - tox -e isort
-
 wheel:
   image: python:3.5
   stage: package

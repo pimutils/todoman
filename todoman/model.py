@@ -1,5 +1,5 @@
-import logging
 import errno
+import logging
 import os
 import pickle
 import socket
@@ -8,9 +8,9 @@ from os.path import normpath, split
 from uuid import uuid4
 
 import icalendar
+import xdg
 from atomicwrites import AtomicWriter
 from dateutil.tz import tzlocal
-import xdg
 
 logger = logging.getLogger(name=__name__)
 # logger.addHandler(logging.FileHandler('model.log'))
