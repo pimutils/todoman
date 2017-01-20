@@ -39,7 +39,7 @@ Planned Features
 * Customizable output format.
 
 Pull requests and patches are welcome! 😉 Please report any issues on the
-project `issue tracker <https://gitlab.com/hobarrera/todoman/issues>`_.
+project `issue tracker <https://github.com/pimutils/todoman/issues>`_.
 
 Caveats
 -------
