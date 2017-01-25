@@ -15,10 +15,8 @@ with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
 
 
 def _validate_lists_param(ctx, param=None, lists=None):
-    if lists:
-        return [_validate_list_param(ctx, name=l) for l in lists]
-    else:
-        return ctx.obj['db'].values()
+    # TODO XXX Not implemented!
+    return lists
 
 
 def _validate_list_param(ctx, param=None, name=None):
@@ -166,7 +164,7 @@ def edit(ctx, id, todo_properties, interactive):
             setattr(todo, key, value)
 
     if interactive or (not changes and interactive is None):
-        ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
+        ui = TodoEditor(todo, ctx.obj['db'], ctx.obj['formatter'])
         state = ui.edit()
         if state == EditState.saved:
             changes = True
@@ -187,7 +185,7 @@ def show(ctx, id):
     Show details about a task.
     '''
     todo, database = get_todo(ctx.obj['db'], id)
-    click.echo(ctx.obj['formatter'].detailed(todo, database))
+    click.echo(ctx.obj['formatter'].detailed(todo))
 
 
 @cli.command()
@@ -289,6 +287,7 @@ def move(ctx, list, ids):
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
+# XXX: shouldn't this be an ngarg-1 this?:
 @click.option('--sort', help='Sort tasks using these fields')
 @click.option('--reverse/--no-reverse', default=True,
               help='Sort tasks in reverse order (see --sort). '
@@ -314,7 +313,16 @@ def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
     sort = sort.split(',') if sort else None
 
     db = ctx.obj['db']
-    todos = db.todos()
+    todos = db.todos(
+        all=all,
+        lists=lists,
+        urgent=urgent,
+        location=location,
+        category=category,
+        grep=grep,
+        sort=sort,
+        reverse=reverse
+    )
 
     for todo in todos:
         click.echo("{:3d} {}".format(

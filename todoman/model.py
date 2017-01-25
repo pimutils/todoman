@@ -59,7 +59,8 @@ class Todo:
 
     _localtimezone = tzlocal()
 
-    def __init__(self, todo=None, filename=None, mtime=None, safe=False):
+    def __init__(self, todo=None, filename=None, mtime=None, safe=False,
+                 new=True):
         """
         :param icalendar.Todo todo: The icalendar component object on which
         this todo is based. If None is passed, a new one is created.
@@ -70,9 +71,11 @@ class Todo:
         if todo:
             self.todo = todo
         else:
+            self.todo = icalendar.Todo()
+
+        if not todo and new:
             now = datetime.now(self._localtimezone)
             uid = uuid4().hex + socket.gethostname()
-            self.todo = icalendar.Todo()
             self.todo.add('uid', uid)
             self.todo.add('due', now + timedelta(days=1))
             self.todo.add('percent-complete', 0)
@@ -342,6 +345,7 @@ class Cache:
                 "name" TEXT,
                 "path" TEXT,
                 "colour" TEXT,
+                CONSTRAINT name_unique UNIQUE (name),
                 CONSTRAINT path_unique UNIQUE (path)
             );
         ''')
@@ -472,29 +476,64 @@ class Cache:
 
         self.conn.commit()
 
-    def list(self):
-        # TODO: filters! (only/exclude)
-        # TODO: single list?
+    def todos(self, all, lists, urgent, location, category, grep, sort,
+              reverse):
         todos = []
-        lists = {}
+        list_map = self._lists_map()
 
-        result = self.conn.execute("SELECT * FROM lists")
+        extra_where = []
+        params = []
+
+        if not all:
+            extra_where.append('AND completed_at is NULL')
+        if lists:
+            q = ', '.join(['?'] * len(lists))
+
+            query = 'SELECT id FROM lists WHERE name IN ({});'.format(q)
+            logger.info(query)
+            logger.info(lists)
+            list_ids = [row['id'] for row in self.conn.execute(q, lists)]
+            extra_where.append('AND files.list_id IN ({})'.format(q))
+            params.extend(list_ids)
+        if urgent:
+            extra_where.append('AND priority = 9')
+        if location:
+            extra_where.append('AND location LIKE ?')
+            params.append('%{}%'.format(location))
+        if category:
+            extra_where.append('AND categories LIKE ?')
+            params.append('%{}%'.format(category))
+        if grep:
+            # # requires sqlite with pcre, which won't be availabel everywhere:
+            # extra_where.append('AND summary REGEXP ?')
+            # params.append(grep)
+            extra_where.append('AND summary LIKE ?')
+            params.append('%{}%'.format(grep))
+
+        if sort:
+            sort = sort
+        else:
+            sort = 'completed_at DESC, priority ASC, due ASC, created_at ASC'
+            sort = '''
+                completed_at DESC,
+                priority ASC,
+                due IS NOT NULL, due DESC,
+                created_at ASC
+            '''
+
+        if reverse:
+            pass  # XXX: Not implemented
+
+        query = '''
+              SELECT todos.*, files.list_id
+                FROM todos, files
+               WHERE todos.file_id = files.id {}
+            ORDER BY {}
+        '''.format(' '.join(extra_where), sort,)
+        result = self.conn.execute(query, params)
+
         for row in result:
-            list_ = List(
-                name=row['name'],
-                path=row['path'],
-                colour=row['colour'],
-            )
-            lists[row['id']] = list_
-
-        result = self.conn.execute('''
-            SELECT todos.*, files.list_id
-              FROM todos, files
-             WHERE todos.file_id = files.id
-        ''')
-
-        for row in result:
-            todo = Todo()
+            todo = Todo(new=False)
             todo.id = row['id']
             todo.uid = row['uid']
             todo.summary = row['summary']
@@ -510,10 +549,52 @@ class Cache:
             todo.status = row['status']
             todo.description = row['description']
             todo.location = row['location']
-            todo.list = lists[row['list_id']]
+            todo.list = list_map[row['list_id']]
             todos.append(todo)
 
         return todos
+
+    def _lists_map(self):
+        lists = {}
+
+        result = self.conn.execute("SELECT * FROM lists")
+        for row in result:
+            list_ = List(
+                name=row['name'],
+                path=row['path'],
+                colour=row['colour'],
+            )
+            lists[row['id']] = list_
+
+        return lists
+
+    def list(self, id):
+        row = self.conn.execute(
+            "SELECT * FROM lists WHERE ID = ?",
+            (id,),
+        ).fetchone()
+
+        return List(
+            name=row['name'],
+            path=row['path'],
+            colour=row['colour'],
+        )
+
+    def todo(self, id):
+        # XXX: MOVE THIS CODE INTO CACHE!
+        result = self.cur.execute('''
+            SELECT files.path, list_id
+              FROM files, todos
+             WHERE files.id = todos.file_id
+               AND todos.id = ?
+        ''', (id,),
+        ).fetchone()
+
+        path = result['path']
+        todo = Todo.from_file(path)
+        todo.list = self.list(result['list_id'])
+
+        return todo
 
     def revalidate(self, path, mtime):
         """
@@ -522,14 +603,10 @@ class Cache:
         Returns True if a path/mtime pair is still valid in the cache,
         otherwise, purges them, and returns False.
         """
-        # XXX: Document how this is destructive
-        row = self.conn.execute("""
-            SELECT mtime
-            FROM files
-            WHERE path = ?
-        """, (
-            path,
-        )).fetchone()
+        row = self.conn.execute(
+            "SELECT mtime FROM files WHERE path = ?",
+            (path,)
+        ).fetchone()
         if row is None:
             return False
         if int(row['mtime']) == mtime:
@@ -640,20 +717,11 @@ class Database:
             except Exception as e:
                 logger.exception("Failed to read entry %s.", entry)
 
-    def todos(self):
-        return self.cache.list()
+    def todos(self, **kwargs):
+        return self.cache.todos(**kwargs)
 
     def todo(self, id):
-        result = self.cur.execute('''
-            SELECT files.path
-              FROM files, todos
-             WHERE files.id = todos.file_id
-               AND todos.id = ?
-        ''', (id,),
-        ).fetchone()
-
-        path = result['path']
-        return Todo.from_file(path)
+        return self.cache.todo(id)
 
     def save(self, todo):
         if not todo.safe:

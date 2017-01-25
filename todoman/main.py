@@ -84,17 +84,15 @@ def get_task_sort_function(fields):
     return sort_func
 
 
-def get_todo(databases, todo_id):
-    ids = load_idfile()
-    if not ids:
-        print("List all tasks with `todo` to know the task number.")
-        sys.exit(1)
+def get_todo(database, todo_id):
+    return database.todo(todo_id), None
 
     try:
-        db_name, todo_filename = ids[todo_id]
-        database = databases[db_name]
-        todo = database.todos[todo_filename]
-        return todo, database
+        pass
+        # db_name, todo_filename = ids[todo_id]
+        # database = databases[db_name]
+        # todo = database.todos[todo_filename]
+        # return todo, database
     except KeyError:
         print("No todo with id {}.".format(todo_id))
         sys.exit(-2)
