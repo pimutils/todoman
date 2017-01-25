@@ -88,7 +88,6 @@ def cli(ctx, human_time, color):
         config.get('main', 'date_format', fallback='%Y-%m-%d'),
         human_time
     )
-    ctx.obj['db'] = databases = {}
 
     color = color or ctx.obj['config']['main'].get('color', 'auto')
     if color == 'always':
@@ -105,8 +104,7 @@ def cli(ctx, human_time, color):
             continue
         paths.append(path)
 
-    db = Database(paths)
-    databases['default'] = db
+    ctx.obj['db'] = Database(paths)
 
     if not ctx.invoked_subcommand:
         ctx.invoke(cli.commands["list"])
@@ -312,18 +310,16 @@ def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
 
     pattern = re.compile(grep) if grep else None
     # FIXME: When running with no command, this somehow ends up empty:
-    lists = lists or ctx.obj['db'].values()
+    # lists = lists or ctx.obj['db'].values()
     sort = sort.split(',') if sort else None
 
-    db = [database for database in lists][0]
-    cache = [database for database in lists][0].cache
-    todos = cache.list()
+    db = ctx.obj['db']
+    todos = db.todos()
 
-    for (database, todo) in todos.items():
-        click.echo("{:2d} {}".format(
+    for todo in todos:
+        click.echo("{:3d} {}".format(
             todo.id,
-            # XXX: Use the right db
-            ctx.obj['formatter'].compact(todo, todo.list)
+            ctx.obj['formatter'].compact(todo)
         ))
 
     return

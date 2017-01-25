@@ -475,7 +475,7 @@ class Cache:
     def list(self):
         # TODO: filters! (only/exclude)
         # TODO: single list?
-        todos = {}
+        todos = []
         lists = {}
 
         result = self.conn.execute("SELECT * FROM lists")
@@ -487,7 +487,11 @@ class Cache:
             )
             lists[row['id']] = list_
 
-        result = self.conn.execute("SELECT * FROM todos")
+        result = self.conn.execute('''
+            SELECT todos.*, files.list_id
+              FROM todos, files
+             WHERE todos.file_id = files.id
+        ''')
 
         for row in result:
             todo = Todo()
@@ -506,17 +510,8 @@ class Cache:
             todo.status = row['status']
             todo.description = row['description']
             todo.location = row['location']
-            # Use a join above to reduce queries here
-            file_ = self.conn.execute(
-                "SELECT path, list_id FROM files WHERE id = ?",
-                (row['file_id'],),
-            ).fetchone()
-            todo.list = lists[file_['list_id']]
-            todos[file_['path']] = todo
-
-            print(file_['path'])
-            print(row['file_id'])
-            print(todo.list)
+            todo.list = lists[row['list_id']]
+            todos.append(todo)
 
         return todos
 
