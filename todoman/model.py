@@ -649,8 +649,16 @@ class Database:
         return self.cache.list()
 
     def todo(self, id):
-        # TODO: returna single TODO, actually read from a file
-        pass
+        result = self.cur.execute('''
+            SELECT files.path
+              FROM files, todos
+             WHERE files.id = todos.file_id
+               AND todos.id = ?
+        ''', (id,),
+        ).fetchone()
+
+        path = result['path']
+        return Todo.from_file(path)
 
     def save(self, todo):
         if not todo.safe:
