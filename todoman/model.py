@@ -9,13 +9,11 @@ from uuid import uuid4
 import icalendar
 import dateutil.parser
 import sqlitebck
-import xdg
 from atomicwrites import AtomicWriter
 from dateutil.tz import tzlocal
 
 logger = logging.getLogger(name=__name__)
 # logger.addHandler(logging.FileHandler('model.log'))
-
 
 
 class UnsafeOperationException(Exception):
@@ -85,8 +83,7 @@ class Todo:
         if self.todo.get('dtstamp', None) is None:
             self.todo.add('dtstamp', datetime.utcnow())
 
-        self._safe = safe
-
+        self.safe = safe
         self.filename = filename or "{}.ics".format(self.todo.get('uid'))
         self.mtime = mtime or datetime.now()
 
@@ -304,14 +301,9 @@ class Cache:
     may be used for filtering/sorting.
     """
 
-    @cached_property
-    def cache_path(self):
-        return os.path.join(
-            xdg.BaseDirectory.xdg_cache_home,
-            'todoman/cache.sqlite3',
-        )
+    def __init__(self, path):
+        self.cache_path = path
 
-    def __init__(self):
         self.conn = sqlite3.connect(
             ':memory:',
             detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
@@ -393,6 +385,7 @@ class Cache:
         Returns the id of the newly inserted list.
         """
 
+        # XXX: fail if a list with the same name already exists
         self.cur.execute(
             '''
             INSERT OR IGNORE INTO lists (
@@ -681,8 +674,8 @@ class Database:
     classes.
     """
 
-    def __init__(self, paths):
-        self.cache = Cache()
+    def __init__(self, paths, cache_path):
+        self.cache = Cache(cache_path)
 
         for path in paths:
             self._cache_list(path)

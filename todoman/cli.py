@@ -1,9 +1,11 @@
 import functools
 import glob
+import os
 import re
 from os.path import expanduser, isdir, join
 
 import click
+import xdg
 
 from .configuration import load_config
 from .main import dump_idfile, get_task_sort_function, get_todo, get_todos
@@ -102,7 +104,13 @@ def cli(ctx, human_time, color):
             continue
         paths.append(path)
 
-    ctx.obj['db'] = Database(paths)
+    # Set up a configurable cache here
+    cache_path = os.path.join(
+        xdg.BaseDirectory.xdg_cache_home,
+        'todoman/cache.sqlite3',
+    )
+
+    ctx.obj['db'] = Database(paths, cache_path)
 
     if not ctx.invoked_subcommand:
         ctx.invoke(cli.commands["list"])
