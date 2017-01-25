@@ -1,13 +1,14 @@
-import errno
 import logging
 import os
-import pickle
 import socket
+import sqlite3
 from datetime import date, datetime, time, timedelta
 from os.path import normpath, split
 from uuid import uuid4
 
 import icalendar
+import dateutil.parser
+import sqlitebck
 import xdg
 from atomicwrites import AtomicWriter
 from dateutil.tz import tzlocal
@@ -16,7 +17,18 @@ logger = logging.getLogger(name=__name__)
 # logger.addHandler(logging.FileHandler('model.log'))
 
 
-class cached_property:
+
+class UnsafeOperationException(Exception):
+    """
+    Raised when attempting to perform an unsafe operation.
+
+    Typical examples of unsafe operations are attempting to save a
+    partially-loaded todo.
+    """
+    pass
+
+
+class cached_property:  # noqa
     '''A read-only @property that is only evaluated once. Only usable on class
     instances' methods.
     '''
@@ -27,7 +39,7 @@ class cached_property:
         self.fget = fget
 
     def __get__(self, obj, cls):
-        if obj is None:  # pragma: no cover
+        if obj is None:
             return self
         obj.__dict__[self.__name__] = result = self.fget(obj)
         return result
@@ -47,7 +59,7 @@ class Todo:
 
     _localtimezone = tzlocal()
 
-    def __init__(self, todo=None, filename=None):
+    def __init__(self, todo=None, filename=None, mtime=None, safe=False):
         """
         :param icalendar.Todo todo: The icalendar component object on which
         this todo is based. If None is passed, a new one is created.
@@ -70,7 +82,22 @@ class Todo:
         if self.todo.get('dtstamp', None) is None:
             self.todo.add('dtstamp', datetime.utcnow())
 
+        self._safe = safe
+
         self.filename = filename or "{}.ics".format(self.todo.get('uid'))
+        self.mtime = mtime or datetime.now()
+
+    @staticmethod
+    def from_file(path):
+        with open(path, 'rb') as f:
+            cal = f.read()
+            if b'\nBEGIN:VTODO' in cal:
+                cal = icalendar.Calendar.from_ical(cal)
+
+                # Note: Syntax is weird due to icalendar API, and the fact that
+                # we only support one TODO per file.
+                for component in cal.walk('VTODO'):
+                    return Todo(component, path)
 
     def _set_field(self, name, value):
         if name in self.todo:
@@ -127,6 +154,10 @@ class Todo:
     def categories(self):
         categories = self.todo.get('categories', '').split(',')
         return tuple(filter(None, categories))
+
+    @property
+    def raw_categories(self):
+        return self.todo.get('categories', '')
 
     @categories.setter
     def categories(self, categories):
@@ -210,9 +241,17 @@ class Todo:
     def uid(self):
         return self.todo.get('uid')
 
+    @uid.setter
+    def uid(self, uid):
+        self._set_field('uid', uid)
+
     @property
     def dtstamp(self):
         return self.todo.decoded('dtstamp')
+
+    @dtstamp.setter
+    def dtstamp(self, dtstamp):
+        self._set_field('dtstamp', dtstamp)
 
     def _normalize_datetime(self, x):
         '''
@@ -231,106 +270,307 @@ class Todo:
             x = x.replace(tzinfo=self._localtimezone)
         return x
 
+    @property
+    def list(self):
+        return self._list
 
-class Database:
+    @list.setter
+    def list(self, list_):
+        self._list = list_
+
+
+class CachedTodo:
+
+    def __init__(self, cached_data):
+        pass
+
+
+class Cache:
     """
-    This class is essentially a wrapper around a directory which contains a
-    bunch of ical files. While not a traditional SQL database, it's still *our*
-    database.
+    Caches Todos for faster read and simpler querying interface
+
+    The Cache class persists relevant[1] fields into an SQL database, which is
+    only updated if the actual file has been modified. This greatly increases
+    load times, but, more importantly, provides a simpler interface for
+    filtering/querying/sorting.
+
+    The internal sqlite database is copied fully into memory at startup, and
+    dumped again at showdown. This reduces excesive disk I/O.
+
+    [1]: Relevent fields are those we show when listing todos, or those which
+    may be used for filtering/sorting.
     """
 
-    def __init__(self, path):
+    @cached_property
+    def cache_path(self):
+        return os.path.join(
+            xdg.BaseDirectory.xdg_cache_home,
+            'todoman/cache.sqlite3',
+        )
+
+    def __init__(self):
+        self.conn = sqlite3.connect(
+            ':memory:',
+            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
+        )
+        self.conn.row_factory = sqlite3.Row
+        self.load_from_disk()
+        self.cur = self.conn.cursor()
+
+        self.create_tables()
+
+    def load_from_disk(self):
+        conn_disk = sqlite3.connect(
+            self.cache_path,
+            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
+        )
+        sqlitebck.copy(conn_disk, self.conn)
+        conn_disk.close()
+
+    def save_to_disk(self):
+        conn_disk = sqlite3.connect(
+            self.cache_path,
+            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
+        )
+        sqlitebck.copy(self.conn, conn_disk)
+        conn_disk.close()
+
+    def create_tables(self):
+        self.cur.execute('''
+            CREATE TABLE IF NOT EXISTS lists (
+                "id" INTEGER PRIMARY KEY,
+                "name" TEXT,
+                "path" TEXT,
+                "colour" TEXT,
+                CONSTRAINT path_unique UNIQUE (path)
+            );
+        ''')
+
+        self.cur.execute('''
+            CREATE TABLE IF NOT EXISTS files (
+                "id" INTEGER PRIMARY KEY,
+                "list_id" INTEGER,
+                "path" TEXT,
+                "mtime" TEXT,
+
+                CONSTRAINT path_unique UNIQUE (path),
+                FOREIGN KEY(list_id) REFERENCES lists(id)
+            );
+        ''')
+
+        self.cur.execute('''
+            CREATE TABLE IF NOT EXISTS todos (
+                "file_id" INTEGER,
+
+                "id" INTEGER PRIMARY KEY,
+                "uid" TEXT,
+                "summary" TEXT,
+                "due" TEXT,
+                "priority" INTEGER,
+                "created_at" TEXT,
+                "completed_at" TEXT,
+                "dtstamp" TEXT,
+                "status" TEXT,
+                "description" TEXT,
+                "location" TEXT,
+                "categories" TEXT,
+
+                CONSTRAINT file_unique UNIQUE (file_id),
+                FOREIGN KEY(file_id) REFERENCES files(id)
+            );
+        ''')
+
+        self.conn.commit()
+
+    def add_list(self, name, path, colour):
+        """
+        Inserts a new list into the cache.
+
+        Returns the id of the newly inserted list.
+        """
+
+        self.cur.execute(
+            '''
+            INSERT OR IGNORE INTO lists (
+                name,
+                path,
+                colour
+            ) VALUES (?, ?, ?)
+            ''', (
+                name,
+                path,
+                colour,
+            )
+        )
+        self.conn.commit()
+
+        result = self.cur.execute(
+            'SELECT id FROM lists WHERE path = ?',
+            (path,),
+        ).fetchone()
+
+        return result['id']
+
+    def add_file(self, list_id, path, mtime):
+        self.cur.execute('''
+            INSERT OR IGNORE INTO files (
+                list_id,
+                path,
+                mtime
+            ) VALUES (?, ?, ?);
+            ''', (
+            list_id,
+            path,
+            mtime,
+        ))
+        self.conn.commit()
+
+        result = self.cur.execute(
+            'SELECT id FROM files WHERE path = ?',
+            (path,),
+        ).fetchone()
+
+        return result['id']
+
+    def add_todo(self, todo, file_id):
+        """
+        Adds a todo into the cache.
+
+        :param icalendar.Todo todo: The icalendar component object on which
+        """
+
+        self.cur.execute('''
+            INSERT INTO todos (
+                file_id,
+                uid,
+                summary,
+                due,
+                priority,
+                created_at,
+                completed_at,
+                dtstamp,
+                status,
+                description,
+                location,
+                categories
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                file_id,
+                todo.uid,
+                todo.summary,
+                todo.due,
+                todo.priority,
+                todo.created_at,
+                todo.completed_at,
+                todo.dtstamp,
+                todo.status,
+                todo.description,
+                todo.location,
+                todo.raw_categories,
+            )
+        )
+
+        self.conn.commit()
+
+    def list(self):
+        # TODO: filters! (only/exclude)
+        # TODO: single list?
+        todos = {}
+        lists = {}
+
+        result = self.conn.execute("SELECT * FROM lists")
+        for row in result:
+            list_ = List(
+                name=row['name'],
+                path=row['path'],
+                colour=row['colour'],
+            )
+            lists[row['id']] = list_
+
+        result = self.conn.execute("SELECT * FROM todos")
+
+        for row in result:
+            todo = Todo()
+            todo.id = row['id']
+            todo.uid = row['uid']
+            todo.summary = row['summary']
+            if row['due']:
+                todo.due = dateutil.parser.parse(row['due'])
+            todo.priority = row['priority']
+            if row['created_at']:
+                todo.created_at = dateutil.parser.parse(row['created_at'])
+            if row['completed_at']:
+                todo.completed_at = dateutil.parser.parse(row['completed_at'])
+            if row['dtstamp']:
+                todo.dtstamp = dateutil.parser.parse(row['dtstamp'])
+            todo.status = row['status']
+            todo.description = row['description']
+            todo.location = row['location']
+            # Use a join above to reduce queries here
+            file_ = self.conn.execute(
+                "SELECT path, list_id FROM files WHERE id = ?",
+                (row['file_id'],),
+            ).fetchone()
+            todo.list = lists[file_['list_id']]
+            todos[file_['path']] = todo
+
+            print(file_['path'])
+            print(row['file_id'])
+            print(todo.list)
+
+        return todos
+
+    def revalidate(self, path, mtime):
+        """
+        Returns True if a path/mtime pair is still valid
+
+        Returns True if a path/mtime pair is still valid in the cache,
+        otherwise, purges them, and returns False.
+        """
+        # XXX: Document how this is destructive
+        row = self.conn.execute("""
+            SELECT mtime
+            FROM files
+            WHERE path = ?
+        """, (
+            path,
+        )).fetchone()
+        if row is None:
+            return False
+        if int(row['mtime']) == mtime:
+            return True
+
+        self.invalidate_file(path)
+        return False
+
+    def _invalidate_file(self, path):
+        row = self.cur.execute(
+            "SELECT id FROM files WHERE path = ?",
+            (path,),
+        ).fetchone()
+
+        if row is None:
+            return
+
+        file_id = row['id']
+
+        self.cur.execute(
+            "DELETE FROM todos WHERE file_id = ?",
+            (file_id,),
+        )
+        self.cur.execute(
+            "DELETE FROM files WHERE id = ?",
+            (file_id,),
+        )
+        self.conn.commit()
+
+
+class List:
+
+    def __init__(self, name, path, colour=None):
+        self.name = name
         self.path = path
-        self._cache_path = os.path.join(xdg.BaseDirectory.xdg_cache_home,
-                                        'todoman/vdir-caches/',
-                                        os.path.basename(path) + '.pickle')
-
-    @cached_property
-    def todos(self):
-        """
-        Returns a map of TODOs, where each key is the filename, and value a
-        Todo object.
-        """
-        cache = self._get_cache()
-        new_cache = {}
-
-        for entry in os.listdir(self.path):
-            if not entry.endswith(".ics"):
-                continue
-            entry_path = os.path.join(self.path, entry)
-            mtime = _getmtime(entry_path)
-            cache_key = (entry, mtime)
-            if cache_key in cache:
-                new_cache[cache_key] = cache[cache_key]
-                continue
-
-            with open(entry_path, 'rb') as f:
-                new_cache[cache_key] = None
-                try:
-                    cal = f.read()
-                    if b'\nBEGIN:VTODO' in cal:
-                        cal = icalendar.Calendar.from_ical(cal)
-                        for component in cal.walk('VTODO'):
-                            new_cache[cache_key] = Todo(component, entry)
-                except Exception as e:
-                    logger.warn("Failed to read entry %s: %s.", entry, e)
-                    continue
-
-        self._set_cache(new_cache)
-        return {entry: todo for (entry, mtime), todo in new_cache.items()
-                if todo is not None}
-
-    def _get_cache(self):
-        try:
-            os.makedirs(os.path.dirname(self._cache_path))
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
-
-        try:
-            with open(self._cache_path, 'rb') as f:
-                return pickle.load(f)
-        except (IOError, pickle.UnpicklingError):
-            return {}
-
-    def _set_cache(self, cache):
-        with open(self._cache_path, 'wb+') as f:
-            pickle.dump(cache, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-    def save(self, todo):
-        path = os.path.join(self.path, todo.filename)
-
-        if os.path.exists(path):
-            # Update an existing entry:
-            with open(path, 'rb') as f:
-                cal = icalendar.Calendar.from_ical(f.read())
-                for index, component in enumerate(cal.subcomponents):
-                    if component.get('uid', None) == todo.uid:
-                        cal.subcomponents[index] = todo.todo
-
-            with AtomicWriter(path, overwrite=True).open() as f:
-                f.write(cal.to_ical().decode("UTF-8"))
-        else:
-            # Save a new entry:
-            c = icalendar.Calendar()
-            c.add('prodid', 'io.barrera.todoman')
-            c.add('version', '2.0')
-            c.add_component(todo.todo)
-
-            with AtomicWriter(path).open() as f:
-                f.write(c.to_ical().decode("UTF-8"))
-
-    def delete(self, todo):
-        path = os.path.join(self.path, todo.filename)
-        os.remove(path)
-
-    @cached_property
-    def name(self):
-        try:
-            with open(os.path.join(self.path, 'displayname')) as f:
-                return f.read().strip()
-        except (OSError, IOError):
-            return split(normpath(self.path))[1]
+        self.colour = colour
 
     @cached_property
     def color_raw(self):
@@ -358,6 +598,107 @@ class Database:
 
     def __str__(self):
         return self.name
+
+
+class Database:
+    """
+    This class is essentially a wrapper around all the lists (which in turn,
+    contain all the todos).
+
+    Caching in abstracted inside this class, and is transparent to outside
+    classes.
+    """
+
+    def __init__(self, paths):
+        self.cache = Cache()
+
+        for path in paths:
+            self._cache_list(path)
+            self.cache.save_to_disk()
+
+    def _cache_list(self, path):
+        """
+        Returns a map of TODOs, where each key is the filename, and value a
+        Todo object.
+        """
+        list_id = self.cache.add_list(
+            self._list_name(path),
+            path,
+            self._list_colour(path),
+        )
+
+        for entry in os.listdir(path):
+            if not entry.endswith(".ics"):
+                continue
+            entry_path = os.path.join(path, entry)
+            mtime = _getmtime(entry_path)
+
+            if self.cache.revalidate(entry_path, mtime):
+                continue
+
+            file_id = self.cache.add_file(list_id, entry_path, mtime)
+
+            try:
+                todo = Todo.from_file(entry_path)
+                if todo:
+                    self.cache.add_todo(todo, file_id)
+            except Exception as e:
+                logger.exception("Failed to read entry %s.", entry)
+
+    def todos(self):
+        return self.cache.list()
+
+    def todo(self, id):
+        # TODO: returna single TODO, actually read from a file
+        pass
+
+    def save(self, todo):
+        if not todo.safe:
+            raise UnsafeOperationException()
+
+        path = os.path.join(self.path, todo.filename)
+
+        if os.path.exists(path):
+            # Update an existing entry:
+            with open(path, 'rb') as f:
+                cal = icalendar.Calendar.from_ical(f.read())
+                for index, component in enumerate(cal.subcomponents):
+                    if component.get('uid', None) == todo.uid:
+                        cal.subcomponents[index] = todo.todo
+
+            with AtomicWriter(path, overwrite=True).open() as f:
+                f.write(cal.to_ical().decode("UTF-8"))
+        else:
+            # Save a new entry:
+            c = icalendar.Calendar()
+            c.add('prodid', 'io.barrera.todoman')
+            c.add('version', '2.0')
+            c.add_component(todo.todo)
+
+            with AtomicWriter(path).open() as f:
+                f.write(c.to_ical().decode("UTF-8"))
+
+    def delete(self, todo):
+        path = os.path.join(self.path, todo.filename)
+        os.remove(path)
+
+    def _list_name(self, path):
+        try:
+            with open(os.path.join(path, 'displayname')) as f:
+                return f.read().strip()
+        except (OSError, IOError):
+            return split(normpath(path))[1]
+
+    def _list_colour(self, path):
+        '''
+        The color is a file whose content is of the format `#RRGGBB`.
+        '''
+
+        try:
+            with open(os.path.join(path, 'color')) as f:
+                return f.read().strip()
+        except (OSError, IOError):
+            pass
 
 
 def _parse_color(color):

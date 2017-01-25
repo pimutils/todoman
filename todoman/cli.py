@@ -99,13 +99,14 @@ def cli(ctx, human_time, color):
         raise click.UsageError('Invalid color setting: Choose from always, '
                                'never, auto.')
 
+    paths = []
     for path in glob.iglob(expanduser(config["main"]["path"])):
         if not isdir(path):
             continue
-        db = Database(path)
-        if databases.setdefault(db.name, db) is not db:
-            raise RuntimeError('Detected two databases named {}'
-                               .format(db.name))
+        paths.append(path)
+
+    db = Database(paths)
+    databases['default'] = db
 
     if not ctx.invoked_subcommand:
         ctx.invoke(cli.commands["list"])
@@ -313,6 +314,19 @@ def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
     # FIXME: When running with no command, this somehow ends up empty:
     lists = lists or ctx.obj['db'].values()
     sort = sort.split(',') if sort else None
+
+    db = [database for database in lists][0]
+    cache = [database for database in lists][0].cache
+    todos = cache.list()
+
+    for (database, todo) in todos.items():
+        click.echo("{:2d} {}".format(
+            todo.id,
+            # XXX: Use the right db
+            ctx.obj['formatter'].compact(todo, todo.list)
+        ))
+
+    return
 
     todos = sorted(
         (
