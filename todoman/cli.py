@@ -2,13 +2,13 @@ import functools
 import glob
 import os
 import re
-from os.path import expanduser, isdir, join
+from os.path import expanduser, isdir
 
 import click
 import xdg
 
 from .configuration import load_config
-from .main import dump_idfile, get_task_sort_function, get_todo, get_todos
+from .main import get_todos
 from .model import Database, Todo
 from .ui import EditState, TodoEditor, TodoFormatter
 
@@ -164,7 +164,8 @@ def edit(ctx, id, todo_properties, interactive):
     '''
     Edit the task with id ID.
     '''
-    todo, database = get_todo(ctx.obj['db'], id)
+    database = ctx.obj['db']
+    todo = database.todo(id)
     changes = False
     for key, value in todo_properties.items():
         if value:
@@ -192,7 +193,7 @@ def show(ctx, id):
     '''
     Show details about a task.
     '''
-    todo, database = get_todo(ctx.obj['db'], id)
+    todo = ctx.obj['db'].todo(id)
     click.echo(ctx.obj['formatter'].detailed(todo))
 
 
@@ -204,7 +205,8 @@ def done(ctx, ids):
     Mark a task as done.
     '''
     for id in ids:
-        todo, database = get_todo(ctx.obj['db'], id)
+        database = ctx.obj['db']
+        todo = database.todo(id)
         todo.is_completed = True
         database.save(todo)
         click.echo(ctx.obj['formatter'].detailed(todo, database))
@@ -337,37 +339,3 @@ def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
             todo.id,
             ctx.obj['formatter'].compact(todo)
         ))
-
-    return
-
-    todos = sorted(
-        (
-            (database, todo)
-            for database in lists
-            for todo in database.todos.values()
-            if (not todo.is_completed or all) and
-               (not urgent or todo.priority) and
-               (not location or location in todo.location) and
-               (not category or category in todo.categories) and
-               (not pattern or (
-                   pattern.search(todo.summary) or
-                   pattern.search(todo.description)
-                   ))
-        ),
-        key=get_task_sort_function(fields=sort),
-        reverse=reverse
-    )
-    ids = {}
-
-    for index, (database, todo) in enumerate(todos, start=TODO_ID_MIN):
-        ids[index] = (database.name, todo.filename)
-        try:
-            click.echo("{:2d} {}".format(
-                index,
-                ctx.obj['formatter'].compact(todo, database)
-            ))
-        except Exception as e:
-            click.echo("Error while showing {}: {}"
-                       .format(join(database.name, todo.filename), e))
-
-    dump_idfile(ids)

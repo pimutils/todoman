@@ -284,10 +284,10 @@ def test_color_due_dates(tmpdir, runner, create, hours):
     due_str = due.strftime('%Y-%m-%d')
     if hours == 1:
         assert result.output == \
-            ' 1 [ ]   {} aaa @default\x1b[0m\n'.format(due_str)
+            '  1 [ ]   {} aaa @default\x1b[0m\n'.format(due_str)
     else:
         assert result.output == \
-            ' 1 [ ]   \x1b[31m{}\x1b[0m aaa @default\x1b[0m\n'.format(due_str)
+            '  1 [ ]   \x1b[31m{}\x1b[0m aaa @default\x1b[0m\n'.format(due_str)
 
 
 # TODO: test aware/naive datetime sorting

@@ -501,10 +501,14 @@ class Cache:
             params.append('%{}%'.format(grep))
 
         if sort:
-            sort = sort
+            order = ''  # join rather than stringops?
+            for s in sort:
+                if s.startswith('-'):
+                    order += ' {} ASC'.format(s)
+                else:
+                    order += ' {} DESC'.format(s)
         else:
-            sort = 'completed_at DESC, priority ASC, due ASC, created_at ASC'
-            sort = '''
+            order = '''
                 completed_at DESC,
                 priority ASC,
                 due IS NOT NULL, due DESC,
@@ -519,7 +523,7 @@ class Cache:
                 FROM todos, files
                WHERE todos.file_id = files.id {}
             ORDER BY {}
-        '''.format(' '.join(extra_where), sort,)
+        '''.format(' '.join(extra_where), order,)
         result = self.conn.execute(query, params)
 
         for row in result:
