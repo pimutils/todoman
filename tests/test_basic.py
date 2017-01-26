@@ -198,8 +198,20 @@ def test_sorting_fields(tmpdir, runner, default_database):
 
         default_database.save(todo)
 
-    fields = tuple(field for field in dir(Todo) if not
-                   field.startswith('_'))
+    fields = (
+        'id',
+        'uid',
+        'summary',
+        'due',
+        'priority',
+        'created_at',
+        'completed_at',
+        'dtstamp',
+        'status',
+        'description',
+        'location',
+        'categories',
+    )
 
     @given(sort_key=st.lists(
         st.sampled_from(fields + tuple('-' + x for x in fields)),

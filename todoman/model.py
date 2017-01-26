@@ -501,12 +501,13 @@ class Cache:
             params.append('%{}%'.format(grep))
 
         if sort:
-            order = ''  # join rather than stringops?
+            order = []
             for s in sort:
                 if s.startswith('-'):
-                    order += ' {} ASC'.format(s[1:])
+                    order.append(' {} ASC'.format(s[1:]))
                 else:
-                    order += ' {} DESC'.format(s)
+                    order.append(' {} DESC'.format(s))
+            order = ','.join(order)
         else:
             order = '''
                 completed_at DESC,
