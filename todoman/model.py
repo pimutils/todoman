@@ -16,6 +16,10 @@ logger = logging.getLogger(name=__name__)
 # logger.addHandler(logging.FileHandler('model.log'))
 
 
+class NoSuchTodo(Exception):
+    pass
+
+
 class UnsafeOperationException(Exception):
     """
     Raised when attempting to perform an unsafe operation.
@@ -366,6 +370,7 @@ class Cache:
                 "priority" INTEGER,
                 "created_at" TEXT,
                 "completed_at" TEXT,
+                "percent_complete" INTEGER,
                 "dtstamp" TEXT,
                 "status" TEXT,
                 "description" TEXT,
@@ -442,12 +447,13 @@ class Cache:
                 priority,
                 created_at,
                 completed_at,
+                percent_complete,
                 dtstamp,
                 status,
                 description,
                 location,
                 categories
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 file_id,
                 todo.uid,
@@ -456,6 +462,7 @@ class Cache:
                 todo.priority,
                 todo.created_at,
                 todo.completed_at,
+                todo.percent_complete,
                 todo.dtstamp,
                 todo.status,
                 todo.description,
@@ -466,8 +473,8 @@ class Cache:
 
         self.conn.commit()
 
-    def todos(self, all, lists, urgent, location, category, grep, sort,
-              reverse):
+    def todos(self, all=False, lists=[], urgent=False, location='',
+              category='', grep='', sort=[], reverse=False):
         todos = []
         list_map = self._lists_map()
 
@@ -480,8 +487,6 @@ class Cache:
             q = ', '.join(['?'] * len(lists))
 
             query = 'SELECT id FROM lists WHERE name IN ({});'.format(q)
-            logger.info(query)
-            logger.info(lists)
             list_ids = [row['id'] for row in self.conn.execute(q, lists)]
             extra_where.append('AND files.list_id IN ({})'.format(q))
             params.extend(list_ids)
@@ -529,11 +534,6 @@ class Cache:
         '''.format(' '.join(extra_where), order,)
         result = self.conn.execute(query, params)
 
-        logger.error(reverse)
-        logger.error(sort)
-        logger.error(order)
-        logger.error(query)
-
         for row in result:
             todo = Todo(new=False, safe=False)
             todo.id = row['id']
@@ -548,6 +548,7 @@ class Cache:
                 todo.completed_at = dateutil.parser.parse(row['completed_at'])
             if row['dtstamp']:
                 todo.dtstamp = dateutil.parser.parse(row['dtstamp'])
+            todo.percent_complete = row['percent_complete']
             todo.status = row['status']
             todo.description = row['description']
             todo.location = row['location']
@@ -596,8 +597,6 @@ class Cache:
         )
 
     def revalidate_lists(self, paths):
-        # q = ', '.join(['?'] * len(lists))
-        # XXX: Rewrite this to use a NOT IN query:
         results = self.conn.execute("SELECT path, id from lists")
         for result in results:
             if result['path'] not in paths:
@@ -615,6 +614,9 @@ class Cache:
                AND todos.id = ?
         ''', (id,),
         ).fetchone()
+
+        if not result:
+            raise NoSuchTodo()
 
         path = result['path']
         todo = Todo.from_file(path)
@@ -780,8 +782,14 @@ class Database:
             with AtomicWriter(path).open() as f:
                 f.write(c.to_ical().decode("UTF-8"))
 
+    def move(self, todo, new_list):
+        orig_path = os.path.join(todo.list.path, todo.filename)
+        dest_path = os.path.join(new_list.path, todo.filename)
+
+        os.rename(orig_path, dest_path)
+
     def delete(self, todo):
-        path = os.path.join(self.path, todo.filename)
+        path = os.path.join(todo.list.path, todo.filename)
         os.remove(path)
 
     def _list_name(self, path):

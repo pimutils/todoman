@@ -6,8 +6,8 @@ from os.path import expanduser, isdir
 import click
 import xdg
 
+from . import model
 from .configuration import load_config
-from .main import get_todos
 from .model import Database, Todo
 from .ui import EditState, TodoEditor, TodoFormatter
 
@@ -16,8 +16,8 @@ with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
 
 
 def _validate_lists_param(ctx, param=None, lists=None):
-    # TODO XXX Not implemented!
-    return lists
+    if lists:
+        return [_validate_list_param(ctx, name=l) for l in lists]
 
 
 def _validate_list_param(ctx, param=None, name=None):
@@ -29,8 +29,9 @@ def _validate_list_param(ctx, param=None, name=None):
                 "{}. You must set 'default_list' or use -l."
                 .format(name)
             )
-    if name in ctx.obj['db']:
-        return ctx.obj['db'][name]
+    for l in ctx.obj['db'].lists():
+        if l.name == name:
+            return l
     else:
         raise click.BadParameter(
             "{}. Available lists are: {}"
@@ -150,8 +151,9 @@ def new(ctx, summary, list, todo_properties, interactive):
     if not todo.summary:
         raise click.UsageError('No SUMMARY specified')
 
-    list.save(todo)
-    click.echo(ctx.obj['formatter'].detailed(todo, list))
+    todo.list = list
+    ctx.obj['db'].save(todo)
+    click.echo(ctx.obj['formatter'].detailed(todo))
 
 
 @cli.command()
@@ -192,8 +194,12 @@ def show(ctx, id):
     '''
     Show details about a task.
     '''
-    todo = ctx.obj['db'].todo(id)
-    click.echo(ctx.obj['formatter'].detailed(todo))
+    try:
+        todo = ctx.obj['db'].todo(id)
+        click.echo(ctx.obj['formatter'].detailed(todo))
+    except model.NoSuchTodo:
+        click.echo("No todo with id {}.".format(id))
+        ctx.exit(-2)
 
 
 @cli.command()
@@ -237,18 +243,20 @@ def flush(ctx):
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
 @click.option('--yes', is_flag=True, default=False)
 def delete(ctx, ids, yes):
-    '''
-    Delete tasks.
-    '''
+    '''Delete tasks.'''
 
-    todos, database = get_todos(ctx, ids)
+    todos = []
+    for i in ids:
+        todo = ctx.obj['db'].todo(i)
+        click.echo(ctx.obj['formatter'].compact(todo))
+        todos.append(todo)
 
     if not yes:
         click.confirm('Do you want to delete those tasks?', abort=True)
 
     for todo in todos:
         click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
-        database.delete(todo)
+        ctx.obj['db'].delete(todo)
 
 
 @cli.command()
@@ -257,16 +265,16 @@ def delete(ctx, ids, yes):
               help='The list to copy the tasks to.')
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
 def copy(ctx, list, ids):
-    '''
-    Copy tasks to another list.
-    '''
+    '''Copy tasks to another list.'''
 
-    todos, database = get_todos(ctx, ids)
-
-    for todo in todos:
+    for id in ids:
+        todo = ctx.obj['db'].todo(id)
         click.echo('Copying {} to {} ({})'.format(
-            todo.uid, list, todo.summary))
-        list.save(todo)
+            todo.uid, list, todo.summary
+        ))
+
+        todo.list = list
+        ctx.obj['db'].save(todo)
 
 
 @cli.command()
@@ -275,17 +283,15 @@ def copy(ctx, list, ids):
               help='The list to move the tasks to.')
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
 def move(ctx, list, ids):
-    '''
-    Move tasks to another list.
-    '''
+    '''Move tasks to another list.'''
 
-    todos, database = get_todos(ctx, ids)
-
-    for todo in todos:
+    for id in ids:
+        todo = ctx.obj['db'].todo(id)
         click.echo('Moving {} to {} ({})'.format(
-            todo.uid, list, todo.summary))
-        list.save(todo)
-        database.delete(todo)
+            todo.uid, list, todo.summary
+        ))
+
+        ctx.obj['db'].move(todo, list)
 
 
 @cli.command()
