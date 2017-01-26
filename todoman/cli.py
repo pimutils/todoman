@@ -326,9 +326,6 @@ def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
     # lists = lists or ctx.obj['db'].values()
     sort = sort.split(',') if sort else None
 
-    # import pytest
-    # pytest.set_trace()
-
     db = ctx.obj['db']
     todos = db.todos(
         all=all,
