@@ -322,8 +322,6 @@ def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
     This is the default action when running `todo'.
     """
 
-    # FIXME: When running with no command, this somehow ends up empty:
-    # lists = lists or ctx.obj['db'].values()
     sort = sort.split(',') if sort else None
 
     db = ctx.obj['db']
