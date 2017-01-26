@@ -10,11 +10,9 @@ from todoman import model
 
 @pytest.fixture
 def default_database(tmpdir):
-    cache = uuid4().hex
-
     return model.Database(
         [str(tmpdir.mkdir('default'))],
-        os.path.join(str(tmpdir.mkdir(cache)), 'cache.sqlite3'),
+        os.path.join(str(tmpdir.mkdir(uuid4().hex)), 'cache.sqlite3'),
     )
 
 
