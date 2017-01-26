@@ -1,7 +1,6 @@
 import functools
 import glob
 import os
-import re
 from os.path import expanduser, isdir
 
 import click
@@ -136,7 +135,7 @@ def new(ctx, summary, list, todo_properties, interactive):
     Create a new task with SUMMARY.
     '''
 
-    todo = Todo()
+    todo = Todo(new=True, safe=True)
     for key, value in todo_properties.items():
         if value:
             setattr(todo, key, value)
@@ -317,10 +316,12 @@ def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
     This is the default action when running `todo'.
     """
 
-    pattern = re.compile(grep) if grep else None
     # FIXME: When running with no command, this somehow ends up empty:
     # lists = lists or ctx.obj['db'].values()
     sort = sort.split(',') if sort else None
+
+    # import pytest
+    # pytest.set_trace()
 
     db = ctx.obj['db']
     todos = db.todos(

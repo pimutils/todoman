@@ -189,7 +189,8 @@ def test_sorting_fields(tmpdir, runner, default_database):
     for i in range(1, 10):
         days = datetime.timedelta(days=i)
 
-        todo = Todo()
+        todo = Todo(new=True)
+        todo.list = default_database.lists()[0]
         todo.due = datetime.datetime.now() + days
         todo.created_at = datetime.datetime.now() - days
         todo.summary = 'harhar{}'.format(i)

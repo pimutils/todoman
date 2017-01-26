@@ -83,7 +83,7 @@ class Todo:
         if self.todo.get('dtstamp', None) is None:
             self.todo.add('dtstamp', datetime.utcnow())
 
-        self.safe = safe
+        self.safe = safe or new
         self.filename = filename or "{}.ics".format(self.todo.get('uid'))
         self.mtime = mtime or datetime.now()
 
@@ -504,7 +504,7 @@ class Cache:
             order = ''  # join rather than stringops?
             for s in sort:
                 if s.startswith('-'):
-                    order += ' {} ASC'.format(s)
+                    order += ' {} ASC'.format(s[1:])
                 else:
                     order += ' {} DESC'.format(s)
         else:
@@ -515,8 +515,10 @@ class Cache:
                 created_at ASC
             '''
 
-        if reverse:
-            pass  # XXX: Not implemented
+        if not reverse:
+            # Note the change in case to avoid swapping all of them. sqlite
+            # doesn't care about casing anyway.
+            order = order.replace(' DESC', ' asc').replace(' ASC', ' desc')
 
         query = '''
               SELECT todos.*, files.list_id
@@ -526,8 +528,13 @@ class Cache:
         '''.format(' '.join(extra_where), order,)
         result = self.conn.execute(query, params)
 
+        logger.error(reverse)
+        logger.error(sort)
+        logger.error(order)
+        logger.error(query)
+
         for row in result:
-            todo = Todo(new=False)
+            todo = Todo(new=False, safe=False)
             todo.id = row['id']
             todo.uid = row['uid']
             todo.summary = row['summary']
@@ -559,6 +566,19 @@ class Cache:
                 colour=row['colour'],
             )
             lists[row['id']] = list_
+
+        return lists
+
+    def lists(self):
+        lists = []
+
+        result = self.conn.execute("SELECT * FROM lists")
+        for row in result:
+            lists.append(List(
+                name=row['name'],
+                path=row['path'],
+                colour=row['colour'],
+            ))
 
         return lists
 
@@ -730,11 +750,14 @@ class Database:
     def todo(self, id):
         return self.cache.todo(id)
 
+    def lists(self):
+        return self.cache.lists()
+
     def save(self, todo):
         if not todo.safe:
             raise UnsafeOperationException()
 
-        path = os.path.join(self.path, todo.filename)
+        path = os.path.join(todo.list.path, todo.filename)
 
         if os.path.exists(path):
             # Update an existing entry:
