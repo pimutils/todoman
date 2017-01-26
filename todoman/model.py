@@ -311,6 +311,7 @@ class Cache:
         self.conn.row_factory = sqlite3.Row
         self.load_from_disk()
         self.cur = self.conn.cursor()
+        self.cur.execute("PRAGMA foreign_keys = ON")
 
         self.create_tables()
 
@@ -350,7 +351,7 @@ class Cache:
                 "mtime" TEXT,
 
                 CONSTRAINT path_unique UNIQUE (path),
-                FOREIGN KEY(list_id) REFERENCES lists(id)
+                FOREIGN KEY(list_id) REFERENCES lists(id) ON DELETE CASCADE
             );
         ''')
 
@@ -372,7 +373,7 @@ class Cache:
                 "categories" TEXT,
 
                 CONSTRAINT file_unique UNIQUE (file_id),
-                FOREIGN KEY(file_id) REFERENCES files(id)
+                FOREIGN KEY(file_id) REFERENCES files(id) ON DELETE CASCADE
             );
         ''')
 
@@ -385,28 +386,24 @@ class Cache:
         Returns the id of the newly inserted list.
         """
 
-        # XXX: fail if a list with the same name already exists
-        self.cur.execute(
-            '''
-            INSERT OR IGNORE INTO lists (
-                name,
-                path,
-                colour
-            ) VALUES (?, ?, ?)
-            ''', (
-                name,
-                path,
-                colour,
-            )
-        )
-        self.conn.commit()
-
         result = self.cur.execute(
             'SELECT id FROM lists WHERE path = ?',
             (path,),
         ).fetchone()
 
-        return result['id']
+        if result:
+            return result['id']
+
+        try:
+            self.cur.execute(
+                "INSERT INTO lists (name, path, colour) VALUES (?, ?, ?)",
+                (name, path, colour,),
+            )
+            self.conn.commit()
+        except sqlite3.IntegrityError as e:
+            raise Exception('Multiple lists named "{}"'.format(name)) from e
+
+        return self.add_list(name, path, colour)
 
     def add_file(self, list_id, path, mtime):
         self.cur.execute('''
@@ -573,8 +570,19 @@ class Cache:
             colour=row['colour'],
         )
 
+    def revalidate_lists(self, paths):
+        # q = ', '.join(['?'] * len(lists))
+        # XXX: Rewrite this to use a NOT IN query:
+        results = self.conn.execute("SELECT path, id from lists")
+        for result in results:
+            if result['path'] not in paths:
+                self.delete_list(result['id'])
+
+    def delete_list(self, id):
+        self.conn.execute("DELETE FROM lists WHERE lists.id = ?", (id,))
+        self.conn.commit()
+
     def todo(self, id):
-        # XXX: MOVE THIS CODE INTO CACHE!
         result = self.cur.execute('''
             SELECT files.path, list_id
               FROM files, todos
@@ -605,7 +613,7 @@ class Cache:
         if int(row['mtime']) == mtime:
             return True
 
-        self.invalidate_file(path)
+        self._invalidate_file(path)
         return False
 
     def _invalidate_file(self, path):
@@ -676,6 +684,8 @@ class Database:
 
     def __init__(self, paths, cache_path):
         self.cache = Cache(cache_path)
+
+        self.cache.revalidate_lists(paths)
 
         for path in paths:
             self._cache_list(path)
