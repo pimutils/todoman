@@ -8,7 +8,6 @@ from uuid import uuid4
 
 import icalendar
 import dateutil.parser
-import sqlitebck
 from atomicwrites import AtomicWriter
 from dateutil.tz import tzlocal
 
@@ -309,31 +308,17 @@ class Cache:
         self.cache_path = path
 
         self.conn = sqlite3.connect(
-            ':memory:',
+            self.cache_path,
             detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
         )
         self.conn.row_factory = sqlite3.Row
-        self.load_from_disk()
         self.cur = self.conn.cursor()
         self.cur.execute("PRAGMA foreign_keys = ON")
 
         self.create_tables()
 
-    def load_from_disk(self):
-        conn_disk = sqlite3.connect(
-            self.cache_path,
-            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
-        )
-        sqlitebck.copy(conn_disk, self.conn)
-        conn_disk.close()
-
     def save_to_disk(self):
-        conn_disk = sqlite3.connect(
-            self.cache_path,
-            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
-        )
-        sqlitebck.copy(self.conn, conn_disk)
-        conn_disk.close()
+        self.conn.commit()
 
     def create_tables(self):
         self.cur.execute('''
@@ -382,8 +367,6 @@ class Cache:
             );
         ''')
 
-        self.conn.commit()
-
     def add_list(self, name, path, colour):
         """
         Inserts a new list into the cache.
@@ -404,7 +387,6 @@ class Cache:
                 "INSERT INTO lists (name, path, colour) VALUES (?, ?, ?)",
                 (name, path, colour,),
             )
-            self.conn.commit()
         except sqlite3.IntegrityError as e:
             raise Exception('Multiple lists named "{}"'.format(name)) from e
 
@@ -422,7 +404,6 @@ class Cache:
             path,
             mtime,
         ))
-        self.conn.commit()
 
         result = self.cur.execute(
             'SELECT id FROM files WHERE path = ?',
@@ -470,8 +451,6 @@ class Cache:
                 todo.raw_categories,
             )
         )
-
-        self.conn.commit()
 
     def todos(self, all=False, lists=[], urgent=False, location='',
               category='', grep='', sort=[], reverse=False):
@@ -604,7 +583,6 @@ class Cache:
 
     def delete_list(self, id):
         self.conn.execute("DELETE FROM lists WHERE lists.id = ?", (id,))
-        self.conn.commit()
 
     def todo(self, id):
         result = self.cur.execute('''
@@ -662,7 +640,6 @@ class Cache:
             "DELETE FROM files WHERE id = ?",
             (file_id,),
         )
-        self.conn.commit()
 
 
 class List:
