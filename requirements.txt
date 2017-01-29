@@ -1,6 +1,8 @@
 atomicwrites
 click>=6.0
 icalendar
+jsonschema
 parsedatetime
 pyxdg
+pytoml
 urwid

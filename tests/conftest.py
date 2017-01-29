@@ -16,8 +16,8 @@ def default_database(tmpdir):
 def config(tmpdir, default_database):
     path = tmpdir.join('config')
     path.write('[main]\n'
-               'path = {}/*\n'
-               'date_format = %Y-%m-%d\n'
+               'path = "{}/*"\n'
+               'date_format = "%Y-%m-%d"\n'
                .format(str(tmpdir)))
     return path
 

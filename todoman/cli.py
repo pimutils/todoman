@@ -85,12 +85,12 @@ def cli(ctx, human_time, color):
     ctx.obj = {}
     ctx.obj['config'] = config
     ctx.obj['formatter'] = TodoFormatter(
-        config.get('main', 'date_format', fallback='%Y-%m-%d'),
+        config['main']['date_format'],
         human_time
     )
     ctx.obj['db'] = databases = {}
 
-    color = color or ctx.obj['config']['main'].get('color', 'auto')
+    color = color or config['main']['color']
     if color == 'always':
         ctx.color = True
     elif color == 'never':
