@@ -136,3 +136,21 @@ def test_grep(tmpdir, runner, create):
     assert 'puppies' not in result.output
     assert 'research' not in result.output
     assert 'hoho' not in result.output
+
+
+def test_filtering_lists(tmpdir, runner, create):
+    tmpdir.mkdir('list_one')
+    tmpdir.mkdir('list_two')
+    tmpdir.mkdir('list_three')
+
+    runner.invoke(cli, ['new', '-l', 'list_one', 'todo one'])
+    runner.invoke(cli, ['new', '-l', 'list_two', 'todo two'])
+    runner.invoke(cli, ['new', '-l', 'list_three', 'todo three'])
+
+    result = runner.invoke(cli, ['new', 'list'])
+    assert len(result.output.splitlines()) == 3
+
+    result = runner.invoke(cli, ['list', 'list_two'])
+    assert not result.exception
+    assert len(result.output.splitlines()) == 1
+    assert 'todo two' in result.output
