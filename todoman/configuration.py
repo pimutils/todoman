@@ -12,9 +12,8 @@ def load_config():
     custom_path = environ.get('TODOMAN_CONFIG')
     if custom_path:
         if not exists(custom_path):
-            raise Exception(
-                "Configuration file %s does not exist" %
-                custom_path
+            raise ClickException(
+                "Configuration file {} does not exist".format(custom_path)
             )
         return _load_config_impl(custom_path)
 
@@ -24,9 +23,9 @@ def load_config():
             return _load_config_impl(path)
 
     raise ClickException(
-        "No configuration file found.\n"
+        "No configuration file found.\n\n"
         "For details on the configuration format and a sample file, see\n"
-        "{}/configure.html".format(__documentation__)
+        "{}configure.html".format(__documentation__)
     )
 
 

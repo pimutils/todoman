@@ -1,4 +1,3 @@
-import pytest
 from click.testing import CliRunner
 
 from todoman.cli import cli
@@ -13,18 +12,17 @@ def test_explicit_nonexistant(runner):
         catch_exceptions=True,
     )
     assert result.exception
-    assert str(result.exception) == \
-        "Configuration file /nonexistant does not exist"
+    assert "Configuration file /nonexistant does not exist" in result.output
 
 
-@pytest.mark.xfail(reason='unknown')  # FIXME!
 def test_xdg_nonexistant(runner):
+    # Redefining XDG_CONFIG_HOME does not work here, because the xdg module
+    # saves the directory locations at startup time.
+    # You MUST set XDG_CONFIG_HOME to a nonexistant directory (or one without a
+    # settings files) before running tests, or this one will fail.
     result = CliRunner().invoke(
         cli,
-        env={
-            'XDG_CONFIG_HOME': '/nonexistant',
-        },
         catch_exceptions=True,
     )
     assert result.exception
-    assert str(result.exception) == "No Configuration file found"
+    assert "No configuration file found" in result.output
