@@ -14,6 +14,7 @@ Todoman
   :alt: version on pypi
 
 .. image:: https://img.shields.io/pypi/l/todoman.svg
+  :target: https://github.com/pimutils/todoman/blob/master/LICENCE
   :alt: licence
 
 Todoman is a simple, standards-based, cli todo (aka: task) manager. Todos
