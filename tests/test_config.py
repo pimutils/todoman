@@ -1,3 +1,4 @@
+import xdg
 from click.testing import CliRunner
 
 from todoman.cli import cli
@@ -16,13 +17,19 @@ def test_explicit_nonexistant(runner):
 
 
 def test_xdg_nonexistant(runner):
-    # Redefining XDG_CONFIG_HOME does not work here, because the xdg module
-    # saves the directory locations at startup time.
-    # You MUST set XDG_CONFIG_HOME to a nonexistant directory (or one without a
-    # settings files) before running tests, or this one will fail.
-    result = CliRunner().invoke(
-        cli,
-        catch_exceptions=True,
-    )
-    assert result.exception
-    assert "No configuration file found" in result.output
+    original_dirs = xdg.BaseDirectory.xdg_config_dirs
+    xdg.BaseDirectory.xdg_config_dirs = []
+
+    try:
+        result = CliRunner().invoke(
+            cli,
+            catch_exceptions=True,
+        )
+        assert result.exception
+        assert "No configuration file found" in result.output
+    except:
+        raise
+    finally:
+        # Make sure we ALWAYS set this back to the origianl value, even if the
+        # test failed.
+        xdg.BaseDirectory.xdg_config_dirs = original_dirs
