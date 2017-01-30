@@ -302,7 +302,7 @@ class FileTodo(Todo):
         super().__init__(new=new, **kwargs)
 
     @classmethod
-    def from_file(cls, path):
+    def from_file(cls, path, id=None):
         with open(path, 'rb') as f:
             cal = f.read()
             if b'\nBEGIN:VTODO' in cal:
@@ -311,11 +311,13 @@ class FileTodo(Todo):
                 # Note: Syntax is weird due to icalendar API, and the fact that
                 # we only support one TODO per file.
                 for component in cal.walk('VTODO'):
-                    return cls(
+                    todo = cls(
                         new=False,
                         todo=component,
                         filename=os.path.basename(path),
                     )
+                    todo.id = id
+                    return todo
 
     def save(self, list_=None):
         list_ = list_ or self.list
@@ -627,7 +629,7 @@ class Cache:
             raise NoSuchTodo()
 
         path = result['path']
-        todo = FileTodo.from_file(path)
+        todo = FileTodo.from_file(path, id)
         todo.list = self.list(result['list_name'])
 
         return todo
