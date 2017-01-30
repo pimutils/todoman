@@ -2,5 +2,6 @@ atomicwrites
 click>=6.0
 icalendar
 parsedatetime
+python-dateutil
 pyxdg
 urwid

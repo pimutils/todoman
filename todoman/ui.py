@@ -213,7 +213,7 @@ class TodoFormatter:
         if human_time:
             self._parsedatetime_calendar = parsedatetime.Calendar()
 
-    def compact(self, todo, database):
+    def compact(self, todo):
         """
         Returns a brief representation of a task, suitable for displaying
         on-per-line.
@@ -232,19 +232,19 @@ class TodoFormatter:
             due = click.style(due, fg='red')
 
         summary = todo.summary
-        list = self.format_database(database)
+        list = self.format_database(todo.list)
 
         return self.compact_format.format(completed=completed, urgent=urgent,
                                           due=due, summary=summary, list=list,
                                           percent=percent)
 
-    def detailed(self, todo, database):
+    def detailed(self, todo):
         """
         Returns a detailed representation of a task.
 
         :param Todo todo: The todo component.
         """
-        rv = self.compact(todo, database)
+        rv = self.compact(todo)
         if todo.description:
             rv = "{}\n\n{}".format(rv, todo.description)
         return rv
