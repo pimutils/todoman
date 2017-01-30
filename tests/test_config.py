@@ -33,3 +33,26 @@ def test_xdg_nonexistant(runner):
         # Make sure we ALWAYS set this back to the origianl value, even if the
         # test failed.
         xdg.BaseDirectory.xdg_config_dirs = original_dirs
+
+
+def test_xdg_existant(runner, tmpdir, config):
+    conf_path = tmpdir.mkdir('todoman')
+    with conf_path.join('todoman.conf').open('w') as f:
+        f.write(config.open().read())
+
+    original_dirs = xdg.BaseDirectory.xdg_config_dirs
+    xdg.BaseDirectory.xdg_config_dirs = [str(tmpdir)]
+
+    try:
+        result = CliRunner().invoke(
+            cli,
+            catch_exceptions=True,
+        )
+        assert not result.exception
+        assert result.output == ''
+    except:
+        raise
+    finally:
+        # Make sure we ALWAYS set this back to the origianl value, even if the
+        # test failed.
+        xdg.BaseDirectory.xdg_config_dirs = original_dirs
