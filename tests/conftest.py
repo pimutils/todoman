@@ -1,4 +1,5 @@
 import os
+from uuid import uuid4
 
 import pytest
 from click.testing import CliRunner
@@ -9,7 +10,10 @@ from todoman import model
 
 @pytest.fixture
 def default_database(tmpdir):
-    return model.Database(path=str(tmpdir.mkdir('default')))
+    return model.Database(
+        [tmpdir.mkdir('default')],
+        tmpdir.mkdir(uuid4().hex).join('cache.sqlite3'),
+    )
 
 
 @pytest.fixture
@@ -18,7 +22,8 @@ def config(tmpdir, default_database):
     path.write('[main]\n'
                'path = {}/*\n'
                'date_format = %Y-%m-%d\n'
-               .format(str(tmpdir)))
+               'cache_path = {}\n'
+               .format(str(tmpdir), str(tmpdir.join('cache.sqlite3'))))
     return path
 
 
@@ -31,8 +36,8 @@ def runner(config):
 
 @pytest.fixture
 def create(tmpdir):
-    def inner(name, content):
-        tmpdir.join('default').join(name).write(
+    def inner(name, content, list_name='default'):
+        tmpdir.ensure_dir(list_name).join(name).write(
             'BEGIN:VCALENDAR\n'
             'BEGIN:VTODO\n' +
             content +

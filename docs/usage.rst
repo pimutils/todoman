@@ -11,7 +11,7 @@ First of all, the classic usage output:
     $ todo --help
 
 The default action is ``list``, which outputs all tasks for all calendars, each
-with a non-permanent unique id::
+with a semi-permanent unique id::
 
     1 [ ] ! 2015-04-30 Close bank account (0%)
     2 [ ] !            Send minipimer back for warranty replacement (0%)
@@ -21,15 +21,15 @@ with a non-permanent unique id::
 
 The columns, in order, are:
 
- * A temporary id.
+ * An id.
  * Whether the task has been completed or not.
  * An ``!`` indicating it's an urgent task.
  * The due date
  * The task summary
  * The completed percentage
 
-The temporary id is retained by ``todoman`` until the next time you run the
-``list`` command (remember: it's the default command is no other is specified).
+The id is retained by ``todoman`` until the next time you run the ``flush``
+command.
 
 To operate on a todo, the id is what's used to reference it. For example, to
 edit the `Buy soy milk` task from the example above, the proper command is

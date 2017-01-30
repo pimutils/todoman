@@ -1,13 +1,14 @@
 import functools
 import glob
-import re
-from os.path import expanduser, isdir, join
+import os
+from os.path import expanduser, isdir
 
 import click
+import xdg
 
+from . import model
 from .configuration import load_config
-from .main import dump_idfile, get_task_sort_function, get_todo, get_todos
-from .model import Database, Todo
+from .model import Database, FileTodo
 from .ui import EditState, TodoEditor, TodoFormatter
 
 TODO_ID_MIN = 1
@@ -17,8 +18,6 @@ with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
 def _validate_lists_param(ctx, param=None, lists=None):
     if lists:
         return [_validate_list_param(ctx, name=l) for l in lists]
-    else:
-        return ctx.obj['db'].values()
 
 
 def _validate_list_param(ctx, param=None, name=None):
@@ -30,12 +29,14 @@ def _validate_list_param(ctx, param=None, name=None):
                 "{}. You must set 'default_list' or use -l."
                 .format(name)
             )
-    if name in ctx.obj['db']:
-        return ctx.obj['db'][name]
+    for l in ctx.obj['db'].lists():
+        if l.name == name:
+            return l
     else:
+        list_names = [l.name for l in ctx.obj['db'].lists()]
         raise click.BadParameter(
             "{}. Available lists are: {}"
-            .format(name, ', '.join(ctx.obj['db']))
+            .format(name, ', '.join(list_names))
         )
 
 
@@ -88,9 +89,8 @@ def cli(ctx, human_time, color):
         config.get('main', 'date_format', fallback='%Y-%m-%d'),
         human_time
     )
-    ctx.obj['db'] = databases = {}
 
-    color = color or ctx.obj['config']['main'].get('color', 'auto')
+    color = color or config['main'].get('color', 'auto')
     if color == 'always':
         ctx.color = True
     elif color == 'never':
@@ -99,13 +99,18 @@ def cli(ctx, human_time, color):
         raise click.UsageError('Invalid color setting: Choose from always, '
                                'never, auto.')
 
+    paths = []
     for path in glob.iglob(expanduser(config["main"]["path"])):
         if not isdir(path):
             continue
-        db = Database(path)
-        if databases.setdefault(db.name, db) is not db:
-            raise RuntimeError('Detected two databases named {}'
-                               .format(db.name))
+        paths.append(path)
+
+    cache_path = config['main'].get('cache_path', os.path.join(
+        xdg.BaseDirectory.xdg_cache_home,
+        'todoman/cache.sqlite3',
+    ))
+
+    ctx.obj['db'] = Database(paths, cache_path)
 
     if not ctx.invoked_subcommand:
         ctx.invoke(cli.commands["list"])
@@ -131,7 +136,7 @@ def new(ctx, summary, list, todo_properties, interactive):
     Create a new task with SUMMARY.
     '''
 
-    todo = Todo()
+    todo = FileTodo()
     for key, value in todo_properties.items():
         if value:
             setattr(todo, key, value)
@@ -146,8 +151,9 @@ def new(ctx, summary, list, todo_properties, interactive):
     if not todo.summary:
         raise click.UsageError('No SUMMARY specified')
 
-    list.save(todo)
-    click.echo(ctx.obj['formatter'].detailed(todo, list))
+    todo.list = list
+    todo.save()
+    click.echo(ctx.obj['formatter'].detailed(todo))
 
 
 @cli.command()
@@ -159,7 +165,8 @@ def edit(ctx, id, todo_properties, interactive):
     '''
     Edit the task with id ID.
     '''
-    todo, database = get_todo(ctx.obj['db'], id)
+    database = ctx.obj['db']
+    todo = database.todo(id)
     changes = False
     for key, value in todo_properties.items():
         if value:
@@ -167,13 +174,13 @@ def edit(ctx, id, todo_properties, interactive):
             setattr(todo, key, value)
 
     if interactive or (not changes and interactive is None):
-        ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
+        ui = TodoEditor(todo, ctx.obj['db'], ctx.obj['formatter'])
         state = ui.edit()
         if state == EditState.saved:
             changes = True
 
     if changes:
-        database.save(todo)
+        todo.save()
         click.echo(ctx.obj['formatter'].detailed(todo, database))
     else:
         click.echo('No changes.')
@@ -187,8 +194,12 @@ def show(ctx, id):
     '''
     Show details about a task.
     '''
-    todo, database = get_todo(ctx.obj['db'], id)
-    click.echo(ctx.obj['formatter'].detailed(todo, database))
+    try:
+        todo = ctx.obj['db'].todo(id)
+        click.echo(ctx.obj['formatter'].detailed(todo))
+    except model.NoSuchTodo:
+        click.echo("No todo with id {}.".format(id))
+        ctx.exit(-2)
 
 
 @cli.command()
@@ -199,9 +210,10 @@ def done(ctx, ids):
     Mark a task as done.
     '''
     for id in ids:
-        todo, database = get_todo(ctx.obj['db'], id)
+        database = ctx.obj['db']
+        todo = database.todo(id)
         todo.is_completed = True
-        database.save(todo)
+        todo.save()
         click.echo(ctx.obj['formatter'].detailed(todo, database))
 
 
@@ -217,13 +229,11 @@ def _abort_if_false(ctx, param, value):
 )
 def flush(ctx):
     '''
-    Delete done tasks.
+    Delete done tasks. This will also clear the cache to reset task IDs.
     '''
-    for database in ctx.obj['db'].values():
-        for todo in database.todos.values():
-            if todo.is_completed:
-                click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
-                database.delete(todo)
+    database = ctx.obj['db']
+    for todo in database.flush():
+        click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
 
 
 @cli.command()
@@ -231,18 +241,20 @@ def flush(ctx):
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
 @click.option('--yes', is_flag=True, default=False)
 def delete(ctx, ids, yes):
-    '''
-    Delete tasks.
-    '''
+    '''Delete tasks.'''
 
-    todos, database = get_todos(ctx, ids)
+    todos = []
+    for i in ids:
+        todo = ctx.obj['db'].todo(i)
+        click.echo(ctx.obj['formatter'].compact(todo))
+        todos.append(todo)
 
     if not yes:
         click.confirm('Do you want to delete those tasks?', abort=True)
 
     for todo in todos:
         click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
-        database.delete(todo)
+        ctx.obj['db'].delete(todo)
 
 
 @cli.command()
@@ -251,16 +263,15 @@ def delete(ctx, ids, yes):
               help='The list to copy the tasks to.')
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
 def copy(ctx, list, ids):
-    '''
-    Copy tasks to another list.
-    '''
+    '''Copy tasks to another list.'''
 
-    todos, database = get_todos(ctx, ids)
-
-    for todo in todos:
+    for id in ids:
+        todo = ctx.obj['db'].todo(id)
         click.echo('Copying {} to {} ({})'.format(
-            todo.uid, list, todo.summary))
-        list.save(todo)
+            todo.uid, list, todo.summary
+        ))
+
+        todo.save(list)
 
 
 @cli.command()
@@ -269,17 +280,15 @@ def copy(ctx, list, ids):
               help='The list to move the tasks to.')
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
 def move(ctx, list, ids):
-    '''
-    Move tasks to another list.
-    '''
+    '''Move tasks to another list.'''
 
-    todos, database = get_todos(ctx, ids)
-
-    for todo in todos:
+    for id in ids:
+        todo = ctx.obj['db'].todo(id)
         click.echo('Moving {} to {} ({})'.format(
-            todo.uid, list, todo.summary))
-        list.save(todo)
-        database.delete(todo)
+            todo.uid, list, todo.summary
+        ))
+
+        ctx.obj['db'].move(todo, list)
 
 
 @cli.command()
@@ -290,6 +299,7 @@ def move(ctx, list, ids):
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
+# XXX: shouldn't this be an ngarg-1 this?:
 @click.option('--sort', help='Sort tasks using these fields')
 @click.option('--reverse/--no-reverse', default=True,
               help='Sort tasks in reverse order (see --sort). '
@@ -309,39 +319,22 @@ def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
     This is the default action when running `todo'.
     """
 
-    pattern = re.compile(grep) if grep else None
-    # FIXME: When running with no command, this somehow ends up empty:
-    lists = lists or ctx.obj['db'].values()
     sort = sort.split(',') if sort else None
 
-    todos = sorted(
-        (
-            (database, todo)
-            for database in lists
-            for todo in database.todos.values()
-            if (not todo.is_completed or all) and
-               (not urgent or todo.priority) and
-               (not location or location in todo.location) and
-               (not category or category in todo.categories) and
-               (not pattern or (
-                   pattern.search(todo.summary) or
-                   pattern.search(todo.description)
-                   ))
-        ),
-        key=get_task_sort_function(fields=sort),
-        reverse=reverse
+    db = ctx.obj['db']
+    todos = db.todos(
+        all=all,
+        category=category,
+        grep=grep,
+        lists=lists,
+        location=location,
+        reverse=reverse,
+        sort=sort,
+        urgent=urgent,
     )
-    ids = {}
 
-    for index, (database, todo) in enumerate(todos, start=TODO_ID_MIN):
-        ids[index] = (database.name, todo.filename)
-        try:
-            click.echo("{:2d} {}".format(
-                index,
-                ctx.obj['formatter'].compact(todo, database)
-            ))
-        except Exception as e:
-            click.echo("Error while showing {}: {}"
-                       .format(join(database.name, todo.filename), e))
-
-    dump_idfile(ids)
+    for todo in todos:
+        click.echo("{:3d} {}".format(
+            todo.id,
+            ctx.obj['formatter'].compact(todo)
+        ))
