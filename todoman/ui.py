@@ -141,15 +141,8 @@ class TodoEditor:
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
-        if self.due:
-            self.todo.due = self.formatter.unformat_date(self.due)
-        else:
-            self.todo.due = None
-
-        if self.dtstart:
-            self.todo.start = self.formatter.unformat_date(self.dtstart)
-        else:
-            self.todo.start = None
+        self.todo.due = self.formatter.unformat_date(self.due)
+        self.todo.start = self.formatter.unformat_date(self.dtstart)
 
         self.todo.is_completed = self._completed.get_state()
 
