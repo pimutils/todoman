@@ -1,5 +1,6 @@
 atomicwrites
 click>=6.0
+configobj
 icalendar
 parsedatetime
 python-dateutil
