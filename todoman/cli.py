@@ -304,7 +304,13 @@ def move(ctx, list, ids):
 @click.option('--reverse/--no-reverse', default=True,
               help='Sort tasks in reverse order (see --sort). '
               'Defaults to true.')
-def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
+@click.option('--due', default=None, help='Only show tasks due in DUE hours',
+              type=int)
+# TODO: we might want a `porcelain` flag here to print this is a
+# machine-friendly format that NEVER CHANGES!
+def list(
+    ctx, lists, all, urgent, location, category, grep, sort, reverse, due,
+         ):
     """
     List unfinished tasks.
 
@@ -323,6 +329,7 @@ def list(ctx, lists, all, urgent, location, category, grep, sort, reverse):
 
     db = ctx.obj['db']
     todos = db.todos(
+        due=due,
         all=all,
         category=category,
         grep=grep,
