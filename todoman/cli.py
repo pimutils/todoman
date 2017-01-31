@@ -1,13 +1,11 @@
 import functools
 import glob
-import os
 from os.path import expanduser, isdir
 
 import click
-import xdg
 
 from . import model
-from .configuration import load_config
+from .configuration import ConfigurationException, load_config
 from .model import Database, FileTodo
 from .ui import EditState, TodoEditor, TodoFormatter
 
@@ -82,15 +80,18 @@ _interactive_option = click.option(
 @click.pass_context
 @click.version_option(prog_name='todoman')
 def cli(ctx, human_time, color):
-    config = load_config()
+    try:
+        config = load_config()
+    except ConfigurationException as e:
+        raise click.ClickException(e.args[0])
     ctx.obj = {}
     ctx.obj['config'] = config
     ctx.obj['formatter'] = TodoFormatter(
-        config.get('main', 'date_format', fallback='%Y-%m-%d'),
+        config['main']['date_format'],
         human_time
     )
 
-    color = color or config['main'].get('color', 'auto')
+    color = color or config['main']['color']
     if color == 'always':
         ctx.color = True
     elif color == 'never':
@@ -105,11 +106,7 @@ def cli(ctx, human_time, color):
             continue
         paths.append(path)
 
-    cache_path = config['main'].get('cache_path', os.path.join(
-        xdg.BaseDirectory.xdg_cache_home,
-        'todoman/cache.sqlite3',
-    ))
-
+    cache_path = config['main']['cache_path']
     ctx.obj['db'] = Database(paths, cache_path)
 
     if not ctx.invoked_subcommand:
