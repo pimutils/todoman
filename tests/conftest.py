@@ -1,5 +1,4 @@
 import os
-from uuid import uuid4
 
 import pytest
 from click.testing import CliRunner
@@ -10,10 +9,7 @@ from todoman import model
 
 @pytest.fixture
 def default_database(tmpdir):
-    return model.Database(
-        [tmpdir.mkdir('default')],
-        tmpdir.mkdir(uuid4().hex).join('cache.sqlite3'),
-    )
+    return model.Database([tmpdir.mkdir('default')], ':memory:')
 
 
 @pytest.fixture

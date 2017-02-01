@@ -166,8 +166,7 @@ def test_dtstamp(tmpdir, runner, create):
     result = runner.invoke(cli, ['new', '-l', 'default', 'test event'])
     assert not result.exception
 
-    db = Database([tmpdir.join('default')],
-                  tmpdir.join('/dtstamp_cache'))
+    db = Database([tmpdir.join('default')], ':memory:')
     todo = list(db.todos())[0]
     assert todo.dtstamp is not None
     assert todo.dtstamp.tzinfo is pytz.utc
@@ -184,8 +183,7 @@ def test_default_list(tmpdir, runner, create):
     result = runner.invoke(cli, ['new', 'test default list'])
     assert not result.exception
 
-    db = Database([tmpdir.join('default')],
-                  tmpdir.join('/default_list'))
+    db = Database([tmpdir.join('default')], ':memory:')
     todo = list(db.todos())[0]
     assert todo.summary == 'test default list'
 

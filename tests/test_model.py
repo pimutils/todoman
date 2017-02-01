@@ -15,10 +15,7 @@ def test_querying(create, tmpdir):
                 list_name=list
             )
 
-    db = Database(
-        [str(tmpdir.ensure_dir(l)) for l in 'abc'],
-        str(tmpdir.join('cache'))
-    )
+    db = Database([str(tmpdir.ensure_dir(l)) for l in 'abc'], ':memory:')
 
     assert len(set(db.todos())) == 9
     assert len(set(db.todos(lists='ab'))) == 6

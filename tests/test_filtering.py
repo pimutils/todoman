@@ -172,7 +172,7 @@ def test_due_aware(tmpdir, runner, create):
             )
         )
 
-    db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
+    db = Database([tmpdir.join('default')], ':memory:')
     todos = list(db.todos(due=24))
 
     assert len(todos) == 2
@@ -193,7 +193,7 @@ def test_due_naive(tmpdir, runner, create):
             )
         )
 
-    db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
+    db = Database([tmpdir.join('default')], ':memory:')
     todos = list(db.todos(due=24))
 
     assert len(todos) == 2
