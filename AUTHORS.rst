@@ -13,4 +13,5 @@ We manually track this since commit author *does not* equal code author.
 * Hugo Osvaldo Barrera <hugo@barrera.io>
 * José Ribeiro <hello@jlbribeiro.com>
 * Markus Unterwaditzer <markus@unterwaditzer.net>
+* Paweł Fertyk <pfertyk@openmailbox.org>
 * Thomas Glanzmann <thomas@glanzmann.de>

@@ -174,9 +174,7 @@ def test_dtstamp(tmpdir, runner, create):
 
 
 def test_default_list(tmpdir, runner, create):
-    """
-    Test the default_list config parameter
-    """
+    """Test the default_list config parameter"""
     result = runner.invoke(cli, ['new', 'test default list'])
     assert result.exception
 
@@ -190,6 +188,30 @@ def test_default_list(tmpdir, runner, create):
                   tmpdir.join('/default_list'))
     todo = list(db.todos())[0]
     assert todo.summary == 'test default list'
+
+
+@pytest.mark.parametrize(
+    'default_due, expected_due_hours', [(None, 24), (1, 1), (0, None)],
+    ids=['not specified', 'greater than 0', '0']
+)
+def test_default_due(
+    tmpdir, runner, create, default_due, expected_due_hours
+):
+    """Test setting the due date using the default_due config parameter"""
+    if default_due is not None:
+        path = tmpdir.join('config')
+        path.write('default_due = {}\n'.format(default_due), 'a')
+
+    runner.invoke(cli, ['new', '-l', 'default', 'aaa'])
+    db = Database([tmpdir.join('default')], tmpdir.join('/default_list'))
+    todo = list(db.todos())[0]
+
+    if expected_due_hours is None:
+        assert todo.due is None
+    else:
+        assert (todo.due - todo.created_at) == datetime.timedelta(
+            hours=expected_due_hours
+        )
 
 
 def test_sorting_fields(tmpdir, runner, default_database):

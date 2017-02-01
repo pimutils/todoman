@@ -1,5 +1,6 @@
 import functools
 import glob
+from datetime import timedelta
 from os.path import expanduser, isdir
 
 import click
@@ -147,6 +148,10 @@ def new(ctx, summary, list, todo_properties, interactive):
 
     if not todo.summary:
         raise click.UsageError('No SUMMARY specified')
+
+    default_due = ctx.obj['config']['main']['default_due']
+    if default_due:
+        todo.due = todo.created_at + timedelta(hours=default_due)
 
     todo.list = list
     todo.save()

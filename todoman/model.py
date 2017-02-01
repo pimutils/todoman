@@ -93,7 +93,6 @@ class Todo:
             now = datetime.now(self._localtimezone)
             uid = uuid4().hex + socket.gethostname()
             self.todo.add('uid', uid)
-            self.todo.add('due', now + timedelta(days=1))
             self.todo.add('percent-complete', 0)
             self.todo.add('priority', 0)
             self.todo.add('created', now)
