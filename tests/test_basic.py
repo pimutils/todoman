@@ -174,9 +174,7 @@ def test_dtstamp(tmpdir, runner, create):
 
 
 def test_default_list(tmpdir, runner, create):
-    """
-    Test the default_list config parameter
-    """
+    """Test the default_list config parameter"""
     result = runner.invoke(cli, ['new', 'test default list'])
     assert result.exception
 
@@ -199,9 +197,7 @@ def test_default_list(tmpdir, runner, create):
 def test_default_due(
     tmpdir, runner, create, default_due, expected_due_hours
 ):
-    """
-    Test setting the due date using the default_due config parameter
-    """
+    """Test setting the due date using the default_due config parameter"""
     if default_due is not None:
         path = tmpdir.join('config')
         path.write('default_due = {}\n'.format(default_due), 'a')
