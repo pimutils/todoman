@@ -214,7 +214,7 @@ def test_default_due(
         assert todo.due is None
     else:
         assert (todo.due - todo.created_at) == datetime.timedelta(
-            minutes=expected_due_hours*60
+            minutes=expected_due_hours * 60
         )
 
 
