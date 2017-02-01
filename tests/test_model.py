@@ -1,3 +1,7 @@
+from datetime import datetime
+
+from dateutil.tz.tz import tzoffset
+
 from todoman.model import Database
 
 
@@ -19,3 +23,27 @@ def test_querying(create, tmpdir):
     assert len(set(db.todos())) == 9
     assert len(set(db.todos(lists='ab'))) == 6
     assert len(set(db.todos(lists='ab', location='a'))) == 2
+
+
+def test_retain_tz(tmpdir, runner, create, default_database):
+    create(
+        'ar.ics',
+        'SUMMARY:blah.ar\n'
+        'DUE;VALUE=DATE-TIME;TZID=HST:20160102T000000\n'
+    )
+    create(
+        'de.ics',
+        'SUMMARY:blah.de\n'
+        'DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n'
+    )
+
+    db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
+    todos = list(db.todos())
+
+    assert len(todos) == 2
+    assert todos[0].due == datetime(
+        2016, 1, 2, 0, 0, tzinfo=tzoffset(None, -36000)
+    )
+    assert todos[1].due == datetime(
+        2016, 1, 2, 0, 0, tzinfo=tzoffset(None, 3600)
+    )
