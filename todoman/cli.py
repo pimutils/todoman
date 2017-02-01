@@ -149,7 +149,7 @@ def new(ctx, summary, list, todo_properties, interactive):
     if not todo.summary:
         raise click.UsageError('No SUMMARY specified')
 
-    default_due = int(ctx.obj['config']['main'].get('default_due', '24'))
+    default_due = int(ctx.obj['config']['main'].get('default_due'))
     if default_due:
         todo.due = todo.created_at + timedelta(minutes=default_due * 60)
 
