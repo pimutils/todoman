@@ -192,40 +192,30 @@ def test_default_list(tmpdir, runner, create):
     assert todo.summary == 'test default list'
 
 
-def test_default_due_is_not_specified(tmpdir, runner, create):
+@pytest.mark.parametrize(
+    'default_due, expected_due_hours', [(None, 24), (1, 1), (0, None)],
+    ids=['not specified', 'greater than 0', '0']
+)
+def test_default_due(
+    tmpdir, runner, create, default_due, expected_due_hours
+):
     """
-    Test if due is created_at + 24h if default_due is not specified
+    Test setting the due date using the default_due config parameter
     """
-    runner.invoke(cli, ['new', '-l', 'default', 'aaa'])
-    db = Database([tmpdir.join('default')], tmpdir.join('/default_list'))
-    todo = list(db.todos())[0]
-    assert (todo.due - todo.created_at) == datetime.timedelta(days=1)
-
-
-def test_default_due_is_greater_than_0(tmpdir, runner, create):
-    """
-    Test if due is created_at + default_due if default_due is greater than 0
-    """
-    path = tmpdir.join('config')
-    path.write('default_due = 1\n', 'a')
+    if default_due is not None:
+        path = tmpdir.join('config')
+        path.write('default_due = {}\n'.format(default_due), 'a')
 
     runner.invoke(cli, ['new', '-l', 'default', 'aaa'])
     db = Database([tmpdir.join('default')], tmpdir.join('/default_list'))
     todo = list(db.todos())[0]
-    assert (todo.due - todo.created_at) == datetime.timedelta(minutes=60)
 
-
-def test_default_due_is_0(tmpdir, runner, create):
-    """
-    Test if due is None if default_due is 0
-    """
-    path = tmpdir.join('config')
-    path.write('default_due = 0\n', 'a')
-
-    runner.invoke(cli, ['new', '-l', 'default', 'aaa'])
-    db = Database([tmpdir.join('default')], tmpdir.join('/default_list'))
-    todo = list(db.todos())[0]
-    assert todo.due is None
+    if expected_due_hours is None:
+        assert todo.due is None
+    else:
+        assert (todo.due - todo.created_at) == datetime.timedelta(
+            minutes=expected_due_hours*60
+        )
 
 
 def test_sorting_fields(tmpdir, runner, default_database):
