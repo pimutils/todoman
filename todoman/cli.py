@@ -151,7 +151,7 @@ def new(ctx, summary, list, todo_properties, interactive):
 
     default_due = int(ctx.obj['config']['main'].get('default_due', '24'))
     if default_due:
-        todo.due = todo.created_at + timedelta(minutes=default_due*60)
+        todo.due = todo.created_at + timedelta(minutes=default_due * 60)
 
     todo.list = list
     todo.save()
