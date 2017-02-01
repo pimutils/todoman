@@ -27,6 +27,9 @@ Main section
  * ``default_list``: The default list for adding a todo. If you do not specify
    this option, you must use the ``--list`` / ``-l`` option every time you add
    a todo.
+   ``default_due``: The default difference (in hours) between new todo's due
+   date and creation date. If not specified, the value is 24.
+   If set to 0, the due date for new todos will not be set.
 
 Sample configuration
 --------------------
