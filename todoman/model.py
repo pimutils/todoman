@@ -11,6 +11,8 @@ import icalendar
 from atomicwrites import AtomicWriter
 from dateutil.tz import tzlocal
 
+from .configuration import load_config
+
 logger = logging.getLogger(name=__name__)
 # logger.addHandler(logging.FileHandler('model.log'))
 
@@ -91,9 +93,12 @@ class Todo:
 
         if new:
             now = datetime.now(self._localtimezone)
+            config = load_config()
+            default_due = int(config['main'].get('default_due', '24'))
             uid = uuid4().hex + socket.gethostname()
             self.todo.add('uid', uid)
-            self.todo.add('due', now + timedelta(days=1))
+            if default_due:
+                self.todo.add('due', now + timedelta(minutes=default_due*60))
             self.todo.add('percent-complete', 0)
             self.todo.add('priority', 0)
             self.todo.add('created', now)
