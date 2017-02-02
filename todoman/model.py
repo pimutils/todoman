@@ -304,19 +304,18 @@ class FileTodo(Todo):
     def from_file(cls, path, id=None):
         with open(path, 'rb') as f:
             cal = f.read()
-            if b'\nBEGIN:VTODO' in cal:
-                cal = icalendar.Calendar.from_ical(cal)
-
-                # Note: Syntax is weird due to icalendar API, and the fact that
-                # we only support one TODO per file.
-                for component in cal.walk('VTODO'):
-                    todo = cls(
-                        new=False,
-                        todo=component,
-                        filename=os.path.basename(path),
-                    )
-                    todo.id = id
-                    return todo
+            cal = icalendar.Calendar.from_ical(cal)
+            try:
+                component = cal.walk('VTODO')[0]
+                todo = cls(
+                    new=False,
+                    todo=component,
+                    filename=os.path.basename(path),
+                )
+                todo.id = id
+                return todo
+            except IndexError:
+                pass
 
     def save(self, list_=None):
         list_ = list_ or self.list
@@ -633,6 +632,7 @@ class Cache:
 
         path = result['path']
         todo = FileTodo.from_file(path, id)
+        assert todo is not None
         todo.list = self.list(result['list_name'])
 
         return todo
