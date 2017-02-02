@@ -27,8 +27,10 @@ Features
 * Todoman should run on any major operating system.
 * Unsupported fields may not be shown but are *never* deleted or altered.
 
-Pull requests and patches are welcome! 😉 Please report any issues on the
-project `issue tracker <https://github.com/pimutils/todoman/issues>`_.
+Contributing
+------------
+
+See :doc:`contributing` for details on contributing.
 
 Caveats
 -------
@@ -51,6 +53,7 @@ Table of Contents
    install
    configure
    usage
+   contributing
    changelog
    licence
 

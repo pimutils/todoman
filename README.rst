@@ -41,7 +41,8 @@ Features
 Documentation
 -------------
 
-For detailed configuration, have a look at the latest docs at readthedocs_.
+For detailed usage, configuration and contributing documentation, please
+consult the latest version of the manual at readthedocs_.
 
 .. _readthedocs: https://todoman.readthedocs.org/
 
