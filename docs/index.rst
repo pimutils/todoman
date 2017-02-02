@@ -62,6 +62,7 @@ Table of Contents
    install
    configure
    usage
+   changelog
    licence
 
 Indices and tables
