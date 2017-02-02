@@ -3,6 +3,7 @@ import datetime
 import hypothesis.strategies as st
 import pytest
 import pytz
+from dateutil.tz import tzlocal
 from hypothesis import given
 
 from todoman.cli import cli
@@ -363,6 +364,23 @@ def test_flush(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert '  1 [ ]              bbb @default' in result.output
+
+
+def test_edit(runner, default_database):
+    todo = FileTodo()
+    todo.list = next(default_database.lists())
+    todo.summary = 'Eat paint'
+    todo.due = datetime.datetime(2016, 10, 3)
+    todo.save()
+
+    result = runner.invoke(cli, ['edit', '1', '--due', '2017-02-01'])
+    assert not result.exception
+    assert '2017-02-01' in result.output
+
+    default_database.update_cache()
+    todo = next(default_database.todos(all=True))
+    assert todo.due == datetime.datetime(2017, 2, 1, tzinfo=tzlocal())
+    assert todo.summary == 'Eat paint'
 
 # TODO: test aware/naive datetime sorting
 # TODO: test --grep

@@ -189,7 +189,7 @@ def edit(ctx, id, todo_properties, interactive):
 
     if changes:
         todo.save()
-        click.echo(ctx.obj['formatter'].detailed(todo, database))
+        click.echo(ctx.obj['formatter'].detailed(todo))
     else:
         click.echo('No changes.')
         ctx.exit(1)
@@ -222,7 +222,7 @@ def done(ctx, ids):
         todo = database.todo(id)
         todo.is_completed = True
         todo.save()
-        click.echo(ctx.obj['formatter'].detailed(todo, database))
+        click.echo(ctx.obj['formatter'].detailed(todo))
 
 
 def _abort_if_false(ctx, param, value):
