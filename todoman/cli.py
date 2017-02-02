@@ -8,7 +8,7 @@ import click
 from . import model
 from .configuration import ConfigurationException, load_config
 from .model import Database, FileTodo
-from .ui import EditState, TodoEditor, TodoFormatter
+from .ui import EditState, PorcelainFormatter, TodoEditor, TodoFormatter
 
 TODO_ID_MIN = 1
 with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
@@ -78,19 +78,25 @@ _interactive_option = click.option(
                     'is not a TTY (value `auto`). Set to `never` to disable '
                     'colored output entirely, or `always` to enable it '
                     'regardless.'))
+@click.option('--porcelain', is_flag=True, help='Use a JSON format that will '
+              'remain stable regardless of configuration or version.')
 @click.pass_context
 @click.version_option(prog_name='todoman')
-def cli(ctx, human_time, color):
+def cli(ctx, human_time, color, porcelain):
     try:
         config = load_config()
     except ConfigurationException as e:
         raise click.ClickException(e.args[0])
     ctx.obj = {}
     ctx.obj['config'] = config
-    ctx.obj['formatter'] = TodoFormatter(
-        config['main']['date_format'],
-        human_time
-    )
+
+    if porcelain:
+        ctx.obj['formatter'] = PorcelainFormatter()
+    else:
+        ctx.obj['formatter'] = TodoFormatter(
+            config['main']['date_format'],
+            human_time
+        )
 
     color = color or config['main']['color']
     if color == 'always':
@@ -301,7 +307,6 @@ def move(ctx, list, ids):
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
-# XXX: shouldn't this be an ngarg-1 this?:
 @click.option('--sort', help='Sort tasks using these fields')
 @click.option('--reverse/--no-reverse', default=True,
               help='Sort tasks in reverse order (see --sort). '
@@ -343,7 +348,4 @@ def list(
     )
 
     for todo in todos:
-        click.echo("{:3d} {}".format(
-            todo.id,
-            ctx.obj['formatter'].compact(todo)
-        ))
+        click.echo(ctx.obj['formatter'].compact(todo, show_id=True))

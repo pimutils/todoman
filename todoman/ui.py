@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from time import mktime
 
@@ -193,7 +194,7 @@ class TodoFormatter:
 
     # This one looks good with [X]
     compact_format = \
-        "[{completed}] {urgent} {due} {summary} {list}{percent}"
+        "{id} [{completed}] {urgent} {due} {summary} {list}{percent}"
     # compact_format = "{completed} {urgent}  {due}  {summary}"
 
     def __init__(self, date_format, human_time):
@@ -206,7 +207,7 @@ class TodoFormatter:
         if human_time:
             self._parsedatetime_calendar = parsedatetime.Calendar()
 
-    def compact(self, todo):
+    def compact(self, todo, show_id=False):
         """
         Returns a brief representation of a task, suitable for displaying
         on-per-line.
@@ -227,9 +228,17 @@ class TodoFormatter:
         summary = todo.summary
         list = self.format_database(todo.list)
 
-        return self.compact_format.format(completed=completed, urgent=urgent,
-                                          due=due, summary=summary, list=list,
-                                          percent=percent)
+        id_ = "{:3d}".format(todo.id) if show_id else ''
+
+        return self.compact_format.format(
+            completed=completed,
+            due=due,
+            id=id_,
+            list=list,
+            percent=percent,
+            summary=summary,
+            urgent=urgent,
+        )
 
     def detailed(self, todo):
         """
@@ -271,3 +280,26 @@ class TodoFormatter:
     def format_database(self, database):
         return '{}@{}'.format(database.color_ansi or '',
                               click.style(database.name))
+
+
+class PorcelainFormatter:
+
+    def compact(self, todo, show_id=None):
+        data = dict(
+            completed=todo.is_completed,
+            due=self.format_date(todo.due),
+            id=todo.id,
+            list=todo.list.name,
+            percent=todo.percent_complete,
+            summary=todo.summary,
+            # XXX: Move this into Todo itself and dedupe it
+            urgent=todo.priority not in [None, 0],
+        )
+
+        return json.dumps(data, sort_keys=True)
+
+    def format_date(self, date):
+        if date:
+            return int(date.timestamp())
+        else:
+            return None

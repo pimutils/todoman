@@ -56,3 +56,16 @@ Interactive shell
 If you install `click-repl <https://github.com/untitaker/click-repl>`_, todoman
 gets a new command called ``repl``, which lauches an interactive shell with
 tab-completion.
+
+Integrations
+------------
+
+When attempting to integrate ``todoman`` into other systems or parse its
+output, you're advised to use the ``--porcelain`` flag, which will print all
+output in a pre-defined format that will remain stable regardless of user
+configuration or version.
+
+The format is JSON, with one todo per line. Fields will always be present; if a
+todo does not have a value for a given field, it will be printed as ``null``.
+
+Fields MAY be added in future, but will never be removed.
