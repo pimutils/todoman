@@ -10,6 +10,7 @@ setup(
     url='https://github.com/pimutils/todoman',
     license='MIT',
     packages=['todoman'],
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'todo = todoman.cli:cli',
