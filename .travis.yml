@@ -2,6 +2,10 @@ sudo: false
 language: python
 cache: pip
 
+os:
+  - linux
+  - osx
+
 python:
   - 3.3
   - 3.4
