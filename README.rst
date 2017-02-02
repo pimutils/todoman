@@ -43,7 +43,7 @@ Documentation
 
 For detailed configuration, have a look at the latest docs at readthedocs_.
 
-.. _readthedocs: https://todoman.rtfd.org/
+.. _readthedocs: https://todoman.readthedocs.org/
 
 LICENCE
 -------
