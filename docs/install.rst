@@ -1,12 +1,38 @@
 Installing
 ==========
 
-If todoman is packaged for your OS/distribution, using your system's
-standard package manager is probably the easiest way to install khal:
+If todoman is packaged for your OS/distribution, using your system's standard
+package manager is probably the easiest way to install khal.
 
-- ArchLinux (AUR_)
+Installation :ref:`via PIP <pip>` is possible for any OS (though many remain
+untested, of course).
+
+Distributions with packages
+---------------------------
+
+ArchLinux
+~~~~~~~~~
+
+There's an AUR_ package for ArchLinux. You can install using your preferred AUR
+helper::
+
+    pacaur -S todoman
 
 .. _AUR: https://aur.archlinux.org/packages/todoman/
+
+Debian/Ubuntu
+~~~~~~~~~~~~~
+
+We provide ``.deb`` packages via packagecloud.io. First you'll have to add our
+repository::
+
+    curl -s https://packagecloud.io/install/repositories/pimutils/todoman/script.deb.sh | sudo bash
+
+Then actually install the package itself::
+
+    apt-get install todoman
+
+.. _pip:
 
 Install via PIP
 ---------------
