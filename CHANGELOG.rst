@@ -4,6 +4,11 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v2.2.0
+------
+
+* Use the system's date format as a default.
+
 v2.1.0
 ------
 
