@@ -15,6 +15,8 @@ env:
     - TOXENV=py
   global:
     secure: IFQzIw/g6qbmZy86w9qPU5vZjoJWtBlP8VpUtBX+La9hyZ6odC0pxB38U7IQNnPKinUvnc0cGEsAJS/abxp3bSdS0H+afr8OjxOgDuLBl47fMHBxFUMF6HRFmKuk66GfM1sxf87xLdiPDF5Dac0cn7IlJrFkQaCukZjinvZRvtU=
+    # PACKAGECLOUD_TOKEN
+    - secure: U7vOIV6erN8BtStKFB2CDolZTEGaxP3pETDeX9W4uepfnsVf7O3n26ePaUbVXgNNhQiwz2ihtMK0NI1nk8t3RVqFKW9GVCWPdBMRiJG4cPidY7RjapiKXSEcVgyb76E5Yau6Uv18EaRuyn4+vrT3Uk/86BIsVhBs4ronTFCopco=
 
 matrix:
   allow_failures:
@@ -72,3 +74,16 @@ deploy:
     on:
       tags: true
     distributions: "sdist bdist_wheel"
+
+after_deploy:
+  - gem install package_cloud fpm
+  - fpm -s python -t deb setup.py
+  - package_cloud push pimutils/todoman/debian/buster *.deb
+  - package_cloud push pimutils/todoman/ubuntu/yakkety *.deb
+  - package_cloud push pimutils/todoman/ubuntu/xenial *.deb
+  - package_cloud push pimutils/todoman/ubuntu/trusty *.deb
+  - package_cloud push pimutils/todoman/ubuntu/precise *.deb
+  - package_cloud push pimutils/todoman/debian/wheezy *.deb
+  - package_cloud push pimutils/todoman/debian/jessie *.deb
+  - package_cloud push pimutils/todoman/debian/stretch *.deb
+  - package_cloud push pimutils/todoman/debian/buster *.deb
