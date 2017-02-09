@@ -346,4 +346,4 @@ def list(
     )
 
     for todo in todos:
-        click.echo(ctx.obj['formatter'].compact(todo, show_id=True))
+        click.echo(ctx.obj['formatter'].compact(todo))
