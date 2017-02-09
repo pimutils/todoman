@@ -313,8 +313,6 @@ def move(ctx, list, ids):
               'Defaults to true.')
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
-# TODO: we might want a `porcelain` flag here to print this is a
-# machine-friendly format that NEVER CHANGES!
 def list(
     ctx, lists, all, urgent, location, category, grep, sort, reverse, due,
          ):
