@@ -1,5 +1,6 @@
+from unittest.mock import patch
+
 import pytest
-import xdg
 from click.testing import CliRunner
 
 from todoman.cli import cli
@@ -18,45 +19,26 @@ def test_explicit_nonexistant(runner):
 
 
 def test_xdg_nonexistant(runner):
-    original_dirs = xdg.BaseDirectory.xdg_config_dirs
-    xdg.BaseDirectory.xdg_config_dirs = []
-
-    try:
+    with patch('xdg.BaseDirectory.xdg_config_dirs', []):
         result = CliRunner().invoke(
             cli,
             catch_exceptions=True,
         )
         assert result.exception
         assert "No configuration file found" in result.output
-    except:
-        raise
-    finally:
-        # Make sure we ALWAYS set this back to the origianl value, even if the
-        # test failed.
-        xdg.BaseDirectory.xdg_config_dirs = original_dirs
 
 
 def test_xdg_existant(runner, tmpdir, config):
-    conf_path = tmpdir.mkdir('todoman')
-    with conf_path.join('todoman.conf').open('w') as f:
+    with tmpdir.mkdir('todoman').join('todoman.conf').open('w') as f:
         f.write(config.open().read())
 
-    original_dirs = xdg.BaseDirectory.xdg_config_dirs
-    xdg.BaseDirectory.xdg_config_dirs = [str(tmpdir)]
-
-    try:
+    with patch('xdg.BaseDirectory.xdg_config_dirs', [str(tmpdir)]):
         result = CliRunner().invoke(
             cli,
             catch_exceptions=True,
         )
         assert not result.exception
         assert result.output == ''
-    except:
-        raise
-    finally:
-        # Make sure we ALWAYS set this back to the origianl value, even if the
-        # test failed.
-        xdg.BaseDirectory.xdg_config_dirs = original_dirs
 
 
 def test_sane_config(config, runner, tmpdir):
