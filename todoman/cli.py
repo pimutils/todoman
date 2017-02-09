@@ -160,7 +160,7 @@ def new(ctx, summary, list, todo_properties, interactive):
         todo.due = todo.created_at + timedelta(hours=default_due)
 
     todo.list = list
-    todo.save()
+    ctx.obj['db'].save(todo, list)
     click.echo(ctx.obj['formatter'].detailed(todo))
 
 
@@ -279,7 +279,7 @@ def copy(ctx, list, ids):
             todo.uid, list, todo.summary
         ))
 
-        todo.save(list)
+        ctx.obj['db'].save(todo, list)
 
 
 @cli.command()
