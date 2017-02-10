@@ -194,7 +194,7 @@ class TodoFormatter:
 
     # This one looks good with [X]
     compact_format = \
-        "{id} [{completed}] {urgent} {due} {summary} {list}{percent}"
+        "{id:3d} [{completed}] {urgent} {due} {summary} {list}{percent}"
     # compact_format = "{completed} {urgent}  {due}  {summary}"
 
     def __init__(self, date_format, human_time):
@@ -207,7 +207,7 @@ class TodoFormatter:
         if human_time:
             self._parsedatetime_calendar = parsedatetime.Calendar()
 
-    def compact(self, todo, show_id=False):
+    def compact(self, todo):
         """
         Returns a brief representation of a task, suitable for displaying
         on-per-line.
@@ -228,12 +228,10 @@ class TodoFormatter:
         summary = todo.summary
         list = self.format_database(todo.list)
 
-        id_ = "{:3d}".format(todo.id) if show_id else ''
-
         return self.compact_format.format(
             completed=completed,
             due=due,
-            id=id_,
+            id=todo.id,
             list=list,
             percent=percent,
             summary=summary,
@@ -284,7 +282,7 @@ class TodoFormatter:
 
 class PorcelainFormatter:
 
-    def compact(self, todo, show_id=None):
+    def compact(self, todo):
         data = dict(
             completed=todo.is_completed,
             due=self.format_date(todo.due),
