@@ -32,3 +32,17 @@ def test_list_nodue(tmpdir, runner, create):
         '{"completed": false, "due": null, "id": 1, "list": "default'
         '", "percent": 12, "summary": "Do stuff", "urgent": true}'
     )
+
+
+def test_show(tmpdir, runner, create):
+    create(
+        'test.ics',
+        'SUMMARY:harhar\n'
+        'DESCRIPTION:Lots of text. Yum!\n'
+    )
+    result = runner.invoke(cli, ['--porcelain', 'show', '1'])
+    assert not result.exception
+    assert (
+        result.output == '{"completed": false, "due": null, "id": 1, "list": '
+        '"default", "percent": 0, "summary": "harhar", "urgent": false}\n'
+    )
