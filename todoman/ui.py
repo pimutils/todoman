@@ -296,6 +296,8 @@ class PorcelainFormatter:
 
         return json.dumps(data, sort_keys=True)
 
+    detailed = compact
+
     def format_date(self, date):
         if date:
             return int(date.timestamp())
