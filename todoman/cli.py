@@ -41,7 +41,7 @@ def _validate_list_param(ctx, param=None, name=None):
 
 def _validate_date_param(ctx, param, val):
     try:
-        return ctx.obj['formatter'].unformat_date(val)
+        return ctx.obj['formatter'].parse_date(val)
     except ValueError as e:
         raise click.BadParameter(e)
 

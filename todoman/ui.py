@@ -142,8 +142,8 @@ class TodoEditor:
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
-        self.todo.due = self.formatter.unformat_date(self.due)
-        self.todo.start = self.formatter.unformat_date(self.dtstart)
+        self.todo.due = self.formatter.parse_date(self.due)
+        self.todo.start = self.formatter.parse_date(self.dtstart)
 
         self.todo.is_completed = self._completed.get_state()
 
@@ -256,7 +256,7 @@ class TodoFormatter:
         else:
             return self.empty_date
 
-    def unformat_date(self, date):
+    def parse_date(self, date):
         if date:
             try:
                 rv = datetime.strptime(date, self.date_format)
