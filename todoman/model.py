@@ -275,6 +275,8 @@ class Todo:
 
         if not x.tzinfo:
             x = x.replace(tzinfo=self._localtimezone)
+        else:
+            x = x.astimezone(self._localtimezone)
         return x
 
     @property

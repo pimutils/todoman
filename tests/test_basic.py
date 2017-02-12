@@ -215,6 +215,23 @@ def test_default_due(
         )
 
 
+def test_default_due2(tmpdir, runner, create, default_database):
+    cfg = tmpdir.join('config')
+    cfg.write('default_due = 24\n', 'a')
+
+    r = runner.invoke(cli, ['new', '-ldefault', '-dtomorrow', 'aaa'])
+    assert not r.exception
+    r = runner.invoke(cli, ['new', '-ldefault', 'bbb'])
+    assert not r.exception
+    r = runner.invoke(cli, ['new', '-ldefault', '-d', 'one hour', 'ccc'])
+    assert not r.exception
+
+    default_database.update_cache()
+    todos = {t.summary: t for t in default_database.todos(all=True)}
+    assert todos['aaa'].due.date() == todos['bbb'].due.date()
+    assert todos['ccc'].due == todos['bbb'].due - datetime.timedelta(hours=23)
+
+
 def test_sorting_fields(tmpdir, runner, default_database):
     tasks = []
     for i in range(1, 10):

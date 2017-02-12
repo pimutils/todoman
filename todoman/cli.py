@@ -141,6 +141,11 @@ def new(ctx, summary, list, todo_properties, interactive):
     '''
 
     todo = FileTodo()
+
+    default_due = ctx.obj['config']['main']['default_due']
+    if default_due:
+        todo.due = todo.created_at + timedelta(hours=default_due)
+
     for key, value in todo_properties.items():
         if value:
             setattr(todo, key, value)
@@ -154,10 +159,6 @@ def new(ctx, summary, list, todo_properties, interactive):
 
     if not todo.summary:
         raise click.UsageError('No SUMMARY specified')
-
-    default_due = ctx.obj['config']['main']['default_due']
-    if default_due:
-        todo.due = todo.created_at + timedelta(hours=default_due)
 
     todo.list = list
     ctx.obj['db'].save(todo, list)
