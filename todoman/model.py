@@ -361,6 +361,7 @@ class Cache:
 
     def __init__(self, path):
         self.cache_path = str(path)
+        os.makedirs(os.path.dirname(self.cache_path), exist_ok=True)
 
         self._conn = sqlite3.connect(self.cache_path)
         self._conn.row_factory = sqlite3.Row

@@ -4,6 +4,11 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v2.0.3
+------
+
+* Fix crash if the cache directory does not exist (attempt to create it first).
+
 v2.0.2
 ------
 

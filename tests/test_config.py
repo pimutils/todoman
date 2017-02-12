@@ -102,3 +102,20 @@ def test_extra_section(config, runner):
     result = runner.invoke(cli, ['list'])
     assert result.exception
     assert "Invalid configuration section" in result.output
+
+
+def test_missing_cache_dir(config, runner, tmpdir):
+    cache_dir = tmpdir.join('does').join('not').join('exist')
+    cache_file = cache_dir.join('cache.sqlite')
+
+    path = tmpdir.join('config')
+    path.write('cache_path = {}\n'.format(cache_file), 'a')
+    path.write('[main]\n'
+               'path = {}/*\n'
+               'cache_path = {}\n'
+               .format(str(tmpdir), cache_file))
+
+    result = runner.invoke(cli)
+    assert not result.exception
+    assert cache_dir.isdir()
+    assert cache_file.isfile()
