@@ -4,10 +4,13 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
-v2.0.3
+v2.1.0
 ------
 
-* Fix crash if the cache directory does not exist (attempt to create it first).
+* Fixes some issues when filtering todos from different timezones.
+* Attempt to create the cache file's directory if it does not exist.
+* Fix crash when running ``--porcelain show``.
+* Show ``id`` for todos everywhere (eg: including new, etc).
 
 v2.0.2
 ------
