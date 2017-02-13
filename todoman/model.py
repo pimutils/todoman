@@ -361,6 +361,8 @@ class Cache:
     may be used for filtering/sorting.
     """
 
+    SCHEMA_VERSION = 2
+
     def __init__(self, path):
         self.cache_path = str(path)
         os.makedirs(os.path.dirname(self.cache_path), exist_ok=True)
@@ -374,7 +376,35 @@ class Cache:
     def save_to_disk(self):
         self._conn.commit()
 
+    def is_latest_version(self):
+        """Checks if the cache DB schema is the latest version."""
+        try:
+            return self._conn.execute(
+                'SELECT version FROM meta WHERE version = ?',
+                (Cache.SCHEMA_VERSION,),
+            ).fetchone()
+        except sqlite3.OperationalError:
+            return False
+
     def create_tables(self):
+        if self.is_latest_version():
+            return
+
+        self._conn.executescript('''
+            DROP TABLE IF EXISTS lists;
+            DROP TABLE IF EXISTS files;
+            DROP TABLE IF EXISTS todos;
+        ''')
+
+        self._conn.execute(
+            'CREATE TABLE IF NOT EXISTS meta ("version" INT)'
+        )
+
+        self._conn.execute(
+            'INSERT INTO meta (version) VALUES (?)',
+            (Cache.SCHEMA_VERSION,),
+        )
+
         self._conn.execute('''
             CREATE TABLE IF NOT EXISTS lists (
                 "name" TEXT PRIMARY KEY,
@@ -402,7 +432,7 @@ class Cache:
                 "id" INTEGER PRIMARY KEY,
                 "uid" TEXT,
                 "summary" TEXT,
-                "due" TEXT,
+                "due" INT,
                 "priority" INTEGER,
                 "created_at" TEXT,
                 "completed_at" TEXT,
@@ -493,7 +523,7 @@ class Cache:
             file_path,
             todo.uid,
             todo.summary,
-            todo.due,
+            todo.due.timestamp() if todo.due else None,
             todo.priority,
             todo.created_at,
             todo.completed_at,
@@ -516,6 +546,31 @@ class Cache:
 
     def todos(self, all=False, lists=[], urgent=False, location='',
               category='', grep='', sort=[], reverse=True, due=None):
+        """
+        Returns filtered cached todos, in a specified order.
+
+        If no order is specified, todos are sorted by the following fields::
+
+            completed_at
+            -priority
+            due
+            -created_at
+
+        :param bool all: If true, also return completed todos.
+        :param list lists: Only return todos for these lists.
+        :param bool urgent: Only return urgent todos.
+        :param str location: Only return todos with a location containing this
+            string.
+        :param str category: Only return todos with a category containing this
+            string.
+        :param str grep: Filter common fields with this substring.
+        :param list sort: Order returned todos by these fields. Field names
+            with a ``-`` prepended will be used to sort in reverse order.
+        :param bool reverse: Reverse the order of the todos after sorting.
+        :param int due: Return only todos due within ``due`` hours.
+        :return: A sorted, filtered list of todos.
+        :rtype: generator
+        """
         list_map = {list.name: list for list in self.lists()}
 
         extra_where = []
@@ -546,7 +601,7 @@ class Cache:
             extra_where.append('AND summary LIKE ?')
             params.append('%{}%'.format(grep))
         if due:
-            max_due = datetime.now() + timedelta(hours=due)
+            max_due = (datetime.now() + timedelta(hours=due)).timestamp()
             extra_where.append('AND due IS NOT NULL AND due < ?')
             params.append(max_due)
 
@@ -585,7 +640,7 @@ class Cache:
             todo.uid = row['uid']
             todo.summary = row['summary']
             if row['due']:
-                todo.due = dateutil.parser.parse(row['due'])
+                todo.due = datetime.fromtimestamp(row['due'])
             todo.priority = row['priority']
             if row['created_at']:
                 todo.created_at = dateutil.parser.parse(row['created_at'])
