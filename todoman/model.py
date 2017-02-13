@@ -361,6 +361,8 @@ class Cache:
     may be used for filtering/sorting.
     """
 
+    SCHEMA_VERSION = 2
+
     def __init__(self, path):
         self.cache_path = str(path)
         os.makedirs(os.path.dirname(self.cache_path), exist_ok=True)
@@ -375,7 +377,35 @@ class Cache:
     def save_to_disk(self):
         self._conn.commit()
 
+    def is_latest_version(self):
+        """Checks if the cache DB schema is the latest version."""
+        try:
+            return self.cursor.execute(
+                'SELECT version FROM meta WHERE version = ?',
+                (Cache.SCHEMA_VERSION,),
+            ).fetchone()
+        except sqlite3.OperationalError:
+            return False
+
     def create_tables(self):
+        if self.is_latest_version():
+            return
+
+        self.cursor.executescript('''
+            DROP TABLE IF EXISTS lists;
+            DROP TABLE IF EXISTS files;
+            DROP TABLE IF EXISTS todos;
+        ''')
+
+        self.cursor.execute(
+            'CREATE TABLE IF NOT EXISTS meta ("version" INT)'
+        )
+
+        self.cursor.execute(
+            'INSERT INTO meta (version) VALUES (?)',
+            (Cache.SCHEMA_VERSION,),
+        )
+
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS lists (
                 "name" TEXT PRIMARY KEY,
