@@ -433,7 +433,7 @@ class Cache:
                 "id" INTEGER PRIMARY KEY,
                 "uid" TEXT,
                 "summary" TEXT,
-                "due" TEXT,
+                "due" INT,
                 "priority" INTEGER,
                 "created_at" TEXT,
                 "completed_at" TEXT,
@@ -525,7 +525,7 @@ class Cache:
             file_path,
             todo.uid,
             todo.summary,
-            todo.due,
+            todo.due.timestamp() if todo.due else None,
             todo.priority,
             todo.created_at,
             todo.completed_at,
@@ -572,7 +572,7 @@ class Cache:
             extra_where.append('AND summary LIKE ?')
             params.append('%{}%'.format(grep))
         if due:
-            max_due = datetime.now() + timedelta(hours=due)
+            max_due = (datetime.now() + timedelta(hours=due)).timestamp()
             extra_where.append('AND due IS NOT NULL AND due < ?')
             params.append(max_due)
 
@@ -611,7 +611,7 @@ class Cache:
             todo.uid = row['uid']
             todo.summary = row['summary']
             if row['due']:
-                todo.due = dateutil.parser.parse(row['due'])
+                todo.due = datetime.fromtimestamp(row['due'])
             todo.priority = row['priority']
             if row['created_at']:
                 todo.created_at = dateutil.parser.parse(row['created_at'])
