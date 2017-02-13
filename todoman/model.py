@@ -542,6 +542,31 @@ class Cache:
 
     def todos(self, all=False, lists=[], urgent=False, location='',
               category='', grep='', sort=[], reverse=True, due=None):
+        """
+        Returns filtered cached todos, in a specified order.
+
+        If no order is specified, todos are sorted by the following fields::
+
+            completed_at
+            -priority
+            due
+            -created_at
+
+        :param bool all: If true, also return completed todos.
+        :param list lists: Only return todos for these lists.
+        :param bool urgent: Only return urgent todos.
+        :param str location: Only return todos with a location containing this
+            string.
+        :param str category: Only return todos with a category containing this
+            string.
+        :param str grep: Filter common fields with this substring.
+        :param list sort: Order returned todos by these fields. Field names
+            with a ``-`` prepended will be used to sort in reverse order.
+        :param bool reverse: Reverse the order of the todos after sorting.
+        :param int due: Return only todos due within ``due`` hours.
+        :return: A sorted, filtered list of todos.
+        :rtype: generator
+        """
         list_map = {list.name: list for list in self.lists()}
 
         extra_where = []
