@@ -25,7 +25,7 @@ def test_querying(create, tmpdir):
     assert len(set(db.todos(lists='ab', location='a'))) == 2
 
 
-def test_retain_tz(tmpdir, runner, create, default_database):
+def test_retain_tz(tmpdir, create, default_database):
     create(
         'ar.ics',
         'SUMMARY:blah.ar\n'
@@ -47,3 +47,19 @@ def test_retain_tz(tmpdir, runner, create, default_database):
     assert todos[1].due == datetime(
         2016, 1, 2, 0, 0, tzinfo=tzoffset(None, 3600)
     )
+
+
+def test_change_paths(tmpdir, create):
+    create('a.ics', 'SUMMARY:a\n', 'a')
+    create('b.ics', 'SUMMARY:b\n', 'b')
+    tmpdir.mkdir('c')
+
+    db = Database([tmpdir.join('a'), tmpdir.join('b')],
+                  tmpdir.join('cache.sqlite'))
+
+    assert {t.summary for t in db.todos()} == {'a', 'b'}
+
+    db.paths = [str(tmpdir.join('c'))]
+    db.update_cache()
+
+    assert not list(db.todos())
