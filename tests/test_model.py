@@ -50,16 +50,19 @@ def test_retain_tz(tmpdir, create, default_database):
 
 
 def test_change_paths(tmpdir, create):
-    create('a.ics', 'SUMMARY:a\n', 'a')
-    create('b.ics', 'SUMMARY:b\n', 'b')
-    tmpdir.mkdir('c')
+    old_todos = set('abcdefghijk')
+    for x in old_todos:
+        create('{}.ics'.format(x), 'SUMMARY:{}\n'.format(x), x)
 
-    db = Database([tmpdir.join('a'), tmpdir.join('b')],
+    tmpdir.mkdir('3')
+
+    db = Database([tmpdir.join(x) for x in old_todos],
                   tmpdir.join('cache.sqlite'))
 
-    assert {t.summary for t in db.todos()} == {'a', 'b'}
+    assert {t.summary for t in db.todos()} == old_todos
 
-    db.paths = [str(tmpdir.join('c'))]
+    db.paths = [str(tmpdir.join('3'))]
     db.update_cache()
 
+    assert len(list(db.lists())) == 1
     assert not list(db.todos())

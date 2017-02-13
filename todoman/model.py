@@ -369,14 +369,13 @@ class Cache:
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA foreign_keys = ON")
 
-        self.cursor = self._conn.cursor()
         self.create_tables()
 
     def save_to_disk(self):
         self._conn.commit()
 
     def create_tables(self):
-        self.cursor.execute('''
+        self._conn.execute('''
             CREATE TABLE IF NOT EXISTS lists (
                 "name" TEXT PRIMARY KEY,
                 "path" TEXT,
@@ -385,7 +384,7 @@ class Cache:
             );
         ''')
 
-        self.cursor.execute('''
+        self._conn.execute('''
             CREATE TABLE IF NOT EXISTS files (
                 "path" TEXT PRIMARY KEY,
                 "list_name" TEXT,
@@ -396,7 +395,7 @@ class Cache:
             );
         ''')
 
-        self.cursor.execute('''
+        self._conn.execute('''
             CREATE TABLE IF NOT EXISTS todos (
                 "file_path" TEXT,
 
@@ -420,10 +419,9 @@ class Cache:
         ''')
 
     def clear(self):
-        self.cursor.close()
         self._conn.close()
         os.remove(self.cache_path)
-        self.cursor = self._conn = None
+        self._conn = None
 
     def add_list(self, name, path, colour):
         """
@@ -432,7 +430,7 @@ class Cache:
         Returns the id of the newly inserted list.
         """
 
-        result = self.cursor.execute(
+        result = self._conn.execute(
             'SELECT name FROM lists WHERE path = ?',
             (path,),
         ).fetchone()
@@ -441,7 +439,7 @@ class Cache:
             return result['name']
 
         try:
-            self.cursor.execute(
+            self._conn.execute(
                 "INSERT INTO lists (name, path, colour) VALUES (?, ?, ?)",
                 (name, path, colour,),
             )
@@ -452,7 +450,7 @@ class Cache:
 
     def add_file(self, list_name, path, mtime):
         try:
-            self.cursor.execute('''
+            self._conn.execute('''
                 INSERT INTO files (
                     list_name,
                     path,
@@ -507,8 +505,14 @@ class Cache:
             todo.raw_categories,
         )
 
-        self.cursor.execute(sql, params)
-        return self.cursor.lastrowid
+        cursor = self._conn.cursor()
+        try:
+            cursor.execute(sql, params)
+            rv = cursor.lastrowid
+        finally:
+            cursor.close()
+
+        return rv
 
     def todos(self, all=False, lists=[], urgent=False, location='',
               category='', grep='', sort=[], reverse=True, due=None):
@@ -573,7 +577,7 @@ class Cache:
                WHERE todos.file_path = files.path {}
             ORDER BY {}
         '''.format(' '.join(extra_where), order,)
-        result = self.cursor.execute(query, params)
+        result = self._conn.execute(query, params)
 
         for row in result:
             todo = Todo()
@@ -598,7 +602,7 @@ class Cache:
             yield todo
 
     def lists(self):
-        result = self.cursor.execute("SELECT * FROM lists")
+        result = self._conn.execute("SELECT * FROM lists")
         for row in result:
             yield List(
                 name=row['name'],
@@ -607,7 +611,7 @@ class Cache:
             )
 
     def list(self, name):
-        row = self.cursor.execute(
+        row = self._conn.execute(
             "SELECT * FROM lists WHERE name = ?",
             (name,),
         ).fetchone()
@@ -619,16 +623,16 @@ class Cache:
         )
 
     def expire_lists(self, paths):
-        results = self.cursor.execute("SELECT path, name from lists")
+        results = self._conn.execute("SELECT path, name from lists")
         for result in results:
             if result['path'] not in paths:
                 self.delete_list(result['name'])
 
     def delete_list(self, name):
-        self.cursor.execute("DELETE FROM lists WHERE lists.name = ?", (name,))
+        self._conn.execute("DELETE FROM lists WHERE lists.name = ?", (name,))
 
     def todo(self, id):
-        result = self.cursor.execute('''
+        result = self._conn.execute('''
             SELECT files.path, list_name
               FROM files, todos
              WHERE files.path = todos.file_path
@@ -648,13 +652,14 @@ class Cache:
 
     def expire_files(self, paths_to_mtime):
         """Remove stale cache entries based on the given fresh data."""
-        for row in self.cursor.execute("SELECT path, mtime FROM files"):
+        result = self._conn.execute("SELECT path, mtime FROM files")
+        for row in result:
             path, mtime = row['path'], row['mtime']
             if paths_to_mtime.get(path, None) != mtime:
                 self.expire_file(path)
 
     def expire_file(self, path):
-        self.cursor.execute("DELETE FROM files WHERE path = ?", (path,))
+        self._conn.execute("DELETE FROM files WHERE path = ?", (path,))
 
 
 class List:
