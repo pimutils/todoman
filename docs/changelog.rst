@@ -7,6 +7,7 @@ releases, in reverse chronological order.
 v2.1.0
 ------
 
+* Fix crash when running ``todo new``.
 * Fixes some issues when filtering todos from different timezones.
 * Attempt to create the cache file's directory if it does not exist.
 * Fix crash when running ``--porcelain show``.

@@ -152,7 +152,7 @@ def new(ctx, summary, list, todo_properties, interactive):
     todo.summary = ' '.join(summary)
 
     if interactive or (not summary and interactive is None):
-        ui = TodoEditor(todo, ctx.obj['db'].values(), ctx.obj['formatter'])
+        ui = TodoEditor(todo, ctx.obj['db'].lists(), ctx.obj['formatter'])
         if ui.edit() != EditState.saved:
             ctx.exit(1)
         click.echo()  # work around lines going missing after urwid
