@@ -168,19 +168,22 @@ def test_due_aware(tmpdir, runner, create):
     db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
     l = next(db.lists())
 
-    for i in [1, 23, 25, 48]:
-        todo = FileTodo()
-        todo.due = (now + timedelta(hours=i)).replace(tzinfo=tzlocal()) \
-            .astimezone(pytz.timezone('CET'))
-        todo.summary = '{}'.format(i)
+    for tz in ['CET', 'HST']:
+        for i in [1, 23, 25, 48]:
+            todo = FileTodo()
+            todo.due = (now + timedelta(hours=i)).replace(tzinfo=tzlocal()) \
+                .astimezone(pytz.timezone(tz))
+            todo.summary = '{}'.format(i)
 
-        db.save(todo, l)
+            db.save(todo, l)
 
     todos = list(db.todos(due=24))
 
-    assert len(todos) == 2
+    assert len(todos) == 4
     assert todos[0].summary == "23"
-    assert todos[1].summary == "1"
+    assert todos[1].summary == "23"
+    assert todos[2].summary == "1"
+    assert todos[3].summary == "1"
 
 
 def test_due_naive(tmpdir, runner, create):
