@@ -107,14 +107,12 @@ def cli(ctx, human_time, color, porcelain):
         raise click.UsageError('Invalid color setting: Choose from always, '
                                'never, auto.')
 
-    paths = []
-    for path in glob.iglob(expanduser(config["main"]["path"])):
-        if not isdir(path):
-            continue
-        paths.append(path)
+    paths = [
+        path for path in glob.iglob(expanduser(config["main"]["path"]))
+        if isdir(path)
+    ]
 
-    cache_path = config['main']['cache_path']
-    ctx.obj['db'] = Database(paths, cache_path)
+    ctx.obj['db'] = Database(paths, config['main']['cache_path'])
 
     if not ctx.invoked_subcommand:
         ctx.invoke(cli.commands["list"])
