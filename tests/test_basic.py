@@ -4,6 +4,7 @@ import hypothesis.strategies as st
 import pytest
 import pytz
 from dateutil.tz import tzlocal
+from freezegun import freeze_time
 from hypothesis import given
 
 from todoman.cli import cli
@@ -215,6 +216,7 @@ def test_default_due(
         )
 
 
+@freeze_time(datetime.datetime.now())
 def test_default_due2(tmpdir, runner, create, default_database):
     cfg = tmpdir.join('config')
     cfg.write('default_due = 24\n', 'a')
