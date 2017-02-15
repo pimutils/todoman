@@ -74,6 +74,7 @@ _interactive_option = click.option(
               help=('Accept informal descriptions such as "tomorrow" instead '
                     'of a properly formatted date.'))
 @click.option('--colour', '--color', default=None,
+              type=click.Choice(['always', 'auto', 'never']),
               help=('By default todoman will disable colored output if stdout '
                     'is not a TTY (value `auto`). Set to `never` to disable '
                     'colored output entirely, or `always` to enable it '
@@ -87,8 +88,10 @@ def cli(ctx, human_time, color, porcelain):
         config = load_config()
     except ConfigurationException as e:
         raise click.ClickException(e.args[0])
-    ctx.obj = {}
-    ctx.obj['config'] = config
+
+    ctx.obj = {
+        'config': config,
+    }
 
     if porcelain:
         ctx.obj['formatter'] = PorcelainFormatter()
@@ -103,9 +106,6 @@ def cli(ctx, human_time, color, porcelain):
         ctx.color = True
     elif color == 'never':
         ctx.color = False
-    elif color != 'auto':
-        raise click.UsageError('Invalid color setting: Choose from always, '
-                               'never, auto.')
 
     paths = [
         path for path in glob.iglob(expanduser(config["main"]["path"]))

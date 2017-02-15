@@ -3,7 +3,7 @@ from os.path import exists, join
 
 import xdg.BaseDirectory
 from configobj import ConfigObj, flatten_errors
-from validate import Validator
+from validate import is_option, Validator, VdtValueError
 
 from . import __documentation__
 
@@ -31,6 +31,15 @@ def validate_cache_path(path):
             xdg.BaseDirectory.xdg_cache_home,
             'todoman/cache.sqlite3',
         )
+
+
+def validate_color(color):
+    color = is_option(color)
+    if color == 'always':
+        return True
+    elif color == 'never':
+        return False
+    return None
 
 
 def find_config():
@@ -68,6 +77,10 @@ def load_config():
             raise ConfigurationException(
                 ('{} is missing from the {} section of the configuration ' +
                  'file').format(key, section)
+            )
+        if isinstance(error, VdtValueError):
+            raise ConfigurationException(
+                'Bad {} setting, {}'.format(key, error.args[0])
             )
 
     return config
