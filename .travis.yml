@@ -9,10 +9,12 @@ python:
   - 3.6
 
 env:
+  matrix:
   - BUILD=py
   - BUILD=flake8
   - BUILD=docs
-
+  global:
+    secure: NRXfSpoRcdzQTTPU1j7mPrCSUWI0+YoRD/CWS3PLYa4WJrkyXWGB0qo9EdeSWYR9DWaXGfkkv5UZxPLJ4fajtTkaalQd/QV+ivFpvmfWO9NHStSc2xwqwBV10zXa9lDVwrBvjFDZkakugXQCbVjBKgm2zpD9kiSTJg5q6pagifQ=
 matrix:
   exclude:
     # Sphinx requires python 3.4 or above
@@ -25,10 +27,13 @@ addons:
       - language-pack-de
 
 install:
-  - pip install tox
+  - pip install tox codeclimate-test-reporter
 
 script:
   - tox -e $BUILD
+
+after_script:
+  - codeclimate-test-reporter
 
 deploy:
   provider: pypi
@@ -38,3 +43,5 @@ deploy:
   on:
     tags: true
   distributions: "sdist bdist_wheel"
+CODECLIMATE_REPO_TOKEN:
+  secure: kq7uURVOhtB7dDDe7VDoxk3YX7yCW+48GQ/F4qwxCSYYJ0r8mZhNrWL6n/TlbeRwfZiut6dYGDdCsmN34egrkmRu9SHVwLo0MdDAWJI0Wm8VvoF/YfwhtHM9zwkha206GAB+8xrnhaIrEXVOFTxNL82ajjQSNaO14WTNwkjIPkE=
