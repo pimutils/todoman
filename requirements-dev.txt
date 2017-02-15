@@ -4,3 +4,4 @@ freezegun
 hypothesis
 pytest
 pytest-cov
+radon
