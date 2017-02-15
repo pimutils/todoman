@@ -61,8 +61,18 @@ def test_invalid_color(config, runner):
     )
     result = runner.invoke(cli, ['list'])
     assert result.exception
-    assert "Error: Invalid color setting: Choose from always, never, auto." \
+    assert 'Error: Bad color setting, the value "12" is unacceptable.' \
         in result.output
+
+
+def test_invalid_color_arg(config, runner):
+    config.write(
+        '[main]\n'
+        'path = "/"\n'
+    )
+    result = runner.invoke(cli, ['--color', '12', 'list'])
+    assert result.exception
+    assert 'Usage:' in result.output
 
 
 def test_missing_path(config, runner):
