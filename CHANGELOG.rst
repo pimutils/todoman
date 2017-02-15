@@ -7,6 +7,8 @@ releases, in reverse chronological order.
 v2.1.0
 ------
 
+* The ``--no-human-time`` flag is gone. Integrations/scripts might want to look
+  at ``--porcelain`` as an alternative.
 * Fix crash when running ``todo new``.
 * Fixes some issues when filtering todos from different timezones.
 * Attempt to create the cache file's directory if it does not exist.

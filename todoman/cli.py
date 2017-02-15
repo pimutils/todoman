@@ -70,9 +70,6 @@ _interactive_option = click.option(
 
 
 @click.group(invoke_without_command=True)
-@click.option('--human-time/--no-human-time', default=True,
-              help=('Accept informal descriptions such as "tomorrow" instead '
-                    'of a properly formatted date.'))
 @click.option('--colour', '--color', default=None,
               help=('By default todoman will disable colored output if stdout '
                     'is not a TTY (value `auto`). Set to `never` to disable '
@@ -82,7 +79,7 @@ _interactive_option = click.option(
               'remain stable regardless of configuration or version.')
 @click.pass_context
 @click.version_option(prog_name='todoman')
-def cli(ctx, human_time, color, porcelain):
+def cli(ctx, color, porcelain):
     try:
         config = load_config()
     except ConfigurationException as e:
@@ -93,10 +90,7 @@ def cli(ctx, human_time, color, porcelain):
     if porcelain:
         ctx.obj['formatter'] = PorcelainFormatter()
     else:
-        ctx.obj['formatter'] = TodoFormatter(
-            config['main']['date_format'],
-            human_time
-        )
+        ctx.obj['formatter'] = TodoFormatter(config['main']['date_format'])
 
     color = color or config['main']['color']
     if color == 'always':
