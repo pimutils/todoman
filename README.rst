@@ -5,6 +5,10 @@ Todoman
   :target: https://travis-ci.org/pimutils/todoman
   :alt: Travis CI build status
 
+.. image:: https://codecov.io/gh/pimutils/todoman/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/pimutils/todoman
+  :alt: Codecov coverage report
+
 .. image:: https://readthedocs.org/projects/todoman/badge/
   :target: https://todoman.rtfd.org/
   :alt: documentation
