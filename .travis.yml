@@ -9,9 +9,12 @@ python:
   - 3.6
 
 env:
-  - BUILD=py
-  - BUILD=flake8
-  - BUILD=docs
+  matrix:
+    - BUILD=py
+    - BUILD=flake8
+    - BUILD=docs
+  global:
+    secure: IFQzIw/g6qbmZy86w9qPU5vZjoJWtBlP8VpUtBX+La9hyZ6odC0pxB38U7IQNnPKinUvnc0cGEsAJS/abxp3bSdS0H+afr8OjxOgDuLBl47fMHBxFUMF6HRFmKuk66GfM1sxf87xLdiPDF5Dac0cn7IlJrFkQaCukZjinvZRvtU=
 
 matrix:
   exclude:
@@ -25,10 +28,13 @@ addons:
       - language-pack-de
 
 install:
-  - pip install tox
+  - pip install tox codecov
 
 script:
   - tox -e $BUILD
+
+after_script:
+  - codecov
 
 deploy:
   provider: pypi
