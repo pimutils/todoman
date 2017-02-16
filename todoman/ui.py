@@ -91,7 +91,8 @@ class TodoEditor:
         self._help_text = urwid.Text(
             '\n\nGlobal:\n'
             ' F1: Toggle help\n'
-            ' Ctrl-C: Cancel\n\n'
+            ' Ctrl-C: Cancel\n'
+            ' Ctrl-S: Save (only works if not a shell shortcut already)\n\n'
             'In Textfields:\n'
             + '\n'.join(' {}: {}'.format(k, v) for k, v
                         in widgets.ExtendedEdit.HELP)
@@ -129,7 +130,7 @@ class TodoEditor:
         self._loop = None
         return self.saved
 
-    def _save(self, btn):
+    def _save(self, btn=None):
         try:
             self._save_inner()
         except Exception as e:
@@ -168,6 +169,8 @@ class TodoEditor:
     def _keypress(self, key):
         if key.lower() == 'f1':
             self._toggle_help()
+        elif key == 'ctrl s':
+            self._save()
 
     @property
     def summary(self):

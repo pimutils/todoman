@@ -14,6 +14,7 @@ v2.1.0
 * Attempt to create the cache file's directory if it does not exist.
 * Fix crash when running ``--porcelain show``.
 * Show ``id`` for todos everywhere (eg: including new, etc).
+* Add the ``ctrl-s`` shortcut for saving in the interactive editor.
 
 v2.0.2
 ------
