@@ -201,7 +201,6 @@ def interactive(ctx):
     Provide an interactive, curses-based interface to Todoman.
     '''
     TodomanInteractive(ctx.obj['db'], ctx.obj['formatter'])
-    ctx.exit(1)
 
 
 @cli.command()
