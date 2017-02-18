@@ -15,8 +15,6 @@ from .ui import EditState, PorcelainFormatter, TodoEditor, TodoFormatter
 TODO_ID_MIN = 1
 with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
 
-logger = logging.getLogger(__name__)
-
 
 def _validate_lists_param(ctx, param=None, lists=None):
     if lists:
@@ -74,7 +72,7 @@ _interactive_option = click.option(
 
 
 @click.group(invoke_without_command=True)
-@click_log.init('vdirsyncer')
+@click_log.init('todoman')
 @click_log.simple_verbosity_option()
 @click.option('--colour', '--color', default=None,
               type=click.Choice(['always', 'auto', 'never']),
