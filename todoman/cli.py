@@ -1,6 +1,5 @@
 import functools
 import glob
-import logging
 from datetime import timedelta
 from os.path import expanduser, isdir
 
