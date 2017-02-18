@@ -460,17 +460,17 @@ class ListsPage(Page):
         :type size: int
         :type key: str
         '''
-        if key == 'esc':
+        if key in ('esc', 'q', 'Q'):
             self.parent.close_page(self)
-            return None
-        if key == 'j':
+        elif key == 'j':
             return super().keypress(size, 'down')
-        if key == 'k':
+        elif key == 'k':
             return super().keypress(size, 'up')
-        return super().keypress(size, key)
+        else:
+            return super().keypress(size, key)
 
 
-class Main(object):
+class Interactive(object):
     '''
     Class to run the interactive, curses-based interface to Todoman.
     '''

@@ -8,7 +8,7 @@ import click
 
 from . import model
 from .configuration import ConfigurationException, load_config
-from .interactive import TodomanInteractive
+from .interactive import Interactive
 from .model import Database, FileTodo
 from .ui import EditState, PorcelainFormatter, TodoEditor, TodoFormatter
 
@@ -200,7 +200,7 @@ def interactive(ctx):
     '''
     Provide an interactive, curses-based interface to Todoman.
     '''
-    TodomanInteractive(ctx.obj['db'], ctx.obj['formatter'])
+    Interactive(ctx.obj['db'], ctx.obj['formatter'])
 
 
 @cli.command()
