@@ -1,9 +1,11 @@
 import functools
 import glob
+import logging
 from datetime import timedelta
 from os.path import expanduser, isdir
 
 import click
+import click_log
 
 from . import model
 from .configuration import ConfigurationException, load_config
@@ -12,6 +14,8 @@ from .ui import EditState, PorcelainFormatter, TodoEditor, TodoFormatter
 
 TODO_ID_MIN = 1
 with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
+
+logger = logging.getLogger(__name__)
 
 
 def _validate_lists_param(ctx, param=None, lists=None):
@@ -70,6 +74,8 @@ _interactive_option = click.option(
 
 
 @click.group(invoke_without_command=True)
+@click_log.init('vdirsyncer')
+@click_log.simple_verbosity_option()
 @click.option('--colour', '--color', default=None,
               type=click.Choice(['always', 'auto', 'never']),
               help=('By default todoman will disable colored output if stdout '
