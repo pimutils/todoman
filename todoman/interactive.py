@@ -65,7 +65,7 @@ class Item(urwid.CheckBox):
 
         (self) -> bool
         '''
-        return self.todo.priority not in [None, 0]
+        return self.todo.priority not in (None, 0)
 
 
 class Page(urwid.Frame):
