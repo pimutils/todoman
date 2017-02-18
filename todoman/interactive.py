@@ -530,7 +530,8 @@ class Main(object):
         Create a Main instance based on the Database objects that
         the regular Todoman cli module passes.
 
-        (Main, [Database], TodoFormatter) -> None
+        :type databases: list[Database]
+        :type formatter: TodoFormatter
         '''
         self.databases = databases
         # self.databases.sort(key = lambda db: db.name)
@@ -551,7 +552,7 @@ class Main(object):
         '''
         Handles all the key presses that are application-wide.
 
-        (Main, str) -> None
+        :type key: str
         '''
         if key in ('q', 'Q'):
             raise urwid.ExitMainLoop()
@@ -561,7 +562,7 @@ class Main(object):
         Open a page over the existing stack of pages. page_to_open is the
         Page object to display.
 
-        (Main, Page) -> None
+        :type page_to_open: Page
         '''
         self.loop.widget = urwid.Overlay(
             page_to_open,
@@ -578,7 +579,7 @@ class Main(object):
 
         Usually called from the page to be closed.
 
-        (Main, Page, **kwargs) -> None
+        :type page: Page
         '''
         if self.pageCounter <= 1:
             raise urwid.ExitMainLoop()
