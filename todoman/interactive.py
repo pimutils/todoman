@@ -49,8 +49,6 @@ class Item(urwid.CheckBox):
         '''
         Save the current state of the Item and the Todo to which it
         refers in the associated Database.
-
-        (Item, *args) -> None
         '''
         # Todoman and Urwid have inverted notions of state. According to Urwid,
         # the state of something that is done is 'False'.
@@ -62,8 +60,6 @@ class Item(urwid.CheckBox):
         '''
         Returns True iff the Item refers to a Todo with a priority that
         is set (i.e. not None and above zero).
-
-        (self) -> bool
         '''
         return self.todo.priority not in (None, 0)
 
@@ -87,7 +83,8 @@ class Page(urwid.Frame):
         It is usually a method of the underlying Page. If callback is
         None, use the default.
 
-        (Page, Main, function) -> None
+        :type parent: Main
+        :type callback: function
         '''
         self.parent = parent
         if callback:
@@ -102,8 +99,6 @@ class Page(urwid.Frame):
         '''
         Open a page over the existing stack of pages. page_to_open is the
         Page object to display.
-
-        (Page, Page) -> None
         '''
         self.parent._open_page(page_to_open)
 
@@ -111,8 +106,6 @@ class Page(urwid.Frame):
     def statusbar(self):
         '''
         Returns the current contents of the statusbar of the Todomanpage.
-
-        (Page) -> str
         '''
         return self.footer.contents[0].original_widget.text
 
@@ -121,8 +114,6 @@ class Page(urwid.Frame):
         '''
         Sets the given text as the current text in the statusbar of the
         Page.
-
-        (self, str) -> None
         '''
         self.footer.contents
         self.footer.contents[0][0].original_widget.set_text(text)
@@ -145,8 +136,6 @@ class Page(urwid.Frame):
         '''
         Dummy method. Page subclasses that need a reload should
         implement one under this name.
-
-        (Page) -> None
         '''
         return None
 
@@ -167,7 +156,9 @@ class ItemListPage(Page):
         is responsible for passing information to the underlying Page.
         It is usually a method of the underlying Page.
 
-        (ItemListPage, Main, function, Database) -> None
+        :param parent: Main
+        :param callback: function
+        :param database: Database
         '''
         self.parent = parent
         self.database = database
@@ -181,8 +172,6 @@ class ItemListPage(Page):
         '''
         Create a list of Items to display, based on the associated
         Database and the current done_is_hidden setting.
-
-        (ItemListPage) -> [Item]
         '''
         items = []
         for t in self.database.todos():
@@ -213,8 +202,6 @@ class ItemListPage(Page):
     def callback_copy_to(self, database):
         '''
         Copy the Item in focus to Database database.
-
-        (ItemListPage, Database) -> None
         '''
         if database != self.database:
             database.save(self.body.focus.todo)
@@ -244,8 +231,6 @@ class ItemListPage(Page):
         '''
         Return a label for a given Item for display in the
         ItemListPage listing.
-
-        (ItemListPage, Item) -> str
         '''
         return "{0} {1}".format(
             '!' if item.has_priority else ' ', item.todo.summary
@@ -255,47 +240,39 @@ class ItemListPage(Page):
         '''
         Make the different commands in the ItemListPage view work.
 
-        (ItemListPage, int(?), str) -> str
+        :type size: int
+        :type key: str
+        :rtype: str
         '''
         if key == 'l':
             self.list_chooser()
-            return None
-        if key == 'm':
+        elif key == 'm':
             self.move_database_chooser()
-            return None
-        if key == 'c':
+        elif key == 'c':
             self.copy_database_chooser()
-            return None
-        if key == 'd':
+        elif key == 'd':
             self.delete()
-            return None
-        if key == 'D':
+        elif key == 'D':
             self.delete_all_done()
-            return None
-        if key == 'esc':
+        elif key == 'esc':
             self.parent.close_page(self)
-            return None
-        if key == 'h':
+        elif key == 'h':
             self.toggle_hide_completed_items()
-            return None
-        if key == 'e':
+        elif key == 'e':
             self.item_details()
-            return None
-        if key == 'n':
+        elif key == 'n':
             self.new_item()
-            return None
-        if key == 'j':
+        elif key == 'j':
             return super().keypress(size, 'down')
-        if key == 'k':
+        elif key == 'k':
             return super().keypress(size, 'up')
-        return super().keypress(size, key)
+        else:
+            return super().keypress(size, key)
 
     def list_chooser(self):
         '''
         Open a ListsPage from which to choose the
         ItemListPage to display.
-
-        (ItemListPage) -> None
         '''
         new_page = ListsPage(
             self.parent,
@@ -324,8 +301,6 @@ class ItemListPage(Page):
         '''
         Open a ItemDetailsPage in which the user can edit the selected
         Item.
-
-        (ItemListPage) -> None
         '''
         new_page = ItemDetailsPage(
             self.parent,
@@ -338,8 +313,6 @@ class ItemListPage(Page):
         '''
         Create a new Item and open a ItemDetailsPage in which
         the user can edit the new item.
-
-        (ItemListPage) -> None
         '''
         item = Item(None, self.database, self.generate_label)
         new_page = ItemDetailsPage(self.parent, self.callback, item)
@@ -348,8 +321,6 @@ class ItemListPage(Page):
     def toggle_hide_completed_items(self):
         '''
         Toggle whether completed items are still displayed in the Page.
-
-        (ItemListPage) -> None
         '''
         self.done_is_hidden = not self.done_is_hidden
         self.reload()
@@ -357,8 +328,6 @@ class ItemListPage(Page):
     def delete_all_done(self):
         '''
         Delete all Items for which the associated Todos are completed.
-
-        (ItemListPage) -> None
         '''
         to_delete = []
         for item in self.body.body:
@@ -370,8 +339,6 @@ class ItemListPage(Page):
     def reload(self):
         '''
         Reload all Items in the ListBox from the underlying Database.
-
-        (ItemListPage) -> None
         '''
         items = self.items_to_display()
         self.body = urwid.ListBox(urwid.SimpleFocusListWalker(items))
@@ -396,8 +363,9 @@ class ItemDetailsPage(Page):
         is responsible for passing information to the underlying Page.
         It is usually a method of the underlying Page.
 
-        (ItemDetailsPage, Main, function, Item)
-            -> None
+        :type parent: Main
+        :type callback: function
+        :type item: Item
         '''
         self.parent = parent
         self.item = item
@@ -415,13 +383,11 @@ class ItemDetailsPage(Page):
         self.body.body.contents[-1].contents[1][0].set_text("")
         super().__init__(parent, callback)
 
-    def close_page(self, dummy, should_save):
+    def close_page(self, _, should_save):
         '''
         Callback for closing the ItemDetailsPage. Will attempt to save
         all associated data if shouldSave is True. Will discard all changes
         otherwise.
-
-        (ItemDetailsPage, Button, bool) -> None
         '''
         if should_save:
             try:
@@ -439,7 +405,8 @@ class ItemDetailsPage(Page):
         '''
         Make the different commands in the ItemDetailsPage view work.
 
-        (ItemDetailsPage, int(?), str) -> str
+        :type size: int
+        :type key: str
         '''
         if key == 'esc':
             self.close_page(None, False)
@@ -462,7 +429,8 @@ class ListsPage(Page):
         is responsible for passing information to the underlying Page.
         It is usually a method of the underlying Page.
 
-        (ListsPage, Main, function) -> None
+        :type parent: Main
+        :type callback: function
         '''
         self.parent = parent
         buttons = []
@@ -480,7 +448,8 @@ class ListsPage(Page):
         Close the current page, returning the selected database to the
         underlying page.
 
-        (ListsPage, Button, Database) -> None
+        :type button: Button
+        :type database: Database
         '''
         self.parent.close_page(self, database=database)
 
@@ -488,7 +457,8 @@ class ListsPage(Page):
         '''
         Make the different commands in the ListsPage view work.
 
-        (ListsPage, int(?), str) -> str
+        :type size: int
+        :type key: str
         '''
         if key == 'esc':
             self.parent.close_page(self)
