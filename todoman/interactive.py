@@ -10,14 +10,14 @@ logging.basicConfig()
 logger = logging.getLogger()
 
 
-class TodomanItem(urwid.CheckBox):
+class Item(urwid.CheckBox):
     '''
     Class to contain a single todo item in a ListBox.
     '''
 
     def __init__(self, todo, database, labelmaker):
         '''
-        Create a TodomanItem instance based on a todo and the associated
+        Create a Item instance based on a todo and the associated
         Database that was provided.
 
         :param todoman.model.Todo todo: The todo this entry will represent.
@@ -47,10 +47,10 @@ class TodomanItem(urwid.CheckBox):
 
     def save(self, *args):
         '''
-        Save the current state of the TodomanItem and the Todo to which it
+        Save the current state of the Item and the Todo to which it
         refers in the associated Database.
 
-        (TodomanItem, *args) -> None
+        (Item, *args) -> None
         '''
         # Todoman and Urwid have inverted notions of state. According to Urwid,
         # the state of something that is done is 'False'.
@@ -60,7 +60,7 @@ class TodomanItem(urwid.CheckBox):
     @property
     def has_priority(self):
         '''
-        Returns True iff the TodomanItem refers to a Todo with a priority that
+        Returns True iff the Item refers to a Todo with a priority that
         is set (i.e. not None and above zero).
 
         (self) -> bool
@@ -68,7 +68,7 @@ class TodomanItem(urwid.CheckBox):
         return self.todo.priority not in [None, 0]
 
 
-class TodomanPage(urwid.Frame):
+class Page(urwid.Frame):
     '''
     Abstract class. Inherit from this class and an appropriate Urwid Widget
     class to create a new page type.
@@ -76,18 +76,18 @@ class TodomanPage(urwid.Frame):
 
     def __init__(self, parent, callback):
         '''
-        Create an instance of TodomanPage. The parent is the TodomanInteractive
+        Create an instance of Page. The parent is the Main
         instance in which the page was created.
 
         Any subclass that calls this method should first set self.body to
         the box widget that should be the body of the Frame.
 
         Callback is the function to call when the page is closed. This function
-        is responsible for passing information to the underlying TodomanPage.
-        It is usually a method of the underlying TodomanPage. If callback is
+        is responsible for passing information to the underlying Page.
+        It is usually a method of the underlying Page. If callback is
         None, use the default.
 
-        (TodomanPage, TodomanInteractive, function) -> None
+        (Page, Main, function) -> None
         '''
         self.parent = parent
         if callback:
@@ -101,9 +101,9 @@ class TodomanPage(urwid.Frame):
     def open_page(self, page_to_open):
         '''
         Open a page over the existing stack of pages. page_to_open is the
-        TodomanPage object to display.
+        Page object to display.
 
-        (TodomanPage, TodomanPage) -> None
+        (Page, Page) -> None
         '''
         self.parent._open_page(page_to_open)
 
@@ -112,7 +112,7 @@ class TodomanPage(urwid.Frame):
         '''
         Returns the current contents of the statusbar of the Todomanpage.
 
-        (TodomanPage) -> str
+        (Page) -> str
         '''
         return self.footer.contents[0].original_widget.text
 
@@ -120,7 +120,7 @@ class TodomanPage(urwid.Frame):
     def statusbar(self, text):
         '''
         Sets the given text as the current text in the statusbar of the
-        TodomanPage.
+        Page.
 
         (self, str) -> None
         '''
@@ -138,7 +138,7 @@ class TodomanPage(urwid.Frame):
 
         statusbar (str): A text to set as the statusbar message
 
-        (TodomanPage, **kwargs) -> None
+        (Page, **kwargs) -> None
         '''
         for key, value in kwargs.items():
             if key == 'statusbar':
@@ -147,15 +147,15 @@ class TodomanPage(urwid.Frame):
 
     def reload(self):
         '''
-        Dummy method. TodomanPage subclasses that need a reload should
+        Dummy method. Page subclasses that need a reload should
         implement one under this name.
 
-        (TodomanPage) -> None
+        (Page) -> None
         '''
         return None
 
 
-class TodomanItemListPage(TodomanPage):
+class ItemListPage(Page):
     '''
     Class to contain a ListBox filled with todo items, based on a given
     Database.
@@ -163,15 +163,15 @@ class TodomanItemListPage(TodomanPage):
 
     def __init__(self, parent, callback, database):
         '''
-        Create an instance of TodomanItemListPage. The parent is the
-        TodomanInteractive instance in which the page was created.
+        Create an instance of ItemListPage. The parent is the
+        Main instance in which the page was created.
         The database is the Database from which to display items.
 
         Callback is the function to call when the page is closed. This function
-        is responsible for passing information to the underlying TodomanPage.
-        It is usually a method of the underlying TodomanPage.
+        is responsible for passing information to the underlying Page.
+        It is usually a method of the underlying Page.
 
-        (TodomanItemListPage, TodomanInteractive, function, Database) -> None
+        (ItemListPage, Main, function, Database) -> None
         '''
         self.parent = parent
         self.database = database
@@ -183,14 +183,14 @@ class TodomanItemListPage(TodomanPage):
 
     def items_to_display(self):
         '''
-        Create a list of TodomanItems to display, based on the associated
+        Create a list of Items to display, based on the associated
         Database and the current done_is_hidden setting.
 
-        (TodomanItemListPage) -> [TodomanItem]
+        (ItemListPage) -> [Item]
         '''
         items = []
         for t in self.database.todos():
-            todo = TodomanItem(t, self.database, self.generate_label)
+            todo = Item(t, self.database, self.generate_label)
             if not self.done_is_hidden or not todo.is_completed:
                 items.append(todo)
         items.sort(key=lambda item: item.label.lower())
@@ -198,9 +198,9 @@ class TodomanItemListPage(TodomanPage):
 
     def callback_move_to(self, **kwargs):
         '''
-        Move the TodomanItem in focus to Database database.
+        Move the Item in focus to Database database.
 
-        (TodomanItemListPage, Database) -> None
+        (ItemListPage, Database) -> None
         '''
         for key, value in kwargs.items():
             if key == "database" and value != self.database:
@@ -211,19 +211,19 @@ class TodomanItemListPage(TodomanPage):
 
     def move_database_chooser(self):
         '''
-        Open a TodomanDatabasesPage from which to choose the destination of the
+        Open a ListsPage from which to choose the destination of the
         move operation for the selected item.
 
-        (TodomanItemListPage) -> None
+        (ItemListPage) -> None
         '''
-        new_page = TodomanDatabasesPage(self.parent, self.callback_move_to)
+        new_page = ListsPage(self.parent, self.callback_move_to)
         self.open_page(new_page)
 
     def callback_copy_to(self, **kwargs):
         '''
-        Copy the TodomanItem in focus to Database database.
+        Copy the Item in focus to Database database.
 
-        (TodomanItemListPage, Database) -> None
+        (ItemListPage, Database) -> None
         '''
         for key, value in kwargs.items():
             if key == "database" and value != self.database:
@@ -232,20 +232,20 @@ class TodomanItemListPage(TodomanPage):
 
     def copy_database_chooser(self):
         '''
-        Open a TodomanDatabasesPage from which to choose the destination of the
+        Open a ListsPage from which to choose the destination of the
         copy operation for the selected item.
 
-        (TodomanItemListPage) -> None
+        (ItemListPage) -> None
         '''
-        new_page = TodomanDatabasesPage(self.parent, self.callback_copy_to)
+        new_page = ListsPage(self.parent, self.callback_copy_to)
         self.open_page(new_page)
 
     def delete(self, item=None):
         '''
-        Delete the TodomanItem item from its database. By default, delete the
+        Delete the Item item from its database. By default, delete the
         item in focus.
 
-        (TodomanItemListPage, TodomanItem) -> None
+        (ItemListPage, Item) -> None
         '''
         if item is None:
             item = self.body.focus
@@ -254,10 +254,10 @@ class TodomanItemListPage(TodomanPage):
 
     def generate_label(self, item):
         '''
-        Return a label for a given TodomanItem for display in the
-        TodomanItemListPage listing.
+        Return a label for a given Item for display in the
+        ItemListPage listing.
 
-        (TodomanItemListPage, TodomanItem) -> str
+        (ItemListPage, Item) -> str
         '''
         return "{0} {1}".format(
             '!' if item.has_priority else ' ', item.todo.summary
@@ -265,9 +265,9 @@ class TodomanItemListPage(TodomanPage):
 
     def keypress(self, size, key):
         '''
-        Make the different commands in the TodomanItemListPage view work.
+        Make the different commands in the ItemListPage view work.
 
-        (TodomanItemListPage, int(?), str) -> str
+        (ItemListPage, int(?), str) -> str
         '''
         if key == 'l':
             self.list_chooser()
@@ -304,12 +304,12 @@ class TodomanItemListPage(TodomanPage):
 
     def list_chooser(self):
         '''
-        Open a TodomanDatabasesPage from which to choose the
-        TodomanItemListPage to display.
+        Open a ListsPage from which to choose the
+        ItemListPage to display.
 
-        (TodomanItemListPage) -> None
+        (ItemListPage) -> None
         '''
-        new_page = TodomanDatabasesPage(
+        new_page = ListsPage(
             self.parent,
             self.callback_open_other_database,
         )
@@ -318,30 +318,30 @@ class TodomanItemListPage(TodomanPage):
     def callback_open_other_database(self, **kwargs):
         '''
         Callback function for the ListChooser option. Opens the Database that
-        the user selected in the TodomanDatabasesPage, and passes all arguments
-        to the default callback for further processing. The new TodomanPage
+        the user selected in the ListsPage, and passes all arguments
+        to the default callback for further processing. The new Page
         will be opened over the old one.
 
         This callback function handles the following keywords, in addition
-        to the keywords TodomanPage.callback handles:
+        to the keywords Page.callback handles:
 
         * database (Database): the Database to display in the new page.
 
-        (TodomanItemListPage, **kwargs) -> None
+        (ItemListPage, **kwargs) -> None
         '''
         for key, value in kwargs.items():
             if key == "database" and value != self.database:
-                new_page = TodomanItemListPage(self.parent, None, value)
+                new_page = ItemListPage(self.parent, None, value)
                 self.open_page(new_page)
 
     def item_details(self):
         '''
-        Open a TodomanItemDetailsPage in which the user can edit the selected
-        TodomanItem.
+        Open a ItemDetailsPage in which the user can edit the selected
+        Item.
 
-        (TodomanItemListPage) -> None
+        (ItemListPage) -> None
         '''
-        new_page = TodomanItemDetailsPage(
+        new_page = ItemDetailsPage(
             self.parent,
             self.callback,
             self.body.focus,
@@ -350,29 +350,29 @@ class TodomanItemListPage(TodomanPage):
 
     def new_item(self):
         '''
-        Create a new TodomanItem and open a TodomanItemDetailsPage in which
+        Create a new Item and open a ItemDetailsPage in which
         the user can edit the new item.
 
-        (TodomanItemListPage) -> None
+        (ItemListPage) -> None
         '''
-        item = TodomanItem(None, self.database, self.generate_label)
-        new_page = TodomanItemDetailsPage(self.parent, self.callback, item)
+        item = Item(None, self.database, self.generate_label)
+        new_page = ItemDetailsPage(self.parent, self.callback, item)
         self.open_page(new_page)
 
     def toggle_hide_completed_items(self):
         '''
-        Toggle whether completed items are still displayed in the TodomanPage.
+        Toggle whether completed items are still displayed in the Page.
 
-        (TodomanItemListPage) -> None
+        (ItemListPage) -> None
         '''
         self.done_is_hidden = not self.done_is_hidden
         self.reload()
 
     def delete_all_done(self):
         '''
-        Delete all TodomanItems for which the associated Todos are completed.
+        Delete all Items for which the associated Todos are completed.
 
-        (TodomanItemListPage) -> None
+        (ItemListPage) -> None
         '''
         to_delete = []
         for item in self.body.body:
@@ -383,34 +383,34 @@ class TodomanItemListPage(TodomanPage):
 
     def reload(self):
         '''
-        Reload all TodomanItems in the ListBox from the underlying Database.
+        Reload all Items in the ListBox from the underlying Database.
 
-        (TodomanItemListPage) -> None
+        (ItemListPage) -> None
         '''
         items = self.items_to_display()
         self.body = urwid.ListBox(urwid.SimpleFocusListWalker(items))
         super().__init__(self.parent, self.callback)
 
 
-class TodomanItemDetailsPage(TodomanPage):
+class ItemDetailsPage(Page):
     '''
     Class to contain a TodoEditor filled with all the fields that a given
-    TodomanItem contains. Allows the user to view and edit all attributes of
-    the TodomanItem.
+    Item contains. Allows the user to view and edit all attributes of
+    the Item.
     '''
 
     def __init__(self, parent, callback, item):
         '''
-        Create an instance of TodomanItemDetailsPage. The parent is the
-        TodomanInteractive instance in which the page was created.
-        Item is the TodomanItem of which the details will be shown and
+        Create an instance of ItemDetailsPage. The parent is the
+        Main instance in which the page was created.
+        Item is the Item of which the details will be shown and
         edited.
 
         Callback is the function to call when the page is closed. This function
-        is responsible for passing information to the underlying TodomanPage.
-        It is usually a method of the underlying TodomanPage.
+        is responsible for passing information to the underlying Page.
+        It is usually a method of the underlying Page.
 
-        (TodomanItemDetailsPage, TodomanInteractive, function, TodomanItem)
+        (ItemDetailsPage, Main, function, Item)
             -> None
         '''
         self.parent = parent
@@ -431,11 +431,11 @@ class TodomanItemDetailsPage(TodomanPage):
 
     def close_page(self, dummy, should_save):
         '''
-        Callback for closing the TodomanItemDetailsPage. Will attempt to save
+        Callback for closing the ItemDetailsPage. Will attempt to save
         all associated data if shouldSave is True. Will discard all changes
         otherwise.
 
-        (TodomanItemDetailsPage, Button, bool) -> None
+        (ItemDetailsPage, Button, bool) -> None
         '''
         if should_save:
             try:
@@ -451,9 +451,9 @@ class TodomanItemDetailsPage(TodomanPage):
 
     def keypress(self, size, key):
         '''
-        Make the different commands in the TodomanItemDetailsPage view work.
+        Make the different commands in the ItemDetailsPage view work.
 
-        (TodomanItemDetailsPage, int(?), str) -> str
+        (ItemDetailsPage, int(?), str) -> str
         '''
         if key == 'esc':
             self.close_page(None, False)
@@ -461,22 +461,22 @@ class TodomanItemDetailsPage(TodomanPage):
         return super().keypress(size, key)
 
 
-class TodomanDatabasesPage(TodomanPage):
+class ListsPage(Page):
     '''
     Class to contain a ListBox filled with all available Databases. The user
-    can choose a Database from the list, after which the TodomanDatabasesPage
+    can choose a Database from the list, after which the ListsPage
     closes again and the chosen Database is passed back to the callback.
     '''
 
     def __init__(self, parent, callback):
         '''
-        Create a TodomanDatabasesPage instance.
+        Create a ListsPage instance.
 
         Callback is the function to call when the page is closed. This function
-        is responsible for passing information to the underlying TodomanPage.
-        It is usually a method of the underlying TodomanPage.
+        is responsible for passing information to the underlying Page.
+        It is usually a method of the underlying Page.
 
-        (TodomanDatabasesPage, TodomanInteractive, function) -> None
+        (ListsPage, Main, function) -> None
         '''
         self.parent = parent
         buttons = []
@@ -494,15 +494,15 @@ class TodomanDatabasesPage(TodomanPage):
         Close the current page, returning the selected database to the
         underlying page.
 
-        (TodomanDatabasesPage, Button, Database) -> None
+        (ListsPage, Button, Database) -> None
         '''
         self.parent.close_page(self, database=database)
 
     def keypress(self, size, key):
         '''
-        Make the different commands in the TodomanDatabasesPage view work.
+        Make the different commands in the ListsPage view work.
 
-        (TodomanDatabasesPage, int(?), str) -> str
+        (ListsPage, int(?), str) -> str
         '''
         if key == 'esc':
             self.parent.close_page(self)
@@ -514,7 +514,7 @@ class TodomanDatabasesPage(TodomanPage):
         return super().keypress(size, key)
 
 
-class TodomanInteractive(object):
+class Main(object):
     '''
     Class to run the interactive, curses-based interface to Todoman.
     '''
@@ -527,10 +527,10 @@ class TodomanInteractive(object):
 
     def __init__(self, databases, formatter):
         '''
-        Create a TodomanInteractive instance based on the Database objects that
+        Create a Main instance based on the Database objects that
         the regular Todoman cli module passes.
 
-        (TodomanInteractive, [Database], TodoFormatter) -> None
+        (Main, [Database], TodoFormatter) -> None
         '''
         self.databases = databases
         # self.databases.sort(key = lambda db: db.name)
@@ -541,7 +541,7 @@ class TodomanInteractive(object):
             self.palette,
             unhandled_input=self.unhandled_input,
         )
-        first_page = TodomanItemListPage(self, None, self.databases)
+        first_page = ItemListPage(self, None, self.databases)
         self.pageCounter = 0
         self._open_page(first_page)
 
@@ -551,7 +551,7 @@ class TodomanInteractive(object):
         '''
         Handles all the key presses that are application-wide.
 
-        (TodomanInteractive, str) -> None
+        (Main, str) -> None
         '''
         if key in ('q', 'Q'):
             raise urwid.ExitMainLoop()
@@ -559,9 +559,9 @@ class TodomanInteractive(object):
     def _open_page(self, page_to_open):
         '''
         Open a page over the existing stack of pages. page_to_open is the
-        TodomanPage object to display.
+        Page object to display.
 
-        (TodomanInteractive, TodomanPage) -> None
+        (Main, Page) -> None
         '''
         self.loop.widget = urwid.Overlay(
             page_to_open,
@@ -573,12 +573,12 @@ class TodomanInteractive(object):
     def close_page(self, page, **kwargs):
         '''
         Close the topmost open page, passing the given information to the
-        TodomanPage below via the callback that was provided when opening
-        the TodomanPage.
+        Page below via the callback that was provided when opening
+        the Page.
 
         Usually called from the page to be closed.
 
-        (TodomanInteractive, TodomanPage, **kwargs) -> None
+        (Main, Page, **kwargs) -> None
         '''
         if self.pageCounter <= 1:
             raise urwid.ExitMainLoop()
