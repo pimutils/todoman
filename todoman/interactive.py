@@ -127,7 +127,7 @@ class Page(urwid.Frame):
         self.footer.contents
         self.footer.contents[0][0].original_widget.set_text(text)
 
-    def callback(self, **kwargs):
+    def callback(self, statusbar):
         '''
         A default callback function to use when closing the previous page.
         This callback function handles several keywords that are generic to
@@ -136,13 +136,9 @@ class Page(urwid.Frame):
 
         This callback function supports the following keywords:
 
-        statusbar (str): A text to set as the statusbar message
-
-        (Page, **kwargs) -> None
+        :param statusbar: A text to set as the statusbar message
         '''
-        for key, value in kwargs.items():
-            if key == 'statusbar':
-                self.statusbar = value
+        self.statusbar = statusbar
         self.reload()
 
     def reload(self):
@@ -196,46 +192,38 @@ class ItemListPage(Page):
         items.sort(key=lambda item: item.label.lower())
         return items
 
-    def callback_move_to(self, **kwargs):
+    def callback_move_to(self, database):
         '''
         Move the Item in focus to Database database.
-
-        (ItemListPage, Database) -> None
         '''
-        for key, value in kwargs.items():
-            if key == "database" and value != self.database:
-                value.save(self.body.focus.todo)
-                self.database.delete(self.body.focus.todo)
-                self.body.body.remove(self.body.focus)
-                self.statusbar = "Item moved to {0}.".format(value.name)
+        if database != self.database:
+            database.save(self.body.focus.todo)
+            self.database.delete(self.body.focus.todo)
+            self.body.body.remove(self.body.focus)
+            self.statusbar = "Item moved to {0}.".format(database.name)
 
     def move_database_chooser(self):
         '''
         Open a ListsPage from which to choose the destination of the
         move operation for the selected item.
-
-        (ItemListPage) -> None
         '''
         new_page = ListsPage(self.parent, self.callback_move_to)
         self.open_page(new_page)
 
-    def callback_copy_to(self, **kwargs):
+    def callback_copy_to(self, database):
         '''
         Copy the Item in focus to Database database.
 
         (ItemListPage, Database) -> None
         '''
-        for key, value in kwargs.items():
-            if key == "database" and value != self.database:
-                value.save(self.body.focus.todo)
-                self.statusbar = "Item copied to {0}.".format(value.name)
+        if database != self.database:
+            database.save(self.body.focus.todo)
+            self.statusbar = "Item copied to {0}.".format(database.name)
 
     def copy_database_chooser(self):
         '''
         Open a ListsPage from which to choose the destination of the
         copy operation for the selected item.
-
-        (ItemListPage) -> None
         '''
         new_page = ListsPage(self.parent, self.callback_copy_to)
         self.open_page(new_page)
@@ -245,7 +233,7 @@ class ItemListPage(Page):
         Delete the Item item from its database. By default, delete the
         item in focus.
 
-        (ItemListPage, Item) -> None
+        :type item: Item
         '''
         if item is None:
             item = self.body.focus
@@ -315,7 +303,7 @@ class ItemListPage(Page):
         )
         self.open_page(new_page)
 
-    def callback_open_other_database(self, **kwargs):
+    def callback_open_other_database(self, database):
         '''
         Callback function for the ListChooser option. Opens the Database that
         the user selected in the ListsPage, and passes all arguments
@@ -325,14 +313,12 @@ class ItemListPage(Page):
         This callback function handles the following keywords, in addition
         to the keywords Page.callback handles:
 
-        * database (Database): the Database to display in the new page.
-
-        (ItemListPage, **kwargs) -> None
+        :param database: the Database to display in the new page.
+        :type database: Database
         '''
-        for key, value in kwargs.items():
-            if key == "database" and value != self.database:
-                new_page = ItemListPage(self.parent, None, value)
-                self.open_page(new_page)
+        if database != self.database:
+            new_page = ItemListPage(self.parent, None, database)
+            self.open_page(new_page)
 
     def item_details(self):
         '''
