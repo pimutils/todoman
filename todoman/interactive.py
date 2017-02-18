@@ -17,14 +17,14 @@ class TodomanItem(urwid.CheckBox):
 
     def __init__(self, todo, database, labelmaker):
         '''
-        Create a TodomanItem instance based on the filename and the associated
-        Database that was provided. By providing the filename instead of the
-        Todo itself, we do not need to check if the provided todo is indeed in
-        in the given Database. The labelmaker is a function that turns a given
-        TodomanItem (i.e. self) into a string representation that is suitable
-        for its context.
+        Create a TodomanItem instance based on a todo and the associated
+        Database that was provided.
 
-        (TodomanItem, str, Database, function) -> None
+        :param todoman.model.Todo todo: The todo this entry will represent.
+        :param todoman.model.Database: The database from which persists tihs
+            todo.
+        :param func labelmake: A function that will create the string
+            representation for this item.
         '''
         self.database = database
         if todo:
@@ -38,21 +38,10 @@ class TodomanItem(urwid.CheckBox):
 
     @property
     def is_completed(self):
-        '''
-        Returns True iff the TodomanItem refers to a completed Todo.
-
-        (TodomanItem) -> bool
-        '''
         return self.todo.is_completed
 
     @is_completed.setter
     def is_completed(self, status):
-        '''
-        Set the given status as the status of the Todo to which the TodomanItem
-        refers.
-
-        (TodomanItem, bool) -> None
-        '''
         self.todo.is_completed = status
         self.save()
 
@@ -65,10 +54,7 @@ class TodomanItem(urwid.CheckBox):
         '''
         # Todoman and Urwid have inverted notions of state. According to Urwid,
         # the state of something that is done is 'False'.
-        if self.get_state():
-            self.todo.is_completed = False
-        else:
-            self.todo.is_completed = True
+        self.todo.is_completed = not self.get_state()
         self.database.save(self.todo)
 
     @property
