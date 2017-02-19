@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import mktime
 
 import click
@@ -251,8 +251,23 @@ class TodoFormatter:
         return rv
 
     def format_date(self, date):
+        """
+        Returns date in the following format:
+        * if date == today or tomorrow: "Today" or "Tomorrow"
+        * else: return a string representing that date
+        """
         if date:
-            rv = date.strftime(self.date_format)
+            date_tomorrow = datetime.today().date() + timedelta(days = 1)
+            # Get a dictionary which stores the dates for which we don't have to merely
+            # return a date string and map it to the special string we need to return
+            dates_for_which_not_to_return_simple_date = {
+                datetime.today().date() : "Today",
+                date_tomorrow : "Tomorrow" ,
+            }
+            if date in dates_for_which_not_to_return_simple_date.keys():
+                rv = dates_for_which_not_to_return_simple_date[date]
+            else:
+                rv = date.strftime(self.date_format)
             return rv
         else:
             return self.empty_date
