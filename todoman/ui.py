@@ -265,7 +265,7 @@ class TodoFormatter:
                 self.now.date(): "Today",
                 date_tomorrow: "Tomorrow",
             }
-            if date in special_dates():
+            if date in special_dates:
                 rv = special_dates[date]
             else:
                 rv = date.strftime(self.date_format)
