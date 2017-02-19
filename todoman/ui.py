@@ -257,15 +257,16 @@ class TodoFormatter:
         * else: return a string representing that date
         """
         if date:
-            date_tomorrow = datetime.today().date() + timedelta(days = 1)
-            # Get a dictionary which stores the dates for which we don't have to merely
-            # return a date string and map it to the special string we need to return
-            dates_for_which_not_to_return_simple_date = {
-                datetime.today().date() : "Today",
-                date_tomorrow : "Tomorrow" ,
+            date_tomorrow = self.now.date() + timedelta(days=1)
+            # Get a dictionary which stores the dates for which
+            # we don't have to merely return a date string and
+            # map it to the special string we need to return
+            special_dates = {
+                self.now.date(): "Today",
+                date_tomorrow: "Tomorrow",
             }
-            if date in dates_for_which_not_to_return_simple_date.keys():
-                rv = dates_for_which_not_to_return_simple_date[date]
+            if date in special_dates():
+                rv = special_dates[date]
             else:
                 rv = date.strftime(self.date_format)
             return rv
