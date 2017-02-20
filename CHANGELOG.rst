@@ -7,6 +7,9 @@ releases, in reverse chronological order.
 v2.1.0
 ------
 
+* The global ``--verbosity`` option has been introduced. It doesn't do much for
+  now though, because we do not have many debug logging statements.
+* New PyPI dependency ``click-log``.
 * The ``--no-human-time`` flag is gone. Integrations/scripts might want to look
   at ``--porcelain`` as an alternative.
 * Fix crash when running ``todo new``.
