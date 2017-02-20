@@ -1,5 +1,6 @@
 import functools
 import glob
+import locale
 from datetime import timedelta
 from os.path import expanduser, isdir
 
@@ -113,6 +114,9 @@ def cli(ctx, color, porcelain):
 
     if not ctx.invoked_subcommand:
         ctx.invoke(cli.commands["list"])
+
+    # Make python actually use LC_TIME, or the user's locale settings
+    locale.setlocale(locale.LC_TIME, "")
 
 
 try:
