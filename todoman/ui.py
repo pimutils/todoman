@@ -204,8 +204,18 @@ class TodoFormatter:
         self.date_format = date_format
         self._localtimezone = tzlocal()
         self.now = datetime.now().replace(tzinfo=self._localtimezone)
-        self.empty_date = " " * len(self.format_date(self.now))
+        self.date_tomorrow = self.now.date() + timedelta(days=1)
 
+        # An empty date which should be used in case no date is present
+        self.date_width = len(self.now.strftime(date_format))
+        self.empty_date = " " * self.date_width
+        # Get a dictionary which stores the dates for which
+        # we don't have to merely return a date string and
+        # map it to the special string we need to return
+        self.special_dates = {
+            self.now.date(): "Today".rjust(self.date_width, " "),
+            self.date_tomorrow: "Tomorrow".rjust(self.date_width, " "),
+        }
         self._parsedatetime_calendar = parsedatetime.Calendar()
 
     def compact(self, todo):
@@ -258,16 +268,11 @@ class TodoFormatter:
         * if no date is supplied, it returns empty_date
         """
         if date:
-            date_tomorrow = self.now.date() + timedelta(days=1)
-            # Get a dictionary which stores the dates for which
-            # we don't have to merely return a date string and
-            # map it to the special string we need to return
-            WIDTH = len(date.strftime(self.date_format))
-            special_dates = {
-                self.now.date(): "Today".rjust(WIDTH, " "),
-                date_tomorrow: "Tomorrow".rjust(WIDTH, " "),
-            }
-            return special_dates[date] if date in special_dates else date.strftime(self.date_format)
+            if date in self.special_dates:
+                rv = self.special_dates[date]
+            else:
+                rv = date.strftime(self.date_format)
+            return rv
         else:
             return self.empty_date
 
