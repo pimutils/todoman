@@ -209,9 +209,7 @@ class TodoFormatter:
         # An empty date which should be used in case no date is present
         self.date_width = len(self.now.strftime(date_format))
         self.empty_date = " " * self.date_width
-        # Get a dictionary which stores the dates for which
-        # we don't have to merely return a date string and
-        # map it to the special string we need to return
+        # Map special dates to the special string we need to return
         self.special_dates = {
             self.now.date(): "Today".rjust(self.date_width, " "),
             self.date_tomorrow: "Tomorrow".rjust(self.date_width, " "),
