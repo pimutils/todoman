@@ -204,7 +204,7 @@ class TodoFormatter:
         self.date_format = date_format
         self._localtimezone = tzlocal()
         self.now = datetime.now().replace(tzinfo=self._localtimezone)
-        self.date_tomorrow = self.now.date() + timedelta(days=1)
+        self.tomorrow = self.now.date() + timedelta(days=1)
 
         # An empty date which should be used in case no date is present
         self.date_width = len(self.now.strftime(date_format))
@@ -212,7 +212,7 @@ class TodoFormatter:
         # Map special dates to the special string we need to return
         self.special_dates = {
             self.now.date(): "Today".rjust(self.date_width, " "),
-            self.date_tomorrow: "Tomorrow".rjust(self.date_width, " "),
+            self.tomorrow: "Tomorrow".rjust(self.date_width, " "),
         }
         self._parsedatetime_calendar = parsedatetime.Calendar()
 
@@ -260,6 +260,7 @@ class TodoFormatter:
 
     def format_date(self, date):
         """
+        :param datetime.date date: a datetime object
         Returns date in the following format:
         * if date == today or tomorrow: "Today" or "Tomorrow"
         * else: return a string representing that date
