@@ -175,7 +175,7 @@ def edit(ctx, id, todo_properties, interactive):
             setattr(todo, key, value)
 
     if interactive or (not changes and interactive is None):
-        ui = TodoEditor(todo, ctx.obj['db'], ctx.obj['formatter'])
+        ui = TodoEditor(todo, ctx.obj['db'].lists(), ctx.obj['formatter'])
         state = ui.edit()
         if state == EditState.saved:
             changes = True
