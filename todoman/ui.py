@@ -266,8 +266,8 @@ class TodoFormatter:
         * else: return a string representing that date
         * if no date is supplied, it returns empty_date
         """
-        assert isinstance(date, datetime)
         if date:
+            assert isinstance(date, datetime)
             if date.date() in self.special_dates:
                 rv = self.special_dates[date.date()]
             else:

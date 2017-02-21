@@ -15,6 +15,7 @@ def test_format_date():
     tomorrow = today + timedelta(days = 1)
     any_day = today + timedelta(days = randrange(2, 8))
 
+    assert formatter.format_date() == "        "
     assert formatter.format_date(today) == "   Today"
     assert formatter.format_date(tomorrow) == "Tomorrow"
     assert formatter.format_date(any_day) == any_day.strftime(DATE_FORMAT)
