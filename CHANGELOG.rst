@@ -23,6 +23,7 @@ v2.1.0
 * Fix crash when running ``--porcelain show``.
 * Show ``id`` for todos everywhere (eg: including new, etc).
 * Add the ``ctrl-s`` shortcut for saving in the interactive editor.
+* Show "Today" or "Tomorrow" when due date is today or tomorrow
 
 v2.0.2
 ------
