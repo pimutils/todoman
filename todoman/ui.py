@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import mktime
 
 import click
@@ -204,8 +204,16 @@ class TodoFormatter:
         self.date_format = date_format
         self._localtimezone = tzlocal()
         self.now = datetime.now().replace(tzinfo=self._localtimezone)
-        self.empty_date = " " * len(self.format_date(self.now))
+        self.tomorrow = self.now.date() + timedelta(days=1)
 
+        # An empty date which should be used in case no date is present
+        self.date_width = len(self.now.strftime(date_format))
+        self.empty_date = " " * self.date_width
+        # Map special dates to the special string we need to return
+        self.special_dates = {
+            self.now.date(): "Today".rjust(self.date_width, " "),
+            self.tomorrow: "Tomorrow".rjust(self.date_width, " "),
+        }
         self._parsedatetime_calendar = parsedatetime.Calendar()
 
     def compact(self, todo):
@@ -251,8 +259,20 @@ class TodoFormatter:
         return rv
 
     def format_date(self, date):
+        """
+        Returns date in the following format:
+        * if date == today or tomorrow: "Today" or "Tomorrow"
+        * else: return a string representing that date
+        * if no date is supplied, it returns empty_date
+
+        :param datetime.datetime date: a datetime object
+        """
         if date:
-            rv = date.strftime(self.date_format)
+            assert isinstance(date, datetime)
+            if date.date() in self.special_dates:
+                rv = self.special_dates[date.date()]
+            else:
+                rv = date.strftime(self.date_format)
             return rv
         else:
             return self.empty_date

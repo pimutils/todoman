@@ -8,6 +8,7 @@ v2.2.0
 ------
 
 * Use the system's date format as a default.
+* Show "Today" or "Tomorrow" when due date is today/tomorrow repectively
 
 v2.1.0
 ------

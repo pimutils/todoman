@@ -331,7 +331,7 @@ def test_sorting_null_values(tmpdir, runner, create):
     assert 'aaa' in result.output.splitlines()[1]
 
 
-@pytest.mark.parametrize('hours', [1, -1])
+@pytest.mark.parametrize('hours', [72, -72])
 def test_color_due_dates(tmpdir, runner, create, hours):
     due = datetime.datetime.now() + datetime.timedelta(hours=hours)
     create(
@@ -345,7 +345,7 @@ def test_color_due_dates(tmpdir, runner, create, hours):
     result = runner.invoke(cli, ['--color', 'always'])
     assert not result.exception
     due_str = due.strftime('%Y-%m-%d')
-    if hours == 1:
+    if hours == 72:
         assert result.output == \
             '  1 [ ]   {} aaa @default\x1b[0m\n'.format(due_str)
     else:
