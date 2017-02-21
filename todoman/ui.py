@@ -260,15 +260,16 @@ class TodoFormatter:
 
     def format_date(self, date):
         """
-        :param datetime.date date: a datetime object
+        :param datetime.datetime date: a datetime object
         Returns date in the following format:
         * if date == today or tomorrow: "Today" or "Tomorrow"
         * else: return a string representing that date
         * if no date is supplied, it returns empty_date
         """
+        assert isinstance(date, datetime)
         if date:
-            if date in self.special_dates:
-                rv = self.special_dates[date]
+            if date.date() in self.special_dates:
+                rv = self.special_dates[date.date()]
             else:
                 rv = date.strftime(self.date_format)
             return rv
