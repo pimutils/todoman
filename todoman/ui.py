@@ -260,11 +260,12 @@ class TodoFormatter:
 
     def format_date(self, date):
         """
-        :param datetime.datetime date: a datetime object
         Returns date in the following format:
         * if date == today or tomorrow: "Today" or "Tomorrow"
         * else: return a string representing that date
         * if no date is supplied, it returns empty_date
+
+        :param datetime.datetime date: a datetime object
         """
         if date:
             assert isinstance(date, datetime)
