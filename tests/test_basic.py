@@ -345,7 +345,7 @@ def test_color_due_dates(tmpdir, runner, create, hours):
     result = runner.invoke(cli, ['--color', 'always'])
     assert not result.exception
     due_str = due.strftime('%Y-%m-%d')
-    if hours == 1:
+    if hours == 72:
         assert result.output == \
             '  1 [ ]   {} aaa @default\x1b[0m\n'.format(due_str)
     else:
