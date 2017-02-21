@@ -39,7 +39,7 @@ directory inside ``~/.local/share/calendars/``, and use the ISO-8601 date
 format (note that this is the default format, so this particular declaration is
 redundant).
 
-.. literalinclude:: ../todoman.conf.sample
+.. literalinclude:: ../../todoman.conf.sample
   :language: ini
 
 Color and displayname
