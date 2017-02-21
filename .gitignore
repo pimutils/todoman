@@ -12,5 +12,6 @@ todoman.egg-info/
 docs/_build/
 .coverage
 .hypothesis
+*.tmp
 
 todoman/version.py
