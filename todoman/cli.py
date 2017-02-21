@@ -1,9 +1,11 @@
 import functools
 import glob
+import locale
 from datetime import timedelta
 from os.path import expanduser, isdir
 
 import click
+import click_log
 
 from . import model
 from .configuration import ConfigurationException, load_config
@@ -70,6 +72,8 @@ _interactive_option = click.option(
 
 
 @click.group(invoke_without_command=True)
+@click_log.init('todoman')
+@click_log.simple_verbosity_option()
 @click.option('--colour', '--color', default=None,
               type=click.Choice(['always', 'auto', 'never']),
               help=('By default todoman will disable colored output if stdout '
@@ -110,6 +114,9 @@ def cli(ctx, color, porcelain):
 
     if not ctx.invoked_subcommand:
         ctx.invoke(cli.commands["list"])
+
+    # Make python actually use LC_TIME, or the user's locale settings
+    locale.setlocale(locale.LC_TIME, "")
 
 
 try:
@@ -175,7 +182,7 @@ def edit(ctx, id, todo_properties, interactive):
             setattr(todo, key, value)
 
     if interactive or (not changes and interactive is None):
-        ui = TodoEditor(todo, ctx.obj['db'], ctx.obj['formatter'])
+        ui = TodoEditor(todo, ctx.obj['db'].lists(), ctx.obj['formatter'])
         state = ui.edit()
         if state == EditState.saved:
             changes = True

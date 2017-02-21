@@ -12,7 +12,6 @@ from atomicwrites import AtomicWriter
 from dateutil.tz import tzlocal
 
 logger = logging.getLogger(name=__name__)
-# logger.addHandler(logging.FileHandler('model.log'))
 
 
 class NoSuchTodo(Exception):
