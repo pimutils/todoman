@@ -12,8 +12,8 @@ def test_format_date():
     """
     formatter = ui.TodoFormatter(DATE_FORMAT)
     today = datetime.now()
-    tomorrow = today + timedelta(days = 1)
-    any_day = today + timedelta(days = randrange(2, 8))
+    tomorrow = today + timedelta(days=1)
+    any_day = today + timedelta(days=randrange(2, 8))
 
     assert formatter.format_date("") == "        "
     assert formatter.format_date(today) == "   Today"
