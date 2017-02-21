@@ -14,5 +14,5 @@ We manually track this since commit author *does not* equal code author.
 * José Ribeiro <hello@jlbribeiro.com>
 * Markus Unterwaditzer <markus@unterwaditzer.net>
 * Paweł Fertyk <pfertyk@openmailbox.org>
-* Thomas Glanzmann <thomas@glanzmann.de>
 * Rimsha Khan <rimshakhan.rk03@gmail.com>
+* Thomas Glanzmann <thomas@glanzmann.de>
