@@ -261,15 +261,12 @@ class TodoFormatter:
             # Get a dictionary which stores the dates for which
             # we don't have to merely return a date string and
             # map it to the special string we need to return
+            WIDTH = len(self.empty_date)
             special_dates = {
-                self.now.date(): "Today",
-                date_tomorrow: "Tomorrow",
+                self.now.date(): "Today".rjust(WIDTH, " "),
+                date_tomorrow: "Tomorrow".rjust(WIDTH, " "),
             }
-            if date in special_dates:
-                rv = special_dates[date]
-            else:
-                rv = date.strftime(self.date_format)
-            return rv
+            return special_dates[date] if date in special_dates else date.strftime(self.date_format)
         else:
             return self.empty_date
 
