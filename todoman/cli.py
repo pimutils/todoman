@@ -1,7 +1,7 @@
 import functools
 import glob
 import locale
-from datetime import timedelta, date, datetime
+from datetime import timedelta
 from os.path import expanduser, isdir
 
 import click
@@ -47,18 +47,19 @@ def _validate_date_param(ctx, param, val):
     except ValueError as e:
         raise click.BadParameter(e)
 
-def _validate_start_date_param(ctx, param, val):
-    if 'before' in val:
-        temp = val[7:]
-        ret = [True]
-    elif 'after' in val:
-        temp = val[6:]
-        ret = [False]
-    else:
-        raise click.BadParameter('The start date of the task should be in format \'before 2012-10-16\' ')
 
+def _validate_start_date_param(ctx, param, val):
     try:
-        ret.append( ctx.obj['formatter'].parse_date(val) )
+        if 'before' in val:
+            temp = val[7:]
+            ret = [True]
+        elif 'after' in val:
+            temp = val[6:]
+            ret = [False]
+        else:
+            raise click.BadParameter(
+                'The start date of the task should be in format \'before 2012-10-16\'')
+        ret.append(ctx.obj['formatter'].parse_date(temp))
         return ret 
     except ValueError as e:
         raise click.BadParameter(e)
@@ -349,14 +350,6 @@ def list(
     """
 
     sort = sort.split(',') if sort else None
-    before = None
-
-    # if start:
-    #     if 'before' in start:
-    #         before = True
-    #     else:
-    #         before = False
-    #     start = start[-10:]
 
     if start: 
         _date = start[1]
@@ -364,6 +357,7 @@ def list(
     else:
         _date = None
         _before = None
+
     db = ctx.obj['db']
     todos = db.todos(
         due=due,
