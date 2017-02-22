@@ -544,7 +544,7 @@ class Cache:
         return rv
 
     def todos(self, all=False, lists=[], urgent=False, location='',
-              category='', grep='', sort=[], reverse=True, due=None):
+              category='', grep='', sort=[], reverse=True, due=None, start=None, before=None):
         """
         Returns filtered cached todos, in a specified order.
 
@@ -567,6 +567,8 @@ class Cache:
             with a ``-`` prepended will be used to sort in reverse order.
         :param bool reverse: Reverse the order of the todos after sorting.
         :param int due: Return only todos due within ``due`` hours.
+        :param str start: Return only todos before/after ``start`` date
+        :param bool before: It true, return todos before ``start`` date, else after
         :return: A sorted, filtered list of todos.
         :rtype: generator
         """
@@ -603,6 +605,14 @@ class Cache:
             max_due = (datetime.now() + timedelta(hours=due)).timestamp()
             extra_where.append('AND due IS NOT NULL AND due < ?')
             params.append(max_due)
+        if start:
+            if before:
+                extra_where.append('AND DATE(created_at) <= ?')
+                params.append(start)
+            else:
+                extra_where.append('AND DATE(created_at) >= ?')
+                params.append(start)
+                
 
         if sort:
             order = []

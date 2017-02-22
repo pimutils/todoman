@@ -1,7 +1,7 @@
 import functools
 import glob
 import locale
-from datetime import timedelta
+from datetime import timedelta, date, datetime
 from os.path import expanduser, isdir
 
 import click
@@ -44,6 +44,16 @@ def _validate_list_param(ctx, param=None, name=None):
 def _validate_date_param(ctx, param, val):
     try:
         return ctx.obj['formatter'].parse_date(val)
+    except ValueError as e:
+        raise click.BadParameter(e)
+
+def _validate_start_date_param(ctx, param, val):
+    if 'before' not in val and 'after' not in val or len(val) < 10 :
+        raise click.BadParameter('The start date of the task should be in format \'before 2012-10-16\' ')
+    temp = val[-10:]
+    try:
+        datetime.strptime(temp, "%Y-%m-%d")
+        return val
     except ValueError as e:
         raise click.BadParameter(e)
 
@@ -313,8 +323,10 @@ def move(ctx, list, ids):
               'Defaults to true.')
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
+@click.option('--start', default=None, callback=_validate_start_date_param,
+              help='Only shows tasks after given DATE', type=str)
 def list(
-    ctx, lists, all, urgent, location, category, grep, sort, reverse, due,
+    ctx, lists, all, urgent, location, category, grep, sort, reverse, due, start,
          ):
     """
     List unfinished tasks.
@@ -331,6 +343,14 @@ def list(
     """
 
     sort = sort.split(',') if sort else None
+    before = None
+
+    if start:
+        if 'before' in start:
+            before = True
+        else :
+            before = False
+        start = start[-10:]
 
     db = ctx.obj['db']
     todos = db.todos(
@@ -341,8 +361,10 @@ def list(
         lists=lists,
         location=location,
         reverse=reverse,
+        start=start,
         sort=sort,
         urgent=urgent,
+        before=before,
     )
 
     for todo in todos:
