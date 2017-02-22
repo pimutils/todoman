@@ -8,6 +8,8 @@ elsewhere that we reused here.
 We manually track this since commit author *does not* equal code author (eg:
 when copying code from elsewhere).
 
+Authors are listed in alphabetical order.
+
 * Benjamin Frank <ben+gitlab@pipsfrank.de>
 * Christian Geier <geier@lostpackets.de>
 * Guilhem Saurel <guilhem.saurel@gmail.com>
