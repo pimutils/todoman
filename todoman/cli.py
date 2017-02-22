@@ -50,10 +50,10 @@ def _validate_date_param(ctx, param, val):
 
 def _validate_start_date_param(ctx, param, val):
     try:
-        if 'before' in val:
+        if val is not None and 'before' in val:
             temp = val[7:]
             ret = [True]
-        elif 'after' in val:
+        elif val is not None and 'after' in val:
             temp = val[6:]
             ret = [False]
         else:
