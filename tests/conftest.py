@@ -22,6 +22,7 @@ def config(tmpdir, default_database):
     path.write('[main]\n'
                'path = {}/*\n'
                'date_format = %Y-%m-%d\n'
+               'time_format = \n'
                'cache_path = {}\n'
                .format(str(tmpdir), str(tmpdir.join('cache.sqlite3'))))
     return path
