@@ -607,10 +607,10 @@ class Cache:
             params.append(max_due)
         if start:
             if before:
-                extra_where.append('AND DATE(created_at) <= ?')
+                extra_where.append('AND created_at <= ?')
                 params.append(start)
             else:
-                extra_where.append('AND DATE(created_at) >= ?')
+                extra_where.append('AND created_at >= ?')
                 params.append(start)
                 
 

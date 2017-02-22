@@ -48,12 +48,18 @@ def _validate_date_param(ctx, param, val):
         raise click.BadParameter(e)
 
 def _validate_start_date_param(ctx, param, val):
-    if 'before' not in val and 'after' not in val or len(val) < 10 :
+    if 'before' in val:
+        temp = val[7:]
+        ret = [True]
+    elif 'after' in val:
+        temp = val[6:]
+        ret = [False]
+    else:
         raise click.BadParameter('The start date of the task should be in format \'before 2012-10-16\' ')
-    temp = val[-10:]
+
     try:
-        datetime.strptime(temp, "%Y-%m-%d")
-        return val
+        ret.append( ctx.obj['formatter'].parse_date(val) )
+        return ret 
     except ValueError as e:
         raise click.BadParameter(e)
 
@@ -345,13 +351,19 @@ def list(
     sort = sort.split(',') if sort else None
     before = None
 
-    if start:
-        if 'before' in start:
-            before = True
-        else :
-            before = False
-        start = start[-10:]
+    # if start:
+    #     if 'before' in start:
+    #         before = True
+    #     else:
+    #         before = False
+    #     start = start[-10:]
 
+    if start: 
+        _date = start[1]
+        _before = start[0]
+    else:
+        _date = None
+        _before = None
     db = ctx.obj['db']
     todos = db.todos(
         due=due,
@@ -361,10 +373,10 @@ def list(
         lists=lists,
         location=location,
         reverse=reverse,
-        start=start,
+        start=_date,
         sort=sort,
         urgent=urgent,
-        before=before,
+        before= _before,
     )
 
     for todo in todos:
