@@ -49,20 +49,19 @@ def _validate_date_param(ctx, param, val):
 
 
 def _validate_start_date_param(ctx, param, val):
+    if val is None:
+        return val
+    if 'before' in val:
+        return_val = [True]
+    elif 'after' in val:
+        return_val = [False]
+    else:
+        raise click.BadParameter(
+            'The start date of the task should be'
+            'in format \'before <date-format>\'')
     try:
-        if val is None:
-            return val
-        if 'before' in val:
-            temp = val[7:]
-            ret = [True]
-        elif 'after' in val:
-            temp = val[6:]
-            ret = [False]
-        else:
-            raise click.BadParameter(
-                'The start date of the task should be in format \'before 2012-10-16\'')
-        ret.append(ctx.obj['formatter'].parse_date(temp))
-        return ret 
+        return_val.append(ctx.obj['formatter'].parse_date(val))
+        return return_val
     except ValueError as e:
         raise click.BadParameter(e)
 
@@ -333,9 +332,10 @@ def move(ctx, list, ids):
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
 @click.option('--start', default=None, callback=_validate_start_date_param,
-              help='Only shows tasks after given DATE', type=str)
+              help='Only shows tasks after given DATE')
 def list(
-    ctx, lists, all, urgent, location, category, grep, sort, reverse, due, start,
+    ctx, lists, all, urgent, location, category, grep, sort, reverse,
+    due, start,
          ):
     """
     List unfinished tasks.
@@ -353,13 +353,6 @@ def list(
 
     sort = sort.split(',') if sort else None
 
-    if start: 
-        _date = start[1]
-        _before = start[0]
-    else:
-        _date = None
-        _before = None
-
     db = ctx.obj['db']
     todos = db.todos(
         due=due,
@@ -369,10 +362,9 @@ def list(
         lists=lists,
         location=location,
         reverse=reverse,
-        start=_date,
+        start=start,
         sort=sort,
         urgent=urgent,
-        before= _before,
     )
 
     for todo in todos:
