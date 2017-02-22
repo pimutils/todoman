@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from time import mktime
 
 import click
@@ -7,7 +7,7 @@ import parsedatetime
 import urwid
 from dateutil.tz import tzlocal
 
-from . import widgets
+from.import widgets
 
 _palette = [
     ('error', 'light red', '')
@@ -24,18 +24,22 @@ class TodoEditor:
     The UI for a single todo entry.
     """
 
-    def __init__(self, todo, lists, formatter):
+    def __init__(self, todo, lists, formatter,current_list):
         """
         :param model.Todo todo: The todo object which will be edited.
         """
-
+        self.current_list = todo.list
         self.todo = todo
-        self.lists = lists
+        self.lists = list(lists)
         self.formatter = formatter
         self.saved = EditState.none
         self._loop = None
 
         self._msg_text = urwid.Text('')
+
+        urwid.RadioButton(self.lists, "label", state='first True', on_state_change=self.current_list+1, user_data=None)
+    def pp(self):
+        print(self.lists)    
 
         if todo.due:
             # TODO: use proper date_format
@@ -98,6 +102,7 @@ class TodoEditor:
                         in widgets.ExtendedEdit.HELP)
         )
 
+        
     def _toggle_help(self):
         if self._ui_content[-1] is self._help_text:
             self._ui_content.pop()
@@ -140,7 +145,9 @@ class TodoEditor:
             raise urwid.ExitMainLoop()
 
     def _save_inner(self):
+
         self.todo.summary = self.summary
+        self.todo.list = self.current_list
         self.todo.description = self.description
         self.todo.location = self.location
         self.todo.due = self.formatter.parse_date(self.due)
@@ -204,16 +211,8 @@ class TodoFormatter:
         self.date_format = date_format
         self._localtimezone = tzlocal()
         self.now = datetime.now().replace(tzinfo=self._localtimezone)
-        self.tomorrow = self.now.date() + timedelta(days=1)
-
-        # An empty date which should be used in case no date is present
-        self.date_width = len(self.now.strftime(date_format))
-        self.empty_date = " " * self.date_width
-        # Map special dates to the special string we need to return
-        self.special_dates = {
-            self.now.date(): "Today".rjust(self.date_width, " "),
-            self.tomorrow: "Tomorrow".rjust(self.date_width, " "),
-        }
+        self.empty_date = " " * len(self.format_date(self.now))
+       
         self._parsedatetime_calendar = parsedatetime.Calendar()
 
     def compact(self, todo):
@@ -259,20 +258,8 @@ class TodoFormatter:
         return rv
 
     def format_date(self, date):
-        """
-        Returns date in the following format:
-        * if date == today or tomorrow: "Today" or "Tomorrow"
-        * else: return a string representing that date
-        * if no date is supplied, it returns empty_date
-
-        :param datetime.datetime date: a datetime object
-        """
         if date:
-            assert isinstance(date, datetime)
-            if date.date() in self.special_dates:
-                rv = self.special_dates[date.date()]
-            else:
-                rv = date.strftime(self.date_format)
+            rv = date.strftime(self.date_format)
             return rv
         else:
             return self.empty_date
@@ -315,6 +302,7 @@ class PorcelainFormatter:
         return json.dumps(data, sort_keys=True)
 
     detailed = compact
+    
 
     def format_date(self, date):
         if date:
