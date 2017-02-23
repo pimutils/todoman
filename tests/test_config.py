@@ -38,7 +38,7 @@ def test_xdg_existant(runner, tmpdir, config):
             catch_exceptions=True,
         )
         assert not result.exception
-        assert result.output == ''
+        assert not result.output.strip()
 
 
 def test_sane_config(config, runner, tmpdir):
