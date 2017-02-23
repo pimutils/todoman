@@ -6,4 +6,5 @@ icalendar
 parsedatetime
 python-dateutil
 pyxdg
+tabulate
 urwid

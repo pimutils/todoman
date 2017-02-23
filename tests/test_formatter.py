@@ -17,8 +17,8 @@ def test_human_dates():
                           12, 0)
     any_day = today + timedelta(days=randrange(2, 8))
 
-    assert formatter.format_datetime("") == "              "
-    assert formatter._format_date(today.date()) == "   Today"
+    assert formatter.format_datetime("") == ''
+    assert formatter._format_date(today.date()) == "Today"
     assert formatter._format_date(tomorrow.date()) == "Tomorrow"
     assert formatter.format_datetime(any_day) == \
         any_day.strftime(DATE_FORMAT + ' ' + TIME_FORMAT)
