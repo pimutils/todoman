@@ -25,6 +25,29 @@ def test_basic(tmpdir, runner, create):
     assert 'harhar' in result.output
 
 
+def test_no_extra_whitespace(tmpdir, runner, create):
+    """
+    Test that we don't output extra whitespace
+
+    Test that we don't output a lot of extra whitespace when there are no
+    tasks, or when there are tasks (eg: both scenarios).
+
+    Note: Other tests should be set up so that comparisons don't care much
+    about whitespace, so that if this changes, only this test should fail.
+    """
+    result = runner.invoke(cli, ['list'], catch_exceptions=False)
+    assert not result.exception
+    assert result.output == '\n'
+
+    create(
+        'test.ics',
+        'SUMMARY:harhar\n'
+    )
+    result = runner.invoke(cli, ['list'])
+    assert not result.exception
+    assert len(result.output.splitlines()) == 1
+
+
 def test_percent(tmpdir, runner, create):
     create(
         'test.ics',
