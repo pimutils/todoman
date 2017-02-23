@@ -349,5 +349,4 @@ def list(
         urgent=urgent,
     )
 
-    for todo in todos:
-        click.echo(ctx.obj['formatter'].compact(todo))
+    click.echo(ctx.obj['formatter'].compact_multiple(todos))
