@@ -1,5 +1,5 @@
+import datetime
 import json
-from datetime import datetime, timedelta
 from time import mktime
 
 import click
@@ -42,13 +42,13 @@ class TodoEditor:
         
         if todo.due:
             # TODO: use proper date_format
-            due = formatter.format_date(todo.due)
+            due = formatter.format_datetime(todo.due)
         else:
             due = ""
 
         if todo.start:
             # TODO: use proper date_format
-            dtstart = formatter.format_date(todo.start)
+            dtstart = formatter.format_datetime(todo.start)
         else:
             dtstart = ''
 
@@ -147,9 +147,15 @@ class TodoEditor:
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
+<<<<<<< HEAD
         self.todo.due = self.formatter.parse_date(self.due)
         self.todo.start = self.formatter.parse_date(self.dtstart)
         
+=======
+        self.todo.due = self.formatter.parse_datetime(self.due)
+        self.todo.start = self.formatter.parse_datetime(self.dtstart)
+
+>>>>>>> 1bcdd38a08f1daa2cac75d15c1b31b439eb06497
         self.todo.is_completed = self._completed.get_state()
 
         # If it was already non-zero, keep it that way. Let's not overwrite
@@ -204,15 +210,22 @@ class TodoFormatter:
         "{id:3d} [{completed}] {urgent} {due} {summary} {list}{percent}"
     # compact_format = "{completed} {urgent}  {due}  {summary}"
 
-    def __init__(self, date_format):
+    def __init__(self, date_format, time_format, dt_separator):
         self.date_format = date_format
+        self.time_format = time_format
+        self.dt_separator = dt_separator
+        self.datetime_format = date_format + dt_separator + time_format
+
         self._localtimezone = tzlocal()
-        self.now = datetime.now().replace(tzinfo=self._localtimezone)
-        self.tomorrow = self.now.date() + timedelta(days=1)
+        self.now = datetime.datetime.now().replace(tzinfo=self._localtimezone)
+        self.tomorrow = self.now.date() + datetime.timedelta(days=1)
 
         # An empty date which should be used in case no date is present
         self.date_width = len(self.now.strftime(date_format))
         self.empty_date = " " * self.date_width
+
+        self.time_width = len(self.now.strftime(time_format))
+        self.empty_time = " " * self.time_width
         # Map special dates to the special string we need to return
         self.special_dates = {
             self.now.date(): "Today".rjust(self.date_width, " "),
@@ -233,7 +246,7 @@ class TodoFormatter:
             percent = " ({}%)".format(percent)
         urgent = " " if todo.priority in [None, 0] else "!"
 
-        due = self.format_date(todo.due)
+        due = self.format_datetime(todo.due)
         if todo.due and todo.due <= self.now and not todo.is_completed:
             due = click.style(due, fg='red')
 
@@ -260,39 +273,80 @@ class TodoFormatter:
             rv = "{}\n\n{}".format(rv, todo.description)
         return rv
 
-    def format_date(self, date):
+    def _format_date(self, date):
         """
         Returns date in the following format:
         * if date == today or tomorrow: "Today" or "Tomorrow"
         * else: return a string representing that date
         * if no date is supplied, it returns empty_date
+<<<<<<< HEAD
         :param datetime.datetime date: a datetime object
+=======
+
+        :param datetime.date date: a date object
+>>>>>>> 1bcdd38a08f1daa2cac75d15c1b31b439eb06497
         """
         if date:
-            assert isinstance(date, datetime)
-            if date.date() in self.special_dates:
-                rv = self.special_dates[date.date()]
+            if date in self.special_dates:
+                rv = self.special_dates[date]
             else:
                 rv = date.strftime(self.date_format)
             return rv
         else:
             return self.empty_date
 
-    def parse_date(self, date):
-        if not date:
+    def _format_time(self, time):
+        if time:
+            return time.strftime(self.time_format)
+        else:
+            return self.empty_time
+
+    def format_datetime(self, dt):
+        if not dt:
+            date_part = None
+            time_part = None
+        else:
+            assert isinstance(dt, datetime.datetime)
+            date_part = dt.date()
+            time_part = dt.time()
+
+        return self.dt_separator.join(filter(bool, (
+            self._format_date(date_part),
+            self._format_time(time_part)
+        )))
+
+    def parse_datetime(self, dt):
+        if not dt:
             return None
 
-        try:
-            rv = datetime.strptime(date, self.date_format)
-        except ValueError:
-            rv, certainty = self._parsedatetime_calendar.parse(date)
-            if not certainty:
-                raise ValueError(
-                    'Time description not recognized: {}' .format(date)
-                )
-            rv = datetime.fromtimestamp(mktime(rv))
-
+        rv = self._parse_datetime_naive(dt)
         return rv.replace(tzinfo=self._localtimezone)
+
+    def _parse_datetime_naive(self, dt):
+        try:
+            return datetime.datetime.strptime(dt, self.datetime_format)
+        except ValueError:
+            pass
+
+        try:
+            return datetime.datetime.strptime(dt, self.date_format)
+        except ValueError:
+            pass
+
+        try:
+            return datetime.datetime.combine(
+                self.now.date(),
+                datetime.datetime.strptime(dt, self.time_format).time()
+            )
+        except ValueError:
+            pass
+
+        rv, certainty = self._parsedatetime_calendar.parse(dt)
+        if not certainty:
+            raise ValueError(
+                'Time description not recognized: {}' .format(dt)
+            )
+        return datetime.datetime.fromtimestamp(mktime(rv))
 
     def format_database(self, database):
         return '{}@{}'.format(database.color_ansi or '',
@@ -304,7 +358,7 @@ class PorcelainFormatter:
     def compact(self, todo):
         data = dict(
             completed=todo.is_completed,
-            due=self.format_date(todo.due),
+            due=self.format_datetime(todo.due),
             id=todo.id,
             list=todo.list.name,
             percent=todo.percent_complete,
@@ -317,7 +371,7 @@ class PorcelainFormatter:
 
     detailed = compact
 
-    def format_date(self, date):
+    def format_datetime(self, date):
         if date:
             return int(date.timestamp())
         else:
