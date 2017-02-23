@@ -9,7 +9,8 @@ v2.2.0
 
 * Use the system's date format as a default.
 * Show "Today" or "Tomorrow" when due date is today/tomorrow respectively.
-
+* Add ``--start="[before|after] <dat>`` option for ``todo list``. It shows lists 
+  created before/after given date.
 v2.1.0
 ------
 
