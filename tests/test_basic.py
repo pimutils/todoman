@@ -14,7 +14,7 @@ from todoman.model import Database, FileTodo
 def test_basic(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     create(
         'test.ics',
@@ -118,7 +118,7 @@ def test_delete(tmpdir, runner, create):
     assert not result.exception
     result = runner.invoke(cli, ['list'])
     assert not result.exception
-    assert len(result.output.splitlines()) == 0
+    assert not result.output.strip()
 
 
 def test_copy(tmpdir, runner, create):
