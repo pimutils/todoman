@@ -15,7 +15,7 @@ _palette = [
 
 
 class EditState:
-    none = object() 
+    none = object()
     saved = object()
 
 
@@ -147,9 +147,6 @@ class TodoEditor:
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
-        self.todo.due = self.formatter.parse_date(self.due)
-        self.todo.start = self.formatter.parse_date(self.dtstart)
-        
         self.todo.due = self.formatter.parse_datetime(self.due)
         self.todo.start = self.formatter.parse_datetime(self.dtstart)
 
@@ -234,6 +231,7 @@ class TodoFormatter:
         """
         Returns a brief representation of a task, suitable for displaying
         on-per-line.
+
         :param Todo todo: The todo component.
         """
         # completed = "✓" if todo.percent_complete == 100 else " "
@@ -263,6 +261,7 @@ class TodoFormatter:
     def detailed(self, todo):
         """
         Returns a detailed representation of a task.
+
         :param Todo todo: The todo component.
         """
         rv = self.compact(todo)
@@ -276,12 +275,8 @@ class TodoFormatter:
         * if date == today or tomorrow: "Today" or "Tomorrow"
         * else: return a string representing that date
         * if no date is supplied, it returns empty_date
-<<<<<<< HEAD
-        :param datetime.datetime date: a datetime object
-=======
 
         :param datetime.date date: a date object
->>>>>>> 1bcdd38a08f1daa2cac75d15c1b31b439eb06497
         """
         if date:
             if date in self.special_dates:
