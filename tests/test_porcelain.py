@@ -14,7 +14,7 @@ def test_list_all(tmpdir, runner, create):
     assert (
         result.output.strip() ==
         '{"completed": true, "due": 1451689200, "id": 1, "list": "default'
-        '", "percent": 26, "summary": "Do stuff", "urgent": false}'
+        '", "percent": 26, "summary": "Do stuff", "priority": None}'
     )
 
 
@@ -30,7 +30,7 @@ def test_list_nodue(tmpdir, runner, create):
     assert (
         result.output.strip() ==
         '{"completed": false, "due": null, "id": 1, "list": "default'
-        '", "percent": 12, "summary": "Do stuff", "urgent": true}'
+        '", "percent": 12, "summary": "Do stuff", "priority": None}'
     )
 
 
@@ -44,5 +44,5 @@ def test_show(tmpdir, runner, create):
     assert not result.exception
     assert (
         result.output == '{"completed": false, "due": null, "id": 1, "list": '
-        '"default", "percent": 0, "summary": "harhar", "urgent": false}\n'
+        '"default", "percent": 0, "summary": "harhar", "priority": None}\n'
     )
