@@ -205,3 +205,43 @@ def test_due_naive(tmpdir, runner, create):
     assert len(todos) == 2
     assert todos[0].summary == "23"
     assert todos[1].summary == "1"
+
+
+def test_filtering_start(tmpdir, runner, create):
+    result = runner.invoke(cli, ['list'], catch_exceptions=False)
+    assert not result.exception
+    assert result.output == ''
+
+    today = datetime.now()
+    now = today.strftime("%Y-%m-%d")
+    nowPlusDay = (today + timedelta(days=1)).strftime("%Y-%m-%d")
+    nowMinusDay = (today + timedelta(days=-1)).strftime("%Y-%m-%d")
+    result = runner.invoke(cli, ['list', '--start', 'before ' + now])
+    assert not result.exception
+    assert result.output == ''
+
+    result = runner.invoke(cli, ['list', '--start', 'after ' + now])
+    assert not result.exception
+    assert result.output == ''
+
+    create(
+        'one.ics',
+        'SUMMARY:haha\n',
+    )
+    create(
+        'two.ics',
+        'SUMMARY:hoho\n',
+    )
+
+    result = runner.invoke(cli, ['list', '--start', 'after ' + nowMinusDay])
+    assert not result.exception
+    assert 'haha' in result.output
+    assert 'hoho' in result.output
+    result = runner.invoke(cli, ['list', '--start', 'before ' + nowMinusDay])
+    assert not result.exception
+    assert 'haha' not in result.output
+    assert 'hoho' not in result.output
+    result = runner.invoke(cli, ['list', '--start', 'after ' + nowPlusDay])
+    assert not result.exception
+    assert 'haha' not in result.output
+    assert 'hoho' not in result.output
