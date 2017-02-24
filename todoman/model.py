@@ -590,7 +590,11 @@ class Cache:
         if urgent:
             extra_where.append('AND priority = 9')
         elif priority:
-            extra_where.append('AND priority = ' + priority)
+            if priority == 0:
+                extra_where.append('AND priority = 0')
+            else:
+                extra_where.append('AND priority >0'
+                                   ' AND priority <= ' + priority)
         if location:
             extra_where.append('AND location LIKE ?')
             params.append('%{}%'.format(location))

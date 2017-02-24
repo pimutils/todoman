@@ -325,10 +325,10 @@ def move(ctx, list, ids):
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
 @click.option('--priority', default=None, help='Only show tasks with priority'
-              ' greater then the specified one', type=str,
+              ' at least as high as the specified one', type=str,
               callback=_validate_priority_param)
 def list(
-    ctx, lists, all, priority, location, category, grep, sort, reverse, due,
+    ctx, lists, all, urgent, priority, location, category, grep, sort, reverse, due,
          ):
     """
     List unfinished tasks.
