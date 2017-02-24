@@ -606,12 +606,13 @@ class Cache:
             extra_where.append('AND due IS NOT NULL AND due < ?')
             params.append(max_due)
         if start:
-            if start[0]:
+            is_before, dt = start
+            if is_before:
                 extra_where.append('AND created_at <= ?')
-                params.append(start[1].timestamp())
+                params.append(dt)
             else:
                 extra_where.append('AND created_at >= ?')
-                params.append(start[1].timestamp())
+                params.append(dt)
         if sort:
             order = []
             for s in sort:
