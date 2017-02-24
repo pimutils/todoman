@@ -38,7 +38,7 @@ class TodoEditor:
 
         self._msg_text = urwid.Text('')
         urwid.RadioButton(self.lists, "label", state='first True',
-                          on_state_change=self.current_list, user_data=None) 
+                          on_state_change=self.current_list, user_data=None)
         
         if todo.due:
             # TODO: use proper date_format
@@ -147,15 +147,12 @@ class TodoEditor:
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
-<<<<<<< HEAD
         self.todo.due = self.formatter.parse_date(self.due)
         self.todo.start = self.formatter.parse_date(self.dtstart)
         
-=======
         self.todo.due = self.formatter.parse_datetime(self.due)
         self.todo.start = self.formatter.parse_datetime(self.dtstart)
 
->>>>>>> 1bcdd38a08f1daa2cac75d15c1b31b439eb06497
         self.todo.is_completed = self._completed.get_state()
 
         # If it was already non-zero, keep it that way. Let's not overwrite
