@@ -319,7 +319,7 @@ def move(ctx, list, ids):
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
 def list(
-    ctx, lists, all, urgent, location, category, grep, sort, reverse, due,
+    ctx, lists, all, priority, location, category, grep, sort, reverse, due,
          ):
     """
     List unfinished tasks.
@@ -350,7 +350,7 @@ def list(
         location=location,
         reverse=reverse,
         sort=sort,
-        urgent=urgent,
+        priority=priority,
     )
 
     for todo in todos:
