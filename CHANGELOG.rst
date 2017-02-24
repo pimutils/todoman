@@ -7,7 +7,7 @@ releases, in reverse chronological order.
 v2.2.0
 ------
 
-* Added the Granular priority support
+* Added support for filtering by priority
 * Basic support for times in due dates, new ``time_format`` configuration
   parameter.
 * Use the system's date format as a default.

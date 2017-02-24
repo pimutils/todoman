@@ -296,17 +296,17 @@ class TodoFormatter:
         )))
 
     def parse_priority(self, priority):
-        if priority not in ['low', 'high', 'medium', 'none']:
-            return None
+        if priority == 'low':
+            return 9
+        elif priority == 'medium':
+            return 5
+        elif priority == 'high':
+            return 4
+        elif priority == 'none':
+            return 0
         else:
-            if priority == 'low':
-                return 9
-            elif priority == 'medium':
-                return 5
-            elif priority == 'high':
-                return 4
-            else:
-                return 0
+            raise ValueError('Priority has to be one of low, medium,'
+                             ' high or none')
 
     def parse_datetime(self, dt):
         if not dt:
@@ -356,7 +356,6 @@ class PorcelainFormatter:
             list=todo.list.name,
             percent=todo.percent_complete,
             summary=todo.summary,
-            # XXX: Move this into Todo itself and dedupe it
             urgent=todo.priority not in [None, 0],
         )
 

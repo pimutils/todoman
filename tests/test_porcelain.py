@@ -23,7 +23,7 @@ def test_list_nodue(tmpdir, runner, create):
         'test.ics',
         'SUMMARY:Do stuff\n'
         'PERCENT-COMPLETE:12\n'
-        'URGENT:1\n'
+        'PRIORITY:1\n'
     )
 
     result = runner.invoke(cli, ['--porcelain', 'list'])

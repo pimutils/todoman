@@ -35,7 +35,7 @@ def test_urgent(tmpdir, runner, create):
     create(
         'one.ics',
         'SUMMARY:haha\n'
-        'URGENT: 9\n'
+        'PRIORITY:4\n'
     )
     create(
         'two.ics',
@@ -55,22 +55,22 @@ def test_priority(tmpdir, runner, create):
     create(
         'one.ics',
         'SUMMARY:haha\n'
-        'PRIORITY: high\n'
+        'PRIORITY:4\n'
     )
     create(
         'two.ics',
         'SUMMARY:hoho\n'
-        'PRIORITY: low\n'
+        'PRIORITY:9\n'
     )
     create(
         'three.ics',
         'SUMMARY:hehe\n'
-        'PRIORITY: medium\n'
+        'PRIORITY:5\n'
     )
     create(
         'four.ics',
         'SUMMARY:huhu\n'
-        'PRIORITY: none\n'
+        'PRIORITY:0\n'
     )
 
     result_high = runner.invoke(cli, ['list', '--priority=high'])
