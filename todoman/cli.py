@@ -307,8 +307,6 @@ def move(ctx, list, ids):
 @click.pass_context
 @click.option('--all', '-a', is_flag=True, help='Also show finished tasks.')
 @click.argument('lists', nargs=-1, callback=_validate_lists_param)
-@click.option('--priority', default=None, help='Only show tasks with priority'
-              ' greater then the specified one', type=str)
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
@@ -318,6 +316,8 @@ def move(ctx, list, ids):
               'Defaults to true.')
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
+@click.option('--priority', default=None, help='Only show tasks with priority'
+              ' greater then the specified one', type=str)
 def list(
     ctx, lists, all, priority, location, category, grep, sort, reverse, due,
          ):
@@ -337,7 +337,7 @@ def list(
 
     sort = sort.split(',') if sort else None
 
-    if priority not in ['medium', 'low', None, '!low', 'high']:
+    if priority not in ['medium', 'low', None, 'high']:
         raise "Invalid priority"
 
     db = ctx.obj['db']

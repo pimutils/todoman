@@ -557,7 +557,6 @@ class Cache:
 
         :param bool all: If true, also return completed todos.
         :param list lists: Only return todos for these lists.
-        :param str priority: Only return todos with priority greater than specified.
         :param str location: Only return todos with a location containing this
             string.
         :param str category: Only return todos with a category containing this
@@ -567,6 +566,8 @@ class Cache:
             with a ``-`` prepended will be used to sort in reverse order.
         :param bool reverse: Reverse the order of the todos after sorting.
         :param int due: Return only todos due within ``due`` hours.
+        :param str priority: Only return todos with priority greater than
+            specified.
         :return: A sorted, filtered list of todos.
         :rtype: generator
         """
@@ -589,7 +590,7 @@ class Cache:
             if priority == 'medium' or priority == '!low':
                 extra_where.append('AND priority = 5')
             elif priority == 'high':
-                extra_where.append('AND priority = 9')
+                extra_where.append('AND priority = 1')
         if location:
             extra_where.append('AND location LIKE ?')
             params.append('%{}%'.format(location))
