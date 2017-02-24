@@ -6,6 +6,8 @@ import click
 import parsedatetime
 import urwid
 from dateutil.tz import tzlocal
+from tabulate import tabulate
+
 
 from . import widgets
 
@@ -63,7 +65,7 @@ class TodoEditor:
         self._due = widgets.ExtendedEdit(parent=self, edit_text=due)
         self._dtstart = widgets.ExtendedEdit(parent=self, edit_text=dtstart)
         self._completed = urwid.CheckBox("", state=todo.is_completed)
-        self._priority = widgets.ExtendedEdit(parent=self, edit_text=priority)
+        self._urgent = urwid.CheckBox("", state=todo.priority != 0)
 
         save_btn = urwid.Button('Save', on_press=self._save)
         cancel_text = urwid.Text('Hit Ctrl-C to cancel, F1 for help.')
@@ -76,7 +78,7 @@ class TodoEditor:
                              ("Due", self._due),
                              ("Start", self._dtstart),
                              ("Completed", self._completed),
-                             ("Priority", self._priority),
+                             ("Urgent", self._urgent),
                              ]:
             label = urwid.Text(label + ":", align='right')
             column = urwid.Columns([(13, label), field], dividechars=1)
@@ -150,12 +152,10 @@ class TodoEditor:
 
         # If it was already non-zero, keep it that way. Let's not overwrite
         # values 1 thru 8.
-        if self._priority<=4 and self.todo.priority>0:
+        if self._urgent.get_state() and not self.todo.priority:
             self.todo.priority = 9
-        elif self._priority == 5:
-            self.todo.priority = 5
-        elif self._priority>5 and self._priority<=9:
-            self._priority
+        elif not self._urgent.get_state():
+            self.todo.priority = 0
 
         # TODO: categories
         # TODO: comment
@@ -197,11 +197,6 @@ class TodoEditor:
 
 class TodoFormatter:
 
-    # This one looks good with [X]
-    compact_format = \
-        "{id:3d} [{completed}] {urgent} {due} {summary} {list}{percent}"
-    # compact_format = "{completed} {urgent}  {due}  {summary}"
-
     def __init__(self, date_format, time_format, dt_separator):
         self.date_format = date_format
         self.time_format = time_format
@@ -212,16 +207,10 @@ class TodoFormatter:
         self.now = datetime.datetime.now().replace(tzinfo=self._localtimezone)
         self.tomorrow = self.now.date() + datetime.timedelta(days=1)
 
-        # An empty date which should be used in case no date is present
-        self.date_width = len(self.now.strftime(date_format))
-        self.empty_date = " " * self.date_width
-
-        self.time_width = len(self.now.strftime(time_format))
-        self.empty_time = " " * self.time_width
         # Map special dates to the special string we need to return
         self.special_dates = {
-            self.now.date(): "Today".rjust(self.date_width, " "),
-            self.tomorrow: "Tomorrow".rjust(self.date_width, " "),
+            self.now.date(): "Today",
+            self.tomorrow: "Tomorrow",
         }
         self._parsedatetime_calendar = parsedatetime.Calendar()
 
@@ -253,8 +242,36 @@ class TodoFormatter:
             list=list,
             percent=percent,
             summary=summary,
-            priority=priority,
+            urgent=urgent,
         )
+        return self.compact_multiple([todo])
+
+    def compact_multiple(self, todos):
+        table = []
+        for todo in todos:
+            completed = "X" if todo.is_completed else " "
+            percent = todo.percent_complete or ''
+            if percent:
+                percent = " ({}%)".format(percent)
+            urgent = " " if todo.priority in [None, 0] else "!"
+
+            due = self.format_datetime(todo.due)
+            if todo.due and todo.due <= self.now and not todo.is_completed:
+                due = click.style(due, fg='red')
+
+            table.append([
+                todo.id,
+                "[{}]".format(completed),
+                urgent,
+                due,
+                "{} {}{}".format(
+                    todo.summary,
+                    self.format_database(todo.list),
+                    percent,
+                ),
+            ])
+
+        return tabulate(table, tablefmt='plain')
 
     def detailed(self, todo):
         """
@@ -262,17 +279,19 @@ class TodoFormatter:
 
         :param Todo todo: The todo component.
         """
-        rv = self.compact(todo)
+        rv = self.compact_multiple([todo])
         if todo.description:
             rv = "{}\n\n{}".format(rv, todo.description)
         return rv
 
     def _format_date(self, date):
         """
-        Returns date in the following format:
-        * if date == today or tomorrow: "Today" or "Tomorrow"
-        * else: return a string representing that date
-        * if no date is supplied, it returns empty_date
+        Format the date using ``date_format``
+
+        If the date is today or tomorrow, return the strings "Today" or
+        "Tomorrow" respectively.
+
+        If the date if ``None``, returns an empty string.
 
         :param datetime.date date: a date object
         """
@@ -283,13 +302,13 @@ class TodoFormatter:
                 rv = date.strftime(self.date_format)
             return rv
         else:
-            return self.empty_date
+            return ''
 
     def _format_time(self, time):
         if time:
             return time.strftime(self.time_format)
         else:
-            return self.empty_time
+            return ''
 
     def format_datetime(self, dt):
         if not dt:
@@ -367,12 +386,20 @@ class PorcelainFormatter:
             percent=todo.percent_complete,
             summary=todo.summary,
             # XXX: Move this into Todo itself and dedupe it
-            priority=todo.priority
+            urgent=todo.priority not in [None, 0],
         )
 
         return json.dumps(data, sort_keys=True)
 
-    detailed = compact
+    def compact_multiple(self, todos):
+        data = []
+        for todo in todos:
+            data.append(self.compact(todo))
+
+        return '\n'.join(data)
+
+    def detailed(self, todo):
+        return self.compact(todo)
 
     def format_datetime(self, date):
         if date:

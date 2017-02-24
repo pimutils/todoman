@@ -14,7 +14,7 @@ from todoman.model import Database, FileTodo
 def test_basic(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     create(
         'test.ics',
@@ -23,6 +23,29 @@ def test_basic(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert 'harhar' in result.output
+
+
+def test_no_extra_whitespace(tmpdir, runner, create):
+    """
+    Test that we don't output extra whitespace
+
+    Test that we don't output a lot of extra whitespace when there are no
+    tasks, or when there are tasks (eg: both scenarios).
+
+    Note: Other tests should be set up so that comparisons don't care much
+    about whitespace, so that if this changes, only this test should fail.
+    """
+    result = runner.invoke(cli, ['list'], catch_exceptions=False)
+    assert not result.exception
+    assert result.output == '\n'
+
+    create(
+        'test.ics',
+        'SUMMARY:harhar\n'
+    )
+    result = runner.invoke(cli, ['list'])
+    assert not result.exception
+    assert len(result.output.splitlines()) == 1
 
 
 def test_percent(tmpdir, runner, create):
@@ -118,7 +141,7 @@ def test_delete(tmpdir, runner, create):
     assert not result.exception
     result = runner.invoke(cli, ['list'])
     assert not result.exception
-    assert len(result.output.splitlines()) == 0
+    assert not result.output.strip()
 
 
 def test_copy(tmpdir, runner, create):
@@ -347,10 +370,11 @@ def test_color_due_dates(tmpdir, runner, create, hours):
     due_str = due.strftime('%Y-%m-%d')
     if hours == 72:
         assert result.output == \
-            '  1 [ ]   {} aaa @default\x1b[0m\n'.format(due_str)
+            '1  [ ]    {}  aaa @default\x1b[0m\n'.format(due_str)
     else:
         assert result.output == \
-            '  1 [ ]   \x1b[31m{}\x1b[0m aaa @default\x1b[0m\n'.format(due_str)
+            '1  [ ]    \x1b[31m{}\x1b[0m  aaa @default\x1b[0m\n' \
+            .format(due_str)
 
 
 def test_flush(tmpdir, runner, create):
@@ -370,7 +394,7 @@ def test_flush(tmpdir, runner, create):
 
     result = runner.invoke(cli, ['list'])
     assert not result.exception
-    assert '  2 [ ]              bbb @default' in result.output
+    assert '2  [ ]      bbb @default' in result.output
 
     result = runner.invoke(cli, ['flush'], input='y\n', catch_exceptions=False)
     assert not result.exception
@@ -382,7 +406,7 @@ def test_flush(tmpdir, runner, create):
 
     result = runner.invoke(cli, ['list'])
     assert not result.exception
-    assert '  1 [ ]              bbb @default' in result.output
+    assert '1  [ ]      bbb @default' in result.output
 
 
 def test_edit(runner, default_database):
