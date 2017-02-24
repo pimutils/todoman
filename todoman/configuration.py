@@ -33,6 +33,24 @@ def validate_cache_path(path):
         )
 
 
+def validate_date_format(fmt):
+    if any(x in fmt for x in ('%H', '%M', '%S', '%X')):
+        raise ConfigurationException(
+            'Found time component in `date_format`, please use `time_format` '
+            'for that.'
+        )
+    return fmt
+
+
+def validate_time_format(fmt):
+    if any(x in fmt for x in ('%Y', '%y', '%m', '%d', '%x')):
+        raise ConfigurationException(
+            'Found date component in `time_format`, please use `date_format` '
+            'for that.'
+        )
+    return fmt
+
+
 def validate_color(color):
     color = is_option(color)
     if color == 'always':
@@ -67,6 +85,8 @@ def load_config():
     validator = Validator({
         'expand_path': expand_path,
         'cache_path': validate_cache_path,
+        'date_format': validate_date_format,
+        'time_format': validate_time_format,
     })
 
     config = ConfigObj(path, configspec=specpath, file_error=True)

@@ -7,6 +7,8 @@ releases, in reverse chronological order.
 v2.2.0
 ------
 
+* Basic support for times in due dates, new ``time_format`` configuration
+  parameter.
 * Use the system's date format as a default.
 * Show "Today" or "Tomorrow" when due date is today/tomorrow respectively.
 * Add ``--start="[before|after] <date>`` option for ``todo list``. It shows todos

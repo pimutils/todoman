@@ -10,7 +10,7 @@ from todoman.model import Database, FileTodo
 def test_all(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     create(
         'one.ics',
@@ -31,7 +31,7 @@ def test_all(tmpdir, runner, create):
 def test_urgent(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     create(
         'one.ics',
@@ -51,7 +51,7 @@ def test_urgent(tmpdir, runner, create):
 def test_location(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     create(
         'one.ics',
@@ -77,7 +77,7 @@ def test_location(tmpdir, runner, create):
 def test_category(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     create(
         'one.ics',
@@ -103,7 +103,7 @@ def test_category(tmpdir, runner, create):
 def test_grep(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     create(
         'one.ics',

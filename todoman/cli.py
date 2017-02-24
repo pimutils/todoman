@@ -43,7 +43,7 @@ def _validate_list_param(ctx, param=None, name=None):
 
 def _validate_date_param(ctx, param, val):
     try:
-        return ctx.obj['formatter'].parse_date(val)
+        return ctx.obj['formatter'].parse_datetime(val)
     except ValueError as e:
         raise click.BadParameter(e)
 
@@ -117,7 +117,11 @@ def cli(ctx, color, porcelain):
     if porcelain:
         ctx.obj['formatter'] = PorcelainFormatter()
     else:
-        ctx.obj['formatter'] = TodoFormatter(config['main']['date_format'])
+        ctx.obj['formatter'] = TodoFormatter(
+            config['main']['date_format'],
+            config['main']['time_format'],
+            config['main']['dt_separator'],
+        )
 
     color = color or config['main']['color']
     if color == 'always':
@@ -369,5 +373,4 @@ def list(
         urgent=urgent,
     )
 
-    for todo in todos:
-        click.echo(ctx.obj['formatter'].compact(todo))
+    click.echo(ctx.obj['formatter'].compact_multiple(todos))
