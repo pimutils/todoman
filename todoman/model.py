@@ -322,7 +322,9 @@ class FileTodo(Todo):
         list_ = list_ or self.list
         path = os.path.join(list_.path, self.filename)
         assert path.startswith(list_.path)
-
+        self.todo = {'SEQUENCE':0}
+        y = self.todo.get('SEQUENCE')
+        self.todo['SEQUENCE'] = y + 1 
         if os.path.exists(path):
             # Update an existing entry:
             with open(path, 'rb') as f:
