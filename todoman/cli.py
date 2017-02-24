@@ -51,10 +51,12 @@ def _validate_date_param(ctx, param, val):
 def _validate_start_date_param(ctx, param, val):
     if val is None:
         return val
-    if val.startswith('before'):
+    if val.startswith('before '):
         is_before = True
-    elif val.startswith('after'):
+        val = val[len('before '):]
+    elif val.startswith('after '):
         is_before = False
+        val = val[len('after '):]
     else:
         raise click.BadParameter(
             'The start date of the task should be'

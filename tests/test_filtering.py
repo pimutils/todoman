@@ -214,8 +214,8 @@ def test_filtering_start(tmpdir, runner, create):
 
     today = datetime.now()
     now = today.strftime("%Y-%m-%d")
-    nowPlusDay = (today + timedelta(days=1)).strftime("%Y-%m-%d")
-    nowMinusDay = (today + timedelta(days=-1)).strftime("%Y-%m-%d")
+    now_plus_day = (today + timedelta(days=1)).strftime("%Y-%m-%d")
+    now_minus_day = (today + timedelta(days=-1)).strftime("%Y-%m-%d")
     result = runner.invoke(cli, ['list', '--start', 'before ' + now])
     assert not result.exception
     assert result.output == ''
@@ -224,24 +224,19 @@ def test_filtering_start(tmpdir, runner, create):
     assert not result.exception
     assert result.output == ''
 
-    create(
-        'one.ics',
-        'SUMMARY:haha\n',
-    )
-    create(
-        'two.ics',
-        'SUMMARY:hoho\n',
-    )
+    tmpdir.mkdir('list_one')
+    runner.invoke(cli, ['new', '-l', 'list_one', 'haha'])
+    runner.invoke(cli, ['new', '-l', 'list_one', 'hoho'])
 
-    result = runner.invoke(cli, ['list', '--start', 'after ' + nowMinusDay])
+    result = runner.invoke(cli, ['list', '--start', 'after ' + now_minus_day])
     assert not result.exception
     assert 'haha' in result.output
     assert 'hoho' in result.output
-    result = runner.invoke(cli, ['list', '--start', 'before ' + nowMinusDay])
+    result = runner.invoke(cli, ['list', '--start', 'before ' + now_minus_day])
     assert not result.exception
     assert 'haha' not in result.output
     assert 'hoho' not in result.output
-    result = runner.invoke(cli, ['list', '--start', 'after ' + nowPlusDay])
+    result = runner.invoke(cli, ['list', '--start', 'after ' + now_plus_day])
     assert not result.exception
     assert 'haha' not in result.output
     assert 'hoho' not in result.output
