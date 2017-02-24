@@ -27,6 +27,25 @@ def test_all(tmpdir, runner, create):
     assert 'haha' in result.output
     assert 'hoho' in result.output
 
+def test_urgent(tmpdir, runner, create):
+    result = runner.invoke(cli, ['list'], catch_exceptions=False)
+    assert not result.exception
+    assert result.output == ''
+
+    create(
+        'one.ics',
+        'SUMMARY:haha\n'
+        'URGENT: 9\n'
+    )
+    create(
+        'two.ics',
+        'SUMMARY:hoho\n'
+    )
+    result = runner.invoke(cli, ['list', '--urgent'])
+    assert not result.exception
+    assert 'haha' in result.output
+    assert 'hoho' not in result.output
+
 
 def test_priority(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
@@ -36,16 +55,51 @@ def test_priority(tmpdir, runner, create):
     create(
         'one.ics',
         'SUMMARY:haha\n'
-        'PRIORITY: 9\n'
+        'PRIORITY: high\n'
     )
     create(
         'two.ics',
         'SUMMARY:hoho\n'
+        'PRIORITY: low\n'
     )
-    result = runner.invoke(cli, ['list', '--priority=high'])
+    create(
+        'three.ics',
+        'SUMMARY:hehe\n'
+        'PRIORITY: medium\n'
+    )
+    create(
+        'four.ics',
+        'SUMMARY:huhu\n'
+        'PRIORITY: none\n'
+    )
+
+    result_high = runner.invoke(cli, ['list', '--priority=high'])
     assert not result.exception
     assert 'haha' in result.output
     assert 'hoho' not in result.output
+    assert 'huhu' not in result.output
+    assert 'hehe' not in result.output
+
+    result_medium = runner.invoke(cli, ['list', '--priority=medium'])
+    assert not result.exception
+    assert 'haha' in result.output
+    assert 'hehe' in result.output
+    assert 'hoho' not in result.output
+    assert 'huhu' not in result.output
+
+    result_low = runner.invoke(cli, ['list', '--priority=low'])
+    assert not result.exception
+    assert 'haha' in result.output
+    assert 'hehe' in result.output
+    assert 'hoho' in result.output
+    assert 'huhu' not in result.output
+
+    result_none = runner.invoke(cli, ['list', '--priority=none'])
+    assert not result.exception
+    assert 'haha' in result.output
+    assert 'hehe' in result.output
+    assert 'hoho' in result.output
+    assert 'huhu' in result.output
 
 
 def test_location(tmpdir, runner, create):

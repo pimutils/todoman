@@ -48,6 +48,13 @@ def _validate_date_param(ctx, param, val):
         raise click.BadParameter(e)
 
 
+def _validate_priority_param(ctx, param, val):
+    try:
+        return ctx.obj['formatter'].parse_priority(val)
+    except ValueError as e:
+        raise click.BadParameter(e)
+
+
 def _todo_property_options(command):
     click.option(
         '--due', '-d', default='', callback=_validate_date_param,
@@ -307,6 +314,7 @@ def move(ctx, list, ids):
 @click.pass_context
 @click.option('--all', '-a', is_flag=True, help='Also show finished tasks.')
 @click.argument('lists', nargs=-1, callback=_validate_lists_param)
+@click.option('--urgent', is_flag=True, help='Only show urgent tasks.')
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
@@ -317,7 +325,8 @@ def move(ctx, list, ids):
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
 @click.option('--priority', default=None, help='Only show tasks with priority'
-              ' greater then the specified one', type=str)
+              ' greater then the specified one', type=str,
+              callback=_validate_priority_param)
 def list(
     ctx, lists, all, priority, location, category, grep, sort, reverse, due,
          ):
@@ -337,9 +346,6 @@ def list(
 
     sort = sort.split(',') if sort else None
 
-    if priority not in ['medium', 'low', None, 'high']:
-        raise "Invalid priority"
-
     db = ctx.obj['db']
     todos = db.todos(
         due=due,
@@ -350,6 +356,7 @@ def list(
         location=location,
         reverse=reverse,
         sort=sort,
+        urgent=urgent,
         priority=priority,
     )
 

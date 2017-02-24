@@ -63,7 +63,7 @@ class TodoEditor:
         self._due = widgets.ExtendedEdit(parent=self, edit_text=due)
         self._dtstart = widgets.ExtendedEdit(parent=self, edit_text=dtstart)
         self._completed = urwid.CheckBox("", state=todo.is_completed)
-        self._urgent = urwid.CheckBox("", state=todo.priority != 0)
+        self._priority = widgets.ExtendedEdit(parent=self, edit_text=priority)
 
         save_btn = urwid.Button('Save', on_press=self._save)
         cancel_text = urwid.Text('Hit Ctrl-C to cancel, F1 for help.')
@@ -76,7 +76,7 @@ class TodoEditor:
                              ("Due", self._due),
                              ("Start", self._dtstart),
                              ("Completed", self._completed),
-                             ("Urgent", self._urgent),
+                             ("Priority", self._priority),
                              ]:
             label = urwid.Text(label + ":", align='right')
             column = urwid.Columns([(13, label), field], dividechars=1)
@@ -150,10 +150,12 @@ class TodoEditor:
 
         # If it was already non-zero, keep it that way. Let's not overwrite
         # values 1 thru 8.
-        if self._urgent.get_state() and not self.todo.priority:
+        if self._priority<=4 and self.todo.priority>0:
             self.todo.priority = 9
-        elif not self._urgent.get_state():
-            self.todo.priority = 0
+        elif self._priority == 5:
+            self.todo.priority = 5
+        elif self._priority>5 and self._priority<=9:
+            self._priority
 
         # TODO: categories
         # TODO: comment
@@ -251,7 +253,7 @@ class TodoFormatter:
             list=list,
             percent=percent,
             summary=summary,
-            urgent=urgent,
+            priority=priority,
         )
 
     def detailed(self, todo):
@@ -303,6 +305,19 @@ class TodoFormatter:
             self._format_time(time_part)
         )))
 
+    def parse_priority(self, priority):
+        if priority not in ['low', 'high', 'medium', 'none']:
+            return None
+        else:
+            if priority == 'low':
+                return 9
+            elif priority == 'medium':
+                return 5
+            elif priority == 'high':
+                return 4
+            else:
+                return 0
+
     def parse_datetime(self, dt):
         if not dt:
             return None
@@ -352,7 +367,7 @@ class PorcelainFormatter:
             percent=todo.percent_complete,
             summary=todo.summary,
             # XXX: Move this into Todo itself and dedupe it
-            urgent=todo.priority not in [None, 0],
+            priority=todo.priority
         )
 
         return json.dumps(data, sort_keys=True)
