@@ -543,7 +543,7 @@ class Cache:
 
         return rv
 
-    def todos(self, all=False, lists=[], urgent=False, location='',
+    def todos(self, all=False, lists=[], priority=None, location='',
               category='', grep='', sort=[], reverse=True, due=None):
         """
         Returns filtered cached todos, in a specified order.
@@ -557,7 +557,7 @@ class Cache:
 
         :param bool all: If true, also return completed todos.
         :param list lists: Only return todos for these lists.
-        :param bool urgent: Only return urgent todos.
+        :param str priority: Only return todos with priority greater than specified.
         :param str location: Only return todos with a location containing this
             string.
         :param str category: Only return todos with a category containing this
@@ -585,8 +585,11 @@ class Cache:
             q = ', '.join(['?'] * len(lists))
             extra_where.append('AND files.list_name IN ({})'.format(q))
             params.extend(lists)
-        if urgent:
-            extra_where.append('AND priority = 9')
+        if priority:
+            if priority == 'medium' or priority == '!low':
+                extra_where.append('AND priority = 5')
+            elif priority == 'high':
+                extra_where.append('AND priority = 9')
         if location:
             extra_where.append('AND location LIKE ?')
             params.append('%{}%'.format(location))

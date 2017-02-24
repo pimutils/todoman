@@ -307,7 +307,8 @@ def move(ctx, list, ids):
 @click.pass_context
 @click.option('--all', '-a', is_flag=True, help='Also show finished tasks.')
 @click.argument('lists', nargs=-1, callback=_validate_lists_param)
-@click.option('--urgent', is_flag=True, help='Only show urgent tasks.')
+@click.option('--priority', default=None, help='Only show tasks with priority'
+              ' greater then the specified one', type=str)
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
@@ -335,6 +336,9 @@ def list(
     """
 
     sort = sort.split(',') if sort else None
+
+    if priority not in ['medium', 'low', None, '!low', 'high']:
+        raise "Invalid priority"
 
     db = ctx.obj['db']
     todos = db.todos(
