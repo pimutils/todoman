@@ -28,7 +28,7 @@ class TodoEditor:
         """
         :param model.Todo todo: The todo object which will be edited.
         """
-
+        self.current_list = todo.list
         self.todo = todo
         self.lists = lists
         self.formatter = formatter
@@ -36,7 +36,6 @@ class TodoEditor:
         self._loop = None
 
         self._msg_text = urwid.Text('')
-
         if todo.due:
             # TODO: use proper date_format
             due = formatter.format_datetime(todo.due)
@@ -98,6 +97,14 @@ class TodoEditor:
                         in widgets.ExtendedEdit.HELP)
         )
 
+        def change_current_list(radio_button, new_state, new_list):
+            self.current_list = new_list
+
+        for _list in self.lists:
+            urwid.RadioButton(items, "_list.name", state='first True',
+                              on_state_change=change_current_list,
+                              user_data=_list)
+
     def _toggle_help(self):
         if self._ui_content[-1] is self._help_text:
             self._ui_content.pop()
@@ -140,6 +147,7 @@ class TodoEditor:
             raise urwid.ExitMainLoop()
 
     def _save_inner(self):
+        self.todo.list = self.current_list
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
