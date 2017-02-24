@@ -234,9 +234,7 @@ def test_filtering_start(tmpdir, runner, create):
     assert 'hoho' in result.output
     result = runner.invoke(cli, ['list', '--start', 'before ' + now_minus_day])
     assert not result.exception
-    assert 'haha' not in result.output
-    assert 'hoho' not in result.output
+    assert not result.output.strip()
     result = runner.invoke(cli, ['list', '--start', 'after ' + now_plus_day])
     assert not result.exception
-    assert 'haha' not in result.output
-    assert 'hoho' not in result.output
+    assert not result.output.strip()
