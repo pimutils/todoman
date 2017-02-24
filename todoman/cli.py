@@ -59,11 +59,11 @@ def _validate_start_date_param(ctx, param, val):
         val = val[len('after '):]
     else:
         raise click.BadParameter(
-            'The start date of the task should be'
-            'in format \'before <date-format>\'')
+            "The start date of the task should be"
+            "in format '[before|after] <date-format>'")
     try:
         dt = ctx.obj['formatter'].parse_date(val)
-        return (is_before, dt)
+        return is_before, dt
     except ValueError as e:
         raise click.BadParameter(e)
 
