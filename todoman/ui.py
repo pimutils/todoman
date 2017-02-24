@@ -16,6 +16,7 @@ _palette = [
 
 class EditState:
     none = object()
+    
     saved = object()
 
 
