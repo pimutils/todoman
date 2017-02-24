@@ -215,35 +215,6 @@ class TodoFormatter:
         self._parsedatetime_calendar = parsedatetime.Calendar()
 
     def compact(self, todo):
-        """
-        Returns a brief representation of a task, suitable for displaying
-        on-per-line.
-
-        :param Todo todo: The todo component.
-        """
-        # completed = "✓" if todo.percent_complete == 100 else " "
-        completed = "X" if todo.is_completed else " "
-        percent = todo.percent_complete or ''
-        if percent:
-            percent = " ({}%)".format(percent)
-        urgent = " " if todo.priority in [None, 0] else "!"
-
-        due = self.format_datetime(todo.due)
-        if todo.due and todo.due <= self.now and not todo.is_completed:
-            due = click.style(due, fg='red')
-
-        summary = todo.summary
-        list = self.format_database(todo.list)
-
-        return self.compact_format.format(
-            completed=completed,
-            due=due,
-            id=todo.id,
-            list=list,
-            percent=percent,
-            summary=summary,
-            urgent=urgent,
-        )
         return self.compact_multiple([todo])
 
     def compact_multiple(self, todos):
