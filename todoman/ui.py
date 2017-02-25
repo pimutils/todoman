@@ -51,6 +51,9 @@ class TodoEditor:
         else:
             dtstart = ''
 
+        if todo.priority:
+            priority = formatter.parse_priority(todo.priority)
+
         self._summary = widgets.ExtendedEdit(parent=self,
                                              edit_text=todo.summary)
         self._description = widgets.ExtendedEdit(
@@ -221,11 +224,11 @@ class TodoFormatter:
                 percent = " ({}%)".format(percent)
             if todo.priority == 5:
                 priority = "!!"
-            elif todo.priority == 4:
+            elif todo.priority <= 4 and todo.priority >=1:
                 priority = "!!!"
-            elif todo.priority == 9:
+            elif todo.priority <= 9 and todo.priority >= 6:
                 priority = "!"
-            else:
+            elif todo.priority == 0:
                 priority = " "
 
             due = self.format_datetime(todo.due)

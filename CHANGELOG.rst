@@ -9,10 +9,6 @@ v3.0.0
 
 * Dropped ``--urgent`` and introduced ``--priority``
 * Added support for filtering by priority
-
-v2.2.0
-------
-
 * New PyPI dependency ``tabulate``.
 * Basic support for times in due dates, new ``time_format`` configuration
   parameter.

@@ -8,7 +8,7 @@ def test_list_all(tmpdir, runner, create):
         'STATUS:COMPLETED\n'
         'DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n'
         'PERCENT-COMPLETE:26\n'
-        'PRIORITY:0'
+        'PRIORITY:0\n'
     )
 
     result = runner.invoke(cli, ['--porcelain', 'list', '--all'])

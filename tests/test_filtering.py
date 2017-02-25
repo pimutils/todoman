@@ -55,32 +55,32 @@ def test_priority(tmpdir, runner, create):
     )
 
     result_high = runner.invoke(cli, ['list', '--priority=high'])
-    assert not result.exception
-    assert 'haha' in result.output
-    assert 'hoho' not in result.output
-    assert 'huhu' not in result.output
-    assert 'hehe' not in result.output
+    assert not result_high.exception
+    assert 'haha' in result_high.output
+    assert 'hoho' not in result_high.output
+    assert 'huhu' not in result_high.output
+    assert 'hehe' not in result_high.output
 
     result_medium = runner.invoke(cli, ['list', '--priority=medium'])
-    assert not result.exception
-    assert 'haha' in result.output
-    assert 'hehe' in result.output
-    assert 'hoho' not in result.output
-    assert 'huhu' not in result.output
+    assert not result_medium.exception
+    assert 'haha' in result_medium.output
+    assert 'hehe' in result_medium.output
+    assert 'hoho' not in result_medium.output
+    assert 'huhu' not in result_medium.output
 
     result_low = runner.invoke(cli, ['list', '--priority=low'])
-    assert not result.exception
-    assert 'haha' in result.output
-    assert 'hehe' in result.output
-    assert 'hoho' in result.output
-    assert 'huhu' not in result.output
+    assert not result_low.exception
+    assert 'haha' in result_low.output
+    assert 'hehe' in result_low.output
+    assert 'hoho' in result_low.output
+    assert 'huhu' not in result_low.output
 
     result_none = runner.invoke(cli, ['list', '--priority=none'])
-    assert not result.exception
-    assert 'haha' in result.output
-    assert 'hehe' in result.output
-    assert 'hoho' in result.output
-    assert 'huhu' in result.output
+    assert not result_none.exception
+    assert 'haha' in result_none.output
+    assert 'hehe' in result_none.output
+    assert 'hoho' in result_none.output
+    assert 'huhu' in result_none.output
 
 
 def test_location(tmpdir, runner, create):

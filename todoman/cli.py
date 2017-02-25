@@ -323,7 +323,7 @@ def move(ctx, list, ids):
               'Defaults to true.')
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
-@click.option('--priority', default=None, help='Only show tasks with priority'
+@click.option('--priority', default="none", help='Only show tasks with priority'
               ' at least as high as the specified one', type=str,
               callback=_validate_priority_param)
 def list(
