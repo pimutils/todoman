@@ -31,7 +31,7 @@ def test_all(tmpdir, runner, create):
 def test_priority(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     create(
         'one.ics',

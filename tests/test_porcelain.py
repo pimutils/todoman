@@ -12,9 +12,9 @@ def test_list_all(tmpdir, runner, create):
 
     result = runner.invoke(cli, ['--porcelain', 'list', '--all'])
     assert (
-        result.output.strip() ==
+        result.output ==
         '{"completed": true, "due": 1451689200, "id": 1, "list": "default'
-        '", "percent": 26, "summary": "Do stuff", "priority": 0}'
+        '", "percent": 26, "priority": 0, "summary": "Do stuff"}'
     )
 
 
@@ -28,9 +28,9 @@ def test_list_nodue(tmpdir, runner, create):
 
     result = runner.invoke(cli, ['--porcelain', 'list'])
     assert (
-        result.output.strip() ==
+        result.output ==
         '{"completed": false, "due": null, "id": 1, "list": "default'
-        '", "percent": 12, "summary": "Do stuff", "priority": 4}'
+        '", "percent": 12, "priority": 4, "summary": "Do stuff"}'
     )
 
 
@@ -45,5 +45,5 @@ def test_show(tmpdir, runner, create):
     assert not result.exception
     assert (
         result.output == '{"completed": false, "due": null, "id": 1, "list": '
-        '"default", "percent": 0, "summary": "harhar", "priority": 5}\n'
+        '"default", "percent": 0, "priority": 5, "summary": "harhar"}\n'
     )
