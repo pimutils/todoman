@@ -210,7 +210,7 @@ def test_due_naive(tmpdir, runner, create):
 def test_filtering_start(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     today = datetime.now()
     now = today.strftime("%Y-%m-%d")
@@ -218,11 +218,11 @@ def test_filtering_start(tmpdir, runner, create):
     now_minus_day = (today + timedelta(days=-1)).strftime("%Y-%m-%d")
     result = runner.invoke(cli, ['list', '--start', 'before ' + now])
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     result = runner.invoke(cli, ['list', '--start', 'after ' + now])
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     tmpdir.mkdir('list_one')
     runner.invoke(cli, ['new', '-l', 'list_one', 'haha'])
