@@ -27,25 +27,6 @@ def test_all(tmpdir, runner, create):
     assert 'haha' in result.output
     assert 'hoho' in result.output
 
-def test_urgent(tmpdir, runner, create):
-    result = runner.invoke(cli, ['list'], catch_exceptions=False)
-    assert not result.exception
-    assert not result.output.strip()
-
-    create(
-        'one.ics',
-        'SUMMARY:haha\n'
-        'PRIORITY:4\n'
-    )
-    create(
-        'two.ics',
-        'SUMMARY:hoho\n'
-    )
-    result = runner.invoke(cli, ['list', '--urgent'])
-    assert not result.exception
-    assert 'haha' in result.output
-    assert 'hoho' not in result.output
-
 
 def test_priority(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)

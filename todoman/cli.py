@@ -314,7 +314,6 @@ def move(ctx, list, ids):
 @click.pass_context
 @click.option('--all', '-a', is_flag=True, help='Also show finished tasks.')
 @click.argument('lists', nargs=-1, callback=_validate_lists_param)
-@click.option('--urgent', is_flag=True, help='Only show urgent tasks.')
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
@@ -328,7 +327,7 @@ def move(ctx, list, ids):
               ' at least as high as the specified one', type=str,
               callback=_validate_priority_param)
 def list(
-    ctx, lists, all, urgent, priority, location, category, grep, sort, reverse, due,
+    ctx, lists, all, priority, location, category, grep, sort, reverse, due,
          ):
     """
     List unfinished tasks.
@@ -356,7 +355,6 @@ def list(
         location=location,
         reverse=reverse,
         sort=sort,
-        urgent=urgent,
         priority=priority,
     )
 
