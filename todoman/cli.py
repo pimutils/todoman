@@ -41,17 +41,6 @@ def _validate_list_param(ctx, param=None, name=None):
         )
 
 
-def _validate_filter_param(ctx, param, val):
-    if val is None:
-        return False
-    if 'completed' == val or 'complete' == val:
-        return True
-    if 'incomplete' == val:
-        return False
-    raise click.BadParameter("Ivalid value for filter. Available options are"
-                             " complete, incomplete")
-
-
 def _validate_date_param(ctx, param, val):
     try:
         return ctx.obj['formatter'].parse_datetime(val)
@@ -328,11 +317,11 @@ def move(ctx, list, ids):
               'Defaults to true.')
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
-@click.option('--filter', default=None, callback=_validate_filter_param,
-              help='Only show complete/incomplete tasks')
+@click.option('--done-only', default=False, is_flag=True,
+              help='Only show finished tasks')
 def list(
     ctx, lists, all, urgent, location, category, grep, sort, reverse, due,
-    filter
+    done_only
          ):
     """
     List unfinished tasks.
@@ -361,7 +350,7 @@ def list(
         reverse=reverse,
         sort=sort,
         urgent=urgent,
-        complete=filter,
+        complete=done_only,
     )
 
     click.echo(ctx.obj['formatter'].compact_multiple(todos))
