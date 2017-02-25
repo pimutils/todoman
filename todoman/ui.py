@@ -224,7 +224,7 @@ class TodoFormatter:
                 percent = " ({}%)".format(percent)
             if todo.priority == 5:
                 priority = "!!"
-            elif todo.priority <= 4 and todo.priority >=1:
+            elif todo.priority <= 4 and todo.priority >= 1:
                 priority = "!!!"
             elif todo.priority <= 9 and todo.priority >= 6:
                 priority = "!"

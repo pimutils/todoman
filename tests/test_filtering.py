@@ -15,12 +15,14 @@ def test_all(tmpdir, runner, create):
     create(
         'one.ics',
         'SUMMARY:haha\n'
+        'PRIORITY:0\n'
     )
     create(
         'two.ics',
         'SUMMARY:hoho\n'
         'PERCENT-COMPLETE:100\n'
         'STATUS:COMPLETED\n'
+        'PRIORITY:0\n'
     )
     result = runner.invoke(cli, ['list', '--all'])
     assert not result.exception
@@ -92,15 +94,18 @@ def test_location(tmpdir, runner, create):
         'one.ics',
         'SUMMARY:haha\n'
         'LOCATION: The Pool\n'
+        'PRIORITY:0\n'
     )
     create(
         'two.ics',
         'SUMMARY:hoho\n'
         'LOCATION: The Dungeon\n'
+        'PRIORITY:0\n'
     )
     create(
         'two.ics',
         'SUMMARY:harhar\n'
+        'PRIORITY:0\n'
     )
     result = runner.invoke(cli, ['list', '--location', 'Pool'])
     assert not result.exception
@@ -118,15 +123,18 @@ def test_category(tmpdir, runner, create):
         'one.ics',
         'SUMMARY:haha\n'
         'CATEGORIES:work,trip\n'
+        'PRIORITY:0\n'
     )
     create(
         'two.ics',
         'CATEGORIES:trip\n'
         'SUMMARY:hoho\n'
+        'PRIORITY:0\n'
     )
     create(
         'three.ics',
         'SUMMARY:harhar\n'
+        'PRIORITY:0\n'
     )
     result = runner.invoke(cli, ['list', '--category', 'work'])
     assert not result.exception
@@ -143,31 +151,37 @@ def test_grep(tmpdir, runner, create):
     create(
         'one.ics',
         'SUMMARY:fun\n'
-        'DESCRIPTION: Have fun!\n',
+        'DESCRIPTION: Have fun!\n'
+        'PRIORITY:0\n'
     )
     create(
         'two.ics',
         'SUMMARY:work\n'
-        'DESCRIPTION: The stuff for work\n',
+        'DESCRIPTION: The stuff for work\n'
+        'PRIORITY:0\n'
     )
     create(
         'three.ics',
         'SUMMARY:buy sandwiches\n'
-        'DESCRIPTION: This is for the Duke\n',
+        'DESCRIPTION: This is for the Duke\n'
+        'PRIORITY:0\n'
     )
     create(
         'four.ics',
         'SUMMARY:puppies\n'
-        'DESCRIPTION: Feed the puppies\n',
+        'DESCRIPTION: Feed the puppies\n'
+        'PRIORITY:0\n'
     )
     create(
         'five.ics',
         'SUMMARY:research\n'
-        'DESCRIPTION: Cure cancer\n',
+        'DESCRIPTION: Cure cancer\n'
+        'PRIORITY:0\n'
     )
     create(
         'six.ics',
         'SUMMARY:hoho\n'
+        'PRIORITY:0\n'
     )
     result = runner.invoke(cli, ['list', '--grep', 'fun'])
     assert not result.exception
