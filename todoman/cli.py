@@ -338,7 +338,7 @@ def move(ctx, list, ids):
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
 @click.option('--start', default=None, callback=_validate_start_date_param,
-              help='Only shows tasks after given DATE')
+              help='Only shows tasks before/after given DATE')
 def list(
     ctx, lists, all, urgent, location, category, grep, sort, reverse,
     due, start,
