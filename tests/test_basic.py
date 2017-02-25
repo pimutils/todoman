@@ -372,10 +372,10 @@ def test_color_due_dates(tmpdir, runner, create, hours):
     create(
         'test.ics',
         'SUMMARY:aaa\n'
+        'PRIORITY:0\n'
         'STATUS:IN-PROGRESS\n'
         'DUE;VALUE=DATE-TIME;TZID=ART:{}\n'
         .format(due.strftime('%Y%m%dT%H%M%S'))
-        'PRIORITY:0\n'
     )
 
     result = runner.invoke(cli, ['--color', 'always'])
