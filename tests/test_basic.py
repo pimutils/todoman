@@ -19,7 +19,6 @@ def test_basic(tmpdir, runner, create):
     create(
         'test.ics',
         'SUMMARY:harhar\n'
-        'PRIORITY:0\n'
     )
     result = runner.invoke(cli, ['list'])
     assert not result.exception
@@ -43,7 +42,6 @@ def test_no_extra_whitespace(tmpdir, runner, create):
     create(
         'test.ics',
         'SUMMARY:harhar\n'
-        'PRIORITY:0\n'
     )
     result = runner.invoke(cli, ['list'])
     assert not result.exception
@@ -55,7 +53,6 @@ def test_percent(tmpdir, runner, create):
         'test.ics',
         'SUMMARY:harhar\n'
         'PERCENT-COMPLETE:78\n'
-        'PRIORITY:0\n'
     )
     result = runner.invoke(cli, ['list'])
     assert not result.exception
@@ -73,7 +70,6 @@ def test_show_existing(tmpdir, runner, create):
         'test.ics',
         'SUMMARY:harhar\n'
         'DESCRIPTION:Lots of text. Yum!\n'
-        'PRIORITY:0\n'
     )
     result = runner.invoke(cli, ['list'])
     result = runner.invoke(cli, ['show', '1'])
@@ -86,7 +82,6 @@ def test_show_inexistant(tmpdir, runner, create):
     create(
         'test.ics',
         'SUMMARY:harhar\n'
-        'PRIORITY:0\n'
     )
     result = runner.invoke(cli, ['list'])
     result = runner.invoke(cli, ['show', '2'])
@@ -129,7 +124,6 @@ def test_default_command(tmpdir, runner, create):
     create(
         'test.ics',
         'SUMMARY:harhar\n'
-        'PRIORITY:0\n'
     )
     result = runner.invoke(cli)
     assert not result.exception
@@ -140,7 +134,6 @@ def test_delete(tmpdir, runner, create):
     create(
         'test.ics',
         'SUMMARY:harhar\n'
-        'PRIORITY:0\n'
     )
     result = runner.invoke(cli, ['list'])
     assert not result.exception
@@ -156,7 +149,6 @@ def test_copy(tmpdir, runner, create):
     create(
         'test.ics',
         'SUMMARY:test_copy\n'
-        'PRIORITY:0\n'
     )
     result = runner.invoke(cli, ['list'])
     assert not result.exception
@@ -177,7 +169,6 @@ def test_move(tmpdir, runner, create):
     create(
         'test.ics',
         'SUMMARY:test_move\n'
-        'PRIORITY:0\n'
     )
     result = runner.invoke(cli, ['list'])
     assert not result.exception
@@ -314,13 +305,11 @@ def test_sorting_output(tmpdir, runner, create):
         'test.ics',
         'SUMMARY:aaa\n'
         'DUE;VALUE=DATE-TIME;TZID=ART:20160102T000000\n'
-        'PRIORITY:0\n'
     )
     create(
         'test2.ics',
         'SUMMARY:bbb\n'
         'DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n'
-        'PRIORITY:0\n'
     )
 
     examples = [
@@ -357,7 +346,6 @@ def test_sorting_null_values(tmpdir, runner, create):
         'test2.ics',
         'SUMMARY:bbb\n'
         'DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n',
-        'PRIORITY:0\n',
     )
 
     result = runner.invoke(cli)
@@ -372,7 +360,6 @@ def test_color_due_dates(tmpdir, runner, create, hours):
     create(
         'test.ics',
         'SUMMARY:aaa\n'
-        'PRIORITY:0\n'
         'STATUS:IN-PROGRESS\n'
         'DUE;VALUE=DATE-TIME;TZID=ART:{}\n'
         .format(due.strftime('%Y%m%dT%H%M%S'))
@@ -395,7 +382,6 @@ def test_flush(tmpdir, runner, create):
         'test.ics',
         'SUMMARY:aaa\n'
         'STATUS:COMPLETED\n'
-        'PRIORITY:0\n'
     )
 
     result = runner.invoke(cli, ['list'])
@@ -404,7 +390,6 @@ def test_flush(tmpdir, runner, create):
     create(
         'test2.ics',
         'SUMMARY:bbb\n'
-        'PRIORITY:0\n'
     )
 
     result = runner.invoke(cli, ['list'])
@@ -417,7 +402,6 @@ def test_flush(tmpdir, runner, create):
     create(
         'test2.ics',
         'SUMMARY:bbb\n'
-        'PRIORITY:0\n'
     )
 
     result = runner.invoke(cli, ['list'])

@@ -566,7 +566,7 @@ class Cache:
             with a ``-`` prepended will be used to sort in reverse order.
         :param bool reverse: Reverse the order of the todos after sorting.
         :param int due: Return only todos due within ``due`` hours.
-        :param str priority: Only return todos with priority at least as 
+        :param str priority: Only return todos with priority at least as
             high as specified.
         :return: A sorted, filtered list of todos.
         :rtype: generator

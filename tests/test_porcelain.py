@@ -8,7 +8,6 @@ def test_list_all(tmpdir, runner, create):
         'STATUS:COMPLETED\n'
         'DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n'
         'PERCENT-COMPLETE:26\n'
-        'PRIORITY:0\n'
     )
 
     result = runner.invoke(cli, ['--porcelain', 'list', '--all'])
@@ -24,14 +23,14 @@ def test_list_nodue(tmpdir, runner, create):
         'test.ics',
         'SUMMARY:Do stuff\n'
         'PERCENT-COMPLETE:12\n'
-        'PRIORITY:1\n'
+        'PRIORITY:4\n'
     )
 
     result = runner.invoke(cli, ['--porcelain', 'list'])
     assert (
         result.output.strip() ==
         '{"completed": false, "due": null, "id": 1, "list": "default'
-        '", "percent": 12, "summary": "Do stuff", "priority": 1}'
+        '", "percent": 12, "summary": "Do stuff", "priority": 4}'
     )
 
 
