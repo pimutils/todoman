@@ -12,6 +12,7 @@ v2.2.0
   parameter.
 * Use the system's date format as a default.
 * Show "Today" or "Tomorrow" when due date is today/tomorrow respectively.
+* Add list selector to TodoEditor
 
 v2.1.0
 ------

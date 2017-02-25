@@ -10,6 +10,7 @@ when copying code from elsewhere).
 
 Authors are listed in alphabetical order.
 
+* Anubha Agrawal <anubhakannu@gmail.com>
 * Benjamin Frank <ben+gitlab@pipsfrank.de>
 * Christian Geier <geier@lostpackets.de>
 * Guilhem Saurel <guilhem.saurel@gmail.com>
