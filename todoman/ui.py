@@ -307,7 +307,7 @@ class TodoFormatter:
             return 5
         elif priority == 'high':
             return 4
-        elif priority == 'none' or None:
+        elif priority == 'none' or priority is None:
             return 0
         else:
             raise ValueError('Priority has to be one of low, medium,'
