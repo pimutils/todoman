@@ -8,6 +8,7 @@ v2.2.0
 ------
 
 * Added support for filtering by priority
+* New PyPI dependency ``tabulate``.
 * Basic support for times in due dates, new ``time_format`` configuration
   parameter.
 * Use the system's date format as a default.
