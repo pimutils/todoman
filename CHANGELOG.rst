@@ -6,6 +6,7 @@ releases, in reverse chronological order.
 
 v3.0.0
 ------
+
 * Dropped ``--urgent`` and introduced ``--priority``
 * Added support for filtering by priority
 
