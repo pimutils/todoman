@@ -588,7 +588,7 @@ class Cache:
             params.extend(lists)
         if priority is not None:
             if priority == 0:
-                extra_where.append('AND PRIORITY ?')
+                extra_where.append('AND PRIORITY <= 9 AND PRIORITY >= ?')
                 params.append('{}'.format(priority))
             else:
                 extra_where.append('AND PRIORITY > 0 AND PRIORITY <= ?')
