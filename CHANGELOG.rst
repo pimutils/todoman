@@ -7,10 +7,13 @@ releases, in reverse chronological order.
 v2.2.0
 ------
 
+* New PyPI dependency ``tabulate``.
 * Basic support for times in due dates, new ``time_format`` configuration
   parameter.
 * Use the system's date format as a default.
 * Show "Today" or "Tomorrow" when due date is today/tomorrow respectively.
+* Add ``--start="[before|after] <date>`` option for ``todo list``. It shows todos
+  created before/after given date.
 * Add flag "--done-only" to todo list. Displays only completed tasks.
 
 v2.1.0

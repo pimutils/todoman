@@ -48,6 +48,26 @@ def _validate_date_param(ctx, param, val):
         raise click.BadParameter(e)
 
 
+def _validate_start_date_param(ctx, param, val):
+    if val is None:
+        return val
+    if val.startswith('before '):
+        is_before = True
+        val = val[len('before '):]
+    elif val.startswith('after '):
+        is_before = False
+        val = val[len('after '):]
+    else:
+        raise click.BadParameter(
+            "The start date of the task should be"
+            "in format '[before|after] <date-format>'")
+    try:
+        dt = ctx.obj['formatter'].parse_datetime(val)
+        return is_before, dt
+    except ValueError as e:
+        raise click.BadParameter(e)
+
+
 def _todo_property_options(command):
     click.option(
         '--due', '-d', default='', callback=_validate_date_param,
@@ -319,9 +339,11 @@ def move(ctx, list, ids):
               type=int)
 @click.option('--done-only', default=False, is_flag=True,
               help='Only show finished tasks')
+@click.option('--start', default=None, callback=_validate_start_date_param,
+              help='Only shows tasks before/after given DATE')
 def list(
-    ctx, lists, all, urgent, location, category, grep, sort, reverse, due,
-    done_only
+    ctx, lists, all, urgent, location, category, grep, sort, reverse,
+    due, start, done_only
          ):
     """
     List unfinished tasks.
@@ -348,6 +370,7 @@ def list(
         lists=lists,
         location=location,
         reverse=reverse,
+        start=start,
         sort=sort,
         urgent=urgent,
         complete=done_only,
