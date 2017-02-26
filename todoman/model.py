@@ -586,7 +586,7 @@ class Cache:
             q = ', '.join(['?'] * len(lists))
             extra_where.append('AND files.list_name IN ({})'.format(q))
             params.extend(lists)
-        if priority is not None:
+        if priority:
             extra_where.append('AND PRIORITY > 0 AND PRIORITY <= ?')
             params.append('{}'.format(priority))
         if location:
