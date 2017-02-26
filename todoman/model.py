@@ -588,10 +588,11 @@ class Cache:
             params.extend(lists)
         if priority is not None:
             if priority == 0:
-                extra_where.append('AND priority = 0')
+                extra_where.append('AND PRIORITY ?')
+                params.append('{}'.format(priority))
             else:
-                extra_where.append('AND priority >0'
-                                   ' AND priority <= ({})'.format(priority))
+                extra_where.append('AND PRIORITY > 0 AND PRIORITY <= ?')
+                params.append('{}'.format(priority))
         if location:
             extra_where.append('AND location LIKE ?')
             params.append('%{}%'.format(location))
