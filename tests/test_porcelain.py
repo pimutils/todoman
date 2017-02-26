@@ -78,7 +78,7 @@ def test_list_priority(tmpdir, runner, create):
     assert 'huhu' not in result_medium.output
 
     result_low = runner.invoke(cli, ['--porcelain', 'list',
-                               '--priority=7'])
+                               '--priority=9'])
     assert not result_low.exception
     assert 'haha' in result_low.output
     assert 'hehe' in result_low.output
