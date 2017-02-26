@@ -37,6 +37,10 @@ def test_list_nodue(tmpdir, runner, create):
 
 
 def test_list_priority(tmpdir, runner, create):
+    result = runner.invoke(cli, ['--porcelain', 'list'],
+                           catch_exceptions=False)
+    assert not result.exception
+    assert not result.output.strip()
     create(
         'one.ics',
         'SUMMARY:haha\n'
