@@ -545,7 +545,7 @@ class Cache:
 
     def todos(self, all=False, lists=[], urgent=False, location='',
               category='', grep='', sort=[], reverse=True, due=None,
-              start=None):
+              complete=None, start=None):
         """
         Returns filtered cached todos, in a specified order.
 
@@ -568,6 +568,8 @@ class Cache:
             with a ``-`` prepended will be used to sort in reverse order.
         :param bool reverse: Reverse the order of the todos after sorting.
         :param int due: Return only todos due within ``due`` hours.
+        :param bool complete: If true, return completed tasks,
+            else incomplete tasks
         :param start: Return only todos before/after ``start`` date
         :return: A sorted, filtered list of todos.
         :rtype: generator
@@ -579,9 +581,12 @@ class Cache:
 
         if not all:
             # XXX: Duplicated logic of Todo.is_completed
-            extra_where.append('AND completed_at is NULL '
-                               'AND status != "CANCELLED" '
-                               'AND status != "COMPLETED"')
+            if complete:
+                extra_where.append('AND status == "COMPLETED"')
+            else:
+                extra_where.append('AND completed_at is NULL '
+                                   'AND status != "CANCELLED" '
+                                   'AND status != "COMPLETED"')
         if lists:
             lists = [l.name if isinstance(l, List) else l for l in lists]
             q = ', '.join(['?'] * len(lists))

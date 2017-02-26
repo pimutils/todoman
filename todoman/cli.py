@@ -337,11 +337,13 @@ def move(ctx, list, ids):
               'Defaults to true.')
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
+@click.option('--done-only', default=False, is_flag=True,
+              help='Only show finished tasks')
 @click.option('--start', default=None, callback=_validate_start_date_param,
               help='Only shows tasks before/after given DATE')
 def list(
     ctx, lists, all, urgent, location, category, grep, sort, reverse,
-    due, start,
+    due, start, done_only
          ):
     """
     List unfinished tasks.
@@ -371,6 +373,7 @@ def list(
         start=start,
         sort=sort,
         urgent=urgent,
+        complete=done_only,
     )
 
     click.echo(ctx.obj['formatter'].compact_multiple(todos))

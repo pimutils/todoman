@@ -74,6 +74,27 @@ def test_location(tmpdir, runner, create):
     assert 'harhar' not in result.output
 
 
+def test_done_only(tmpdir, runner, create):
+    result = runner.invoke(cli, ['list'], catch_exceptions=False)
+    assert not result.exception
+    assert not result.output.strip()
+
+    create(
+        'one.ics',
+        'SUMMARY:haha\n'
+    )
+    create(
+        'two.ics',
+        'SUMMARY:hoho\n'
+        'PERCENT-COMPLETE:100\n'
+        'STATUS:COMPLETED\n'
+    )
+    result = runner.invoke(cli, ['list', '--done-only'])
+    assert not result.exception
+    assert 'haha' not in result.output
+    assert 'hoho' in result.output
+
+
 def test_category(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
