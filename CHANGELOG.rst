@@ -4,9 +4,11 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
-v2.2.0
+v3.0.0
 ------
 
+* Dropped ``--urgent`` and introduced ``--priority``
+* Added support for filtering by priority
 * New PyPI dependency ``tabulate``.
 * Basic support for times in due dates, new ``time_format`` configuration
   parameter.

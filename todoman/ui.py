@@ -51,6 +51,11 @@ class TodoEditor:
         else:
             dtstart = ''
 
+        if todo.priority:
+            priority = formatter.parse_priority(todo.priority)
+        else:
+            priority = ''
+
         self._summary = widgets.ExtendedEdit(parent=self,
                                              edit_text=todo.summary)
         self._description = widgets.ExtendedEdit(
@@ -65,7 +70,7 @@ class TodoEditor:
         self._due = widgets.ExtendedEdit(parent=self, edit_text=due)
         self._dtstart = widgets.ExtendedEdit(parent=self, edit_text=dtstart)
         self._completed = urwid.CheckBox("", state=todo.is_completed)
-        self._urgent = urwid.CheckBox("", state=todo.priority != 0)
+        self._priority = widgets.ExtendedEdit(parent=self, edit_text=priority)
 
         save_btn = urwid.Button('Save', on_press=self._save)
         cancel_text = urwid.Text('Hit Ctrl-C to cancel, F1 for help.')
@@ -78,7 +83,7 @@ class TodoEditor:
                              ("Due", self._due),
                              ("Start", self._dtstart),
                              ("Completed", self._completed),
-                             ("Urgent", self._urgent),
+                             ("Priority", self._priority),
                              ]:
             label = urwid.Text(label + ":", align='right')
             column = urwid.Columns([(13, label), field], dividechars=1)
@@ -150,12 +155,7 @@ class TodoEditor:
 
         self.todo.is_completed = self._completed.get_state()
 
-        # If it was already non-zero, keep it that way. Let's not overwrite
-        # values 1 thru 8.
-        if self._urgent.get_state() and not self.todo.priority:
-            self.todo.priority = 9
-        elif not self._urgent.get_state():
-            self.todo.priority = 0
+        self.todo.priority = self.formatter.parse_priority(self.priority)
 
         # TODO: categories
         # TODO: comment
@@ -194,6 +194,10 @@ class TodoEditor:
     def dtstart(self):
         return self._dtstart.edit_text
 
+    @property
+    def priority(self):
+        return self._priority.edit_text
+
 
 class TodoFormatter:
 
@@ -224,7 +228,14 @@ class TodoFormatter:
             percent = todo.percent_complete or ''
             if percent:
                 percent = " ({}%)".format(percent)
-            urgent = " " if todo.priority in [None, 0] else "!"
+            if todo.priority == 5:
+                priority = "!!"
+            elif todo.priority <= 4 and todo.priority >= 1:
+                priority = "!!!"
+            elif todo.priority <= 9 and todo.priority >= 6:
+                priority = "!"
+            elif todo.priority == 0:
+                priority = ""
 
             due = self.format_datetime(todo.due)
             if todo.due and todo.due <= self.now and not todo.is_completed:
@@ -233,7 +244,7 @@ class TodoFormatter:
             table.append([
                 todo.id,
                 "[{}]".format(completed),
-                urgent,
+                priority,
                 due,
                 "{} {}{}".format(
                     todo.summary,
@@ -295,6 +306,19 @@ class TodoFormatter:
             self._format_time(time_part)
         )))
 
+    def parse_priority(self, priority):
+        if priority == 'low':
+            return 9
+        elif priority == 'medium':
+            return 5
+        elif priority == 'high':
+            return 4
+        elif priority == 'none' or priority is None:
+            return 0
+        else:
+            raise ValueError('Priority has to be one of low, medium,'
+                             ' high or none')
+
     def parse_datetime(self, dt):
         if not dt:
             return None
@@ -343,11 +367,21 @@ class PorcelainFormatter:
             list=todo.list.name,
             percent=todo.percent_complete,
             summary=todo.summary,
-            # XXX: Move this into Todo itself and dedupe it
-            urgent=todo.priority not in [None, 0],
+            priority=todo.priority,
         )
 
         return json.dumps(data, sort_keys=True)
+
+    def parse_priority(self, priority):
+        if priority is None:
+            return 0
+        try:
+            if int(priority) in range(0, 10):
+                return int(priority)
+            else:
+                raise ValueError('Priority has to be in the range 0-9')
+        except ValueError as e:
+            raise click.BadParameter(e)
 
     def compact_multiple(self, todos):
         data = []

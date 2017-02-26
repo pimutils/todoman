@@ -15,6 +15,7 @@ Authors are listed in alphabetical order.
 * Guilhem Saurel <guilhem.saurel@gmail.com>
 * Hugo Osvaldo Barrera <hugo@barrera.io>
 * José Ribeiro <hello@jlbribeiro.com>
+* Mansimar Kaur <mansimarkaur.mks@gmail.com>
 * Markus Unterwaditzer <markus@unterwaditzer.net>
 * Paweł Fertyk <pfertyk@openmailbox.org>
 * Rimsha Khan <rimshakhan.rk03@gmail.com>

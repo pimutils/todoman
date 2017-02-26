@@ -28,7 +28,7 @@ def test_all(tmpdir, runner, create):
     assert 'hoho' in result.output
 
 
-def test_urgent(tmpdir, runner, create):
+def test_priority(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
     assert not result.output.strip()
@@ -36,16 +36,54 @@ def test_urgent(tmpdir, runner, create):
     create(
         'one.ics',
         'SUMMARY:haha\n'
-        'PRIORITY: 9\n'
+        'PRIORITY:4\n'
     )
     create(
         'two.ics',
         'SUMMARY:hoho\n'
+        'PRIORITY:9\n'
     )
-    result = runner.invoke(cli, ['list', '--urgent'])
-    assert not result.exception
-    assert 'haha' in result.output
-    assert 'hoho' not in result.output
+    create(
+        'three.ics',
+        'SUMMARY:hehe\n'
+        'PRIORITY:5\n'
+    )
+    create(
+        'four.ics',
+        'SUMMARY:huhu\n'
+    )
+
+    result_high = runner.invoke(cli, ['list', '--priority=high'])
+    assert not result_high.exception
+    assert 'haha' in result_high.output
+    assert 'hoho' not in result_high.output
+    assert 'huhu' not in result_high.output
+    assert 'hehe' not in result_high.output
+
+    result_medium = runner.invoke(cli, ['list', '--priority=medium'])
+    assert not result_medium.exception
+    assert 'haha' in result_medium.output
+    assert 'hehe' in result_medium.output
+    assert 'hoho' not in result_medium.output
+    assert 'huhu' not in result_medium.output
+
+    result_low = runner.invoke(cli, ['list', '--priority=low'])
+    assert not result_low.exception
+    assert 'haha' in result_low.output
+    assert 'hehe' in result_low.output
+    assert 'hoho' in result_low.output
+    assert 'huhu' not in result_low.output
+
+    result_none = runner.invoke(cli, ['list', '--priority=none'])
+    assert not result_none.exception
+    assert 'haha' in result_none.output
+    assert 'hehe' in result_none.output
+    assert 'hoho' in result_none.output
+    assert 'huhu' in result_none.output
+
+    result_error = runner.invoke(cli, ['--porcelain', 'list',
+                                 '--priority=blah'])
+    assert result_error.exception
 
 
 def test_location(tmpdir, runner, create):

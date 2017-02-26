@@ -48,6 +48,13 @@ def _validate_date_param(ctx, param, val):
         raise click.BadParameter(e)
 
 
+def _validate_priority_param(ctx, param, val):
+    try:
+        return ctx.obj['formatter'].parse_priority(val)
+    except ValueError as e:
+        raise click.BadParameter(e)
+
+
 def _validate_start_date_param(ctx, param, val):
     if val is None:
         return val
@@ -327,7 +334,6 @@ def move(ctx, list, ids):
 @click.pass_context
 @click.option('--all', '-a', is_flag=True, help='Also show finished tasks.')
 @click.argument('lists', nargs=-1, callback=_validate_lists_param)
-@click.option('--urgent', is_flag=True, help='Only show urgent tasks.')
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
@@ -337,14 +343,16 @@ def move(ctx, list, ids):
               'Defaults to true.')
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
+@click.option('--priority', default=None, help='Only show tasks with'
+              ' priority at least as high as the specified one', type=str,
+              callback=_validate_priority_param)
 @click.option('--done-only', default=False, is_flag=True,
               help='Only show finished tasks')
 @click.option('--start', default=None, callback=_validate_start_date_param,
               help='Only shows tasks before/after given DATE')
 def list(
-    ctx, lists, all, urgent, location, category, grep, sort, reverse,
-    due, start, done_only
-         ):
+        ctx, lists, all, location, category, grep, sort, reverse, due,
+        priority, start, done_only):
     """
     List unfinished tasks.
 
@@ -372,7 +380,7 @@ def list(
         reverse=reverse,
         start=start,
         sort=sort,
-        urgent=urgent,
+        priority=priority,
         complete=done_only,
     )
 
