@@ -373,8 +373,7 @@ class PorcelainFormatter:
         return json.dumps(data, sort_keys=True)
 
     def parse_priority(self, priority):
-        valid_prio = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-        if priority in valid_prio:
+        if int(priority) in range(0, 10):
             return int(priority)
         elif priority == 'low':
             return 9
