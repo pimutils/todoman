@@ -377,8 +377,8 @@ class PorcelainFormatter:
             return 0
         try:
             return int(priority)
-        except:
-            raise ValueError('Priority has to be in the range 0-9')
+        except ValueError as e:
+            raise click.BadParameter(e)
 
     def compact_multiple(self, todos):
         data = []
