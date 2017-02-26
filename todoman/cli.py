@@ -51,7 +51,7 @@ def _validate_date_param(ctx, param, val):
 def _validate_priority_param(ctx, param, val):
     try:
         return ctx.obj['formatter'].parse_priority(val)
-     except ValueError as e:
+    except ValueError as e:
         raise click.BadParameter(e)
 
 
@@ -351,9 +351,8 @@ def move(ctx, list, ids):
 @click.option('--start', default=None, callback=_validate_start_date_param,
               help='Only shows tasks before/after given DATE')
 def list(
-    ctx, lists, all, location, category, grep, sort, reverse, due, priority, 
-    start, done_only
-         ):
+        ctx, lists, all, location, category, grep, sort, reverse, due,
+        priority, start, done_only):
     """
     List unfinished tasks.
 
@@ -382,7 +381,6 @@ def list(
         start=start,
         sort=sort,
         priority=priority,
-        urgent=urgent,
         complete=done_only,
     )
 

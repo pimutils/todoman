@@ -543,7 +543,6 @@ class Cache:
 
         return rv
 
-
     def todos(self, all=False, lists=[], priority=None, location='',
               category='', grep='', sort=[], reverse=True, due=None,
               complete=None, start=None):
