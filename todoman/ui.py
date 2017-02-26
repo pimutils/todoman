@@ -366,6 +366,19 @@ class PorcelainFormatter:
 
         return json.dumps(data, sort_keys=True)
 
+    def parse_priority(self, priority):
+        if priority == 'low':
+            return 9
+        elif priority == 'medium':
+            return 5
+        elif priority == 'high':
+            return 4
+        elif priority == 'none' or priority is None:
+            return 0
+        else:
+            raise ValueError('Priority has to be one of low, medium,'
+                             ' high or none')
+
     def compact_multiple(self, todos):
         data = []
         for todo in todos:

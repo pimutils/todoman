@@ -11,6 +11,7 @@ def test_list_all(tmpdir, runner, create):
     )
 
     result = runner.invoke(cli, ['--porcelain', 'list', '--all'])
+    assert not result.exception
     assert (
         result.output ==
         '{"completed": true, "due": 1451689200, "id": 1, "list": "default'
@@ -27,6 +28,7 @@ def test_list_nodue(tmpdir, runner, create):
     )
 
     result = runner.invoke(cli, ['--porcelain', 'list'])
+    assert not result.exception
     assert (
         result.output ==
         '{"completed": false, "due": null, "id": 1, "list": "default'
