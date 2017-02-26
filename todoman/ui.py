@@ -229,7 +229,7 @@ class TodoFormatter:
             elif todo.priority <= 9 and todo.priority >= 6:
                 priority = "!"
             elif todo.priority == 0:
-                priority = " "
+                priority = ""
 
             due = self.format_datetime(todo.due)
             if todo.due and todo.due <= self.now and not todo.is_completed:
