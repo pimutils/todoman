@@ -89,6 +89,18 @@ def test_list_priority(tmpdir, runner, create):
     assert 'hoho' in result_none.output
     assert 'huhu' in result_none.output
 
+    result_num = runner.invoke(cli, ['--porcelain', 'list',
+                               '--priority=3'])
+    assert not result_num.exception
+    assert 'haha' in result_num.output
+    assert 'hoho' not in result_num.output
+    assert 'huhu' not in result_num.output
+    assert 'hehe' not in result_num.output
+
+    result_error = runner.invoke(cli, ['--porcelain', 'list',
+                                 '--priority=blah'])
+    assert result_error.exception
+
 
 def test_show(tmpdir, runner, create):
     create(
