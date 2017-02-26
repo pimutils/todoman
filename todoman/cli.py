@@ -113,6 +113,9 @@ def cli(ctx, color, porcelain):
         path for path in glob.iglob(expanduser(config["main"]["path"]))
         if isdir(path)
     ]
+    if len(paths) == 0:
+        print("list is empty\n")
+        print("type - todo --help")
 
     ctx.obj['db'] = Database(paths, config['main']['cache_path'])
 
