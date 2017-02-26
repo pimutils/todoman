@@ -11,6 +11,7 @@ v2.2.0
   parameter.
 * Use the system's date format as a default.
 * Show "Today" or "Tomorrow" when due date is today/tomorrow respectively.
+* Add flag "--done-only" to todo list. Displays only completed tasks.
 
 v2.1.0
 ------

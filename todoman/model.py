@@ -581,8 +581,7 @@ class Cache:
         if not all:
             # XXX: Duplicated logic of Todo.is_completed
             if complete:
-                extra_where.append('AND status != "CANCELLED" '
-                                   'AND status == "COMPLETED"')
+                extra_where.append('AND status == "COMPLETED"')
             else:
                 extra_where.append('AND completed_at is NULL '
                                    'AND status != "CANCELLED" '

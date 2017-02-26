@@ -74,6 +74,24 @@ def test_location(tmpdir, runner, create):
     assert 'harhar' not in result.output
 
 
+def test_done_only(tmpdir, runner, create):
+    result = runner.invoke(cli, ['list'], catch_exceptions=False)
+    assert not result.exception
+    assert not result.output.strip()
+
+    tmpdir.mkdir('list_one')
+    runner.invoke(cli, ['new', '-l', 'list_one', 'haha'])
+    runner.invoke(cli, ['new', '-l', 'list_one', 'hoho'])
+    runner.invoke(cli, ['new', '-l', 'list_one', 'harhar'])
+
+    runner.invoke(cli, ['list', 'done', '1'])
+    result = runner.invoke(cli, ['list', '--done-only'])
+    assert not result.exception
+    assert 'haha' in result.output
+    assert 'hoho' not in result.output
+    assert 'harhar' not in result.output
+
+
 def test_category(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
