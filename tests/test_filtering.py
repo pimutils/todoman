@@ -76,9 +76,9 @@ def test_priority(tmpdir, runner, create):
 
     result_none = runner.invoke(cli, ['list', '--priority=none'])
     assert not result_none.exception
-    assert 'haha' not in result_none.output
-    assert 'hehe' not in result_none.output
-    assert 'hoho' not in result_none.output
+    assert 'haha' in result_none.output
+    assert 'hehe' in result_none.output
+    assert 'hoho' in result_none.output
     assert 'huhu' in result_none.output
 
 
