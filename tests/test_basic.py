@@ -314,7 +314,7 @@ def test_sorting_output(tmpdir, runner, create):
 
     examples = [
         ('-summary', ['aaa', 'bbb']),
-        ('due', ['aaa', 'bbb']),
+        ('due', ['aaa', 'bbb'])
     ]
 
     # Normal sorting, reversed by default
@@ -345,7 +345,7 @@ def test_sorting_null_values(tmpdir, runner, create):
     create(
         'test2.ics',
         'SUMMARY:bbb\n'
-        'DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n',
+        'DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n'
     )
 
     result = runner.invoke(cli)

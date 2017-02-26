@@ -108,6 +108,27 @@ def test_location(tmpdir, runner, create):
     assert 'harhar' not in result.output
 
 
+def test_done_only(tmpdir, runner, create):
+    result = runner.invoke(cli, ['list'], catch_exceptions=False)
+    assert not result.exception
+    assert not result.output.strip()
+
+    create(
+        'one.ics',
+        'SUMMARY:haha\n'
+    )
+    create(
+        'two.ics',
+        'SUMMARY:hoho\n'
+        'PERCENT-COMPLETE:100\n'
+        'STATUS:COMPLETED\n'
+    )
+    result = runner.invoke(cli, ['list', '--done-only'])
+    assert not result.exception
+    assert 'haha' not in result.output
+    assert 'hoho' in result.output
+
+
 def test_category(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
@@ -142,27 +163,27 @@ def test_grep(tmpdir, runner, create):
     create(
         'one.ics',
         'SUMMARY:fun\n'
-        'DESCRIPTION: Have fun!\n'
+        'DESCRIPTION: Have fun!\n',
     )
     create(
         'two.ics',
         'SUMMARY:work\n'
-        'DESCRIPTION: The stuff for work\n'
+        'DESCRIPTION: The stuff for work\n',
     )
     create(
         'three.ics',
         'SUMMARY:buy sandwiches\n'
-        'DESCRIPTION: This is for the Duke\n'
+        'DESCRIPTION: This is for the Duke\n',
     )
     create(
         'four.ics',
         'SUMMARY:puppies\n'
-        'DESCRIPTION: Feed the puppies\n'
+        'DESCRIPTION: Feed the puppies\n',
     )
     create(
         'five.ics',
         'SUMMARY:research\n'
-        'DESCRIPTION: Cure cancer\n'
+        'DESCRIPTION: Cure cancer\n',
     )
     create(
         'six.ics',
@@ -239,3 +260,36 @@ def test_due_naive(tmpdir, runner, create):
     assert len(todos) == 2
     assert todos[0].summary == "23"
     assert todos[1].summary == "1"
+
+
+def test_filtering_start(tmpdir, runner, create):
+    result = runner.invoke(cli, ['list'], catch_exceptions=False)
+    assert not result.exception
+    assert not result.output.strip()
+
+    today = datetime.now()
+    now = today.strftime("%Y-%m-%d")
+    now_plus_day = (today + timedelta(days=1)).strftime("%Y-%m-%d")
+    now_minus_day = (today + timedelta(days=-1)).strftime("%Y-%m-%d")
+    result = runner.invoke(cli, ['list', '--start', 'before ' + now])
+    assert not result.exception
+    assert not result.output.strip()
+
+    result = runner.invoke(cli, ['list', '--start', 'after ' + now])
+    assert not result.exception
+    assert not result.output.strip()
+
+    tmpdir.mkdir('list_one')
+    runner.invoke(cli, ['new', '-l', 'list_one', 'haha'])
+    runner.invoke(cli, ['new', '-l', 'list_one', 'hoho'])
+
+    result = runner.invoke(cli, ['list', '--start', 'after ' + now_minus_day])
+    assert not result.exception
+    assert 'haha' in result.output
+    assert 'hoho' in result.output
+    result = runner.invoke(cli, ['list', '--start', 'before ' + now_minus_day])
+    assert not result.exception
+    assert not result.output.strip()
+    result = runner.invoke(cli, ['list', '--start', 'after ' + now_plus_day])
+    assert not result.exception
+    assert not result.output.strip()

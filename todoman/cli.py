@@ -51,6 +51,26 @@ def _validate_date_param(ctx, param, val):
 def _validate_priority_param(ctx, param, val):
     try:
         return ctx.obj['formatter'].parse_priority(val)
+     except ValueError as e:
+        raise click.BadParameter(e)
+
+
+def _validate_start_date_param(ctx, param, val):
+    if val is None:
+        return val
+    if val.startswith('before '):
+        is_before = True
+        val = val[len('before '):]
+    elif val.startswith('after '):
+        is_before = False
+        val = val[len('after '):]
+    else:
+        raise click.BadParameter(
+            "The start date of the task should be"
+            "in format '[before|after] <date-format>'")
+    try:
+        dt = ctx.obj['formatter'].parse_datetime(val)
+        return is_before, dt
     except ValueError as e:
         raise click.BadParameter(e)
 
@@ -326,8 +346,13 @@ def move(ctx, list, ids):
 @click.option('--priority', default=None, help='Only show tasks with'
               ' priority at least as high as the specified one', type=str,
               callback=_validate_priority_param)
+@click.option('--done-only', default=False, is_flag=True,
+              help='Only show finished tasks')
+@click.option('--start', default=None, callback=_validate_start_date_param,
+              help='Only shows tasks before/after given DATE')
 def list(
-    ctx, lists, all, location, category, grep, sort, reverse, due, priority
+    ctx, lists, all, location, category, grep, sort, reverse, due, priority, 
+    start, done_only
          ):
     """
     List unfinished tasks.
@@ -354,8 +379,11 @@ def list(
         lists=lists,
         location=location,
         reverse=reverse,
+        start=start,
         sort=sort,
         priority=priority,
+        urgent=urgent,
+        complete=done_only,
     )
 
     click.echo(ctx.obj['formatter'].compact_multiple(todos))
