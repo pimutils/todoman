@@ -155,7 +155,7 @@ class TodoEditor:
 
         self.todo.is_completed = self._completed.get_state()
 
-        self.todo.priority = self.formatter.parse_priority(self._priority)
+        self.todo.priority = self.formatter.parse_priority(self.priority)
 
         # TODO: categories
         # TODO: comment
