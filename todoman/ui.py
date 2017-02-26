@@ -53,6 +53,8 @@ class TodoEditor:
 
         if todo.priority:
             priority = formatter.parse_priority(todo.priority)
+        else:
+            priority = ''
 
         self._summary = widgets.ExtendedEdit(parent=self,
                                              edit_text=todo.summary)
@@ -191,6 +193,10 @@ class TodoEditor:
     @property
     def dtstart(self):
         return self._dtstart.edit_text
+
+    @property
+    def priority(self):
+        return self._priority.edit_text
 
 
 class TodoFormatter:
@@ -367,7 +373,10 @@ class PorcelainFormatter:
         return json.dumps(data, sort_keys=True)
 
     def parse_priority(self, priority):
-        if priority == 'low':
+        valid_prio = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+        if priority in valid_prio:
+            return int(priority)
+        elif priority == 'low':
             return 9
         elif priority == 'medium':
             return 5
