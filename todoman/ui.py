@@ -375,16 +375,9 @@ class PorcelainFormatter:
     def parse_priority(self, priority):
         if priority is None:
             return 0
-        prio_int = int(priority)
-        if prio_int in range(6, 10):
-            return 9
-        elif prio_int == 5:
-            return 5
-        elif prio_int in range(1, 5):
-            return 4
-        elif prio_int == 0:
-            return 0
-        else:
+        try:
+            return int(priority)
+        except:
             raise ValueError('Priority has to be in the range 0-9')
 
     def compact_multiple(self, todos):
