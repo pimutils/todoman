@@ -376,7 +376,10 @@ class PorcelainFormatter:
         if priority is None:
             return 0
         try:
-            return int(priority)
+            if int(priority) in range(0, 10):
+                return int(priority)
+            else:
+                raise ValueError('Priority has to be in the range 0-9')
         except ValueError as e:
             raise click.BadParameter(e)
 
