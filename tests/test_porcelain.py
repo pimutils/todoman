@@ -62,7 +62,7 @@ def test_list_priority(tmpdir, runner, create):
     )
 
     result_high = runner.invoke(cli, ['--porcelain', 'list',
-                                '--priority=high'])
+                                '--priority=3'])
     assert not result_high.exception
     assert 'haha' in result_high.output
     assert 'hoho' not in result_high.output
@@ -70,7 +70,7 @@ def test_list_priority(tmpdir, runner, create):
     assert 'hehe' not in result_high.output
 
     result_medium = runner.invoke(cli, ['--porcelain', 'list',
-                                  '--priority=medium'])
+                                  '--priority=5'])
     assert not result_medium.exception
     assert 'haha' in result_medium.output
     assert 'hehe' in result_medium.output
@@ -78,7 +78,7 @@ def test_list_priority(tmpdir, runner, create):
     assert 'huhu' not in result_medium.output
 
     result_low = runner.invoke(cli, ['--porcelain', 'list',
-                               '--priority=low'])
+                               '--priority=7'])
     assert not result_low.exception
     assert 'haha' in result_low.output
     assert 'hehe' in result_low.output
@@ -86,23 +86,15 @@ def test_list_priority(tmpdir, runner, create):
     assert 'huhu' not in result_low.output
 
     result_none = runner.invoke(cli, ['--porcelain', 'list',
-                                '--priority=none'])
+                                '--priority=0'])
     assert not result_none.exception
     assert 'haha' in result_none.output
     assert 'hehe' in result_none.output
     assert 'hoho' in result_none.output
     assert 'huhu' in result_none.output
 
-    result_num = runner.invoke(cli, ['--porcelain', 'list',
-                               '--priority=3'])
-    assert not result_num.exception
-    assert 'haha' in result_num.output
-    assert 'hoho' not in result_num.output
-    assert 'huhu' not in result_num.output
-    assert 'hehe' not in result_num.output
-
     result_error = runner.invoke(cli, ['--porcelain', 'list',
-                                 '--priority=blah'])
+                                 '--priority=18'])
     assert result_error.exception
 
 
