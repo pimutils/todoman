@@ -36,6 +36,60 @@ def test_list_nodue(tmpdir, runner, create):
     )
 
 
+def test_list_priority(tmpdir, runner, create):
+    create(
+        'one.ics',
+        'SUMMARY:haha\n'
+        'PRIORITY:4\n'
+    )
+    create(
+        'two.ics',
+        'SUMMARY:hoho\n'
+        'PRIORITY:9\n'
+    )
+    create(
+        'three.ics',
+        'SUMMARY:hehe\n'
+        'PRIORITY:5\n'
+    )
+    create(
+        'four.ics',
+        'SUMMARY:huhu\n'
+    )
+
+    result_high = runner.invoke(cli, ['--porcelain', 'list',
+                                '--priority=high'])
+    assert not result_high.exception
+    assert 'haha' in result_high.output
+    assert 'hoho' not in result_high.output
+    assert 'huhu' not in result_high.output
+    assert 'hehe' not in result_high.output
+
+    result_medium = runner.invoke(cli, ['--porcelain', 'list',
+                                  '--priority=medium'])
+    assert not result_medium.exception
+    assert 'haha' in result_medium.output
+    assert 'hehe' in result_medium.output
+    assert 'hoho' not in result_medium.output
+    assert 'huhu' not in result_medium.output
+
+    result_low = runner.invoke(cli, ['--porcelain', 'list',
+                               '--priority=low'])
+    assert not result_low.exception
+    assert 'haha' in result_low.output
+    assert 'hehe' in result_low.output
+    assert 'hoho' in result_low.output
+    assert 'huhu' not in result_low.output
+
+    result_none = runner.invoke(cli, ['--porcelain', 'list',
+                                '--priority=none'])
+    assert not result_none.exception
+    assert 'haha' in result_none.output
+    assert 'hehe' in result_none.output
+    assert 'hoho' in result_none.output
+    assert 'huhu' in result_none.output
+
+
 def test_show(tmpdir, runner, create):
     create(
         'test.ics',
