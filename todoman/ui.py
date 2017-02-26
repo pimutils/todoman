@@ -103,7 +103,8 @@ class TodoEditor:
             self.current_list = new_list
 
         for _list in self.lists:
-            urwid.RadioButton(items, _list.name, state=_list is self.current_list,
+            urwid.RadioButton(items, _list.name,
+                              state=_list is self.current_list,
                               on_state_change=change_current_list,
                               user_data=_list)
 
