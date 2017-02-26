@@ -81,8 +81,7 @@ def test_priority(tmpdir, runner, create):
     assert 'hoho' in result_none.output
     assert 'huhu' in result_none.output
 
-    result_error = runner.invoke(cli, ['--porcelain', 'list',
-                                 '--priority=blah'])
+    result_error = runner.invoke(cli, ['list', '--priority=blah'])
     assert result_error.exception
 
 
