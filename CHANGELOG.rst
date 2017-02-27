@@ -18,6 +18,8 @@ v3.0.0
 * Add ``--start="[before|after] <date>`` option for ``todo list``. It shows todos
   created before/after given date.
 * Add flag "--done-only" to todo list. Displays only completed tasks.
+* Make the output of move, delete, copy and flush more consistent with
+  everything else.
 
 
 v2.1.0
