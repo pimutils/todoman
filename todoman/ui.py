@@ -105,7 +105,8 @@ class TodoEditor:
         )
 
         def change_current_list(radio_button, new_state, new_list):
-            self.current_list = new_list
+            if new_state:
+                self.current_list = new_list
 
         list_selector = []
         for _list in self.lists:
