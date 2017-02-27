@@ -143,6 +143,11 @@ def cli(ctx, color, porcelain):
     if len(paths) == 0:
         click.echo("No lists found.\n")
         click.echo(config["main"]["path"])
+        click.echo("goto ~/.local/share/calendars")
+        click.echo("then create directory in it suppose list")
+        click.echo("then print - todo new -ltask \"summary of list\"")
+        click.echo("print - todo")
+
         ctx.exit(1)
 
     ctx.obj['db'] = Database(paths, config['main']['cache_path'])
