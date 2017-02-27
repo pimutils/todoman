@@ -545,7 +545,7 @@ class Cache:
 
     def todos(self, all=False, lists=[], priority=None, location='',
               category='', grep='', sort=[], reverse=True, due=None,
-              complete=None, start=None):
+              done_only=None, start=None):
         """
         Returns filtered cached todos, in a specified order.
 
@@ -569,8 +569,8 @@ class Cache:
         :param int due: Return only todos due within ``due`` hours.
         :param str priority: Only return todos with priority at least as
             high as specified.
-        :param bool complete: If true, return completed tasks,
-            else incomplete tasks
+        :param bool done_only: If true, return done tasks, else incomplete
+            tasks
         :param start: Return only todos before/after ``start`` date
         :return: A sorted, filtered list of todos.
         :rtype: generator
@@ -582,7 +582,7 @@ class Cache:
 
         if not all:
             # XXX: Duplicated logic of Todo.is_completed
-            if complete:
+            if done_only:
                 extra_where.append('AND status == "COMPLETED"')
             else:
                 extra_where.append('AND completed_at is NULL '
