@@ -1,3 +1,5 @@
+import json
+
 from todoman.cli import cli
 
 
@@ -9,14 +11,20 @@ def test_list_all(tmpdir, runner, create):
         'DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n'
         'PERCENT-COMPLETE:26\n'
     )
-
     result = runner.invoke(cli, ['--porcelain', 'list', '--all'])
+
+    expected = {
+        'completed': True,
+        'due': 1451689200,
+        'id': 1,
+        'list': 'default',
+        'percent': 26,
+        'priority': 0,
+        'summary': 'Do stuff',
+    }
+
     assert not result.exception
-    assert (
-        result.output.strip() ==
-        '{"completed": true, "due": 1451689200, "id": 1, "list": "default'
-        '", "percent": 26, "priority": 0, "summary": "Do stuff"}'
-    )
+    assert result.output.strip() == json.dumps(expected, sort_keys=True)
 
 
 def test_list_nodue(tmpdir, runner, create):
@@ -26,14 +34,20 @@ def test_list_nodue(tmpdir, runner, create):
         'PERCENT-COMPLETE:12\n'
         'PRIORITY:4\n'
     )
-
     result = runner.invoke(cli, ['--porcelain', 'list'])
+
+    expected = {
+        'completed': False,
+        'due': None,
+        'id': 1,
+        'list': 'default',
+        'percent': 12,
+        'priority': 4,
+        'summary': 'Do stuff',
+    }
+
     assert not result.exception
-    assert (
-        result.output.strip() ==
-        '{"completed": false, "due": null, "id": 1, "list": "default'
-        '", "percent": 12, "priority": 4, "summary": "Do stuff"}'
-    )
+    assert result.output.strip() == json.dumps(expected, sort_keys=True)
 
 
 def test_list_priority(tmpdir, runner, create):
@@ -106,8 +120,16 @@ def test_show(tmpdir, runner, create):
         'PRIORITY:5\n'
     )
     result = runner.invoke(cli, ['--porcelain', 'show', '1'])
+
+    expected = {
+        'completed': False,
+        'due': None,
+        'id': 1,
+        'list': 'default',
+        'percent': 0,
+        'priority': 5,
+        'summary': 'harhar',
+    }
+
     assert not result.exception
-    assert (
-        result.output == '{"completed": false, "due": null, "id": 1, "list": '
-        '"default", "percent": 0, "priority": 5, "summary": "harhar"}\n'
-    )
+    assert result.output.strip() == json.dumps(expected, sort_keys=True)
