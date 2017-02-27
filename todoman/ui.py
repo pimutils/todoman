@@ -101,13 +101,13 @@ class TodoEditor:
 
         def change_current_list(radio_button, new_state, new_list):
             self.current_list = new_list
-
+            list_selector = []
         for _list in self.lists:
-            urwid.RadioButton(items, _list.name,
+            urwid.RadioButton(list_selector, _list.name == self.current_list.name,
                               state=_list is self.current_list,
                               on_state_change=change_current_list,
                               user_data=_list)
-
+        items.append(urwid.Pile(list_selector))
     def _toggle_help(self):
         if self._ui_content[-1] is self._help_text:
             self._ui_content.pop()
