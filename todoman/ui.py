@@ -104,9 +104,8 @@ class TodoEditor:
 
         list_selector = []
         for _list in self.lists:
-            urwid.RadioButton(list_selector,
-                              _list.name == self.current_list.name,
-                              state=_list is self.current_list,
+            urwid.RadioButton(list_selector, _list.name,
+                              state=_list.name == self.current_list.name,
                               on_state_change=change_current_list,
                               user_data=_list)
         items.append(urwid.Pile(list_selector))
