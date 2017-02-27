@@ -32,7 +32,7 @@ class TodoEditor:
         """
         self.current_list = todo.list
         self.todo = todo
-        self.lists = lists
+        self.lists = list(lists)
         self.formatter = formatter
         self.saved = EditState.none
         self._loop = None
