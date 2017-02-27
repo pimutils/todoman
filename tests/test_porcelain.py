@@ -13,7 +13,7 @@ def test_list_all(tmpdir, runner, create):
     )
     result = runner.invoke(cli, ['--porcelain', 'list', '--all'])
 
-    expected = {
+    expected = [{
         'completed': True,
         'due': 1451689200,
         'id': 1,
@@ -21,7 +21,7 @@ def test_list_all(tmpdir, runner, create):
         'percent': 26,
         'priority': 0,
         'summary': 'Do stuff',
-    }
+    }]
 
     assert not result.exception
     assert result.output.strip() == json.dumps(expected, sort_keys=True)
@@ -36,7 +36,7 @@ def test_list_nodue(tmpdir, runner, create):
     )
     result = runner.invoke(cli, ['--porcelain', 'list'])
 
-    expected = {
+    expected = [{
         'completed': False,
         'due': None,
         'id': 1,
@@ -44,7 +44,7 @@ def test_list_nodue(tmpdir, runner, create):
         'percent': 12,
         'priority': 4,
         'summary': 'Do stuff',
-    }
+    }]
 
     assert not result.exception
     assert result.output.strip() == json.dumps(expected, sort_keys=True)
@@ -54,7 +54,7 @@ def test_list_priority(tmpdir, runner, create):
     result = runner.invoke(cli, ['--porcelain', 'list'],
                            catch_exceptions=False)
     assert not result.exception
-    assert not result.output.strip()
+    assert result.output.strip() == '[]'
     create(
         'one.ics',
         'SUMMARY:haha\n'

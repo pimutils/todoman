@@ -374,8 +374,8 @@ class TodoFormatter:
 
 class PorcelainFormatter:
 
-    def compact(self, todo):
-        data = dict(
+    def _todo_as_dict(self, todo):
+        return dict(
             completed=todo.is_completed,
             due=self.format_datetime(todo.due),
             id=todo.id,
@@ -385,6 +385,11 @@ class PorcelainFormatter:
             priority=todo.priority,
         )
 
+    def compact(self, todo):
+        return json.dumps(self._todo_as_dict(todo), sort_keys=True)
+
+    def compact_multiple(self, todos):
+        data = [self._todo_as_dict(todo) for todo in todos]
         return json.dumps(data, sort_keys=True)
 
     def simple_action(self, action, todo):
@@ -400,13 +405,6 @@ class PorcelainFormatter:
                 raise ValueError('Priority has to be in the range 0-9')
         except ValueError as e:
             raise click.BadParameter(e)
-
-    def compact_multiple(self, todos):
-        data = []
-        for todo in todos:
-            data.append(self.compact(todo))
-
-        return '\n'.join(data)
 
     def detailed(self, todo):
         return self.compact(todo)
