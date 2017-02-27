@@ -828,8 +828,9 @@ class Database:
     def lists(self):
         return self.cache.lists()
 
-    def move(self, todo, new_list):
-        orig_path = os.path.join(todo.list.path, todo.filename)
+    def move(self, todo, new_list, from_list=None):
+        from_list = from_list or todo.list
+        orig_path = os.path.join(from_list.path, todo.filename)
         dest_path = os.path.join(new_list.path, todo.filename)
 
         os.rename(orig_path, dest_path)

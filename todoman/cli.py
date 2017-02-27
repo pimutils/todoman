@@ -206,6 +206,8 @@ def edit(ctx, id, todo_properties, interactive):
     '''
     database = ctx.obj['db']
     todo = database.todo(id)
+    old_list = todo.list
+
     changes = False
     for key, value in todo_properties.items():
         if value:
@@ -220,6 +222,8 @@ def edit(ctx, id, todo_properties, interactive):
 
     if changes:
         todo.save()
+        if old_list.name != todo.list.name:
+            database.move(todo, todo.list, from_list=old_list)
         click.echo(ctx.obj['formatter'].detailed(todo))
     else:
         click.echo('No changes.')
