@@ -230,6 +230,9 @@ class TodoFormatter:
         }
         self._parsedatetime_calendar = parsedatetime.Calendar()
 
+    def simple_action(self, action, todo):
+        return '{} "{}"'.format(action, todo.summary)
+
     def compact(self, todo):
         return self.compact_multiple([todo])
 
@@ -383,6 +386,9 @@ class PorcelainFormatter:
         )
 
         return json.dumps(data, sort_keys=True)
+
+    def simple_action(self, action, todo):
+        return self.compact(todo)
 
     def parse_priority(self, priority):
         if priority is None:

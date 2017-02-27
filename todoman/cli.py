@@ -276,7 +276,7 @@ def flush(ctx):
     '''
     database = ctx.obj['db']
     for todo in database.flush():
-        click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
+        click.echo(ctx.obj['formatter'].simple_action('Flushing', todo))
 
 
 @cli.command()
@@ -296,7 +296,7 @@ def delete(ctx, ids, yes):
         click.confirm('Do you want to delete those tasks?', abort=True)
 
     for todo in todos:
-        click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
+        click.echo(ctx.obj['formatter'].simple_action('Deleting', todo))
         ctx.obj['db'].delete(todo)
 
 
@@ -310,9 +310,7 @@ def copy(ctx, list, ids):
 
     for id in ids:
         todo = ctx.obj['db'].todo(id)
-        click.echo('Copying {} to {} ({})'.format(
-            todo.uid, list, todo.summary
-        ))
+        click.echo(ctx.obj['formatter'].compact(todo))
 
         ctx.obj['db'].save(todo, list)
 
@@ -327,9 +325,7 @@ def move(ctx, list, ids):
 
     for id in ids:
         todo = ctx.obj['db'].todo(id)
-        click.echo('Moving {} to {} ({})'.format(
-            todo.uid, list, todo.summary
-        ))
+        click.echo(ctx.obj['formatter'].compact(todo))
 
         ctx.obj['db'].move(todo, list)
 
