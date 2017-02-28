@@ -141,13 +141,9 @@ def cli(ctx, color, porcelain):
         if isdir(path)
     ]
     if len(paths) == 0:
-        click.echo("No lists found.\n")
-        click.echo(config["main"]["path"])
-        click.echo("goto ~/.local/share/calendars")
-        click.echo("then create directory in it suppose list")
-        click.echo("then print - todo new -ltask \"summary of list\"")
-        click.echo("print - todo")
-
+        click.echo("No lists found matching {}, "
+                   "create a directory for a new list"
+                   .format(config["main"]["path"]))
         ctx.exit(1)
 
     ctx.obj['db'] = Database(paths, config['main']['cache_path'])
