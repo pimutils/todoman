@@ -21,8 +21,8 @@ v3.0.0
 * Make the output of move, delete, copy and flush more consistent with
   everything else.
 * Porcelain now outputs proper JSON, rather than one-JSON-per-line.
-* Make todoman print "No lists found matching" and tell the user how to create a list when there are none.
 * Increment sequence number upon edits.
+* Print a descriptive message when no lists are found.
 
 v2.1.0
 ------
