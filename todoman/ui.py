@@ -386,11 +386,11 @@ class PorcelainFormatter:
         )
 
     def compact(self, todo):
-        return json.dumps(self._todo_as_dict(todo), sort_keys=True)
+        return json.dumps(self._todo_as_dict(todo), indent=4, sort_keys=True)
 
     def compact_multiple(self, todos):
         data = [self._todo_as_dict(todo) for todo in todos]
-        return json.dumps(data, sort_keys=True)
+        return json.dumps(data, indent=4, sort_keys=True)
 
     def simple_action(self, action, todo):
         return self.compact(todo)

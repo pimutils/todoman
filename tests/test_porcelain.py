@@ -24,7 +24,8 @@ def test_list_all(tmpdir, runner, create):
     }]
 
     assert not result.exception
-    assert result.output.strip() == json.dumps(expected, sort_keys=True)
+    assert result.output.strip() == json.dumps(expected, indent=4,
+                                               sort_keys=True)
 
 
 def test_list_nodue(tmpdir, runner, create):
@@ -47,7 +48,8 @@ def test_list_nodue(tmpdir, runner, create):
     }]
 
     assert not result.exception
-    assert result.output.strip() == json.dumps(expected, sort_keys=True)
+    assert result.output.strip() == json.dumps(expected, indent=4,
+                                               sort_keys=True)
 
 
 def test_list_priority(tmpdir, runner, create):
@@ -132,4 +134,5 @@ def test_show(tmpdir, runner, create):
     }
 
     assert not result.exception
-    assert result.output.strip() == json.dumps(expected, sort_keys=True)
+    assert result.output.strip() == json.dumps(expected, indent=4,
+                                               sort_keys=True)
