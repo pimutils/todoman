@@ -28,7 +28,7 @@ def test_all(tmpdir, runner, create):
     assert 'hoho' in result.output
 
 
-def test_urgent(tmpdir, runner, create):
+def test_priority(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
     assert not result.output.strip()
@@ -36,16 +36,53 @@ def test_urgent(tmpdir, runner, create):
     create(
         'one.ics',
         'SUMMARY:haha\n'
-        'PRIORITY: 9\n'
+        'PRIORITY:4\n'
     )
     create(
         'two.ics',
         'SUMMARY:hoho\n'
+        'PRIORITY:9\n'
     )
-    result = runner.invoke(cli, ['list', '--urgent'])
-    assert not result.exception
-    assert 'haha' in result.output
-    assert 'hoho' not in result.output
+    create(
+        'three.ics',
+        'SUMMARY:hehe\n'
+        'PRIORITY:5\n'
+    )
+    create(
+        'four.ics',
+        'SUMMARY:huhu\n'
+    )
+
+    result_high = runner.invoke(cli, ['list', '--priority=high'])
+    assert not result_high.exception
+    assert 'haha' in result_high.output
+    assert 'hoho' not in result_high.output
+    assert 'huhu' not in result_high.output
+    assert 'hehe' not in result_high.output
+
+    result_medium = runner.invoke(cli, ['list', '--priority=medium'])
+    assert not result_medium.exception
+    assert 'haha' in result_medium.output
+    assert 'hehe' in result_medium.output
+    assert 'hoho' not in result_medium.output
+    assert 'huhu' not in result_medium.output
+
+    result_low = runner.invoke(cli, ['list', '--priority=low'])
+    assert not result_low.exception
+    assert 'haha' in result_low.output
+    assert 'hehe' in result_low.output
+    assert 'hoho' in result_low.output
+    assert 'huhu' not in result_low.output
+
+    result_none = runner.invoke(cli, ['list', '--priority=none'])
+    assert not result_none.exception
+    assert 'haha' in result_none.output
+    assert 'hehe' in result_none.output
+    assert 'hoho' in result_none.output
+    assert 'huhu' in result_none.output
+
+    result_error = runner.invoke(cli, ['list', '--priority=blah'])
+    assert result_error.exception
 
 
 def test_location(tmpdir, runner, create):
@@ -72,6 +109,27 @@ def test_location(tmpdir, runner, create):
     assert 'haha' in result.output
     assert 'hoho' not in result.output
     assert 'harhar' not in result.output
+
+
+def test_done_only(tmpdir, runner, create):
+    result = runner.invoke(cli, ['list'], catch_exceptions=False)
+    assert not result.exception
+    assert not result.output.strip()
+
+    create(
+        'one.ics',
+        'SUMMARY:haha\n'
+    )
+    create(
+        'two.ics',
+        'SUMMARY:hoho\n'
+        'PERCENT-COMPLETE:100\n'
+        'STATUS:COMPLETED\n'
+    )
+    result = runner.invoke(cli, ['list', '--done-only'])
+    assert not result.exception
+    assert 'haha' not in result.output
+    assert 'hoho' in result.output
 
 
 def test_category(tmpdir, runner, create):
@@ -205,3 +263,36 @@ def test_due_naive(tmpdir, runner, create):
     assert len(todos) == 2
     assert todos[0].summary == "23"
     assert todos[1].summary == "1"
+
+
+def test_filtering_start(tmpdir, runner, create):
+    result = runner.invoke(cli, ['list'], catch_exceptions=False)
+    assert not result.exception
+    assert not result.output.strip()
+
+    today = datetime.now()
+    now = today.strftime("%Y-%m-%d")
+    now_plus_day = (today + timedelta(days=1)).strftime("%Y-%m-%d")
+    now_minus_day = (today + timedelta(days=-1)).strftime("%Y-%m-%d")
+    result = runner.invoke(cli, ['list', '--start', 'before ' + now])
+    assert not result.exception
+    assert not result.output.strip()
+
+    result = runner.invoke(cli, ['list', '--start', 'after ' + now])
+    assert not result.exception
+    assert not result.output.strip()
+
+    tmpdir.mkdir('list_one')
+    runner.invoke(cli, ['new', '-l', 'list_one', 'haha'])
+    runner.invoke(cli, ['new', '-l', 'list_one', 'hoho'])
+
+    result = runner.invoke(cli, ['list', '--start', 'after ' + now_minus_day])
+    assert not result.exception
+    assert 'haha' in result.output
+    assert 'hoho' in result.output
+    result = runner.invoke(cli, ['list', '--start', 'before ' + now_minus_day])
+    assert not result.exception
+    assert not result.output.strip()
+    result = runner.invoke(cli, ['list', '--start', 'after ' + now_plus_day])
+    assert not result.exception
+    assert not result.output.strip()

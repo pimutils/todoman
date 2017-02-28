@@ -48,6 +48,37 @@ def _validate_date_param(ctx, param, val):
         raise click.BadParameter(e)
 
 
+def _validate_priority_param(ctx, param, val):
+    try:
+        return ctx.obj['formatter'].parse_priority(val)
+    except ValueError as e:
+        raise click.BadParameter(e)
+
+
+def _validate_start_date_param(ctx, param, val):
+    if val is None:
+        return val
+    if val.startswith('before '):
+        is_before = True
+        val = val[len('before '):]
+    elif val.startswith('after '):
+        is_before = False
+        val = val[len('after '):]
+    else:
+        raise click.BadParameter(
+            "The start date of the task should be"
+            "in format '[before|after] <date-format>'")
+    try:
+        dt = ctx.obj['formatter'].parse_datetime(val)
+        return is_before, dt
+    except ValueError as e:
+        raise click.BadParameter(e)
+
+
+def _sort_callback(ctx, param, val):
+    return val.split(',') if val else []
+
+
 def _todo_property_options(command):
     click.option(
         '--due', '-d', default='', callback=_validate_date_param,
@@ -179,6 +210,8 @@ def edit(ctx, id, todo_properties, interactive):
     '''
     database = ctx.obj['db']
     todo = database.todo(id)
+    old_list = todo.list
+
     changes = False
     for key, value in todo_properties.items():
         if value:
@@ -193,6 +226,8 @@ def edit(ctx, id, todo_properties, interactive):
 
     if changes:
         todo.save()
+        if old_list.name != todo.list.name:
+            database.move(todo, todo.list, from_list=old_list)
         click.echo(ctx.obj['formatter'].detailed(todo))
     else:
         click.echo('No changes.')
@@ -245,7 +280,7 @@ def flush(ctx):
     '''
     database = ctx.obj['db']
     for todo in database.flush():
-        click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
+        click.echo(ctx.obj['formatter'].simple_action('Flushing', todo))
 
 
 @cli.command()
@@ -265,7 +300,7 @@ def delete(ctx, ids, yes):
         click.confirm('Do you want to delete those tasks?', abort=True)
 
     for todo in todos:
-        click.echo('Deleting {} ({})'.format(todo.uid, todo.summary))
+        click.echo(ctx.obj['formatter'].simple_action('Deleting', todo))
         ctx.obj['db'].delete(todo)
 
 
@@ -279,9 +314,7 @@ def copy(ctx, list, ids):
 
     for id in ids:
         todo = ctx.obj['db'].todo(id)
-        click.echo('Copying {} to {} ({})'.format(
-            todo.uid, list, todo.summary
-        ))
+        click.echo(ctx.obj['formatter'].compact(todo))
 
         ctx.obj['db'].save(todo, list)
 
@@ -296,9 +329,7 @@ def move(ctx, list, ids):
 
     for id in ids:
         todo = ctx.obj['db'].todo(id)
-        click.echo('Moving {} to {} ({})'.format(
-            todo.uid, list, todo.summary
-        ))
+        click.echo(ctx.obj['formatter'].compact(todo))
 
         ctx.obj['db'].move(todo, list)
 
@@ -307,19 +338,24 @@ def move(ctx, list, ids):
 @click.pass_context
 @click.option('--all', '-a', is_flag=True, help='Also show finished tasks.')
 @click.argument('lists', nargs=-1, callback=_validate_lists_param)
-@click.option('--urgent', is_flag=True, help='Only show urgent tasks.')
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
-@click.option('--sort', help='Sort tasks using these fields')
+@click.option('--sort', help='Sort tasks using these fields',
+              callback=_sort_callback)
 @click.option('--reverse/--no-reverse', default=True,
               help='Sort tasks in reverse order (see --sort). '
               'Defaults to true.')
 @click.option('--due', default=None, help='Only show tasks due in DUE hours',
               type=int)
-def list(
-    ctx, lists, all, urgent, location, category, grep, sort, reverse, due,
-         ):
+@click.option('--priority', default=None, help='Only show tasks with'
+              ' priority at least as high as the specified one', type=str,
+              callback=_validate_priority_param)
+@click.option('--done-only', default=False, is_flag=True,
+              help='Only show finished tasks')
+@click.option('--start', default=None, callback=_validate_start_date_param,
+              help='Only shows tasks before/after given DATE')
+def list(ctx, **kwargs):
     """
     List unfinished tasks.
 
@@ -334,19 +370,5 @@ def list(
     This is the default action when running `todo'.
     """
 
-    sort = sort.split(',') if sort else None
-
-    db = ctx.obj['db']
-    todos = db.todos(
-        due=due,
-        all=all,
-        category=category,
-        grep=grep,
-        lists=lists,
-        location=location,
-        reverse=reverse,
-        sort=sort,
-        urgent=urgent,
-    )
-
+    todos = ctx.obj['db'].todos(**kwargs)
     click.echo(ctx.obj['formatter'].compact_multiple(todos))

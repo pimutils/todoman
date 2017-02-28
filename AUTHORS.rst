@@ -10,13 +10,16 @@ when copying code from elsewhere).
 
 Authors are listed in alphabetical order.
 
+* Anubha Agrawal <anubhakannu@gmail.com>
 * Benjamin Frank <ben+gitlab@pipsfrank.de>
 * Christian Geier <geier@lostpackets.de>
 * Guilhem Saurel <guilhem.saurel@gmail.com>
 * Hugo Osvaldo Barrera <hugo@barrera.io>
 * José Ribeiro <hello@jlbribeiro.com>
+* Mansimar Kaur <mansimarkaur.mks@gmail.com>
 * Markus Unterwaditzer <markus@unterwaditzer.net>
 * Paweł Fertyk <pfertyk@openmailbox.org>
 * Rimsha Khan <rimshakhan.rk03@gmail.com>
 * Sakshi Saraswat <saraswatsakshi.121@gmail.com>
+* Swati Garg <swati4star@gmail.com>
 * Thomas Glanzmann <thomas@glanzmann.de>

@@ -546,8 +546,9 @@ class Cache:
 
         return rv
 
-    def todos(self, all=False, lists=[], urgent=False, location='',
-              category='', grep='', sort=[], reverse=True, due=None):
+    def todos(self, all=False, lists=[], priority=None, location='',
+              category='', grep='', sort=[], reverse=True, due=None,
+              done_only=None, start=None):
         """
         Returns filtered cached todos, in a specified order.
 
@@ -560,7 +561,6 @@ class Cache:
 
         :param bool all: If true, also return completed todos.
         :param list lists: Only return todos for these lists.
-        :param bool urgent: Only return urgent todos.
         :param str location: Only return todos with a location containing this
             string.
         :param str category: Only return todos with a category containing this
@@ -570,6 +570,11 @@ class Cache:
             with a ``-`` prepended will be used to sort in reverse order.
         :param bool reverse: Reverse the order of the todos after sorting.
         :param int due: Return only todos due within ``due`` hours.
+        :param str priority: Only return todos with priority at least as
+            high as specified.
+        :param bool done_only: If true, return done tasks, else incomplete
+            tasks
+        :param start: Return only todos before/after ``start`` date
         :return: A sorted, filtered list of todos.
         :rtype: generator
         """
@@ -580,16 +585,20 @@ class Cache:
 
         if not all:
             # XXX: Duplicated logic of Todo.is_completed
-            extra_where.append('AND completed_at is NULL '
-                               'AND status != "CANCELLED" '
-                               'AND status != "COMPLETED"')
+            if done_only:
+                extra_where.append('AND status == "COMPLETED"')
+            else:
+                extra_where.append('AND completed_at is NULL '
+                                   'AND status != "CANCELLED" '
+                                   'AND status != "COMPLETED"')
         if lists:
             lists = [l.name if isinstance(l, List) else l for l in lists]
             q = ', '.join(['?'] * len(lists))
             extra_where.append('AND files.list_name IN ({})'.format(q))
             params.extend(lists)
-        if urgent:
-            extra_where.append('AND priority = 9')
+        if priority:
+            extra_where.append('AND PRIORITY > 0 AND PRIORITY <= ?')
+            params.append('{}'.format(priority))
         if location:
             extra_where.append('AND location LIKE ?')
             params.append('%{}%'.format(location))
@@ -606,7 +615,14 @@ class Cache:
             max_due = (datetime.now() + timedelta(hours=due)).timestamp()
             extra_where.append('AND due IS NOT NULL AND due < ?')
             params.append(max_due)
-
+        if start:
+            is_before, dt = start
+            if is_before:
+                extra_where.append('AND created_at <= ?')
+                params.append(dt)
+            else:
+                extra_where.append('AND created_at >= ?')
+                params.append(dt)
         if sort:
             order = []
             for s in sort:
@@ -815,8 +831,9 @@ class Database:
     def lists(self):
         return self.cache.lists()
 
-    def move(self, todo, new_list):
-        orig_path = os.path.join(todo.list.path, todo.filename)
+    def move(self, todo, new_list, from_list=None):
+        from_list = from_list or todo.list
+        orig_path = os.path.join(from_list.path, todo.filename)
         dest_path = os.path.join(new_list.path, todo.filename)
 
         os.rename(orig_path, dest_path)

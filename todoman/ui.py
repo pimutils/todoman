@@ -30,15 +30,14 @@ class TodoEditor:
         """
         :param model.Todo todo: The todo object which will be edited.
         """
-
+        self.current_list = todo.list
         self.todo = todo
-        self.lists = lists
+        self.lists = list(lists)
         self.formatter = formatter
         self.saved = EditState.none
         self._loop = None
 
         self._msg_text = urwid.Text('')
-
         if todo.due:
             # TODO: use proper date_format
             due = formatter.format_datetime(todo.due)
@@ -50,6 +49,11 @@ class TodoEditor:
             dtstart = formatter.format_datetime(todo.start)
         else:
             dtstart = ''
+
+        if todo.priority:
+            priority = formatter.parse_priority(todo.priority)
+        else:
+            priority = ''
 
         self._summary = widgets.ExtendedEdit(parent=self,
                                              edit_text=todo.summary)
@@ -65,7 +69,7 @@ class TodoEditor:
         self._due = widgets.ExtendedEdit(parent=self, edit_text=due)
         self._dtstart = widgets.ExtendedEdit(parent=self, edit_text=dtstart)
         self._completed = urwid.CheckBox("", state=todo.is_completed)
-        self._urgent = urwid.CheckBox("", state=todo.priority != 0)
+        self._priority = widgets.ExtendedEdit(parent=self, edit_text=priority)
 
         save_btn = urwid.Button('Save', on_press=self._save)
         cancel_text = urwid.Text('Hit Ctrl-C to cancel, F1 for help.')
@@ -78,7 +82,7 @@ class TodoEditor:
                              ("Due", self._due),
                              ("Start", self._dtstart),
                              ("Completed", self._completed),
-                             ("Urgent", self._urgent),
+                             ("Priority", self._priority),
                              ]:
             label = urwid.Text(label + ":", align='right')
             column = urwid.Columns([(13, label), field], dividechars=1)
@@ -99,6 +103,18 @@ class TodoEditor:
             + '\n'.join(' {}: {}'.format(k, v) for k, v
                         in widgets.ExtendedEdit.HELP)
         )
+
+        def change_current_list(radio_button, new_state, new_list):
+            if new_state:
+                self.current_list = new_list
+
+        list_selector = []
+        for _list in self.lists:
+            urwid.RadioButton(list_selector, _list.name,
+                              state=_list.name == self.current_list.name,
+                              on_state_change=change_current_list,
+                              user_data=_list)
+        items.append(urwid.Pile(list_selector))
 
     def _toggle_help(self):
         if self._ui_content[-1] is self._help_text:
@@ -142,6 +158,7 @@ class TodoEditor:
             raise urwid.ExitMainLoop()
 
     def _save_inner(self):
+        self.todo.list = self.current_list
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
@@ -150,12 +167,7 @@ class TodoEditor:
 
         self.todo.is_completed = self._completed.get_state()
 
-        # If it was already non-zero, keep it that way. Let's not overwrite
-        # values 1 thru 8.
-        if self._urgent.get_state() and not self.todo.priority:
-            self.todo.priority = 9
-        elif not self._urgent.get_state():
-            self.todo.priority = 0
+        self.todo.priority = self.formatter.parse_priority(self.priority)
 
         # TODO: categories
         # TODO: comment
@@ -194,6 +206,10 @@ class TodoEditor:
     def dtstart(self):
         return self._dtstart.edit_text
 
+    @property
+    def priority(self):
+        return self._priority.edit_text
+
 
 class TodoFormatter:
 
@@ -214,6 +230,9 @@ class TodoFormatter:
         }
         self._parsedatetime_calendar = parsedatetime.Calendar()
 
+    def simple_action(self, action, todo):
+        return '{} "{}"'.format(action, todo.summary)
+
     def compact(self, todo):
         return self.compact_multiple([todo])
 
@@ -224,7 +243,14 @@ class TodoFormatter:
             percent = todo.percent_complete or ''
             if percent:
                 percent = " ({}%)".format(percent)
-            urgent = " " if todo.priority in [None, 0] else "!"
+            if todo.priority == 5:
+                priority = "!!"
+            elif todo.priority <= 4 and todo.priority >= 1:
+                priority = "!!!"
+            elif todo.priority <= 9 and todo.priority >= 6:
+                priority = "!"
+            elif todo.priority == 0:
+                priority = ""
 
             due = self.format_datetime(todo.due)
             if todo.due and todo.due <= self.now and not todo.is_completed:
@@ -233,7 +259,7 @@ class TodoFormatter:
             table.append([
                 todo.id,
                 "[{}]".format(completed),
-                urgent,
+                priority,
                 due,
                 "{} {}{}".format(
                     todo.summary,
@@ -295,6 +321,19 @@ class TodoFormatter:
             self._format_time(time_part)
         )))
 
+    def parse_priority(self, priority):
+        if priority == 'low':
+            return 9
+        elif priority == 'medium':
+            return 5
+        elif priority == 'high':
+            return 4
+        elif priority == 'none' or priority is None:
+            return 0
+        else:
+            raise ValueError('Priority has to be one of low, medium,'
+                             ' high or none')
+
     def parse_datetime(self, dt):
         if not dt:
             return None
@@ -335,26 +374,37 @@ class TodoFormatter:
 
 class PorcelainFormatter:
 
-    def compact(self, todo):
-        data = dict(
+    def _todo_as_dict(self, todo):
+        return dict(
             completed=todo.is_completed,
             due=self.format_datetime(todo.due),
             id=todo.id,
             list=todo.list.name,
             percent=todo.percent_complete,
             summary=todo.summary,
-            # XXX: Move this into Todo itself and dedupe it
-            urgent=todo.priority not in [None, 0],
+            priority=todo.priority,
         )
 
-        return json.dumps(data, sort_keys=True)
+    def compact(self, todo):
+        return json.dumps(self._todo_as_dict(todo), sort_keys=True)
 
     def compact_multiple(self, todos):
-        data = []
-        for todo in todos:
-            data.append(self.compact(todo))
+        data = [self._todo_as_dict(todo) for todo in todos]
+        return json.dumps(data, sort_keys=True)
 
-        return '\n'.join(data)
+    def simple_action(self, action, todo):
+        return self.compact(todo)
+
+    def parse_priority(self, priority):
+        if priority is None:
+            return 0
+        try:
+            if int(priority) in range(0, 10):
+                return int(priority)
+            else:
+                raise ValueError('Priority has to be in the range 0-9')
+        except ValueError as e:
+            raise click.BadParameter(e)
 
     def detailed(self, todo):
         return self.compact(todo)
