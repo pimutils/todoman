@@ -30,15 +30,14 @@ class TodoEditor:
         """
         :param model.Todo todo: The todo object which will be edited.
         """
-
+        self.current_list = todo.list
         self.todo = todo
-        self.lists = lists
+        self.lists = list(lists)
         self.formatter = formatter
         self.saved = EditState.none
         self._loop = None
 
         self._msg_text = urwid.Text('')
-
         if todo.due:
             # TODO: use proper date_format
             due = formatter.format_datetime(todo.due)
@@ -105,6 +104,18 @@ class TodoEditor:
                         in widgets.ExtendedEdit.HELP)
         )
 
+        def change_current_list(radio_button, new_state, new_list):
+            if new_state:
+                self.current_list = new_list
+
+        list_selector = []
+        for _list in self.lists:
+            urwid.RadioButton(list_selector, _list.name,
+                              state=_list.name == self.current_list.name,
+                              on_state_change=change_current_list,
+                              user_data=_list)
+        items.append(urwid.Pile(list_selector))
+
     def _toggle_help(self):
         if self._ui_content[-1] is self._help_text:
             self._ui_content.pop()
@@ -147,6 +158,7 @@ class TodoEditor:
             raise urwid.ExitMainLoop()
 
     def _save_inner(self):
+        self.todo.list = self.current_list
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
@@ -217,6 +229,9 @@ class TodoFormatter:
             self.tomorrow: "Tomorrow",
         }
         self._parsedatetime_calendar = parsedatetime.Calendar()
+
+    def simple_action(self, action, todo):
+        return '{} "{}"'.format(action, todo.summary)
 
     def compact(self, todo):
         return self.compact_multiple([todo])
@@ -359,8 +374,8 @@ class TodoFormatter:
 
 class PorcelainFormatter:
 
-    def compact(self, todo):
-        data = dict(
+    def _todo_as_dict(self, todo):
+        return dict(
             completed=todo.is_completed,
             due=self.format_datetime(todo.due),
             id=todo.id,
@@ -370,7 +385,15 @@ class PorcelainFormatter:
             priority=todo.priority,
         )
 
+    def compact(self, todo):
+        return json.dumps(self._todo_as_dict(todo), sort_keys=True)
+
+    def compact_multiple(self, todos):
+        data = [self._todo_as_dict(todo) for todo in todos]
         return json.dumps(data, sort_keys=True)
+
+    def simple_action(self, action, todo):
+        return self.compact(todo)
 
     def parse_priority(self, priority):
         if priority is None:
@@ -382,13 +405,6 @@ class PorcelainFormatter:
                 raise ValueError('Priority has to be in the range 0-9')
         except ValueError as e:
             raise click.BadParameter(e)
-
-    def compact_multiple(self, todos):
-        data = []
-        for todo in todos:
-            data.append(self.compact(todo))
-
-        return '\n'.join(data)
 
     def detailed(self, todo):
         return self.compact(todo)

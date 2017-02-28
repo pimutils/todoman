@@ -14,9 +14,14 @@ v3.0.0
   parameter.
 * Use the system's date format as a default.
 * Show "Today" or "Tomorrow" when due date is today/tomorrow respectively.
+* Add list selector to TodoEditor
 * Add ``--start="[before|after] <date>`` option for ``todo list``. It shows todos
   created before/after given date.
 * Add flag "--done-only" to todo list. Displays only completed tasks.
+* Make the output of move, delete, copy and flush more consistent with
+  everything else.
+* Porcelain now outputs proper JSON, rather than one-JSON-per-line.
+
 
 v2.1.0
 ------
@@ -62,3 +67,4 @@ Packaging changes
 * New runtime dependency: configobj
 * New runtime dependency: python-dateutil
 * New test dependency: flake8-import-order.
+
