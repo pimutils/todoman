@@ -428,9 +428,9 @@ def test_edit(runner, default_database):
 
 
 def test_empty_list(tmpdir, runner, create):
-    [item.remove()
-     for item in tmpdir.listdir()
-     if isdir(str(item))]
+    for item in tmpdir.listdir():
+        if isdir(str(item)):
+            item.remove()
 
     result = runner.invoke(cli)
     expected = ("No lists found matching {}/*, create"
