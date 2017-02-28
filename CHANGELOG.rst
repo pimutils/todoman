@@ -20,6 +20,7 @@ v3.0.0
 * Add flag "--done-only" to todo list. Displays only completed tasks.
 * Make the output of move, delete, copy and flush more consistent with
   everything else.
+* Porcelain now outputs proper JSON, rather than one-JSON-per-line.
 
 
 v2.1.0
