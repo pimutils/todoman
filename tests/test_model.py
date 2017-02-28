@@ -1,8 +1,12 @@
 from datetime import datetime
 
+import icalendar
+
 from dateutil.tz.tz import tzoffset
 
 from todoman.model import Database
+from todoman.model import FileTodo
+from todoman.model import List
 
 
 def test_querying(create, tmpdir):
@@ -66,3 +70,29 @@ def test_change_paths(tmpdir, create):
 
     assert len(list(db.lists())) == 1
     assert not list(db.todos())
+
+
+def test_sequence_increment(tmpdir):
+    default_dir = tmpdir.mkdir("default")
+
+    todo = FileTodo()
+    _list = List("default", str(default_dir))
+    todo.save(_list)
+
+    filename = default_dir.join(todo.filename)
+
+    cal = icalendar.Calendar.from_ical(filename.read())
+    sequence, = [component.get("SEQUENCE", 0)
+                 for component in cal.subcomponents
+                 if component.name == "VTODO"]
+
+    assert sequence == 1
+
+    todo.save(_list)
+
+    cal = icalendar.Calendar.from_ical(filename.read())
+    sequence, = [component.get("SEQUENCE", 0)
+                 for component in cal.subcomponents
+                 if component.name == "VTODO"]
+
+    assert sequence == 2
