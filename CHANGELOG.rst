@@ -21,7 +21,7 @@ v3.0.0
 * Make the output of move, delete, copy and flush more consistent with
   everything else.
 * Porcelain now outputs proper JSON, rather than one-JSON-per-line.
-
+* Increment sequence number upon edits.
 
 v2.1.0
 ------
