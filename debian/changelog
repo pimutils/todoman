@@ -1,0 +1,5 @@
+todoman (VERSION) UNRELEASED; urgency=medium
+
+  * Initial release. (Closes: #855887)
+
+ -- Félix Sipma <felix+debian@gueux.org>  Wed, 01 Mar 2017 18:57:15 +0100
