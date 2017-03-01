@@ -22,6 +22,7 @@ v3.0.0
   everything else.
 * Porcelain now outputs proper JSON, rather than one-JSON-per-line.
 * todo does not output anything when their are no list.
+* Increment sequence number upon edits.
 
 v2.1.0
 ------

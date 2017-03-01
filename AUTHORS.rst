@@ -20,5 +20,6 @@ Authors are listed in alphabetical order.
 * Markus Unterwaditzer <markus@unterwaditzer.net>
 * Paweł Fertyk <pfertyk@openmailbox.org>
 * Rimsha Khan <rimshakhan.rk03@gmail.com>
+* Sakshi Saraswat <saraswatsakshi.121@gmail.com>
 * Swati Garg <swati4star@gmail.com>
 * Thomas Glanzmann <thomas@glanzmann.de>
