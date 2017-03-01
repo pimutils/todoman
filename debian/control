@@ -9,7 +9,8 @@ Build-Depends: debhelper (>= 10),
  python3-atomicwrites,
  python3-configobj,
  python3-yaml,
- python3-vobject
+ python3-vobject,
+ python3-pytest-runner
 Standards-Version: 3.9.8
 Homepage: https://github.com/pimutils/todoman
 Vcs-Git: https://git.gueux.org/todoman.git
