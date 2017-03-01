@@ -5,11 +5,16 @@ Section: utils
 Build-Depends: debhelper (>= 10),
  dh-python,
  python3-all,
+ python3-setuptools,
  python3-setuptools-scm,
  python3-atomicwrites,
+ python3-click,
  python3-configobj,
- python3-yaml,
- python3-vobject,
+ python3-icalendar,
+ python3-parsedatetime,
+ python3-dateutil,
+ python3-xdg,
+ python3-urwid,
  python3-pytest,
  python3-pytest-runner
 Standards-Version: 3.9.8
