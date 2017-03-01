@@ -144,6 +144,11 @@ def cli(ctx, color, porcelain):
         path for path in glob.iglob(expanduser(config["main"]["path"]))
         if isdir(path)
     ]
+    if len(paths) == 0:
+        click.echo("No lists found matching {}, "
+                   "create a directory for a new list"
+                   .format(config["main"]["path"]))
+        ctx.exit(1)
 
     ctx.obj['db'] = Database(paths, config['main']['cache_path'])
 

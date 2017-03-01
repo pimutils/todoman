@@ -22,6 +22,7 @@ v3.0.0
   everything else.
 * Porcelain now outputs proper JSON, rather than one-JSON-per-line.
 * Increment sequence number upon edits.
+* Print a descriptive message when no lists are found.
 
 v2.1.0
 ------

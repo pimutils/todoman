@@ -1,4 +1,5 @@
 import datetime
+from os.path import isdir
 
 import hypothesis.strategies as st
 import pytest
@@ -424,6 +425,18 @@ def test_edit(runner, default_database):
     todo = next(default_database.todos(all=True))
     assert todo.due == datetime.datetime(2017, 2, 1, tzinfo=tzlocal())
     assert todo.summary == 'Eat paint'
+
+
+def test_empty_list(tmpdir, runner, create):
+    for item in tmpdir.listdir():
+        if isdir(str(item)):
+            item.remove()
+
+    result = runner.invoke(cli)
+    expected = ("No lists found matching {}/*, create"
+                " a directory for a new list").format(tmpdir)
+
+    assert expected in result.output
 
 # TODO: test aware/naive datetime sorting
 # TODO: test --grep
