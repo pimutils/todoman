@@ -165,6 +165,9 @@ def cli(click_ctx, color, porcelain, humanize):
         raise click.ClickException('--porcelain and --humanize cannot be used'
                                    ' at the same time.')
 
+    if humanize is None:  # False means explicitly disabled
+        humanize = ctx.config['main']['humanize']
+
     if humanize:
         ctx.formatter_class = ui.HumanizedFormatter
     elif porcelain:
