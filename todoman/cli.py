@@ -171,7 +171,7 @@ def cli(click_ctx, color, porcelain):
     if len(paths) == 0:
         click.echo("No lists found matching {}, "
                    "create a directory for a new list"
-                   .format(config["main"]["path"]))
+                   .format(ctx.config["main"]["path"]))
         ctx.exit(1)
 
     ctx.db = Database(paths, ctx.config['main']['cache_path'])
@@ -285,8 +285,7 @@ def done(ctx, ids):
     Mark a task as done.
     '''
     for id in ids:
-        database = ctx.db
-        todo = database.todo(id)
+        todo = ctx.db.todo(id)
         todo.is_completed = True
         todo.save()
         click.echo(ctx.formatter.detailed(todo))
