@@ -278,7 +278,9 @@ class TodoFormatter:
         """
         rv = self.compact_multiple([todo])
         if todo.description:
-            rv = "{}\n\n{}".format(rv, todo.description)
+            rv = "{}\n\nDescription: {}".format(rv, todo.description)
+        if todo.location:
+            rv = "{}\n\nLocation: {}".format(rv, todo.location)
         return rv
 
     def _format_date(self, date):

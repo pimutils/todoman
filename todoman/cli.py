@@ -171,10 +171,12 @@ except ImportError:
 @click.argument('summary', nargs=-1)
 @click.option('--list', '-l', callback=_validate_list_param,
               help='The list to create the task in.')
+@click.option('--location',
+              help='The location of the todo.')
 @_todo_property_options
 @_interactive_option
 @click.pass_context
-def new(ctx, summary, list, todo_properties, interactive):
+def new(ctx, summary, list, location, todo_properties, interactive):
     '''
     Create a new task with SUMMARY.
     '''
@@ -200,6 +202,7 @@ def new(ctx, summary, list, todo_properties, interactive):
         raise click.UsageError('No SUMMARY specified')
 
     todo.list = list
+    todo.location = location
     ctx.obj['db'].save(todo, list)
     click.echo(ctx.obj['formatter'].detailed(todo))
 
