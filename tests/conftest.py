@@ -1,8 +1,11 @@
 import os
+from datetime import datetime
 from uuid import uuid4
 
 import pytest
+import pytz
 from click.testing import CliRunner
+from dateutil.tz import tzlocal
 from hypothesis import HealthCheck, settings, Verbosity
 
 from todoman import model
@@ -45,6 +48,23 @@ def create(tmpdir):
             'END:VTODO\n'
             'END:VCALENDAR'
         )
+
+    return inner
+
+
+@pytest.fixture
+def now_for_tz():
+
+    def inner(tz='CET'):
+        """
+        Provides the current time cast to a given timezone.
+
+        This helper should be used in place of datetime.now() when the date
+        will be compared to some pre-computed value that assumes a determined
+        timezone.
+        """
+        return datetime.now().replace(tzinfo=tzlocal()) \
+            .astimezone(pytz.timezone(tz))
 
     return inner
 
