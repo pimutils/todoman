@@ -307,7 +307,7 @@ def flush(ctx):
     '''
     database = ctx.db
     for todo in database.flush():
-        click.echo(ctx.obj['formatter'].simple_action('Flushing', todo))
+        click.echo(ctx.formatter.simple_action('Flushing', todo))
 
 
 @cli.command()
