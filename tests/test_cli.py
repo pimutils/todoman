@@ -491,4 +491,12 @@ def test_sort_mixed_timezones(runner, create):
     assert 'second' in result.output.splitlines()[0]
     assert 'first' in result.output.splitlines()[1]
 
+
+def test_humanize_interactive(runner):
+    result = runner.invoke(cli, ['--humanize', '--porcelain', 'list'])
+
+    assert result.exception
+    assert result.output.strip() == \
+        "Error: --porcelain and --humanize cannot be used at the same time."
+
 # TODO: test --grep

@@ -9,6 +9,7 @@ from dateutil.tz import tzlocal
 from hypothesis import HealthCheck, settings, Verbosity
 
 from todoman import model
+from todoman.ui import TodoFormatter
 
 
 @pytest.fixture
@@ -88,6 +89,11 @@ def todo_factory(default_database):
         return todo
 
     return inner
+
+
+@pytest.fixture
+def default_formatter():
+    return TodoFormatter("%Y-%m-%d", "%H:%M", ' ')
 
 
 settings.register_profile("ci", settings(
