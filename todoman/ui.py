@@ -39,8 +39,8 @@ class TodoEditor:
 
         self._msg_text = urwid.Text('')
 
-        due = formatter.format_datetime(todo.due, humanize=False)
-        dtstart = formatter.format_datetime(todo.start, humanize=False)
+        due = formatter.format_datetime(todo.due, humanize=False) or ''
+        dtstart = formatter.format_datetime(todo.start, humanize=False) or ''
 
         if todo.priority:
             priority = formatter.parse_priority(todo.priority, humanize=False)
@@ -364,7 +364,10 @@ class TodoFormatter:
                               click.style(database.name))
 
 
-class PorcelainFormatter:
+class PorcelainFormatter(TodoFormatter):
+
+    def __init__(self):
+        pass
 
     def _todo_as_dict(self, todo):
         return dict(
@@ -401,8 +404,14 @@ class PorcelainFormatter:
     def detailed(self, todo):
         return self.compact(todo)
 
-    def format_datetime(self, date):
+    def format_datetime(self, date, humanize=False):
         if date:
             return int(date.timestamp())
+        else:
+            return None
+
+    def parse_datetime(self, value):
+        if value:
+            return datetime.datetime.fromtimestamp(value)
         else:
             return None
