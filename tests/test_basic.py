@@ -438,5 +438,25 @@ def test_empty_list(tmpdir, runner, create):
 
     assert expected in result.output
 
+
+def test_show_location(tmpdir, runner, create):
+    create(
+        'test.ics',
+        'SUMMARY:harhar\n'
+        'LOCATION:Boston\n'
+    )
+
+    result = runner.invoke(cli, ['show', '1'])
+    assert 'Boston' in result.output
+
+
+def test_location(runner):
+    result = runner.invoke(cli, [
+        'new', '-l', 'default', '--location', 'Chembur', 'Event Test'
+    ])
+
+    assert 'Chembur' in result.output
+
+
 # TODO: test aware/naive datetime sorting
 # TODO: test --grep
