@@ -414,11 +414,14 @@ def test_edit(runner, default_database):
     todo = FileTodo()
     todo.list = next(default_database.lists())
     todo.summary = 'Eat paint'
+    todo.location = 'Boston'
     todo.due = datetime.datetime(2016, 10, 3)
     todo.save()
 
-    result = runner.invoke(cli, ['edit', '1', '--due', '2017-02-01'])
+    result = runner.invoke(cli, ['edit', '1', '--due',
+                           '--location', '2017-02-01'])
     assert not result.exception
+    assert 'Boston' in result.output
     assert '2017-02-01' in result.output
 
     default_database.update_cache()

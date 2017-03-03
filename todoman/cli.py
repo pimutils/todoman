@@ -80,6 +80,7 @@ def _sort_callback(ctx, param, val):
 
 
 def _todo_property_options(command):
+    click.option('--location', help=('The location of the todo.'))(command)
     click.option(
         '--due', '-d', default='', callback=_validate_date_param,
         help=('The due date of the task, in the format specified in the '
@@ -91,7 +92,7 @@ def _todo_property_options(command):
     @functools.wraps(command)
     def command_wrap(*a, **kw):
         kw['todo_properties'] = {key: kw.pop(key) for key in
-                                 ('due', 'start')}
+                                 ('due', 'start', 'location')}
         return command(*a, **kw)
 
     return command_wrap
@@ -171,8 +172,7 @@ except ImportError:
 @click.argument('summary', nargs=-1)
 @click.option('--list', '-l', callback=_validate_list_param,
               help='The list to create the task in.')
-@click.option('--location',
-              help='The location of the todo.')
+@click.option('--location', help='The location of the todo.')
 @_todo_property_options
 @_interactive_option
 @click.pass_context
