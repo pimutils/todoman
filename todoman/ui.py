@@ -40,18 +40,18 @@ class TodoEditor:
         self._msg_text = urwid.Text('')
         if todo.due:
             # TODO: use proper date_format
-            due = formatter.format_datetime(todo.due)
+            due = formatter.format_datetime(todo.due, humanize=False)
         else:
             due = ""
 
         if todo.start:
             # TODO: use proper date_format
-            dtstart = formatter.format_datetime(todo.start)
+            dtstart = formatter.format_datetime(todo.start, humanize=False)
         else:
             dtstart = ''
 
         if todo.priority:
-            priority = formatter.parse_priority(todo.priority)
+            priority = formatter.parse_priority(todo.priority, humanize=False)
         else:
             priority = ''
 
@@ -281,7 +281,7 @@ class TodoFormatter:
             rv = "{}\n\n{}".format(rv, todo.description)
         return rv
 
-    def _format_date(self, date):
+    def _format_date(self, date, humanize=True):
         """
         Format the date using ``date_format``
 
@@ -293,7 +293,7 @@ class TodoFormatter:
         :param datetime.date date: a date object
         """
         if date:
-            if date in self.special_dates:
+            if humanize and date in self.special_dates:
                 rv = self.special_dates[date]
             else:
                 rv = date.strftime(self.date_format)
@@ -307,7 +307,7 @@ class TodoFormatter:
         else:
             return ''
 
-    def format_datetime(self, dt):
+    def format_datetime(self, dt, humanize=True):
         if not dt:
             date_part = None
             time_part = None
@@ -317,7 +317,7 @@ class TodoFormatter:
             time_part = dt.time()
 
         return self.dt_separator.join(filter(bool, (
-            self._format_date(date_part),
+            self._format_date(date_part, humanize=humanize),
             self._format_time(time_part)
         )))
 
