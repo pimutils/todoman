@@ -38,17 +38,9 @@ class TodoEditor:
         self._loop = None
 
         self._msg_text = urwid.Text('')
-        if todo.due:
-            # TODO: use proper date_format
-            due = formatter.format_datetime(todo.due, humanize=False)
-        else:
-            due = ""
 
-        if todo.start:
-            # TODO: use proper date_format
-            dtstart = formatter.format_datetime(todo.start, humanize=False)
-        else:
-            dtstart = ''
+        due = formatter.format_datetime(todo.due, humanize=False)
+        dtstart = formatter.format_datetime(todo.start, humanize=False)
 
         if todo.priority:
             priority = formatter.parse_priority(todo.priority, humanize=False)
