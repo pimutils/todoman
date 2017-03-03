@@ -314,13 +314,15 @@ class TodoFormatter:
         )))
 
     def parse_priority(self, priority):
+        if priority is None or priority is '':
+            return None
         if priority == 'low':
             return 9
         elif priority == 'medium':
             return 5
         elif priority == 'high':
             return 4
-        elif priority == 'none' or priority is None:
+        elif priority == 'none':
             return 0
         else:
             raise ValueError('Priority has to be one of low, medium,'
@@ -392,7 +394,7 @@ class PorcelainFormatter(TodoFormatter):
 
     def parse_priority(self, priority):
         if priority is None:
-            return 0
+            return None
         try:
             if int(priority) in range(0, 10):
                 return int(priority)
