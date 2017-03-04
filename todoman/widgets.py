@@ -86,10 +86,8 @@ class ExtendedEdit(urwid.Edit):
     def _delete_till_beginning_of_line(self):
         """delete till start of line before cursor"""
         text = self.get_edit_text()
-        sol = text.rfind('\n', self.edit_pos)
+        sol = text.rfind('\n', 0, self.edit_pos) + 1
 
-        if sol == -1:
-            sol = 0
         before_line = text[:sol]
 
         self.set_edit_text(before_line + text[self.edit_pos:])
@@ -109,9 +107,7 @@ class ExtendedEdit(urwid.Edit):
 
     def _goto_beginning_of_line(self):
         text = self.get_edit_text()
-        sol = text.rfind('\n', 0, self.edit_pos)
-        if sol == -1:
-            sol = 0
+        sol = text.rfind('\n', 0, self.edit_pos) + 1
         self.set_edit_pos(sol)
 
     def _goto_end_of_line(self):
