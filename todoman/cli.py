@@ -25,11 +25,11 @@ def _validate_lists_param(ctx, param=None, lists=None):
 def _validate_list_param(ctx, param=None, name=None):
     ctx = ctx.find_object(AppContext)
     if name is None:
-        if 'default_list' in ctx.config['main']:
+        if ctx.config['main']['default_list']:
             name = ctx.config['main']['default_list']
         else:
             raise click.BadParameter(
-                "{}. You must set 'default_list' or use -l."
+                'You must set "default_list" or use -l.'
                 .format(name)
             )
     for l in ctx.db.lists():

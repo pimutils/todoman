@@ -26,6 +26,14 @@ def test_list(tmpdir, runner, create):
     assert 'harhar' in result.output
 
 
+def test_no_default_list(runner):
+    result = runner.invoke(cli, ['new', 'Configure a default list'])
+
+    assert result.exception
+    assert ('Error: Invalid value for "--list" / "-l": You must set '
+            '"default_list" or use -l.' in result.output)
+
+
 def test_no_extra_whitespace(tmpdir, runner, create):
     """
     Test that we don't output extra whitespace
