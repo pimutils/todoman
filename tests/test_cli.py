@@ -12,7 +12,7 @@ from todoman.cli import cli
 from todoman.model import Database, FileTodo
 
 
-def test_basic(tmpdir, runner, create):
+def test_list(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
     assert not result.output.strip()
@@ -24,6 +24,14 @@ def test_basic(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert 'harhar' in result.output
+
+
+def test_no_default_list(runner):
+    result = runner.invoke(cli, ['new', 'Configure a default list'])
+
+    assert result.exception
+    assert ('Error: Invalid value for "--list" / "-l": You must set '
+            '"default_list" or use -l.' in result.output)
 
 
 def test_no_extra_whitespace(tmpdir, runner, create):
@@ -458,5 +466,29 @@ def test_location(runner):
     assert 'Chembur' in result.output
 
 
-# TODO: test aware/naive datetime sorting
+def test_sort_mixed_timezones(runner, create):
+    """
+    Test sorting mixed timezones.
+
+    The times on this tests are carefully chosen so that a TZ-naive comparison
+    gives the opposite results.
+    """
+    create(
+        'test.ics',
+        'SUMMARY:first\n'
+        'DUE;VALUE=DATE-TIME;TZID=CET:20170304T180000\n'  # 1700 UTC
+    )
+    create(
+        'test2.ics',
+        'SUMMARY:second\n'
+        'DUE;VALUE=DATE-TIME;TZID=HST:20170304T080000\n'  # 1800 UTC
+    )
+
+    result = runner.invoke(cli, ['list', '--all'])
+    assert not result.exception
+    output = result.output.strip()
+    assert len(output.splitlines()) == 2
+    assert 'second' in result.output.splitlines()[0]
+    assert 'first' in result.output.splitlines()[1]
+
 # TODO: test --grep

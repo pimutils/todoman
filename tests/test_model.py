@@ -96,3 +96,39 @@ def test_sequence_increment(tmpdir):
                  if component.name == "VTODO"]
 
     assert sequence == 2
+
+
+def test_list_displayname(tmpdir):
+    tmpdir.join('default').mkdir()
+    with tmpdir.join('default').join('displayname').open('w') as f:
+        f.write('personal')
+
+    db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite3'))
+    list_ = next(db.lists())
+
+    assert list_.name == 'personal'
+    assert str(list_) == 'personal'
+
+
+def test_list_colour(tmpdir):
+    tmpdir.join('default').mkdir()
+    with tmpdir.join('default').join('color').open('w') as f:
+        f.write('#8ab6d2')
+
+    db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite3'))
+    list_ = next(db.lists())
+
+    assert list_.color_raw == '#8ab6d2'
+    assert list_.color_rgb == (138, 182, 210)
+    assert list_.color_ansi == '\x1b[38;2;138;182;210m'
+
+
+def test_list_no_colour(tmpdir):
+    tmpdir.join('default').mkdir()
+
+    db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite3'))
+    list_ = next(db.lists())
+
+    assert list_.color_raw is None
+    assert list_.color_rgb is None
+    assert list_.color_ansi is None

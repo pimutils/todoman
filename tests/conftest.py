@@ -71,11 +71,18 @@ def now_for_tz():
 
 @pytest.fixture
 def todo_factory(default_database):
-    def inner(priority=None):
+    def inner(
+            due=None,
+            priority=None,
+            summary='YARR!',
+              ):
         todo = model.FileTodo()
         todo.list = list(default_database.lists())[0]
-        todo.summary = 'YARR!'
+
+        todo.due = due
         todo.priority = priority
+        todo.summary = summary
+
         todo.save()
 
         return todo

@@ -24,3 +24,27 @@ def test_human_dates():
         any_day.strftime(DATE_FORMAT + ' ' + TIME_FORMAT)
     assert formatter.format_datetime(tomorrow_12am) == "Tomorrow 12:00"
     assert formatter.parse_datetime('12:00').replace(tzinfo=None) == today_12am
+
+
+def test_format_priority():
+    formatter = ui.TodoFormatter('', '', '')
+
+    assert formatter.format_priority(None) == ''
+    assert formatter.format_priority(0) == ''
+    assert formatter.format_priority(5) == 'medium'
+    for i in range(1, 5):
+        assert formatter.format_priority(i) == 'high'
+    for i in range(6, 10):
+        assert formatter.format_priority(i) == 'low'
+
+
+def test_format_priority_compact():
+    formatter = ui.TodoFormatter('', '', '')
+
+    assert formatter.format_priority_compact(None) == ''
+    assert formatter.format_priority_compact(0) == ''
+    assert formatter.format_priority_compact(5) == '!!'
+    for i in range(1, 5):
+        assert formatter.format_priority_compact(i) == '!!!'
+    for i in range(6, 10):
+        assert formatter.format_priority_compact(i) == '!'
