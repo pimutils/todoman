@@ -69,6 +69,19 @@ def now_for_tz():
     return inner
 
 
+@pytest.fixture
+def todo_factory(default_database):
+    def inner():
+        todo = model.FileTodo()
+        todo.list = list(default_database.lists())[0]
+        todo.summary = 'YARR!'
+        todo.save()
+
+        return todo
+
+    return inner
+
+
 settings.register_profile("ci", settings(
     max_examples=1000,
     verbosity=Verbosity.verbose,
