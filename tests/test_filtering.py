@@ -1,8 +1,5 @@
 from datetime import datetime, timedelta
 
-import pytz
-from dateutil.tz import tzlocal
-
 from todoman.cli import cli
 from todoman.model import Database, FileTodo
 
@@ -220,17 +217,14 @@ def test_filtering_lists(tmpdir, runner, create):
     assert 'todo two' in result.output
 
 
-def test_due_aware(tmpdir, runner, create):
-    now = datetime.now()
-
+def test_due_aware(tmpdir, runner, create, now_for_tz):
     db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
     l = next(db.lists())
 
     for tz in ['CET', 'HST']:
         for i in [1, 23, 25, 48]:
             todo = FileTodo()
-            todo.due = (now + timedelta(hours=i)).replace(tzinfo=tzlocal()) \
-                .astimezone(pytz.timezone(tz))
+            todo.due = now_for_tz(tz) + timedelta(hours=i)
             todo.summary = '{}'.format(i)
 
             db.save(todo, l)

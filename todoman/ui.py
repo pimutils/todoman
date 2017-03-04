@@ -38,20 +38,12 @@ class TodoEditor:
         self._loop = None
 
         self._msg_text = urwid.Text('')
-        if todo.due:
-            # TODO: use proper date_format
-            due = formatter.format_datetime(todo.due)
-        else:
-            due = ""
 
-        if todo.start:
-            # TODO: use proper date_format
-            dtstart = formatter.format_datetime(todo.start)
-        else:
-            dtstart = ''
+        due = formatter.format_datetime(todo.due, humanize=False) or ''
+        dtstart = formatter.format_datetime(todo.start, humanize=False) or ''
 
         if todo.priority:
-            priority = formatter.parse_priority(todo.priority)
+            priority = formatter.parse_priority(todo.priority, humanize=False)
         else:
             priority = ''
 
@@ -283,7 +275,7 @@ class TodoFormatter:
             rv = "{}\n\nLocation: {}".format(rv, todo.location)
         return rv
 
-    def _format_date(self, date):
+    def _format_date(self, date, humanize=True):
         """
         Format the date using ``date_format``
 
@@ -295,7 +287,7 @@ class TodoFormatter:
         :param datetime.date date: a date object
         """
         if date:
-            if date in self.special_dates:
+            if humanize and date in self.special_dates:
                 rv = self.special_dates[date]
             else:
                 rv = date.strftime(self.date_format)
@@ -309,7 +301,7 @@ class TodoFormatter:
         else:
             return ''
 
-    def format_datetime(self, dt):
+    def format_datetime(self, dt, humanize=True):
         if not dt:
             date_part = None
             time_part = None
@@ -319,7 +311,7 @@ class TodoFormatter:
             time_part = dt.time()
 
         return self.dt_separator.join(filter(bool, (
-            self._format_date(date_part),
+            self._format_date(date_part, humanize=humanize),
             self._format_time(time_part)
         )))
 
@@ -374,7 +366,10 @@ class TodoFormatter:
                               click.style(database.name))
 
 
-class PorcelainFormatter:
+class PorcelainFormatter(TodoFormatter):
+
+    def __init__(self):
+        pass
 
     def _todo_as_dict(self, todo):
         return dict(
@@ -411,8 +406,14 @@ class PorcelainFormatter:
     def detailed(self, todo):
         return self.compact(todo)
 
-    def format_datetime(self, date):
+    def format_datetime(self, date, humanize=False):
         if date:
             return int(date.timestamp())
+        else:
+            return None
+
+    def parse_datetime(self, value):
+        if value:
+            return datetime.datetime.fromtimestamp(value)
         else:
             return None
