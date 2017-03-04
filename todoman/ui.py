@@ -231,14 +231,7 @@ class TodoFormatter:
             percent = todo.percent_complete or ''
             if percent:
                 percent = " ({}%)".format(percent)
-            if todo.priority == 5:
-                priority = "!!"
-            elif todo.priority <= 4 and todo.priority >= 1:
-                priority = "!!!"
-            elif todo.priority <= 9 and todo.priority >= 6:
-                priority = "!"
-            elif todo.priority == 0:
-                priority = ""
+            priority = self.format_priority_compact(todo.priority)
 
             due = self.format_datetime(todo.due)
             if todo.due and todo.due <= self.now and not todo.is_completed:
@@ -335,6 +328,16 @@ class TodoFormatter:
             return 'medium'
         elif 6 <= priority <= 9:
             return 'low'
+
+    def format_priority_compact(self, priority):
+        if not priority:
+            return ''
+        elif 1 <= priority <= 4:
+            return "!!!"
+        elif priority == 5:
+            return "!!"
+        elif 6 <= priority <= 9:
+            return "!"
 
     def parse_datetime(self, dt):
         if not dt:
