@@ -80,11 +80,22 @@ def _validate_start_date_param(ctx, param, val):
         raise click.BadParameter(e)
 
 
+def _validate_category(ctx, param, val):
+    ctx = ctx.find_object(AppContext)
+    try:
+        return ctx.formatter.parse_category(val)
+    except ValueError as e:
+        raise click.BadParameter(e)
+
+
 def _sort_callback(ctx, param, val):
     return val.split(',') if val else []
 
 
 def _todo_property_options(command):
+    click.option(
+        '--categories', callback=_validate_category,
+        help=('A comma-separated list of categories.'))(command)
     click.option(
         '--due', '-d', default='', callback=_validate_date_param,
         help=('The due date of the task, in the format specified in the '
@@ -96,7 +107,7 @@ def _todo_property_options(command):
     @functools.wraps(command)
     def command_wrap(*a, **kw):
         kw['todo_properties'] = {key: kw.pop(key) for key in
-                                 ('due', 'start')}
+                                 ('due', 'start', 'categories')}
         return command(*a, **kw)
 
     return command_wrap

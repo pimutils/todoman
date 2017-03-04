@@ -165,6 +165,10 @@ class Todo:
     def raw_categories(self):
         return self.todo.get('categories', '')
 
+    @raw_categories.setter
+    def raw_categories(self, categories):
+        self._set_field('categories', categories)
+
     @categories.setter
     def categories(self, categories):
         self._set_field('categories', ','.join(categories))

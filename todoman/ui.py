@@ -58,6 +58,10 @@ class TodoEditor:
             parent=self,
             edit_text=todo.location
         )
+        self._categories = widgets.ExtendedEdit(
+            parent=self,
+            edit_text=','.join(todo.categories)
+        )
         self._due = widgets.ExtendedEdit(parent=self, edit_text=due)
         self._dtstart = widgets.ExtendedEdit(parent=self, edit_text=dtstart)
         self._completed = urwid.CheckBox("", state=todo.is_completed)
@@ -71,6 +75,7 @@ class TodoEditor:
         for label, field in [("Summary", self._summary),
                              ("Description", self._description),
                              ("Location", self._location),
+                             ("Categories", self._categories),
                              ("Due", self._due),
                              ("Start", self._dtstart),
                              ("Completed", self._completed),
@@ -154,6 +159,7 @@ class TodoEditor:
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
+        self.todo.raw_categories = self.categories
         self.todo.due = self.formatter.parse_datetime(self.due)
         self.todo.start = self.formatter.parse_datetime(self.dtstart)
 
@@ -189,6 +195,10 @@ class TodoEditor:
     @property
     def location(self):
         return self._location.edit_text
+
+    @property
+    def categories(self):
+        return self._categories.edit_text
 
     @property
     def due(self):
@@ -270,7 +280,9 @@ class TodoFormatter:
         """
         rv = self.compact_multiple([todo])
         if todo.description:
-            rv = "{}\n\n{}".format(rv, todo.description)
+            rv = "{}\n\nDescription : {}".format(rv, todo.description)
+        if todo.categories:
+            rv = "{}\n\nCategories : {}".format(rv, todo.categories)
         return rv
 
     def _format_date(self, date, humanize=True):
@@ -312,6 +324,14 @@ class TodoFormatter:
             self._format_date(date_part, humanize=humanize),
             self._format_time(time_part)
         )))
+
+    def parse_category(self, categories):
+        if not categories:
+            return None
+        if ',' in categories:
+            return categories.split(',')
+        else:
+            return [categories]
 
     def parse_priority(self, priority):
         if priority == 'low':

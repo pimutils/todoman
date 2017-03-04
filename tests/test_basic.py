@@ -438,5 +438,26 @@ def test_empty_list(tmpdir, runner, create):
 
     assert expected in result.output
 
+
+def test_show_categories(tmpdir, runner, create):
+    create(
+        'test.ics',
+        'SUMMARY:harhar\n'
+        'CATEGORIES:Online\n'
+    )
+
+    result = runner.invoke(cli, ['show', '1'])
+    assert not result.exception
+    assert 'Online' in result.output
+
+
+def test_categories(runner):
+    result = runner.invoke(cli, [
+        'new', '-l', 'default', '--categories', 'Offline', 'Event Name'
+    ])
+
+    assert not result.exception
+    assert 'Offline' in result.output
+
 # TODO: test aware/naive datetime sorting
 # TODO: test --grep
