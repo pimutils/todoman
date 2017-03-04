@@ -112,7 +112,7 @@ class AppContext:
 
     @cached_property
     def ui_formatter(self):
-        return ui.TodoFormatter(
+        return ui.DefaultFormatter(
             self.config['main']['date_format'],
             self.config['main']['time_format'],
             self.config['main']['dt_separator']
@@ -173,7 +173,7 @@ def cli(click_ctx, color, porcelain, humanize):
     elif porcelain:
         ctx.formatter_class = ui.PorcelainFormatter
     else:
-        ctx.formatter_class = ui.TodoFormatter
+        ctx.formatter_class = ui.DefaultFormatter
 
     color = color or ctx.config['main']['color']
     if color == 'always':

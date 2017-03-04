@@ -200,7 +200,7 @@ class TodoEditor:
         return self._priority.edit_text
 
 
-class TodoFormatter:
+class DefaultFormatter:
 
     def __init__(self, date_format, time_format, dt_separator):
         self.date_format = date_format
@@ -342,7 +342,7 @@ class TodoFormatter:
                               click.style(database.name))
 
 
-class HumanizedFormatter(TodoFormatter):
+class HumanizedFormatter(DefaultFormatter):
 
     def format_datetime(self, dt):
         if not dt:
@@ -350,7 +350,7 @@ class HumanizedFormatter(TodoFormatter):
         return humanize.naturaltime(self.now - dt)
 
 
-class PorcelainFormatter(TodoFormatter):
+class PorcelainFormatter(DefaultFormatter):
 
     def __init__(self, *args, **kwargs):
         pass

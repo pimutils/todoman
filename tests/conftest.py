@@ -9,7 +9,7 @@ from dateutil.tz import tzlocal
 from hypothesis import HealthCheck, settings, Verbosity
 
 from todoman import model
-from todoman.ui import TodoFormatter
+from todoman.ui import DefaultFormatter
 
 
 @pytest.fixture
@@ -93,7 +93,7 @@ def todo_factory(default_database):
 
 @pytest.fixture
 def default_formatter():
-    return TodoFormatter("%Y-%m-%d", "%H:%M", ' ')
+    return DefaultFormatter("%Y-%m-%d", "%H:%M", ' ')
 
 
 settings.register_profile("ci", settings(
