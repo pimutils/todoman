@@ -12,7 +12,7 @@ from todoman.cli import cli
 from todoman.model import Database, FileTodo
 
 
-def test_basic(tmpdir, runner, create):
+def test_list(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
     assert not result.output.strip()
