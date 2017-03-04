@@ -41,11 +41,7 @@ class TodoEditor:
 
         due = formatter.format_datetime(todo.due, humanize=False) or ''
         dtstart = formatter.format_datetime(todo.start, humanize=False) or ''
-
-        if todo.priority:
-            priority = formatter.parse_priority(todo.priority, humanize=False)
-        else:
-            priority = ''
+        priority = formatter.format_priority(todo.priority)
 
         self._summary = widgets.ExtendedEdit(parent=self,
                                              edit_text=todo.summary)
@@ -329,6 +325,16 @@ class TodoFormatter:
         else:
             raise ValueError('Priority has to be one of low, medium,'
                              ' high or none')
+
+    def format_priority(self, priority):
+        if not priority:
+            return ''
+        elif 1 <= priority <= 4:
+            return 'high'
+        elif priority == 5:
+            return 'medium'
+        elif 6 <= priority <= 9:
+            return 'low'
 
     def parse_datetime(self, dt):
         if not dt:
