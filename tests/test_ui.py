@@ -8,7 +8,7 @@ TIME_FORMAT = "%H:%M"
 
 
 def test_todo_editor_priority(default_database, todo_factory):
-    todo = todo_factory()
+    todo = todo_factory(priority=1)
     lists = list(default_database.lists())
     formatter = TodoFormatter(DATE_FORMAT, TIME_FORMAT, '')
 
