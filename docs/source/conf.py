@@ -125,8 +125,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Todoman'
-copyright = '2015-2016, Hugo Osvaldo Barrera'
-author = 'Hugo Osvaldo Barrera'
+copyright = '2015-2017, Hugo Osvaldo Barrera, et al'
+author = 'Hugo Osvaldo Barrera <hugo@barrera.io>, et al'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -344,7 +344,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'todoman', 'Todoman Documentation',
+    ('man', 'todoman', 'a simple icalendar-based todo manager',
      [author], 1)
 ]
 
