@@ -24,6 +24,7 @@ v3.0.0
 * Increment sequence number upon edits.
 * Print a descriptive message when no lists are found.
 * Add full support for locations.
+* Add full support for categories.
 
 v2.1.0
 ------
