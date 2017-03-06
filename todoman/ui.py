@@ -57,7 +57,7 @@ class TodoEditor:
         )
         self._categories = widgets.ExtendedEdit(
             parent=self,
-            edit_text=','.join(todo.categories)
+            edit_text=','.join(todo.raw_categories)
         )
         self._due = widgets.ExtendedEdit(parent=self, edit_text=due)
         self._dtstart = widgets.ExtendedEdit(parent=self, edit_text=dtstart)
