@@ -6,7 +6,7 @@ from todoman.cli import cli
 
 
 @pytest.mark.parametrize('interval', [
-    (65, 'a minute from now'),
+    (65, 'in a minute'),
     (-10800, '3 hours ago'),
 ])
 @pytest.mark.parametrize('tz', ['CET', 'HST'])

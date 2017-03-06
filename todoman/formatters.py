@@ -156,7 +156,12 @@ class HumanizedFormatter(DefaultFormatter):
     def format_datetime(self, dt):
         if not dt:
             return ''
-        return humanize.naturaltime(self.now - dt)
+
+        rv = humanize.naturaltime(self.now - dt)
+        if ' from now' in rv:
+            rv = 'in {}'.format(rv[:-9])
+
+        return rv
 
 
 class PorcelainFormatter(DefaultFormatter):
