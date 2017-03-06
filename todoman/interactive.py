@@ -71,7 +71,7 @@ class TodoEditor:
         spacer = urwid.Divider()
 
         self._ui_content = items = [grid, spacer, self._msg_text, buttons]
-        self._ui = urwid.ListBox(items)
+        left_column = urwid.ListBox(items)
 
         self._help_text = urwid.Text(
             '\n\nGlobal:\n'
@@ -83,17 +83,22 @@ class TodoEditor:
                         in widgets.ExtendedEdit.HELP)
         )
 
-        def change_current_list(radio_button, new_state, new_list):
-            if new_state:
-                self.current_list = new_list
-
         list_selector = []
         for _list in self.lists:
-            urwid.RadioButton(list_selector, _list.name,
-                              state=_list.name == self.current_list.name,
-                              on_state_change=change_current_list,
-                              user_data=_list)
-        items.append(urwid.Pile(list_selector))
+            urwid.RadioButton(
+                list_selector,
+                _list.name,
+                state=_list.name == self.current_list.name,
+                on_state_change=self._change_current_list,
+                user_data=_list,
+            )
+        right_column = urwid.ListBox([urwid.Text('List:\n')] + list_selector)
+
+        self._ui = urwid.Columns([left_column, right_column])
+
+    def _change_current_list(self, radio_button, new_state, new_list):
+        if new_state:
+            self.current_list = new_list
 
     def _toggle_help(self):
         if self._ui_content[-1] is self._help_text:
