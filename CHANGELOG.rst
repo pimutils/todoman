@@ -7,13 +7,13 @@ releases, in reverse chronological order.
 v3.0.0
 ------
 
+* Add the ``--humanize`` to show friendlier date times (eg: ``in 3 hours``).
 * Dropped ``--urgent`` and introduced ``--priority``
 * Added support for filtering by priority
 * New PyPI dependency ``tabulate``.
 * Basic support for times in due dates, new ``time_format`` configuration
   parameter.
 * Use the system's date format as a default.
-* Show "Today" or "Tomorrow" when due date is today/tomorrow respectively.
 * Add list selector to TodoEditor
 * Add ``--start="[before|after] <date>`` option for ``todo list``. It shows todos
   created before/after given date.
