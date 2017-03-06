@@ -1,26 +1,59 @@
-from todoman.model import FileTodo
-from todoman.ui import PorcelainFormatter, TodoEditor
+from datetime import datetime
+
+import pytest
+import pytz
+from freezegun import freeze_time
+from urwid import ExitMainLoop
+
+from todoman.ui import TodoEditor
 
 
-def test_todo_editor(default_database):
-    """
-    Tests TodoEditor
-
-    While this is a pretty lame test, it's a lot better than nothing until we
-    have a proper testing framework for the interactive parts.
-
-    It basically makes sure that we don't refer to any obsolete methods, etc.
-    """
-
+def test_todo_editor_priority(default_database, todo_factory,
+                              default_formatter):
+    todo = todo_factory(priority=1)
     lists = list(default_database.lists())
 
-    todo = FileTodo(new=True)
-    todo.list = lists[0]
-    todo.summary = 'YARR!'
-    todo.save()
+    editor = TodoEditor(todo, lists, default_formatter)
+    assert editor._priority.edit_text == 'high'
 
-    porcelain_formatter = PorcelainFormatter()
+    editor._priority.edit_text = ''
+    with pytest.raises(ExitMainLoop):  # Look at editor._msg_text if this fails
+        editor._keypress('ctrl s')
 
-    editor = TodoEditor(todo, lists, porcelain_formatter)
+    # FileTodo exposes 0
+    assert todo.priority is 0
+    # The actual todo contains None
+    assert todo.todo.get('priority', None) is None
 
-    editor._keypress('ctrl s')
+
+def test_todo_editor_summary(default_database, todo_factory,
+                             default_formatter):
+    todo = todo_factory()
+    lists = list(default_database.lists())
+
+    editor = TodoEditor(todo, lists, default_formatter)
+    assert editor._summary.edit_text == 'YARR!'
+
+    editor._summary.edit_text = 'Goodbye'
+    with pytest.raises(ExitMainLoop):  # Look at editor._msg_text if this fails
+        editor._keypress('ctrl s')
+
+    assert todo.summary == 'Goodbye'
+
+
+@freeze_time('2017-03-04 14:00:00', tz_offset=4)
+def test_todo_editor_due(default_database, todo_factory, default_formatter):
+    tz = pytz.timezone('CET')
+
+    todo = todo_factory(due=datetime(2017, 3, 4, 14))
+    lists = list(default_database.lists())
+    default_formatter._localtimezone = tz
+
+    editor = TodoEditor(todo, lists, default_formatter)
+    assert editor._due.edit_text == '2017-03-04 14:00'
+
+    editor._due.edit_text = '2017-03-10 12:00'
+    with pytest.raises(ExitMainLoop):  # Look at editor._msg_text if this fails
+        editor._keypress('ctrl s')
+
+    assert todo.due == datetime(2017, 3, 10, 12, tzinfo=tz)

@@ -758,9 +758,16 @@ class List:
 
     @cached_property
     def color_rgb(self):
-        rv = self.color_raw
-        if rv:
-            return _parse_color(rv)
+        color = self.color_raw
+        if not color or not color.startswith('#'):
+            return
+
+        r = color[1:3]
+        g = color[3:5]
+        b = color[5:8]
+
+        if len(r) == len(g) == len(b) == 2:
+            return int(r, 16), int(g, 16), int(b, 16)
 
     @cached_property
     def color_ansi(self):
@@ -880,18 +887,6 @@ class Database:
         id = self.cache.add_todo(todo, path)
         self.cache.save_to_disk()
         todo.id = id
-
-
-def _parse_color(color):
-    if not color.startswith('#'):
-        return
-
-    r = color[1:3]
-    g = color[3:5]
-    b = color[5:8]
-
-    if len(r) == len(g) == len(b) == 2:
-        return int(r, 16), int(g, 16), int(b, 16)
 
 
 def _getmtime(path):

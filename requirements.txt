@@ -2,6 +2,7 @@ atomicwrites
 click>=6.0
 click_log>=0.1.3
 configobj
+humanize
 icalendar
 parsedatetime
 python-dateutil

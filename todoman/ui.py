@@ -3,6 +3,7 @@ import json
 from time import mktime
 
 import click
+import humanize
 import parsedatetime
 import urwid
 from dateutil.tz import tzlocal
@@ -39,13 +40,9 @@ class TodoEditor:
 
         self._msg_text = urwid.Text('')
 
-        due = formatter.format_datetime(todo.due, humanize=False) or ''
-        dtstart = formatter.format_datetime(todo.start, humanize=False) or ''
-
-        if todo.priority:
-            priority = formatter.parse_priority(todo.priority, humanize=False)
-        else:
-            priority = ''
+        due = formatter.format_datetime(todo.due) or ''
+        dtstart = formatter.format_datetime(todo.start) or ''
+        priority = formatter.format_priority(todo.priority)
 
         self._summary = widgets.ExtendedEdit(parent=self,
                                              edit_text=todo.summary)
@@ -213,23 +210,19 @@ class TodoEditor:
         return self._priority.edit_text
 
 
-class TodoFormatter:
+class DefaultFormatter:
 
     def __init__(self, date_format, time_format, dt_separator):
         self.date_format = date_format
         self.time_format = time_format
         self.dt_separator = dt_separator
-        self.datetime_format = date_format + dt_separator + time_format
+        self.datetime_format = dt_separator.join(filter(bool, (
+            date_format, time_format
+        )))
 
         self._localtimezone = tzlocal()
         self.now = datetime.datetime.now().replace(tzinfo=self._localtimezone)
-        self.tomorrow = self.now.date() + datetime.timedelta(days=1)
 
-        # Map special dates to the special string we need to return
-        self.special_dates = {
-            self.now.date(): "Today",
-            self.tomorrow: "Tomorrow",
-        }
         self._parsedatetime_calendar = parsedatetime.Calendar()
 
     def simple_action(self, action, todo):
@@ -245,14 +238,7 @@ class TodoFormatter:
             percent = todo.percent_complete or ''
             if percent:
                 percent = " ({}%)".format(percent)
-            if todo.priority == 5:
-                priority = "!!"
-            elif todo.priority <= 4 and todo.priority >= 1:
-                priority = "!!!"
-            elif todo.priority <= 9 and todo.priority >= 6:
-                priority = "!"
-            elif todo.priority == 0:
-                priority = ""
+            priority = self.format_priority_compact(todo.priority)
 
             due = self.format_datetime(todo.due)
             if todo.due and todo.due <= self.now and not todo.is_completed:
@@ -283,47 +269,17 @@ class TodoFormatter:
             rv = "{}\n\nDescription : {}".format(rv, todo.description)
         if todo.categories:
             rv = "{}\n\nCategories : {}".format(rv, todo.categories)
+        if todo.location:
+            rv = "{}\n\nLocation: {}".format(rv, todo.location)
         return rv
 
-    def _format_date(self, date, humanize=True):
-        """
-        Format the date using ``date_format``
-
-        If the date is today or tomorrow, return the strings "Today" or
-        "Tomorrow" respectively.
-
-        If the date if ``None``, returns an empty string.
-
-        :param datetime.date date: a date object
-        """
-        if date:
-            if humanize and date in self.special_dates:
-                rv = self.special_dates[date]
-            else:
-                rv = date.strftime(self.date_format)
-            return rv
-        else:
-            return ''
-
-    def _format_time(self, time):
-        if time:
-            return time.strftime(self.time_format)
-        else:
-            return ''
-
-    def format_datetime(self, dt, humanize=True):
+    def format_datetime(self, dt):
         if not dt:
-            date_part = None
-            time_part = None
-        else:
-            assert isinstance(dt, datetime.datetime)
-            date_part = dt.date()
-            time_part = dt.time()
-
-        return self.dt_separator.join(filter(bool, (
-            self._format_date(date_part, humanize=humanize),
-            self._format_time(time_part)
-        )))
+            return ''
+        elif isinstance(dt, datetime.datetime):
+            return dt.strftime(self.datetime_format)
+        elif isinstance(dt, datetime.date):
+            return dt.strftime(self.date_format)
 
     def parse_category(self, categories):
         if not categories:
@@ -334,17 +290,39 @@ class TodoFormatter:
             return [categories]
 
     def parse_priority(self, priority):
+        if priority is None or priority is '':
+            return None
         if priority == 'low':
             return 9
         elif priority == 'medium':
             return 5
         elif priority == 'high':
             return 4
-        elif priority == 'none' or priority is None:
+        elif priority == 'none':
             return 0
         else:
             raise ValueError('Priority has to be one of low, medium,'
                              ' high or none')
+
+    def format_priority(self, priority):
+        if not priority:
+            return ''
+        elif 1 <= priority <= 4:
+            return 'high'
+        elif priority == 5:
+            return 'medium'
+        elif 6 <= priority <= 9:
+            return 'low'
+
+    def format_priority_compact(self, priority):
+        if not priority:
+            return ''
+        elif 1 <= priority <= 4:
+            return "!!!"
+        elif priority == 5:
+            return "!!"
+        elif 6 <= priority <= 9:
+            return "!"
 
     def parse_datetime(self, dt):
         if not dt:
@@ -384,9 +362,17 @@ class TodoFormatter:
                               click.style(database.name))
 
 
-class PorcelainFormatter(TodoFormatter):
+class HumanizedFormatter(DefaultFormatter):
 
-    def __init__(self):
+    def format_datetime(self, dt):
+        if not dt:
+            return ''
+        return humanize.naturaltime(self.now - dt)
+
+
+class PorcelainFormatter(DefaultFormatter):
+
+    def __init__(self, *args, **kwargs):
         pass
 
     def _todo_as_dict(self, todo):
@@ -412,7 +398,7 @@ class PorcelainFormatter(TodoFormatter):
 
     def parse_priority(self, priority):
         if priority is None:
-            return 0
+            return None
         try:
             if int(priority) in range(0, 10):
                 return int(priority)
@@ -424,7 +410,7 @@ class PorcelainFormatter(TodoFormatter):
     def detailed(self, todo):
         return self.compact(todo)
 
-    def format_datetime(self, date, humanize=False):
+    def format_datetime(self, date):
         if date:
             return int(date.timestamp())
         else:
