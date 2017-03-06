@@ -9,7 +9,7 @@ from dateutil.tz import tzlocal
 from hypothesis import HealthCheck, settings, Verbosity
 
 from todoman import model
-from todoman.ui import DefaultFormatter
+from todoman.formatters import DefaultFormatter
 
 
 @pytest.fixture

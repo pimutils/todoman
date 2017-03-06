@@ -8,10 +8,10 @@ from os.path import expanduser, isdir
 import click
 import click_log
 
-from . import model, ui
-from .configuration import ConfigurationException, load_config
-from .model import cached_property, Database, FileTodo
-from .ui import EditState, TodoEditor
+from todoman import formatters, model
+from todoman.configuration import ConfigurationException, load_config
+from todoman.interactive import EditState, TodoEditor
+from todoman.model import cached_property, Database, FileTodo
 
 TODO_ID_MIN = 1
 with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
@@ -112,7 +112,7 @@ class AppContext:
 
     @cached_property
     def ui_formatter(self):
-        return ui.DefaultFormatter(
+        return formatters.DefaultFormatter(
             self.config['main']['date_format'],
             self.config['main']['time_format'],
             self.config['main']['dt_separator']
@@ -120,7 +120,7 @@ class AppContext:
 
     @cached_property
     def porcelain_formatter(self):
-        return ui.PorcelainFormatter()
+        return formatters.PorcelainFormatter()
 
     @cached_property
     def formatter(self):
@@ -169,11 +169,11 @@ def cli(click_ctx, color, porcelain, humanize):
         humanize = ctx.config['main']['humanize']
 
     if humanize:
-        ctx.formatter_class = ui.HumanizedFormatter
+        ctx.formatter_class = formatters.HumanizedFormatter
     elif porcelain:
-        ctx.formatter_class = ui.PorcelainFormatter
+        ctx.formatter_class = formatters.PorcelainFormatter
     else:
-        ctx.formatter_class = ui.DefaultFormatter
+        ctx.formatter_class = formatters.DefaultFormatter
 
     color = color or ctx.config['main']['color']
     if color == 'always':
