@@ -284,10 +284,7 @@ class DefaultFormatter:
     def parse_category(self, categories):
         if not categories:
             return None
-        if ',' in categories:
-            return categories.split(',')
-        else:
-            return [categories]
+        return categories.split(',')
 
     def parse_priority(self, priority):
         if priority is None or priority is '':
