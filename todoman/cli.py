@@ -8,10 +8,10 @@ from os.path import expanduser, isdir
 import click
 import click_log
 
-from . import model
+from . import model, ui
 from .configuration import ConfigurationException, load_config
 from .model import cached_property, Database, FileTodo
-from .ui import EditState, PorcelainFormatter, TodoEditor, TodoFormatter
+from .ui import EditState, TodoEditor
 
 TODO_ID_MIN = 1
 with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
@@ -108,11 +108,11 @@ class AppContext:
     def __init__(self):
         self.config = None
         self.db = None
-        self.porcelain = False
+        self.formatter_class = None
 
     @cached_property
     def ui_formatter(self):
-        return TodoFormatter(
+        return ui.DefaultFormatter(
             self.config['main']['date_format'],
             self.config['main']['time_format'],
             self.config['main']['dt_separator']
@@ -120,14 +120,15 @@ class AppContext:
 
     @cached_property
     def porcelain_formatter(self):
-        return PorcelainFormatter()
+        return ui.PorcelainFormatter()
 
     @cached_property
     def formatter(self):
-        if self.porcelain:
-            return self.porcelain_formatter
-        else:
-            return self.ui_formatter
+        return self.formatter_class(
+            self.config['main']['date_format'],
+            self.config['main']['time_format'],
+            self.config['main']['dt_separator']
+        )
 
 
 pass_ctx = click.make_pass_decorator(AppContext)
@@ -149,22 +150,36 @@ _interactive_option = click.option(
                     'regardless.'))
 @click.option('--porcelain', is_flag=True, help='Use a JSON format that will '
               'remain stable regardless of configuration or version.')
+@click.option('--humanize', '-h', default=None, is_flag=True,
+              help='Format all dates and times in a human friendly way')
 @click.pass_context
 @click.version_option(prog_name='todoman')
-def cli(click_ctx, color, porcelain):
+def cli(click_ctx, color, porcelain, humanize):
     ctx = click_ctx.ensure_object(AppContext)
     try:
         ctx.config = load_config()
     except ConfigurationException as e:
         raise click.ClickException(e.args[0])
 
+    if porcelain and humanize:
+        raise click.ClickException('--porcelain and --humanize cannot be used'
+                                   ' at the same time.')
+
+    if humanize is None:  # False means explicitly disabled
+        humanize = ctx.config['main']['humanize']
+
+    if humanize:
+        ctx.formatter_class = ui.HumanizedFormatter
+    elif porcelain:
+        ctx.formatter_class = ui.PorcelainFormatter
+    else:
+        ctx.formatter_class = ui.DefaultFormatter
+
     color = color or ctx.config['main']['color']
     if color == 'always':
         click_ctx.color = True
     elif color == 'never':
         click_ctx.color = False
-
-    ctx.porcelain = porcelain
 
     paths = [
         path for path in glob.iglob(expanduser(ctx.config["main"]["path"]))

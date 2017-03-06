@@ -5,18 +5,15 @@ import pytz
 from freezegun import freeze_time
 from urwid import ExitMainLoop
 
-from todoman.ui import TodoEditor, TodoFormatter
-
-DATE_FORMAT = "%Y-%m-%d"
-TIME_FORMAT = "%H:%M"
+from todoman.ui import TodoEditor
 
 
-def test_todo_editor_priority(default_database, todo_factory):
+def test_todo_editor_priority(default_database, todo_factory,
+                              default_formatter):
     todo = todo_factory(priority=1)
     lists = list(default_database.lists())
-    formatter = TodoFormatter(DATE_FORMAT, TIME_FORMAT, ' ')
 
-    editor = TodoEditor(todo, lists, formatter)
+    editor = TodoEditor(todo, lists, default_formatter)
     assert editor._priority.edit_text == 'high'
 
     editor._priority.edit_text = ''
@@ -29,12 +26,12 @@ def test_todo_editor_priority(default_database, todo_factory):
     assert todo.todo.get('priority', None) is None
 
 
-def test_todo_editor_summary(default_database, todo_factory):
+def test_todo_editor_summary(default_database, todo_factory,
+                             default_formatter):
     todo = todo_factory()
     lists = list(default_database.lists())
-    formatter = TodoFormatter(DATE_FORMAT, TIME_FORMAT, ' ')
 
-    editor = TodoEditor(todo, lists, formatter)
+    editor = TodoEditor(todo, lists, default_formatter)
     assert editor._summary.edit_text == 'YARR!'
 
     editor._summary.edit_text = 'Goodbye'
@@ -45,15 +42,14 @@ def test_todo_editor_summary(default_database, todo_factory):
 
 
 @freeze_time('2017-03-04 14:00:00', tz_offset=4)
-def test_todo_editor_due(default_database, todo_factory):
+def test_todo_editor_due(default_database, todo_factory, default_formatter):
     tz = pytz.timezone('CET')
 
     todo = todo_factory(due=datetime(2017, 3, 4, 14))
     lists = list(default_database.lists())
-    formatter = TodoFormatter(DATE_FORMAT, TIME_FORMAT, ' ')
-    formatter._localtimezone = tz
+    default_formatter._localtimezone = tz
 
-    editor = TodoEditor(todo, lists, formatter)
+    editor = TodoEditor(todo, lists, default_formatter)
     assert editor._due.edit_text == '2017-03-04 14:00'
 
     editor._due.edit_text = '2017-03-10 12:00'
