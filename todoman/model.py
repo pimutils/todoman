@@ -306,17 +306,23 @@ class FileTodo(Todo):
         with open(path, 'rb') as f:
             cal = f.read()
             cal = icalendar.Calendar.from_ical(cal)
-            try:
-                component = cal.walk('VTODO')[0]
-                todo = cls(
-                    new=False,
-                    todo=component,
-                    filename=os.path.basename(path),
-                )
-                todo.id = id
-                return todo
-            except IndexError:
-                pass
+            components = cal.walk('VTODO')
+            if not components:
+                logger.debug('No VTODO in %s', path)
+                return
+
+            if len(components) > 1:
+                logger.warn('Multiple VTODO entries in %s!', path)
+                return
+
+            todo = cls(
+                new=False,
+                todo=components[0],
+                filename=os.path.basename(path),
+            )
+            todo.id = id
+
+            return todo
 
     def save(self, list_=None):
         list_ = list_ or self.list
