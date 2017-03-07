@@ -5,7 +5,7 @@ import xdg.BaseDirectory
 from configobj import ConfigObj, flatten_errors
 from validate import is_option, Validator, VdtValueError
 
-from . import __documentation__
+from todoman import __documentation__
 
 
 class ConfigurationException(Exception):

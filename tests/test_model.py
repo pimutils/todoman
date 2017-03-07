@@ -4,9 +4,7 @@ import icalendar
 
 from dateutil.tz.tz import tzoffset
 
-from todoman.model import Database
-from todoman.model import FileTodo
-from todoman.model import List
+from todoman.model import Database, FileTodo, List
 
 
 def test_querying(create, tmpdir):
