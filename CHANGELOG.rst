@@ -58,7 +58,7 @@ New features
 * New flag ``--porcelain`` for programmatic integrations to use. See the
   ``integrations`` section :doc:`here </usage>` for details.
 * Implement a new :doc:`configuration option </configure>`: ``default_due``.
-* The configuration file is now pre-emptively validated. Users will be warned
+* The configuration file is now preemptively validated. Users will be warned
   of any inconsistencies.
 * The ``list`` command has a new ``--due`` flag to filter tasks due soon.
 * Todo ids are now persisted in a cache. They can be manually purged using

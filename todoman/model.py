@@ -355,9 +355,9 @@ class Cache:
     filtering/querying/sorting.
 
     The internal sqlite database is copied fully into memory at startup, and
-    dumped again at showdown. This reduces excesive disk I/O.
+    dumped again at showdown. This reduces excessive disk I/O.
 
-    [1]: Relevent fields are those we show when listing todos, or those which
+    [1]: Relevant fields are those we show when listing todos, or those which
     may be used for filtering/sorting.
     """
 
@@ -604,7 +604,7 @@ class Cache:
             extra_where.append('AND categories LIKE ?')
             params.append('%{}%'.format(category))
         if grep:
-            # # requires sqlite with pcre, which won't be availabel everywhere:
+            # # requires sqlite with pcre, which won't be available everywhere:
             # extra_where.append('AND summary REGEXP ?')
             # params.append(grep)
             extra_where.append('AND summary LIKE ?')
