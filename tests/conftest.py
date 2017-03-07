@@ -9,7 +9,7 @@ from dateutil.tz import tzlocal
 from hypothesis import HealthCheck, settings, Verbosity
 
 from todoman import model
-from todoman.ui import DefaultFormatter
+from todoman.formatters import DefaultFormatter
 
 
 @pytest.fixture
@@ -73,14 +73,18 @@ def now_for_tz():
 @pytest.fixture
 def todo_factory(default_database):
     def inner(
+            description=None,
             due=None,
+            location=None,
             priority=None,
             summary='YARR!',
               ):
         todo = model.FileTodo()
         todo.list = list(default_database.lists())[0]
 
+        todo.description = description
         todo.due = due
+        todo.location = location
         todo.priority = priority
         todo.summary = summary
 

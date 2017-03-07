@@ -5,7 +5,7 @@ import pytz
 from freezegun import freeze_time
 from urwid import ExitMainLoop
 
-from todoman.ui import TodoEditor
+from todoman.interactive import TodoEditor
 
 
 def test_todo_editor_priority(default_database, todo_factory,
