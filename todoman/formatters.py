@@ -57,18 +57,33 @@ class DefaultFormatter:
 
         return tabulate(table, tablefmt='plain')
 
+    def _columnize(self, label, text):
+        rows = []
+
+        lines = text.splitlines()
+        rows.append([label, lines[0]])
+        for line in lines[1:]:
+            rows.append([None, line])
+
+        return rows
+
     def detailed(self, todo):
         """
         Returns a detailed representation of a task.
 
         :param Todo todo: The todo component.
         """
-        rv = self.compact_multiple([todo])
+        extra_rows = []
         if todo.description:
-            rv = "{}\n\nDescription: {}".format(rv, todo.description)
+            extra_rows += self._columnize('Description', todo.description)
         if todo.location:
-            rv = "{}\n\nLocation: {}".format(rv, todo.location)
-        return rv
+            extra_rows += self._columnize('Location', todo.location)
+
+        if extra_rows:
+            return '{}\n\n{}'.format(
+                self.compact(todo), tabulate(extra_rows, tablefmt='plain')
+            )
+        return self.compact(todo)
 
     def format_datetime(self, dt):
         if not dt:

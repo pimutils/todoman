@@ -52,3 +52,23 @@ def test_format_date(default_formatter):
 def test_format_datetime(default_formatter):
     assert default_formatter.format_datetime(datetime(2017, 3, 4, 17, 00)) == \
         '2017-03-04 17:00'
+
+
+def test_detailed_format(runner, todo_factory):
+    todo_factory(
+        description='Test detailed formatting\n'
+        'This includes multiline descriptions\n'
+        'Blah!',
+        location='Over the hills, and far away',
+    )
+
+    result = runner.invoke(cli, ['show', '1'])
+    expected = (
+        '1  [ ]      YARR! @default\n\n'
+        'Description  Test detailed formatting\n'
+        '             This includes multiline descriptions\n'
+        '             Blah!\n'
+        'Location     Over the hills, and far away'
+    )
+    assert not result.exception
+    assert result.output.strip() == expected
