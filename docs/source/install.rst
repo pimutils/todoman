@@ -26,7 +26,7 @@ Manual installation
 -------------------
 
 If pip is not available either (this is most unlikely), you'll need to download
-the source tarball and install via setup.py, though this is not a recomended
+the source tarball and install via setup.py, though this is not a recommended
 installation method::
 
     python3 setup.py install
@@ -36,7 +36,7 @@ Requirements
 
 Todoman requires python 3.3 or later. Installation of required libraries can be
 done via pip, or your OS's package manager. If you're interested in packaging
-todoman, all depenencies are listed in requirements.txt_.
+todoman, all dependencies are listed in requirements.txt_.
 
 Todoman will not work with python 2. However, keep in mind that python 2 and
 python 3 can coexist (and most distributions actually ship both).
