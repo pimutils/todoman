@@ -12,14 +12,17 @@ python:
 env:
   matrix:
     - BUILD=py
-    - BUILD=flake8
-    - BUILD=docs
   global:
     secure: IFQzIw/g6qbmZy86w9qPU5vZjoJWtBlP8VpUtBX+La9hyZ6odC0pxB38U7IQNnPKinUvnc0cGEsAJS/abxp3bSdS0H+afr8OjxOgDuLBl47fMHBxFUMF6HRFmKuk66GfM1sxf87xLdiPDF5Dac0cn7IlJrFkQaCukZjinvZRvtU=
 
 matrix:
   allow_failures:
     - python: 3.7-dev
+  include:
+    - python: 3.6
+      env: BUILD=flake8
+    - python: 3.6
+      env: BUILD=docs
   exclude:
     # Sphinx requires python 3.4 or above
     - python: 3.3
