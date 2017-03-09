@@ -817,7 +817,9 @@ class Database:
 
             try:
                 todos = list(FileTodo.from_file(entry_path))
-                if len(todos) != 1:
+                if not todos:
+                    continue
+                elif len(todos) != 1:
                     logger.error('Entry %s: Expected one VTODO, found %s',
                                  entry_path, len(todos))
                     continue
