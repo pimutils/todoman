@@ -5,13 +5,15 @@ from time import mktime
 import click
 import humanize
 import parsedatetime
+import pytz
 from dateutil.tz import tzlocal
 from tabulate import tabulate
 
 
 class DefaultFormatter:
 
-    def __init__(self, date_format, time_format, dt_separator):
+    def __init__(self, date_format='%Y-%m-%d', time_format='%H:%M',
+                 dt_separator=' ', tz_override=None):
         self.date_format = date_format
         self.time_format = time_format
         self.dt_separator = dt_separator
@@ -19,8 +21,8 @@ class DefaultFormatter:
             date_format, time_format
         )))
 
-        self._localtimezone = tzlocal()
-        self.now = datetime.datetime.now().replace(tzinfo=self._localtimezone)
+        self.tz = tz_override or tzlocal()
+        self.now = datetime.datetime.now().replace(tzinfo=self.tz)
 
         self._parsedatetime_calendar = parsedatetime.Calendar()
 
@@ -133,7 +135,7 @@ class DefaultFormatter:
             return None
 
         rv = self._parse_datetime_naive(dt)
-        return rv.replace(tzinfo=self._localtimezone)
+        return rv.replace(tzinfo=self.tz)
 
     def _parse_datetime_naive(self, dt):
         try:
@@ -181,9 +183,6 @@ class HumanizedFormatter(DefaultFormatter):
 
 class PorcelainFormatter(DefaultFormatter):
 
-    def __init__(self, *args, **kwargs):
-        pass
-
     def _todo_as_dict(self, todo):
         return dict(
             completed=todo.is_completed,
@@ -227,6 +226,6 @@ class PorcelainFormatter(DefaultFormatter):
 
     def parse_datetime(self, value):
         if value:
-            return datetime.datetime.fromtimestamp(value)
+            return datetime.datetime.fromtimestamp(value, tz=pytz.UTC)
         else:
             return None

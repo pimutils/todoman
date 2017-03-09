@@ -1,6 +1,10 @@
 import json
+from datetime import datetime
+
+import pytz
 
 from todoman.cli import cli
+from todoman.formatters import PorcelainFormatter
 
 
 def test_list_all(tmpdir, runner, create):
@@ -136,3 +140,48 @@ def test_show(tmpdir, runner, create):
     assert not result.exception
     assert result.output.strip() == json.dumps(expected, indent=4,
                                                sort_keys=True)
+
+
+def test_simple_action(todo_factory):
+    formatter = PorcelainFormatter()
+    todo = todo_factory(id=7, location='Downtown')
+
+    expected = {
+        "completed": False,
+        "due": None,
+        "id": 7,
+        "list": "default",
+        "percent": 0,
+        "priority": 0,
+        "summary": "YARR!"
+    }
+
+    assert formatter.simple_action('Delete', todo) == \
+        json.dumps(expected, indent=4, sort_keys=True)
+
+
+def test_format_datetime():
+    formatter = PorcelainFormatter()
+
+    dt = datetime(2017, 3, 8, 0, 0, 17, 457955, tzinfo=pytz.UTC)
+    t = 1488931217
+
+    assert formatter.format_datetime(dt) == t
+
+
+def test_parse_datetime():
+    formatter = PorcelainFormatter()
+
+    expected = datetime(2017, 3, 6, 23, 22, 21, 610429, tzinfo=pytz.UTC)
+    assert formatter.parse_datetime(1488842541.610429) == expected
+
+    assert formatter.parse_datetime(None) is None
+    assert formatter.parse_datetime('') is None
+
+
+def test_formatting_parsing_consitency():
+    tz = pytz.timezone('CET')
+    dt = datetime(2017, 3, 8, 21, 6, 19).replace(tzinfo=tz)
+
+    formatter = PorcelainFormatter(tz_override=tz)
+    assert formatter.parse_datetime(formatter.format_datetime(dt)) == dt
