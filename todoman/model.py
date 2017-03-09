@@ -306,17 +306,14 @@ class FileTodo(Todo):
         with open(path, 'rb') as f:
             cal = f.read()
             cal = icalendar.Calendar.from_ical(cal)
-            try:
-                component = cal.walk('VTODO')[0]
+            for component in cal.walk('VTODO'):
                 todo = cls(
                     new=False,
                     todo=component,
                     filename=os.path.basename(path),
                 )
                 todo.id = id
-                return todo
-            except IndexError:
-                pass
+                yield todo
 
     def save(self, list_=None):
         list_ = list_ or self.list
@@ -715,7 +712,7 @@ class Cache:
             raise NoSuchTodo()
 
         path = result['path']
-        todo = FileTodo.from_file(path, id)
+        todo, = FileTodo.from_file(path, id)
         assert todo is not None
         todo.list = self.list(result['list_name'])
 
@@ -819,9 +816,13 @@ class Database:
                 continue
 
             try:
-                todo = FileTodo.from_file(entry_path)
-                if todo:
-                    self.cache.add_todo(todo, entry_path)
+                todos = list(FileTodo.from_file(entry_path))
+                if len(todos) != 1:
+                    logger.error('Entry %s: Expected one VTODO, found %s',
+                                 entry_path, len(todos))
+                    continue
+
+                self.cache.add_todo(todos[0], entry_path)
             except Exception as e:
                 logger.exception("Failed to read entry %s.", entry_path)
 
