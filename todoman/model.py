@@ -18,6 +18,10 @@ class NoSuchTodo(Exception):
     pass
 
 
+class ReadOnlyTodo(Exception):
+    pass
+
+
 class UnsafeOperationException(Exception):
     """
     Raised when attempting to perform an unsafe operation.
@@ -440,7 +444,6 @@ class Cache:
                 "location" TEXT,
                 "categories" TEXT,
 
-                CONSTRAINT file_unique UNIQUE (file_path),
                 FOREIGN KEY(file_path) REFERENCES files(path) ON DELETE CASCADE
             );
         ''')
@@ -647,27 +650,41 @@ class Cache:
         '''.format(' '.join(extra_where), order,)
         result = self._conn.execute(query, params)
 
+        seen_paths = set()
+        warned_paths = set()
+
         for row in result:
-            todo = Todo()
-            todo.id = row['id']
-            todo.uid = row['uid']
-            todo.summary = row['summary']
-            if row['due']:
-                todo.due = datetime.fromtimestamp(row['due'])
-            todo.priority = row['priority']
-            if row['created_at']:
-                todo.created_at = dateutil.parser.parse(row['created_at'])
-            if row['completed_at']:
-                todo.completed_at = dateutil.parser.parse(row['completed_at'])
-            if row['dtstamp']:
-                todo.dtstamp = dateutil.parser.parse(row['dtstamp'])
-            todo.percent_complete = row['percent_complete']
-            todo.status = row['status']
-            todo.description = row['description']
-            todo.location = row['location']
-            todo.list = list_map[row['list_name']]
-            todo.filename = os.path.basename(row['path'])
+            todo = self._todo_from_db(row, list_map)
+            path = row['path']
+
+            if path in seen_paths and path not in warned_paths:
+                logger.warning('Todo is in read-only mode because there are '
+                               'multiple todos in %s', path)
+                warned_paths.add(path)
+            seen_paths.add(path)
             yield todo
+
+    def _todo_from_db(self, row, list_map):
+        todo = Todo()
+        todo.id = row['id']
+        todo.uid = row['uid']
+        todo.summary = row['summary']
+        if row['due']:
+            todo.due = datetime.fromtimestamp(row['due'])
+        todo.priority = row['priority']
+        if row['created_at']:
+            todo.created_at = dateutil.parser.parse(row['created_at'])
+        if row['completed_at']:
+            todo.completed_at = dateutil.parser.parse(row['completed_at'])
+        if row['dtstamp']:
+            todo.dtstamp = dateutil.parser.parse(row['dtstamp'])
+        todo.percent_complete = row['percent_complete']
+        todo.status = row['status']
+        todo.description = row['description']
+        todo.location = row['location']
+        todo.list = list_map[row['list_name']]
+        todo.filename = os.path.basename(row['path'])
+        return todo
 
     def lists(self):
         result = self._conn.execute("SELECT * FROM lists")
@@ -699,7 +716,20 @@ class Cache:
     def delete_list(self, name):
         self._conn.execute("DELETE FROM lists WHERE lists.name = ?", (name,))
 
-    def todo(self, id):
+    def todo(self, id, from_db=False):
+        if from_db:
+            result = self._conn.execute('''
+                SELECT todos.*, files.list_name, files.path
+                  FROM todos, files
+                WHERE files.path = todos.file_path
+                  AND todos.id = ?
+            ''', (id,)
+            ).fetchone()
+            if not result:
+                raise NoSuchTodo()
+            list_map = {list.name: list for list in self.lists()}
+            return self._todo_from_db(result, list_map)
+
         result = self._conn.execute('''
             SELECT files.path, list_name
               FROM files, todos
@@ -712,7 +742,11 @@ class Cache:
             raise NoSuchTodo()
 
         path = result['path']
-        todo, = FileTodo.from_file(path, id)
+        todos = list(FileTodo.from_file(path, id))
+        if len(todos) != 1:
+            raise ReadOnlyTodo('Todo is in read-only mode because there are '
+                               'multiple todos in %s', path)
+        todo, = todos
         assert todo is not None
         todo.list = self.list(result['list_name'])
 
@@ -810,21 +844,15 @@ class Database:
 
         for entry_path, mtime in paths_to_mtime.items():
             list_name = paths_to_list_name[entry_path]
+
             try:
                 self.cache.add_file(list_name, entry_path, mtime)
             except AlreadyExists:
                 continue
 
             try:
-                todos = list(FileTodo.from_file(entry_path))
-                if not todos:
-                    continue
-                elif len(todos) != 1:
-                    logger.error('Entry %s: Expected one VTODO, found %s',
-                                 entry_path, len(todos))
-                    continue
-
-                self.cache.add_todo(todos[0], entry_path)
+                for todo in FileTodo.from_file(entry_path):
+                    self.cache.add_todo(todo, entry_path)
             except Exception as e:
                 logger.exception("Failed to read entry %s.", entry_path)
 
@@ -833,8 +861,8 @@ class Database:
     def todos(self, **kwargs):
         return self.cache.todos(**kwargs)
 
-    def todo(self, id):
-        return self.cache.todo(id)
+    def todo(self, id, **kwargs):
+        return self.cache.todo(id, **kwargs)
 
     def lists(self):
         return self.cache.lists()

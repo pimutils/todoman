@@ -287,7 +287,7 @@ def show(ctx, id):
     Show details about a task.
     '''
     try:
-        todo = ctx.db.todo(id)
+        todo = ctx.db.todo(id, from_db=True)
         click.echo(ctx.formatter.detailed(todo))
     except model.NoSuchTodo:
         click.echo("No todo with id {}.".format(id))
