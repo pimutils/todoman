@@ -8,6 +8,7 @@ python:
   - 3.5
   - 3.6
   - 3.7-dev
+  - pypy3.3-5.2-alpha1
 
 env:
   matrix:
@@ -23,6 +24,9 @@ matrix:
   exclude:
     # Sphinx requires python 3.4 or above
     - python: 3.3
+      env: BUILD=docs
+    # Ditto
+    - python: pypy3.3-5.2-alpha1
       env: BUILD=docs
 
 addons:
