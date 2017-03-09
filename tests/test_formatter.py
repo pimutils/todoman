@@ -1,6 +1,8 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 
 import pytest
+import pytz
+from freezegun import freeze_time
 
 from todoman.cli import cli
 
@@ -72,3 +74,59 @@ def test_detailed_format(runner, todo_factory):
     )
     assert not result.exception
     assert result.output.strip() == expected
+
+
+def test_parse_time(default_formatter):
+    tz = pytz.timezone('CET')
+    parsed = default_formatter.parse_datetime('12:00')
+    expected = datetime.combine(
+        date.today(),
+        time(hour=12, minute=0),
+    ).replace(tzinfo=tz)
+    assert parsed == expected
+
+
+def test_parse_datetime(default_formatter):
+    tz = pytz.timezone('CET')
+
+    parsed = default_formatter.parse_datetime('2017-03-05')
+    assert parsed == datetime(2017, 3, 5).replace(tzinfo=tz)
+
+    parsed = default_formatter.parse_datetime('2017-03-05 12:00')
+    assert parsed == datetime(2017, 3, 5, 12).replace(tzinfo=tz)
+
+    # Notes. will round to the NEXT matching date, so we need to freeze time
+    # for this one:
+    with freeze_time('2017-03-04'):
+        parsed = default_formatter.parse_datetime(
+            'Mon Mar  6 22:50:52 -03 2017'
+        )
+    assert parsed == datetime(2017, 3, 6, 20, 17).replace(tzinfo=tz)
+
+    assert default_formatter.parse_datetime('') is None
+
+    assert default_formatter.parse_datetime(None) is None
+
+
+def test_humanized_parse_datetime(humanized_formatter):
+    tz = pytz.timezone('CET')
+
+    humanized_formatter.now = datetime(2017, 3, 6, 22, 17).replace(tzinfo=tz)
+    dt = datetime(2017, 3, 6, 20, 17).replace(tzinfo=tz)
+
+    assert humanized_formatter.format_datetime(dt) == '2 hours ago'
+    assert humanized_formatter.format_datetime(None) == ''
+
+
+def test_simple_action(default_formatter, todo_factory):
+    todo = todo_factory()
+    assert default_formatter.simple_action('Delete', todo) == \
+        'Delete "YARR!"'
+
+
+def test_formatting_parsing_consitency(default_formatter):
+    tz = pytz.timezone('CET')
+    dt = datetime(2017, 3, 8, 21, 6).replace(tzinfo=tz)
+
+    formatted = default_formatter.format_datetime(dt)
+    assert default_formatter.parse_datetime(formatted) == dt

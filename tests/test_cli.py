@@ -11,6 +11,8 @@ from hypothesis import given
 from todoman.cli import cli
 from todoman.model import Database, FileTodo
 
+# TODO: test --grep
+
 
 def test_list(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
@@ -499,4 +501,12 @@ def test_humanize_interactive(runner):
     assert result.output.strip() == \
         "Error: --porcelain and --humanize cannot be used at the same time."
 
-# TODO: test --grep
+
+def test_due_bad_date(runner):
+    result = runner.invoke(cli, ['new', '--due', 'Not a date', 'Blargh!'])
+
+    assert result.exception
+    assert (
+        'Error: Invalid value for "--due" / "-d": Time description not '
+        'recognized: Not a date' == result.output.strip().splitlines()[-1]
+    )
