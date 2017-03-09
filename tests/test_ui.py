@@ -47,7 +47,7 @@ def test_todo_editor_due(default_database, todo_factory, default_formatter):
 
     todo = todo_factory(due=datetime(2017, 3, 4, 14))
     lists = list(default_database.lists())
-    default_formatter._localtimezone = tz
+    default_formatter.tz = tz
 
     editor = TodoEditor(todo, lists, default_formatter)
     assert editor._due.edit_text == '2017-03-04 14:00'
