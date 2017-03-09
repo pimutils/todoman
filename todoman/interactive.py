@@ -45,6 +45,10 @@ class TodoEditor:
             parent=self,
             edit_text=todo.location
         )
+        self._categories = widgets.ExtendedEdit(
+            parent=self,
+            edit_text=','.join(todo.raw_categories)
+        )
         self._due = widgets.ExtendedEdit(parent=self, edit_text=due)
         self._dtstart = widgets.ExtendedEdit(parent=self, edit_text=dtstart)
         self._completed = urwid.CheckBox("", state=todo.is_completed)
@@ -58,6 +62,7 @@ class TodoEditor:
         for label, field in [("Summary", self._summary),
                              ("Description", self._description),
                              ("Location", self._location),
+                             ("Categories", self._categories),
                              ("Due", self._due),
                              ("Start", self._dtstart),
                              ("Completed", self._completed),
@@ -146,6 +151,7 @@ class TodoEditor:
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
+        self.todo.raw_categories = self.categories
         self.todo.due = self.formatter.parse_datetime(self.due)
         self.todo.start = self.formatter.parse_datetime(self.dtstart)
 
@@ -181,6 +187,10 @@ class TodoEditor:
     @property
     def location(self):
         return self._location.edit_text
+
+    @property
+    def categories(self):
+        return self._categories.edit_text
 
     @property
     def due(self):

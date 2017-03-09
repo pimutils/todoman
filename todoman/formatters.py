@@ -80,6 +80,8 @@ class DefaultFormatter:
             extra_rows += self._columnize('Description', todo.description)
         if todo.location:
             extra_rows += self._columnize('Location', todo.location)
+        if todo.categories:
+            extra_rows += self._columnize('Categories', todo.raw_categories)
 
         if extra_rows:
             return '{}\n\n{}'.format(
@@ -94,6 +96,11 @@ class DefaultFormatter:
             return dt.strftime(self.datetime_format)
         elif isinstance(dt, datetime.date):
             return dt.strftime(self.date_format)
+
+    def parse_category(self, categories):
+        if not categories:
+            return None
+        return categories.split(',')
 
     def parse_priority(self, priority):
         if priority is None or priority is '':
