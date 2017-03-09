@@ -726,7 +726,7 @@ class Cache:
             ''', (id,)
             ).fetchone()
             if not result:
-                raise NoSuchTodo()
+                raise NoSuchTodo(id)
             list_map = {list.name: list for list in self.lists()}
             return self._todo_from_db(result, list_map)
 
@@ -739,13 +739,12 @@ class Cache:
         ).fetchone()
 
         if not result:
-            raise NoSuchTodo()
+            raise NoSuchTodo(id)
 
         path = result['path']
         todos = list(FileTodo.from_file(path, id))
         if len(todos) != 1:
-            raise ReadOnlyTodo('Todo is in read-only mode because there are '
-                               'multiple todos in %s', path)
+            raise ReadOnlyTodo(path)
         todo, = todos
         assert todo is not None
         todo.list = self.list(result['list_name'])
