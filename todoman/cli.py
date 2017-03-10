@@ -312,7 +312,7 @@ def show(ctx, id):
     '''
     Show details about a task.
     '''
-    todo = ctx.db.todo(id, from_db=True)
+    todo = ctx.db.todo(id, read_only=True)
     click.echo(ctx.formatter.detailed(todo))
 
 

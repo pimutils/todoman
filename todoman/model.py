@@ -716,8 +716,8 @@ class Cache:
     def delete_list(self, name):
         self._conn.execute("DELETE FROM lists WHERE lists.name = ?", (name,))
 
-    def todo(self, id, from_db=False):
-        if from_db:
+    def todo(self, id, read_only=False):
+        if read_only:
             result = self._conn.execute('''
                 SELECT todos.*, files.list_name, files.path
                   FROM todos, files
