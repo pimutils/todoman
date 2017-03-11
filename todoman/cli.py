@@ -104,6 +104,28 @@ def _todo_property_options(command):
     return command_wrap
 
 
+def catch_errors(f):
+    @functools.wraps(f)
+    def wrapper(*a, **kw):
+        try:
+            return f(*a, **kw)
+        except Exception as e:
+            return handle_error(e)
+    return wrapper
+
+
+def handle_error(e):
+    try:
+        raise e
+    except model.NoSuchTodo:
+        click.echo('No todo with id {}.'.format(str(e)))
+        sys.exit(-2)
+    except model.ReadOnlyTodo:
+        click.echo('Todo is in read-only mode because there are multiple '
+                   'todos in {}.'.format(str(e)))
+        sys.exit(1)
+
+
 class AppContext:
     def __init__(self):
         self.config = None
@@ -154,6 +176,7 @@ _interactive_option = click.option(
               help='Format all dates and times in a human friendly way')
 @click.pass_context
 @click.version_option(prog_name='todoman')
+@catch_errors
 def cli(click_ctx, color, porcelain, humanize):
     ctx = click_ctx.ensure_object(AppContext)
     try:
@@ -215,6 +238,7 @@ except ImportError:
 @_todo_property_options
 @_interactive_option
 @pass_ctx
+@catch_errors
 def new(ctx, summary, list, todo_properties, interactive):
     '''
     Create a new task with SUMMARY.
@@ -250,6 +274,7 @@ def new(ctx, summary, list, todo_properties, interactive):
 @_todo_property_options
 @_interactive_option
 @with_id_arg
+@catch_errors
 def edit(ctx, id, todo_properties, interactive):
     '''
     Edit the task with id ID.
@@ -282,21 +307,19 @@ def edit(ctx, id, todo_properties, interactive):
 @cli.command()
 @pass_ctx
 @with_id_arg
+@catch_errors
 def show(ctx, id):
     '''
     Show details about a task.
     '''
-    try:
-        todo = ctx.db.todo(id)
-        click.echo(ctx.formatter.detailed(todo))
-    except model.NoSuchTodo:
-        click.echo("No todo with id {}.".format(id))
-        sys.exit(-2)
+    todo = ctx.db.todo(id, read_only=True)
+    click.echo(ctx.formatter.detailed(todo))
 
 
 @cli.command()
 @pass_ctx
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
+@catch_errors
 def done(ctx, ids):
     '''
     Mark a task as done.
@@ -318,6 +341,7 @@ def _abort_if_false(ctx, param, value):
 @click.confirmation_option(
     prompt='Are you sure you want to delete all done tasks?'
 )
+@catch_errors
 def flush(ctx):
     '''
     Delete done tasks. This will also clear the cache to reset task IDs.
@@ -331,6 +355,7 @@ def flush(ctx):
 @pass_ctx
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
 @click.option('--yes', is_flag=True, default=False)
+@catch_errors
 def delete(ctx, ids, yes):
     '''Delete tasks.'''
 
@@ -353,6 +378,7 @@ def delete(ctx, ids, yes):
 @click.option('--list', '-l', callback=_validate_list_param,
               help='The list to copy the tasks to.')
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
+@catch_errors
 def copy(ctx, list, ids):
     '''Copy tasks to another list.'''
 
@@ -367,6 +393,7 @@ def copy(ctx, list, ids):
 @click.option('--list', '-l', callback=_validate_list_param,
               help='The list to move the tasks to.')
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
+@catch_errors
 def move(ctx, list, ids):
     '''Move tasks to another list.'''
 
@@ -397,6 +424,7 @@ def move(ctx, list, ids):
               help='Only show finished tasks')
 @click.option('--start', default=None, callback=_validate_start_date_param,
               help='Only shows tasks before/after given DATE')
+@catch_errors
 def list(ctx, **kwargs):
     """
     List unfinished tasks.

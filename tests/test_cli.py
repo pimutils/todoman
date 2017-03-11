@@ -510,3 +510,29 @@ def test_due_bad_date(runner):
         'Error: Invalid value for "--due" / "-d": Time description not '
         'recognized: Not a date' == result.output.strip().splitlines()[-1]
     )
+
+
+def test_multiple_todos_in_file(runner, create):
+    create(
+        'test.ics',
+        'SUMMARY:a\n'
+        'END:VTODO\n'
+        'BEGIN:VTODO\n'
+        'SUMMARY:b\n'
+    )
+
+    for _ in range(2):
+        result = runner.invoke(cli, ['list'])
+        assert ' a ' in result.output
+        assert ' b ' in result.output
+        assert 'warning: Todo is in read-only mode' in result.output
+
+    result = runner.invoke(cli, ['done', '1'])
+    assert result.exception
+    assert 'Todo is in read-only mode because there are multiple todos' \
+        in result.output
+
+    result = runner.invoke(cli, ['show', '1'])
+    assert not result.exception
+    result = runner.invoke(cli, ['show', '2'])
+    assert not result.exception
