@@ -130,3 +130,16 @@ def test_list_no_colour(tmpdir):
     assert list_.color_raw is None
     assert list_.color_rgb is None
     assert list_.color_ansi is None
+
+
+def test_database_priority_sorting(todo_factory, default_database):
+    for i in [1, 5, 9, 0]:
+        todo_factory(priority=i)
+
+    default_database.update_cache()
+    todos = list(default_database.todos())
+
+    assert todos[0].priority == 0
+    assert todos[1].priority == 9
+    assert todos[2].priority == 5
+    assert todos[3].priority == 1
