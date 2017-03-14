@@ -524,7 +524,7 @@ class Cache:
             todo.uid,
             todo.summary,
             todo.due.timestamp() if todo.due else None,
-            todo.priority,
+            todo.priority if todo.priority else None,
             todo.created_at,
             todo.completed_at,
             todo.percent_complete,
@@ -632,7 +632,7 @@ class Cache:
         else:
             order = '''
                 completed_at DESC,
-                priority ASC,
+                priority IS NOT NULL, priority DESC,
                 due IS NOT NULL, due DESC,
                 created_at ASC
             '''
