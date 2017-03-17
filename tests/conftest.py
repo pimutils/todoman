@@ -80,7 +80,7 @@ def todo_factory(default_database):
             priority=None,
             summary='YARR!',
               ):
-        todo = model.FileTodo()
+        todo = model.Todo(new=True)
         todo.list = list(default_database.lists())[0]
 
         todo.description = description

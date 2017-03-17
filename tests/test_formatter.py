@@ -64,6 +64,7 @@ def test_detailed_format(runner, todo_factory):
         location='Over the hills, and far away',
     )
 
+    # TODO:use formatter instead of runner?
     result = runner.invoke(cli, ['show', '1'])
     expected = (
         '1  [ ]      YARR! @default\n\n'

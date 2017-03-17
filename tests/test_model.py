@@ -4,7 +4,7 @@ import icalendar
 
 from dateutil.tz.tz import tzoffset
 
-from todoman.model import Database, FileTodo, List
+from todoman.model import Database, List, Todo
 
 
 def test_querying(create, tmpdir):
@@ -73,7 +73,7 @@ def test_change_paths(tmpdir, create):
 def test_sequence_increment(tmpdir):
     default_dir = tmpdir.mkdir("default")
 
-    todo = FileTodo()
+    todo = Todo(new=True)
     _list = List("default", str(default_dir))
     todo.save(_list)
 
@@ -143,3 +143,29 @@ def test_database_priority_sorting(todo_factory, default_database):
     assert todos[1].priority == 9
     assert todos[2].priority == 5
     assert todos[3].priority == 1
+
+
+def test_retain_unknown_fields(tmpdir, create, default_database):
+    """
+    Test that we retain unknown fields after a load/save cycle.
+    """
+    create(
+        'test.ics',
+        'SUMMARY:RAWR\n'
+        'X-RAWR-TYPE:Reptar\n'
+    )
+
+    db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
+    todo = db.todo(1, read_only=False)
+
+    todo.description = 'Rawr means "I love you" in dinosaur.'
+    todo.save()
+
+    path = tmpdir.join('default').join('test.ics')
+    with path.open() as f:
+        vtodo = f.read()
+    lines = vtodo.splitlines()
+
+    assert 'SUMMARY:RAWR' in lines
+    assert 'DESCRIPTION:Rawr means "I love you" in dinosaur.' in lines
+    assert 'X-RAWR-TYPE:Reptar' in lines

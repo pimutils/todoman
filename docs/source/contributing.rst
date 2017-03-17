@@ -33,6 +33,31 @@ All commits should pass all tests to facilitate bisecting in future.
 .. _Style Guide for Python Code: http://python.org/dev/peps/pep-0008/
 .. _Git Commit Guidelines: https://www.git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project#_commit_guidelines
 
+An overview of the Todo lifecycle
+---------------------------------
+
+This is a brief overview of the life cycles of todos (from the apps point of
+view) as they are read from disk, displayed, and or saved again.
+
+When the app starts, it will read all todos from disk, and initialize from the
+cache any further display (either ``list``, ``show``, ``edit``, etc) is then
+done reading from the cache, which only contains the fields we operate with.
+
+When a Todo is edited, the entire cycle is:
+
+* File is read from disk and cached (if not already cached).
+* A Todo object is created by reading the cache.
+* If edition is interactive, show the UI now.
+* No matter how the edition occurs, apply changes to the Todo object.
+* Start saving process:
+  * Read file from disk (as a VTodo object).
+  * Apply changes from fields to the VTodo object.
+  * Write to disk.
+
+The main goal of this is to simplify how many conversions we have. If we read
+from disk to the editor, we'd need an extra VTodo->Todo conversion code that
+skips the cache.
+
 Patch review checklist
 ~~~~~~~~~~~~~~~~~~~~~~
 
