@@ -65,8 +65,7 @@ def _validate_start_date_param(ctx, param, val):
         return val
 
     if val[0] not in ['before', 'after']:
-        raise click.BadParameter(
-            "Format should be '[before|after] [DATE]'")
+        raise click.BadParameter("Format should be '[before|after] [DATE]'")
 
     is_before = val[0] == 'before'
 
@@ -119,7 +118,7 @@ def handle_error(e):
         sys.exit(-2)
     except model.ReadOnlyTodo:
         click.echo('Todo is in read-only mode because there are multiple '
-                   'todos in {}.'.format(str(e)))
+                   'todos in its file.')
         sys.exit(1)
 
 
