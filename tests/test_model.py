@@ -159,6 +159,7 @@ def test_retain_unknown_fields(tmpdir, create, default_database):
     """
     create(
         'test.ics',
+        'UID:AVERYUNIQUEID\n'
         'SUMMARY:RAWR\n'
         'X-RAWR-TYPE:Reptar\n'
     )
