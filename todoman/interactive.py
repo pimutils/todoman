@@ -88,7 +88,7 @@ class TodoEditor:
             urwid.RadioButton(
                 list_selector,
                 _list.name,
-                state=_list.name == self.current_list.name,
+                state=_list == self.current_list,
                 on_state_change=self._change_current_list,
                 user_data=_list,
             )

@@ -238,3 +238,13 @@ def test_todo_filename_absolute_path():
     Todo(filename='test.ics')
     with pytest.raises(ValueError):
         Todo(filename='/test.ics')
+
+
+def test_list_equality(tmpdir):
+    list1 = List(path=str(tmpdir), name='test list')
+    list2 = List(path=str(tmpdir), name='test list')
+    list3 = List(path=str(tmpdir), name='yet another test list')
+
+    assert list1 == list2
+    assert list1 != list3
+    assert list1 != 'test list'

@@ -1,5 +1,6 @@
 import datetime
 from os.path import isdir
+from unittest.mock import patch
 
 import hypothesis.strategies as st
 import pytest
@@ -534,3 +535,16 @@ def test_multiple_todos_in_file(runner, create):
     assert not result.exception
     result = runner.invoke(cli, ['show', '2'])
     assert not result.exception
+
+
+def test_todo_new(runner, default_database):
+    # This isn't a very thurough test, but at least catches obvious regressions
+    # like startup crashes or typos.
+
+    with patch('urwid.MainLoop'):
+        result = runner.invoke(cli, ['new', '-l', 'default'])
+
+    # Unsaved exit
+    assert isinstance(result.exception, SystemExit)
+    assert result.exception.args == (1,)
+    assert result.output == ''
