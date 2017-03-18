@@ -512,7 +512,7 @@ class Cache:
             todo.get('uid'),
             todo.get('summary'),
             self._serialize_datetime(todo, 'due'),
-            todo.get('priority', None),
+            todo.get('priority', 0) or None,
             self._serialize_datetime(todo, 'created'),
             self._serialize_datetime(todo, 'completed'),
             todo.get('percent-complete', None),

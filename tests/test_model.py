@@ -132,17 +132,25 @@ def test_list_no_colour(tmpdir):
     assert list_.color_ansi is None
 
 
-def test_database_priority_sorting(todo_factory, default_database):
+def test_database_priority_sorting(create, default_database):
     for i in [1, 5, 9, 0]:
-        todo_factory(priority=i)
+        create(
+            'test{}.ics'.format(i),
+            'PRIORITY:{}\n'.format(i)
+        )
+    create(
+        'test_none.ics'.format(i),
+        'SUMMARY:No priority (eg: None)\n'
+    )
 
     default_database.update_cache()
     todos = list(default_database.todos())
 
     assert todos[0].priority == 0
-    assert todos[1].priority == 9
-    assert todos[2].priority == 5
-    assert todos[3].priority == 1
+    assert todos[1].priority == 0
+    assert todos[2].priority == 9
+    assert todos[3].priority == 5
+    assert todos[4].priority == 1
 
 
 def test_retain_unknown_fields(tmpdir, create, default_database):
