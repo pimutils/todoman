@@ -564,8 +564,6 @@ class Cache:
         :return: A sorted, filtered list of todos.
         :rtype: generator
         """
-        list_map = {list.name: list for list in self.lists()}
-
         extra_where = []
         params = []
 
@@ -643,7 +641,7 @@ class Cache:
         warned_paths = set()
 
         for row in result:
-            todo = self._todo_from_db(row, list_map)
+            todo = self._todo_from_db(row)
             path = row['path']
 
             if path in seen_paths and path not in warned_paths:
@@ -658,7 +656,7 @@ class Cache:
             return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
         return None
 
-    def _todo_from_db(self, row, list_map):
+    def _todo_from_db(self, row):
         todo = Todo()
         todo.id = row['id']
         todo.uid = row['uid']
@@ -672,7 +670,7 @@ class Cache:
         todo.status = row['status']
         todo.description = row['description']
         todo.location = row['location']
-        todo.list = list_map[row['list_name']]
+        todo.list = self.lists_map[row['list_name']]
         todo.filename = os.path.basename(row['path'])
         return todo
 
@@ -684,6 +682,10 @@ class Cache:
                 path=row['path'],
                 colour=row['colour'],
             )
+
+    @cached_property
+    def lists_map(self):
+        return {l.name: l for l in self.lists()}
 
     def list(self, name):
         row = self._conn.execute(
@@ -730,8 +732,7 @@ class Cache:
             if count['c'] > 1:
                 raise ReadOnlyTodo()
 
-        list_map = {list.name: list for list in self.lists()}
-        return self._todo_from_db(result, list_map)
+        return self._todo_from_db(result)
 
     def expire_files(self, paths_to_mtime):
         """Remove stale cache entries based on the given fresh data."""
