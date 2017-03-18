@@ -61,20 +61,17 @@ def _validate_priority_param(ctx, param, val):
 
 def _validate_start_date_param(ctx, param, val):
     ctx = ctx.find_object(AppContext)
-    if val is None:
+    if not val:
         return val
-    if val.startswith('before '):
-        is_before = True
-        val = val[len('before '):]
-    elif val.startswith('after '):
-        is_before = False
-        val = val[len('after '):]
-    else:
+
+    if val[0] not in ['before', 'after']:
         raise click.BadParameter(
-            "The start date of the task should be"
-            "in format '[before|after] <date-format>'")
+            "Format should be '[before|after] [DATE]'")
+
+    is_before = val[0] == 'before'
+
     try:
-        dt = ctx.formatter.parse_datetime(val)
+        dt = ctx.formatter.parse_datetime(val[1])
         return is_before, dt
     except ValueError as e:
         raise click.BadParameter(e)
@@ -423,7 +420,7 @@ def move(ctx, list, ids):
 @click.option('--done-only', default=False, is_flag=True,
               help='Only show finished tasks')
 @click.option('--start', default=None, callback=_validate_start_date_param,
-              help='Only shows tasks before/after given DATE')
+              nargs=2, help='Only shows tasks before/after given DATE')
 @catch_errors
 def list(ctx, **kwargs):
     """
