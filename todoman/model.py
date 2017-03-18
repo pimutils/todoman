@@ -767,7 +767,7 @@ class List:
 
     @cached_property
     def color_rgb(self):
-        color = self.color_raw
+        color = self.colour or self.color_raw
         if not color or not color.startswith('#'):
             return
 
