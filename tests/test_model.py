@@ -116,7 +116,7 @@ def test_list_colour(tmpdir):
     db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite3'))
     list_ = next(db.lists())
 
-    assert list_.color_raw == '#8ab6d2'
+    assert list_.colour == '#8ab6d2'
     assert list_.color_rgb == (138, 182, 210)
     assert list_.color_ansi == '\x1b[38;2;138;182;210m'
 
@@ -127,7 +127,7 @@ def test_list_no_colour(tmpdir):
     db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite3'))
     list_ = next(db.lists())
 
-    assert list_.color_raw is None
+    assert list_.colour is None
     assert list_.color_rgb is None
     assert list_.color_ansi is None
 

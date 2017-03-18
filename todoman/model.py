@@ -749,25 +749,29 @@ class Cache:
 class List:
 
     def __init__(self, name, path, colour=None):
-        self.name = name
         self.path = path
-        self.colour = colour
+        self.name = name or List.name_for_path(path)
+        self.colour = colour or List.colour_for_path(self.path)
 
-    @cached_property
-    def color_raw(self):
-        '''
-        The color is a file whose content is of the format `#RRGGBB`.
-        '''
-
+    @staticmethod
+    def colour_for_path(path):
         try:
-            with open(os.path.join(self.path, 'color')) as f:
+            with open(os.path.join(path, 'color')) as f:
                 return f.read().strip()
         except (OSError, IOError):
-            logger.debug('No colour for list %', self.path)
+            logger.debug('No colour for list %s', path)
+
+    @staticmethod
+    def name_for_path(path):
+        try:
+            with open(os.path.join(path, 'displayname')) as f:
+                return f.read().strip()
+        except (OSError, IOError):
+            return split(normpath(path))[1]
 
     @cached_property
     def color_rgb(self):
-        color = self.colour or self.color_raw
+        color = self.colour
         if not color or not color.startswith('#'):
             return
 
@@ -810,9 +814,9 @@ class Database:
 
         for path in self.paths:
             list_name = self.cache.add_list(
-                self._list_name(path),
+                List.name_for_path(path),
                 path,
-                self._list_colour(path),
+                List.colour_for_path(path),
             )
             for entry in os.listdir(path):
                 if not entry.endswith('.ics'):
@@ -863,26 +867,6 @@ class Database:
     def delete(self, todo):
         path = os.path.join(todo.list.path, todo.filename)
         os.remove(path)
-
-    def _list_name(self, path):
-        # XXX: TODO: dedupe this!
-        try:
-            with open(os.path.join(path, 'displayname')) as f:
-                return f.read().strip()
-        except (OSError, IOError):
-            return split(normpath(path))[1]
-
-    def _list_colour(self, path):
-        '''
-        The color is a file whose content is of the format `#RRGGBB`.
-        '''
-        # XXX: TODO: dedupe this!
-
-        try:
-            with open(os.path.join(path, 'color')) as f:
-                return f.read().strip()
-        except (OSError, IOError):
-            logger.debug('No colour for list %s', path)
 
     def flush(self):
         for todo in self.todos(all=True):
