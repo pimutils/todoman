@@ -88,16 +88,26 @@ class Todo:
         be populated with default values.
         """
 
-        self._attributes = {}
-
         now = datetime.now(LOCAL_TIMEZONE)
         self.uid = '{}@{}'.format(uuid4().hex, socket.gethostname())
 
         if new:
             self.created_at = now
 
-        if not self.dtstamp:
-            self.dtstamp = now
+        # Default values for supported fields
+        self.categories = []
+        self.completed_at = None
+        self.description = ''
+        self.dtstamp = now
+        self.due = None
+        self.id = None
+        self.location = ''
+        self.percent_complete = 0
+        self.priority = 0
+        self.sequence = 0
+        self.start = None
+        self.status = 'NEEDS-ACTION'
+        self.summary = ''
 
         self.filename = filename or "{}.ics".format(self.uid)
 
@@ -107,43 +117,42 @@ class Todo:
             )
         self.mtime = mtime or datetime.now()
 
-    DEFAULT_VALUES = {
-        'categories': [],
-        'completed_at': None,
-        'created_at': None,
-        'description': '',
-        'dtstamp': None,
-        'start': None,
-        'due': None,
-        'location': '',
-        'percent_complete': 0,
-        'priority': 0,
-        'sequence': 0,
-        'status': 'NEEDS-ACTION',
-        'summary': '',
-        'uid': None,
-        'id': None,  # Not the right place
-    }
-
-    KNOWN_FIELDS = DEFAULT_VALUES.keys()
-
-    def __getattr__(self, name):
-        if name in Todo.KNOWN_FIELDS:
-            if name in self._attributes:
-                return self._attributes[name]
-            else:
-                return Todo.DEFAULT_VALUES[name]
-        raise AttributeError("'{}' has no attribute '{}'".format(self, name))
+    STRING_FIELDS = [
+        'description',
+        'location',
+        'status',
+        'summary',
+        'uid',
+    ]
+    INT_FIELDS = [
+        'percent_complete',
+        'priority',
+        'sequence',
+    ]
+    LIST_FIELDS = [
+        'categories',
+    ]
+    DATETIME_FIELDS = [
+        'completed',
+        'created',
+        'created_at',
+        'dtstamp',
+        'dtstart',
+        'due',
+    ]
 
     def __setattr__(self, name, value):
-        if name in Todo.KNOWN_FIELDS:
-            # In some cases we want value?
-            if value != Todo.DEFAULT_VALUES[name] and value:
-                self._attributes[name] = value
-            elif name in self._attributes:
-                del(self._attributes[name])
-        else:
-            object.__setattr__(self, name, value)
+        # Avoids accidentally setting a field to None when that's not a valid
+        # attribute.
+        if not value:
+            if name in Todo.STRING_FIELDS:
+                return object.__setattr__(self, name, '')
+            if name in Todo.INT_FIELDS:
+                return object.__setattr__(self, name, 0)
+            if name in Todo.LIST_FIELDS:
+                return object.__setattr__(self, name, [])
+
+        return object.__setattr__(self, name, value)
 
     @property
     def is_completed(self):
@@ -177,30 +186,6 @@ class Todo:
 
 class VtodoWritter:
     """Writes a Todo as a VTODO file."""
-
-    DATETIME_FIELDS = [
-        'completed',
-        'created',
-        'created_at',
-        'dtstamp',
-        'dtstart',
-        'due',
-    ]
-    STRING_FIELDS = [
-        'description',
-        'location',
-        'status',
-        'summary',
-        'uid',
-    ]
-    INT_FIELDS = [
-        'percent_complete',
-        'priority',
-        'sequence',
-    ]
-    LIST_FIELDS = [
-        'categories',
-    ]
 
     """Maps Todo field names to VTODO field names"""
     FIELD_MAP = {
@@ -244,13 +229,13 @@ class VtodoWritter:
         return dt
 
     def serialize_field(self, name, value):
-        if name in VtodoWritter.DATETIME_FIELDS:
+        if name in Todo.DATETIME_FIELDS:
             return self.normalize_datetime(value)
-        if name in VtodoWritter.LIST_FIELDS:
+        if name in Todo.LIST_FIELDS:
             return ','.join(value)
-        if name in VtodoWritter.INT_FIELDS:
+        if name in Todo.INT_FIELDS:
             return int(value)
-        if name in VtodoWritter.STRING_FIELDS:
+        if name in Todo.STRING_FIELDS:
             return value
 
         logger.warn('Unknown field %s serialized.', name)

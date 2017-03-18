@@ -178,3 +178,29 @@ def test_retain_unknown_fields(tmpdir, create, default_database):
     assert 'SUMMARY:RAWR' in lines
     assert 'DESCRIPTION:Rawr means "I love you" in dinosaur.' in lines
     assert 'X-RAWR-TYPE:Reptar' in lines
+
+
+def test_todo_setters(todo_factory):
+    todo = todo_factory()
+
+    todo.description = 'A tea would be nice, thanks.'
+    assert todo.description == 'A tea would be nice, thanks.'
+
+    todo.priority = 7
+    assert todo.priority == 7
+
+    now = datetime.now()
+    todo.due = now
+    assert todo.due == now
+
+    todo.description = None
+    assert todo.description == ''
+
+    todo.priority = None
+    assert todo.priority == 0
+
+    todo.categories = None
+    assert todo.categories == []
+
+    todo.due = None
+    assert todo.due is None

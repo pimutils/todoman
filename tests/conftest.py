@@ -72,23 +72,13 @@ def now_for_tz():
 
 @pytest.fixture
 def todo_factory(default_database):
-    def inner(
-            description=None,
-            due=None,
-            id=None,
-            location=None,
-            priority=None,
-            summary='YARR!',
-              ):
+    def inner(**attributes):
         todo = model.Todo(new=True)
         todo.list = list(default_database.lists())[0]
 
-        todo.description = description
-        todo.due = due
-        todo.id = id
-        todo.location = location
-        todo.priority = priority
-        todo.summary = summary
+        attributes.setdefault('summary', 'YARR!')
+        for name, value in attributes.items():
+            setattr(todo, name, value)
 
         todo.save()
 
