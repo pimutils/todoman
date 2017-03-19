@@ -11,7 +11,7 @@ import click_log
 from todoman import formatters, model
 from todoman.configuration import ConfigurationException, load_config
 from todoman.interactive import EditState, TodoEditor
-from todoman.model import cached_property, Database, FileTodo
+from todoman.model import cached_property, Database, Todo
 
 TODO_ID_MIN = 1
 with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
@@ -241,7 +241,7 @@ def new(ctx, summary, list, todo_properties, interactive):
     Create a new task with SUMMARY.
     '''
 
-    todo = FileTodo()
+    todo = Todo(new=True)
 
     default_due = ctx.config['main']['default_due']
     if default_due:

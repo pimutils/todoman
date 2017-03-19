@@ -20,10 +20,7 @@ def test_todo_editor_priority(default_database, todo_factory,
     with pytest.raises(ExitMainLoop):  # Look at editor._msg_text if this fails
         editor._keypress('ctrl s')
 
-    # FileTodo exposes 0
     assert todo.priority is 0
-    # The actual todo contains None
-    assert todo.todo.get('priority', None) is None
 
 
 def test_todo_editor_summary(default_database, todo_factory,

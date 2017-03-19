@@ -3,13 +3,12 @@ from os.path import isdir
 
 import hypothesis.strategies as st
 import pytest
-import pytz
 from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
 
 from todoman.cli import cli
-from todoman.model import Database, FileTodo
+from todoman.model import Database, Todo
 
 # TODO: test --grep
 
@@ -195,10 +194,9 @@ def test_move(tmpdir, runner, create):
     assert 'other_list' in result.output
 
 
+@freeze_time('2017-03-17 20:22:19')
 def test_dtstamp(tmpdir, runner, create):
-    """
-    Test that we add the DTSTAMP to new entries as per RFC5545.
-    """
+    """Test that we add the DTSTAMP to new entries as per RFC5545."""
     result = runner.invoke(cli, ['new', '-l', 'default', 'test event'])
     assert not result.exception
 
@@ -206,7 +204,7 @@ def test_dtstamp(tmpdir, runner, create):
                   tmpdir.join('/dtstamp_cache'))
     todo = list(db.todos())[0]
     assert todo.dtstamp is not None
-    assert todo.dtstamp.tzinfo is pytz.utc
+    assert todo.dtstamp == datetime.datetime.now(tz=tzlocal())
 
 
 def test_default_list(tmpdir, runner, create):
@@ -273,7 +271,7 @@ def test_sorting_fields(tmpdir, runner, default_database):
     for i in range(1, 10):
         days = datetime.timedelta(days=i)
 
-        todo = FileTodo(new=True)
+        todo = Todo(new=True)
         todo.list = next(default_database.lists())
         todo.due = datetime.datetime.now() + days
         todo.created_at = datetime.datetime.now() - days
@@ -421,7 +419,7 @@ def test_flush(tmpdir, runner, create):
 
 
 def test_edit(runner, default_database):
-    todo = FileTodo()
+    todo = Todo(new=True)
     todo.list = next(default_database.lists())
     todo.summary = 'Eat paint'
     todo.due = datetime.datetime(2016, 10, 3)

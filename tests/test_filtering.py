@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from todoman.cli import cli
-from todoman.model import Database, FileTodo
+from todoman.model import Database, Todo
 
 
 def test_all(tmpdir, runner, create):
@@ -223,7 +223,7 @@ def test_due_aware(tmpdir, runner, create, now_for_tz):
 
     for tz in ['CET', 'HST']:
         for i in [1, 23, 25, 48]:
-            todo = FileTodo()
+            todo = Todo(new=True)
             todo.due = now_for_tz(tz) + timedelta(hours=i)
             todo.summary = '{}'.format(i)
 
