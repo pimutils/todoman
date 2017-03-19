@@ -241,7 +241,7 @@ def new(ctx, summary, list, todo_properties, interactive):
     Create a new task with SUMMARY.
     '''
 
-    todo = Todo(new=True)
+    todo = Todo(new=True, list=list)
 
     default_due = ctx.config['main']['default_due']
     if default_due:
@@ -261,8 +261,7 @@ def new(ctx, summary, list, todo_properties, interactive):
     if not todo.summary:
         raise click.UsageError('No SUMMARY specified')
 
-    todo.list = list
-    ctx.db.save(todo, list)
+    ctx.db.save(todo)
     click.echo(ctx.formatter.detailed(todo))
 
 

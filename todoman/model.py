@@ -76,7 +76,7 @@ class Todo:
     the local system's one.
     """
 
-    def __init__(self, filename=None, mtime=None, new=False):
+    def __init__(self, filename=None, mtime=None, new=False, list=None):
         """
         Creates a new todo using `todo` as a source.
 
@@ -87,7 +87,7 @@ class Todo:
         :param bool new: Indicate that a new Todo is being created and should
         be populated with default values.
         """
-
+        self.list = list
         now = datetime.now(LOCAL_TIMEZONE)
         self.uid = '{}@{}'.format(uuid4().hex, socket.gethostname())
 
@@ -761,6 +761,11 @@ class List:
         if rv:
             return '\33[38;2;{!s};{!s};{!s}m'.format(*rv)
 
+    def __eq__(self, other):
+        if isinstance(other, List):
+            return self.name == other.name
+        return object.__eq__(self, other)
+
     def __str__(self):
         return self.name
 
@@ -850,7 +855,8 @@ class Database:
         self.cache.clear()
         self.cache = None
 
-    def save(self, todo, list_):
+    def save(self, todo, list_=None):
+        list_ = list_ or todo.list
         vtodo = todo.save(list_)
         path = os.path.join(list_.path, todo.filename)
         self.cache.expire_file(path)
