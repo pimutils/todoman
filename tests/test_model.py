@@ -2,7 +2,10 @@ from datetime import datetime
 
 import icalendar
 import pytest
+import pytz
+from dateutil.tz import tzlocal
 from dateutil.tz.tz import tzoffset
+from freezegun import freeze_time
 
 from todoman.model import Database, List, Todo
 
@@ -204,6 +207,31 @@ def test_todo_setters(todo_factory):
 
     todo.due = None
     assert todo.due is None
+
+
+@freeze_time('2017-03-19-15')
+def test_is_completed():
+    completed_at = datetime(2017, 3, 19, 14, tzinfo=pytz.UTC),
+
+    todo = Todo()
+    todo.completed_at = completed_at
+    todo.percent_complete = 20
+
+    todo.is_completed = True
+    assert todo.completed_at == completed_at
+    assert todo.percent_complete == 100
+    assert todo.status == 'COMPLETED'
+
+    todo.is_completed = False
+    assert todo.completed_at is None
+    assert todo.percent_complete == 0
+    assert todo.status == 'NEEDS-ACTION'
+
+    todo.is_completed = True
+    now = datetime(2017, 3, 19, 15, tzinfo=pytz.UTC).astimezone(tzlocal())
+    assert todo.completed_at == now
+    assert todo.percent_complete == 100
+    assert todo.status == 'COMPLETED'
 
 
 def test_todo_filename_absolute_path():
