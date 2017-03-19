@@ -672,18 +672,6 @@ class Cache:
     def lists_map(self):
         return {l.name: l for l in self.lists()}
 
-    def list(self, name):
-        row = self._conn.execute(
-            "SELECT * FROM lists WHERE name = ?",
-            (name,),
-        ).fetchone()
-
-        return List(
-            name=row['name'],
-            path=row['path'],
-            colour=row['colour'],
-        )
-
     def expire_lists(self, paths):
         results = self._conn.execute("SELECT path, name from lists")
         for result in results:
