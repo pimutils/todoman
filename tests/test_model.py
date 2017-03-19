@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import icalendar
-
+import pytest
 from dateutil.tz.tz import tzoffset
 
 from todoman.model import Database, List, Todo
@@ -204,3 +204,9 @@ def test_todo_setters(todo_factory):
 
     todo.due = None
     assert todo.due is None
+
+
+def test_todo_filename_absolute_path():
+    Todo(filename='test.ics')
+    with pytest.raises(ValueError):
+        Todo(filename='/test.ics')
