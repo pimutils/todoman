@@ -86,10 +86,12 @@ class Todo:
         Todo.
         :param bool new: Indicate that a new Todo is being created and should
         be populated with default values.
+        :param List list: The list to which this Todo belongs.
         """
         self.list = list
         now = datetime.now(LOCAL_TIMEZONE)
         self.uid = '{}@{}'.format(uuid4().hex, socket.gethostname())
+        self.list = list
 
         if new:
             self.created_at = now

@@ -544,7 +544,7 @@ def test_todo_new(runner, default_database):
     with patch('urwid.MainLoop'):
         result = runner.invoke(cli, ['new', '-l', 'default'])
 
-    # Unsaved exit
+    # No SUMMARY error after UI runs
     assert isinstance(result.exception, SystemExit)
-    assert result.exception.args == (1,)
-    assert result.output == ''
+    assert result.exception.args == (2,)
+    assert 'Error: No SUMMARY specified' in result.output
