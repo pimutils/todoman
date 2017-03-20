@@ -7,11 +7,6 @@ _palette = [
 ]
 
 
-class EditState:
-    none = object()
-    saved = object()
-
-
 class TodoEditor:
     """
     The UI for a single todo entry.
@@ -25,7 +20,6 @@ class TodoEditor:
         self.todo = todo
         self.lists = list(lists)
         self.formatter = formatter
-        self.saved = EditState.none
         self._loop = None
 
         self._msg_text = urwid.Text('')
@@ -111,10 +105,7 @@ class TodoEditor:
         self._msg_text.set_text(text)
 
     def edit(self):
-        """
-        Shows the UI for editing a given todo. Returns True if modifications
-        were saved.
-        """
+        """Shows the UI for editing a given todo."""
         self._loop = urwid.MainLoop(
             self._ui,
             palette=_palette,
@@ -130,7 +121,6 @@ class TodoEditor:
                 pass
             raise
         self._loop = None
-        return self.saved
 
     def _save(self, btn=None):
         try:
@@ -138,7 +128,6 @@ class TodoEditor:
         except Exception as e:
             self.message(('error', str(e)))
         else:
-            self.saved = EditState.saved
             raise urwid.ExitMainLoop()
 
     def _save_inner(self):

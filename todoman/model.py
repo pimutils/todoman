@@ -86,13 +86,17 @@ class Todo:
         Todo.
         :param bool new: Indicate that a new Todo is being created and should
         be populated with default values.
+        :param List list: The list to which this Todo belongs.
         """
         self.list = list
         now = datetime.now(LOCAL_TIMEZONE)
         self.uid = '{}@{}'.format(uuid4().hex, socket.gethostname())
+        self.list = list
 
         if new:
             self.created_at = now
+        else:
+            self.created_at = None
 
         # Default values for supported fields
         self.categories = []
@@ -117,6 +121,28 @@ class Todo:
             )
         self.mtime = mtime or datetime.now()
 
+    def clone(self):
+        """
+        Returns a clone of this todo
+
+        Returns a copy of this todo, which is almost identical, except that is
+        has a different UUID and filename.
+        """
+        todo = Todo(new=True, list=self.list)
+
+        fields = (
+            Todo.STRING_FIELDS +
+            Todo.INT_FIELDS +
+            Todo.LIST_FIELDS +
+            Todo.DATETIME_FIELDS
+        )
+        fields.remove('uid')
+
+        for field in fields:
+            setattr(todo, field, getattr(self, field))
+
+        return todo
+
     STRING_FIELDS = [
         'description',
         'location',
@@ -133,11 +159,10 @@ class Todo:
         'categories',
     ]
     DATETIME_FIELDS = [
-        'completed',
-        'created',
+        'completed_at',
         'created_at',
         'dtstamp',
-        'dtstart',
+        'start',
         'due',
     ]
 
@@ -174,14 +199,9 @@ class Todo:
             self.percent_complete = None
             self.status = 'NEEDS-ACTION'
 
-    def save(self, list_=None):
-        list_ = list_ or self.list
-        path = os.path.join(list_.path, self.filename)
-        assert path.startswith(list_.path)
-
-        self.sequence += 1
-
-        return VtodoWritter(self).write(path)
+    @cached_property
+    def path(self):
+        return os.path.join(self.list.path, self.filename)
 
 
 class VtodoWritter:
@@ -269,11 +289,11 @@ class VtodoWritter:
             for component in cal.walk('VTODO'):
                 return component
 
-    def write(self, path):
-        if os.path.exists(path):
-            self._write_existing(path)
+    def write(self):
+        if os.path.exists(self.todo.path):
+            self._write_existing(self.todo.path)
         else:
-            self._write_new(path)
+            self._write_new(self.todo.path)
 
         return self.vtodo
 
@@ -467,7 +487,7 @@ class Cache:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
         return dt.timestamp()
 
-    def add_vtodo(self, todo, file_path):
+    def add_vtodo(self, todo, file_path, id=None):
         """
         Adds a todo into the cache.
 
@@ -476,6 +496,7 @@ class Cache:
 
         sql = '''
             INSERT INTO todos (
+                {}
                 file_path,
                 uid,
                 summary,
@@ -489,7 +510,7 @@ class Cache:
                 description,
                 location,
                 categories
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             '''
 
         params = (
@@ -507,6 +528,12 @@ class Cache:
             todo.get('location', None),
             todo.get('categories', None),
         )
+
+        if id:
+            params = (id,) + params
+            sql = sql.format('id,\n', '?, ')
+        else:
+            sql = sql.format('', '')
 
         cursor = self._conn.cursor()
         try:
@@ -855,15 +882,15 @@ class Database:
         self.cache.clear()
         self.cache = None
 
-    def save(self, todo, list_=None):
-        list_ = list_ or todo.list
-        vtodo = todo.save(list_)
-        path = os.path.join(list_.path, todo.filename)
-        self.cache.expire_file(path)
-        mtime = _getmtime(path)
-        self.cache.add_file(list_.name, path, mtime)
-        id = self.cache.add_vtodo(vtodo, path)
-        todo.id = id
+    def save(self, todo):
+        todo.sequence += 1
+        vtodo = VtodoWritter(todo).write()
+
+        self.cache.expire_file(todo.path)
+        mtime = _getmtime(todo.path)
+
+        self.cache.add_file(todo.list.name, todo.path, mtime)
+        self.cache.add_vtodo(vtodo, todo.path, todo.id)
         self.cache.save_to_disk()
 
 

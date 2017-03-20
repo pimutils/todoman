@@ -10,7 +10,7 @@ import click_log
 
 from todoman import formatters, model
 from todoman.configuration import ConfigurationException, load_config
-from todoman.interactive import EditState, TodoEditor
+from todoman.interactive import TodoEditor
 from todoman.model import cached_property, Database, Todo
 
 TODO_ID_MIN = 1
@@ -254,8 +254,7 @@ def new(ctx, summary, list, todo_properties, interactive):
 
     if interactive or (not summary and interactive is None):
         ui = TodoEditor(todo, ctx.db.lists(), ctx.ui_formatter)
-        if ui.edit() != EditState.saved:
-            sys.exit(1)
+        ui.edit()
         click.echo()  # work around lines going missing after urwid
 
     if not todo.summary:
@@ -286,18 +285,15 @@ def edit(ctx, id, todo_properties, interactive):
 
     if interactive or (not changes and interactive is None):
         ui = TodoEditor(todo, ctx.db.lists(), ctx.ui_formatter)
-        state = ui.edit()
-        if state == EditState.saved:
-            changes = True
+        ui.edit()
 
-    if changes:
-        todo.save()
-        if old_list.name != todo.list.name:
-            ctx.db.move(todo, todo.list, from_list=old_list)
-        click.echo(ctx.formatter.detailed(todo))
-    else:
-        click.echo('No changes.')
-        sys.exit(1)
+    # This little dance avoids duplicates when changing the list:
+    new_list = todo.list
+    todo.list = old_list
+    ctx.db.save(todo)
+    if old_list != new_list:
+        ctx.db.move(todo, new_list=new_list, from_list=old_list)
+    click.echo(ctx.formatter.detailed(todo))
 
 
 @cli.command()
@@ -323,7 +319,7 @@ def done(ctx, ids):
     for id in ids:
         todo = ctx.db.todo(id)
         todo.is_completed = True
-        todo.save()
+        ctx.db.save(todo)
         click.echo(ctx.formatter.detailed(todo))
 
 
@@ -379,9 +375,11 @@ def copy(ctx, list, ids):
     '''Copy tasks to another list.'''
 
     for id in ids:
-        todo = ctx.db.todo(id)
+        original = ctx.db.todo(id)
+        todo = original.clone()
+        todo.list = list
         click.echo(ctx.formatter.compact(todo))
-        ctx.db.save(todo, list)
+        ctx.db.save(todo)
 
 
 @cli.command()

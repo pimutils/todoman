@@ -279,7 +279,7 @@ def test_sorting_fields(tmpdir, runner, default_database):
         todo.summary = 'harhar{}'.format(i)
         tasks.append(todo)
 
-        todo.save()
+        default_database.save(todo)
 
     fields = (
         'id',
@@ -424,7 +424,7 @@ def test_edit(runner, default_database):
     todo.list = next(default_database.lists())
     todo.summary = 'Eat paint'
     todo.due = datetime.datetime(2016, 10, 3)
-    todo.save()
+    default_database.save(todo)
 
     result = runner.invoke(cli, ['edit', '1', '--due', '2017-02-01'])
     assert not result.exception
@@ -544,7 +544,19 @@ def test_todo_new(runner, default_database):
     with patch('urwid.MainLoop'):
         result = runner.invoke(cli, ['new', '-l', 'default'])
 
-    # Unsaved exit
+    # No SUMMARY error after UI runs
     assert isinstance(result.exception, SystemExit)
-    assert result.exception.args == (1,)
-    assert result.output == ''
+    assert result.exception.args == (2,)
+    assert 'Error: No SUMMARY specified' in result.output
+
+
+def test_todo_edit(runner, default_database, todo_factory):
+    # This isn't a very thurough test, but at least catches obvious regressions
+    # like startup crashes or typos.
+    todo_factory()
+
+    with patch('urwid.MainLoop'):
+        result = runner.invoke(cli, ['edit', '1'])
+
+    assert not result.exception
+    assert 'YARR!' in result.output
