@@ -279,7 +279,7 @@ def test_sorting_fields(tmpdir, runner, default_database):
         todo.summary = 'harhar{}'.format(i)
         tasks.append(todo)
 
-        todo.save()
+        default_database.save(todo)
 
     fields = (
         'id',
@@ -424,7 +424,7 @@ def test_edit(runner, default_database):
     todo.list = next(default_database.lists())
     todo.summary = 'Eat paint'
     todo.due = datetime.datetime(2016, 10, 3)
-    todo.save()
+    default_database.save(todo)
 
     result = runner.invoke(cli, ['edit', '1', '--due', '2017-02-01'])
     assert not result.exception

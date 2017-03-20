@@ -73,25 +73,22 @@ def test_change_paths(tmpdir, create):
     assert not list(db.todos())
 
 
-def test_sequence_increment(tmpdir):
-    default_dir = tmpdir.mkdir("default")
+def test_sequence_increment(tmpdir, default_database):
+    todo = Todo(new=True, list=next(default_database.lists()))
+    default_database.save(todo)
 
-    todo = Todo(new=True)
-    _list = List("default", str(default_dir))
-    todo.save(_list)
-
-    filename = default_dir.join(todo.filename)
-
-    cal = icalendar.Calendar.from_ical(filename.read())
+    with open(todo.path) as f:
+        cal = icalendar.Calendar.from_ical(f.read())
     sequence, = [component.get("SEQUENCE", 0)
                  for component in cal.subcomponents
                  if component.name == "VTODO"]
 
     assert sequence == 1
 
-    todo.save(_list)
+    default_database.save(todo)
 
-    cal = icalendar.Calendar.from_ical(filename.read())
+    with open(todo.path) as f:
+        cal = icalendar.Calendar.from_ical(f.read())
     sequence, = [component.get("SEQUENCE", 0)
                  for component in cal.subcomponents
                  if component.name == "VTODO"]
@@ -171,7 +168,7 @@ def test_retain_unknown_fields(tmpdir, create, default_database):
     todo = db.todo(1, read_only=False)
 
     todo.description = 'Rawr means "I love you" in dinosaur.'
-    todo.save()
+    default_database.save(todo)
 
     path = tmpdir.join('default').join('test.ics')
     with path.open() as f:

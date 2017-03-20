@@ -80,7 +80,7 @@ def todo_factory(default_database):
         for name, value in attributes.items():
             setattr(todo, name, value)
 
-        todo.save()
+        default_database.save(todo)
 
         return todo
 

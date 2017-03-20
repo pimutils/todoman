@@ -227,7 +227,8 @@ def test_due_aware(tmpdir, runner, create, now_for_tz):
             todo.due = now_for_tz(tz) + timedelta(hours=i)
             todo.summary = '{}'.format(i)
 
-            db.save(todo, l)
+            todo.list = l
+            db.save(todo)
 
     todos = list(db.todos(due=24))
 

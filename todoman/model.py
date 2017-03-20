@@ -199,14 +199,9 @@ class Todo:
             self.percent_complete = None
             self.status = 'NEEDS-ACTION'
 
-    def save(self, list_=None):
-        list_ = list_ or self.list
-        path = os.path.join(list_.path, self.filename)
-        assert path.startswith(list_.path)
-
-        self.sequence += 1
-
-        return VtodoWritter(self).write(path)
+    @cached_property
+    def path(self):
+        return os.path.join(self.list.path, self.filename)
 
 
 class VtodoWritter:
@@ -294,11 +289,11 @@ class VtodoWritter:
             for component in cal.walk('VTODO'):
                 return component
 
-    def write(self, path):
-        if os.path.exists(path):
-            self._write_existing(path)
+    def write(self):
+        if os.path.exists(self.todo.path):
+            self._write_existing(self.todo.path)
         else:
-            self._write_new(path)
+            self._write_new(self.todo.path)
 
         return self.vtodo
 
@@ -492,7 +487,7 @@ class Cache:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
         return dt.timestamp()
 
-    def add_vtodo(self, todo, file_path):
+    def add_vtodo(self, todo, file_path, id=None):
         """
         Adds a todo into the cache.
 
@@ -501,6 +496,7 @@ class Cache:
 
         sql = '''
             INSERT INTO todos (
+                {}
                 file_path,
                 uid,
                 summary,
@@ -514,7 +510,7 @@ class Cache:
                 description,
                 location,
                 categories
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             '''
 
         params = (
@@ -532,6 +528,12 @@ class Cache:
             todo.get('location', None),
             todo.get('categories', None),
         )
+
+        if id:
+            params = (id,) + params
+            sql = sql.format('id,\n', '?, ')
+        else:
+            sql = sql.format('', '')
 
         cursor = self._conn.cursor()
         try:
@@ -880,15 +882,15 @@ class Database:
         self.cache.clear()
         self.cache = None
 
-    def save(self, todo, list_=None):
-        list_ = list_ or todo.list
-        vtodo = todo.save(list_)
-        path = os.path.join(list_.path, todo.filename)
-        self.cache.expire_file(path)
-        mtime = _getmtime(path)
-        self.cache.add_file(list_.name, path, mtime)
-        id = self.cache.add_vtodo(vtodo, path)
-        todo.id = id
+    def save(self, todo):
+        todo.sequence += 1
+        vtodo = VtodoWritter(todo).write()
+
+        self.cache.expire_file(todo.path)
+        mtime = _getmtime(todo.path)
+
+        self.cache.add_file(todo.list.name, todo.path, mtime)
+        self.cache.add_vtodo(vtodo, todo.path, todo.id)
         self.cache.save_to_disk()
 
 
