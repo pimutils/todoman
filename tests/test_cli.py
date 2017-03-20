@@ -548,3 +548,15 @@ def test_todo_new(runner, default_database):
     assert isinstance(result.exception, SystemExit)
     assert result.exception.args == (2,)
     assert 'Error: No SUMMARY specified' in result.output
+
+
+def test_todo_edit(runner, default_database, todo_factory):
+    # This isn't a very thurough test, but at least catches obvious regressions
+    # like startup crashes or typos.
+    todo_factory()
+
+    with patch('urwid.MainLoop'):
+        result = runner.invoke(cli, ['edit', '1'])
+
+    assert not result.exception
+    assert 'YARR!' in result.output
