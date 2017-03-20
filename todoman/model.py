@@ -95,6 +95,8 @@ class Todo:
 
         if new:
             self.created_at = now
+        else:
+            self.created_at = None
 
         # Default values for supported fields
         self.categories = []
@@ -119,6 +121,28 @@ class Todo:
             )
         self.mtime = mtime or datetime.now()
 
+    def clone(self):
+        """
+        Returns a clone of this todo
+
+        Returns a copy of this todo, which is almost identical, except that is
+        has a different UUID and filename.
+        """
+        todo = Todo(new=True, list=self.list)
+
+        fields = (
+            Todo.STRING_FIELDS +
+            Todo.INT_FIELDS +
+            Todo.LIST_FIELDS +
+            Todo.DATETIME_FIELDS
+        )
+        fields.remove('uid')
+
+        for field in fields:
+            setattr(todo, field, getattr(self, field))
+
+        return todo
+
     STRING_FIELDS = [
         'description',
         'location',
@@ -135,11 +159,10 @@ class Todo:
         'categories',
     ]
     DATETIME_FIELDS = [
-        'completed',
-        'created',
+        'completed_at',
         'created_at',
         'dtstamp',
-        'dtstart',
+        'start',
         'due',
     ]
 

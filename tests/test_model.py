@@ -248,3 +248,26 @@ def test_list_equality(tmpdir):
     assert list1 == list2
     assert list1 != list3
     assert list1 != 'test list'
+
+
+def test_clone():
+    now = datetime.now(tz=tzlocal())
+
+    todo = Todo(new=True)
+    todo.summary = 'Organize a party'
+    todo.location = 'Home'
+    todo.due = now
+    todo.uid = '123'
+    todo.id = '123'
+    todo.filename = '123.ics'
+
+    clone = todo.clone()
+
+    assert todo.summary == clone.summary
+    assert todo.location == clone.location
+    assert todo.due == clone.due
+    assert todo.uid != clone.uid
+    assert len(clone.uid) > 32
+    assert clone.id is None
+    assert todo.filename != clone.filename
+    assert clone.uid in clone.filename
