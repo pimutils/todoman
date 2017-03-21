@@ -7,6 +7,8 @@ releases, in reverse chronological order.
 v3.0.0
 ------
 
+* Added a ``today`` setting and flag to show only todos which can be started
+  today (eg: don't start in the future).
 * Add the ``--humanize`` to show friendlier date times (eg: ``in 3 hours``).
 * Dropped ``--urgent`` and introduced ``--priority``
 * Added support for filtering by priority
