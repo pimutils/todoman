@@ -258,12 +258,9 @@ class VtodoWritter:
         if name in Todo.STRING_FIELDS:
             return value
 
-        logger.warn('Unknown field %s serialized.', name)
-        return value
+        raise Exception('Unknown field {} serialized.'.format(name))
 
     def set_field(self, name, value):
-        value = self.serialize_field(name, value)
-
         if name in self.vtodo:
             del(self.vtodo[name])
         if value:
@@ -278,7 +275,10 @@ class VtodoWritter:
 
         for source, target in self.FIELD_MAP.items():
             if getattr(self.todo, source):
-                self.set_field(target, getattr(self.todo, source))
+                self.set_field(
+                    target,
+                    self.serialize_field(source, getattr(self.todo, source)),
+                )
 
         return self.vtodo
 
