@@ -52,8 +52,8 @@ class TodoEditor:
         for label, field in [("Summary", self._summary),
                              ("Description", self._description),
                              ("Location", self._location),
-                             ("Due", self._due),
                              ("Start", self._dtstart),
+                             ("Due", self._due),
                              ("Completed", self._completed),
                              ("Priority", self._priority),
                              ]:
