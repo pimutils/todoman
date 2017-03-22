@@ -64,9 +64,8 @@ def _validate_start_date_param(ctx, param, val):
     if not val:
         return val
 
-    if val[0] not in ['before', 'after']:
-        raise click.BadParameter(
-            "Format should be '[before|after] [DATE]'")
+    if len(val) != 2 or val[0] not in ['before', 'after']:
+        raise click.BadParameter("Format should be '[before|after] [DATE]'")
 
     is_before = val[0] == 'before'
 

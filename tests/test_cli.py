@@ -598,3 +598,28 @@ def test_list_today(tmpdir, runner, todo_factory):
     assert 'started' in result.output
     assert 'nostart' in result.output
     assert 'unstarted' not in result.output
+
+
+def test_bad_start_date(runner):
+    result = runner.invoke(cli, ['list', '--start'])
+    assert result.exception
+    assert (
+        result.output.strip() == 'Error: --start option requires 2 arguments'
+    )
+
+    result = runner.invoke(cli, ['list', '--start', 'before'])
+    assert result.exception
+    assert (
+        result.output.strip() == 'Error: --start option requires 2 arguments'
+    )
+
+    result = runner.invoke(cli, ['list', '--start', 'before', 'not_a_date'])
+    assert result.exception
+    assert (
+        'Invalid value for "--start": Time description not recognized: '
+        'not_a_date' in result.output
+    )
+
+    result = runner.invoke(cli, ['list', '--start', 'godzilla', '2017-03-22'])
+    assert result.exception
+    assert ("Format should be '[before|after] [DATE]'" in result.output)
