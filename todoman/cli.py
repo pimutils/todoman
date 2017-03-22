@@ -153,10 +153,6 @@ class AppContext:
         )
 
     @cached_property
-    def porcelain_formatter(self):
-        return formatters.PorcelainFormatter()
-
-    @cached_property
     def formatter(self):
         return self.formatter_class(
             self.config['main']['date_format'],
