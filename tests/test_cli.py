@@ -534,9 +534,7 @@ def test_multiple_todos_in_file(runner, create):
         assert 'warning: Todo is in read-only mode' in result.output
 
     result = runner.invoke(cli, ['done', '1'])
-    assert result.exception
-    assert 'Todo is in read-only mode because there are multiple todos' \
-        in result.output
+    assert not result.exception
 
     result = runner.invoke(cli, ['show', '1'])
     assert not result.exception

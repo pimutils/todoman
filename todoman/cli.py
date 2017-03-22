@@ -133,10 +133,6 @@ def handle_error(e):
     except model.NoSuchTodo:
         click.echo('No todo with id {}.'.format(str(e)))
         sys.exit(-2)
-    except model.ReadOnlyTodo:
-        click.echo('Todo is in read-only mode because there are multiple '
-                   'todos in {}.'.format(str(e)))
-        sys.exit(1)
 
 
 class AppContext:
@@ -320,7 +316,7 @@ def show(ctx, id):
     '''
     Show details about a task.
     '''
-    todo = ctx.db.todo(id, read_only=True)
+    todo = ctx.db.todo(id)
     click.echo(ctx.formatter.detailed(todo))
 
 

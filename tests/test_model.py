@@ -165,7 +165,7 @@ def test_retain_unknown_fields(tmpdir, create, default_database):
     )
 
     db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
-    todo = db.todo(1, read_only=False)
+    todo = db.todo(1)
 
     todo.description = 'Rawr means "I love you" in dinosaur.'
     default_database.save(todo)
@@ -281,3 +281,38 @@ def test_todos_today(tmpdir, runner, todo_factory, default_database):
     assert len(todos) == 2
     for todo in todos:
         assert 'unstarted' not in todo.summary
+
+
+def test_multiple_todos_in_file(default_database, create):
+    create(
+        'test.ics',
+        'SUMMARY:a\n'
+        'END:VTODO\n'
+        'BEGIN:VTODO\n'
+        'SUMMARY:b\n'
+    )
+
+    default_database.update_cache()
+
+    todos = list(default_database.todos())
+    assert len(todos) == 2
+
+    for todo in todos:
+        if todo.summary == 'a':
+            todo.description = "I've been edited!"
+        else:
+            todo.percent_complete = 47
+        default_database.save(todo)
+
+    default_database.update_cache()
+
+    for todo in todos:
+        if todo.summary == 'a':
+            assert todo.description == "I've been edited!"
+            assert todo.percent_complete == 0
+        else:
+            assert todo.summary == 'b'
+            assert todo.description == ''
+            assert todo.percent_complete == 47
+
+    assert todos[0].summary != todos[1].summary

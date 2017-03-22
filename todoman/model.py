@@ -23,10 +23,6 @@ class NoSuchTodo(Exception):
     pass
 
 
-class ReadOnlyTodo(Exception):
-    pass
-
-
 class UnsafeOperationException(Exception):
     """
     Raised when attempting to perform an unsafe operation.
@@ -721,8 +717,7 @@ class Cache:
     def delete_list(self, name):
         self._conn.execute("DELETE FROM lists WHERE lists.name = ?", (name,))
 
-    def todo(self, id, read_only=False):
-        # XXX: DON'T USE READ_ONLY
+    def todo(self, id):
         result = self._conn.execute('''
             SELECT todos.*, files.list_name, files.path
               FROM todos, files
@@ -733,17 +728,6 @@ class Cache:
 
         if not result:
             raise NoSuchTodo(id)
-
-        if not read_only:
-            count = self._conn.execute('''
-                SELECT count(id) AS c
-                  FROM files, todos
-                 WHERE todos.file_path = files.path
-                   AND path=?
-            ''', (result['path'],)
-            ).fetchone()
-            if count['c'] > 1:
-                raise ReadOnlyTodo()
 
         return self._todo_from_db(result)
 
