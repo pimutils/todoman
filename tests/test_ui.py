@@ -14,9 +14,9 @@ def test_todo_editor_priority(default_database, todo_factory,
     lists = list(default_database.lists())
 
     editor = TodoEditor(todo, lists, default_formatter)
-    assert editor._priority.edit_text == 'high'
+    assert editor._priority.label == 'high'
 
-    editor._priority.edit_text = ''
+    editor._priority.keypress(10, 'right')
     with pytest.raises(ExitMainLoop):  # Look at editor._msg_text if this fails
         editor._keypress('ctrl s')
 

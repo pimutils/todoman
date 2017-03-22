@@ -26,7 +26,6 @@ class TodoEditor:
 
         due = formatter.format_datetime(todo.due) or ''
         dtstart = formatter.format_datetime(todo.start) or ''
-        priority = formatter.format_priority(todo.priority)
 
         self._summary = widgets.ExtendedEdit(parent=self,
                                              edit_text=todo.summary)
@@ -42,7 +41,11 @@ class TodoEditor:
         self._due = widgets.ExtendedEdit(parent=self, edit_text=due)
         self._dtstart = widgets.ExtendedEdit(parent=self, edit_text=dtstart)
         self._completed = urwid.CheckBox("", state=todo.is_completed)
-        self._priority = widgets.ExtendedEdit(parent=self, edit_text=priority)
+        self._priority = widgets.PrioritySelector(
+            parent=self,
+            priority=todo.priority,
+            formatter_function=formatter.format_priority,
+        )
 
         save_btn = urwid.Button('Save', on_press=self._save)
         cancel_text = urwid.Text('Hit Ctrl-C to cancel, F1 for help.')
@@ -139,14 +142,11 @@ class TodoEditor:
         self.todo.location = self.location
         self.todo.due = self.formatter.parse_datetime(self.due)
         self.todo.start = self.formatter.parse_datetime(self.dtstart)
-
         self.todo.is_completed = self._completed.get_state()
-
-        self.todo.priority = self.formatter.parse_priority(self.priority)
+        self.todo.priority = self.priority
 
         # TODO: categories
         # TODO: comment
-        # TODO: priority (0: undef. 1: max, 9: min)
 
         # https://tools.ietf.org/html/rfc5545#section-3.8
         # geo (lat, lon)
@@ -183,4 +183,4 @@ class TodoEditor:
 
     @property
     def priority(self):
-        return self._priority.edit_text
+        return self._priority.priority
