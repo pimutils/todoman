@@ -364,6 +364,13 @@ def test_sorting_null_values(tmpdir, runner, create):
     assert 'aaa' in result.output.splitlines()[1]
 
 
+def test_sort_invalid_fields(runner):
+    result = runner.invoke(cli, ['list', '--sort', 'hats'])
+
+    assert result.exception
+    assert 'Invalid value for "--sort": Unknown field "hats"' in result.output
+
+
 @pytest.mark.parametrize('hours', [72, -72])
 def test_color_due_dates(tmpdir, runner, create, hours):
     due = datetime.datetime.now() + datetime.timedelta(hours=hours)

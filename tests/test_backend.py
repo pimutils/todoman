@@ -31,12 +31,7 @@ def test_serializer_raises(todo_factory):
 
 
 def test_supported_fields_are_serializeable():
-    supported_fields = set(
-        Todo.DATETIME_FIELDS +
-        Todo.INT_FIELDS +
-        Todo.LIST_FIELDS +
-        Todo.STRING_FIELDS
-    )
+    supported_fields = set(Todo.ALL_SUPPORTED_FIELDS)
     serialized_fields = set(VtodoWritter.FIELD_MAP.keys())
 
     assert supported_fields == serialized_fields
