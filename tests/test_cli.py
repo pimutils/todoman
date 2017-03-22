@@ -394,6 +394,27 @@ def test_color_due_dates(tmpdir, runner, create, hours):
             .format(due_str)
 
 
+def test_color_flag(runner, todo_factory):
+    todo_factory(due=datetime.datetime(2007, 3, 22))
+
+    result = runner.invoke(cli, ['--color', 'always'], color=True)
+    assert(
+        result.output.strip() ==
+        '1  [ ]    \x1b[31m2007-03-22\x1b[0m  YARR! @default\x1b[0m'
+    )
+    result = runner.invoke(cli, color=True)
+    assert(
+        result.output.strip() ==
+        '1  [ ]    \x1b[31m2007-03-22\x1b[0m  YARR! @default\x1b[0m'
+    )
+
+    result = runner.invoke(cli, ['--color', 'never'], color=True)
+    assert(
+        result.output.strip() ==
+        '1  [ ]    2007-03-22  YARR! @default'
+    )
+
+
 def test_flush(tmpdir, runner, create):
     create(
         'test.ics',
