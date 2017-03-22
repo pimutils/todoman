@@ -77,6 +77,14 @@ def _validate_start_date_param(ctx, param, val):
         raise click.BadParameter(e)
 
 
+def _validate_today_param(ctx, param, val):
+    ctx = ctx.find_object(AppContext)
+    if val is not None:
+        return val
+    else:
+        return ctx.config['main']['today']
+
+
 def _sort_callback(ctx, param, val):
     fields = val.split(',') if val else []
     for field in fields:
@@ -426,6 +434,10 @@ def move(ctx, list, ids):
               help='Only show finished tasks')
 @click.option('--start', default=None, callback=_validate_start_date_param,
               nargs=2, help='Only shows tasks before/after given DATE')
+@click.option('--today', default=None, is_flag=True,
+              callback=_validate_today_param, help='Show only todos which '
+              'should can be started today (eg: start time is not in the '
+              'future).')
 @catch_errors
 def list(ctx, **kwargs):
     """
@@ -441,6 +453,5 @@ def list(ctx, **kwargs):
 
     This is the default action when running `todo'.
     """
-
     todos = ctx.db.todos(**kwargs)
     click.echo(ctx.formatter.compact_multiple(todos))

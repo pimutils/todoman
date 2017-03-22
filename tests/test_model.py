@@ -268,3 +268,16 @@ def test_clone():
     assert clone.id is None
     assert todo.filename != clone.filename
     assert clone.uid in clone.filename
+
+
+@freeze_time('2017, 3, 20')
+def test_todos_today(tmpdir, runner, todo_factory, default_database):
+    todo_factory(summary='started', start=datetime(2017, 3, 15))
+    todo_factory(summary='nostart')
+    todo_factory(summary='unstarted', start=datetime(2017, 3, 24))
+
+    todos = list(default_database.todos(today=True))
+
+    assert len(todos) == 2
+    for todo in todos:
+        assert 'unstarted' not in todo.summary

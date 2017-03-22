@@ -418,6 +418,7 @@ class Cache:
                 "uid" TEXT,
                 "summary" TEXT,
                 "due" INTEGER,
+                "start" INTEGER,
                 "priority" INTEGER,
                 "created_at" INTEGER,
                 "completed_at" INTEGER,
@@ -507,6 +508,7 @@ class Cache:
                 uid,
                 summary,
                 due,
+                start,
                 priority,
                 created_at,
                 completed_at,
@@ -516,7 +518,7 @@ class Cache:
                 description,
                 location,
                 categories
-            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             '''
 
         params = (
@@ -524,6 +526,7 @@ class Cache:
             todo.get('uid'),
             todo.get('summary'),
             self._serialize_datetime(todo, 'due'),
+            self._serialize_datetime(todo, 'dtstart'),
             todo.get('priority', 0) or None,
             self._serialize_datetime(todo, 'created'),
             self._serialize_datetime(todo, 'completed'),
@@ -552,7 +555,7 @@ class Cache:
 
     def todos(self, all=False, lists=[], priority=None, location='',
               category='', grep='', sort=[], reverse=True, due=None,
-              done_only=None, start=None):
+              done_only=None, start=None, today=False):
         """
         Returns filtered cached todos, in a specified order.
 
@@ -626,6 +629,9 @@ class Cache:
             else:
                 extra_where.append('AND created_at >= ?')
                 params.append(dt)
+        if today:
+            extra_where.append('AND (start IS NULL OR start <= ?)')
+            params.append(datetime.now().timestamp())
         if sort:
             order = []
             for s in sort:
@@ -680,6 +686,7 @@ class Cache:
         todo.uid = row['uid']
         todo.summary = row['summary']
         todo.due = self._dt_from_db(row['due'])
+        todo.start = self._dt_from_db(row['start'])
         todo.priority = row['priority']
         todo.created_at = self._dt_from_db(row['created_at'])
         todo.completed_at = self._dt_from_db(row['completed_at'])
