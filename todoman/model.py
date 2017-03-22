@@ -165,6 +165,12 @@ class Todo:
         'start',
         'due',
     ]
+    ALL_SUPPORTED_FIELDS = (
+        DATETIME_FIELDS +
+        INT_FIELDS +
+        LIST_FIELDS +
+        STRING_FIELDS
+    )
 
     def __setattr__(self, name, value):
         # Avoids accidentally setting a field to None when that's not a valid

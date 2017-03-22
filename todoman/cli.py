@@ -78,7 +78,15 @@ def _validate_start_date_param(ctx, param, val):
 
 
 def _sort_callback(ctx, param, val):
-    return val.split(',') if val else []
+    fields = val.split(',') if val else []
+    for field in fields:
+        if field.startswith('-'):
+            field = field[1:]
+
+        if field not in Todo.ALL_SUPPORTED_FIELDS and field != 'id':
+            raise click.BadParameter('Unknown field "{}"'.format(field))
+
+    return fields
 
 
 def _todo_property_options(command):
