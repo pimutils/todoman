@@ -160,7 +160,7 @@ class PrioritySelector(urwid.Button):
                 return
 
     def keypress(self, size, key):
-        if key == 'right':
+        if key in ['right', 'enter']:
             self._update_label(1)
             return
         if key == 'left':
