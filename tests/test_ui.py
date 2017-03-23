@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest import mock
 
 import pytest
 import pytz
@@ -87,3 +88,20 @@ def test_todo_editor_due(default_database, todo_factory, default_formatter):
         editor._keypress('ctrl s')
 
     assert todo.due == datetime(2017, 3, 10, 12, tzinfo=tz)
+
+
+def test_toggle_help(default_database, default_formatter, todo_factory):
+    todo = todo_factory()
+    lists = list(default_database.lists())
+
+    editor = TodoEditor(todo, lists, default_formatter)
+    editor._loop = mock.MagicMock()
+    assert editor._help_text not in editor.left_column.body.contents
+
+    editor._keypress('f1')
+    # Help text is made visible
+    assert editor._help_text in editor.left_column.body.contents
+
+    # Called event_loop.draw_screen
+    assert editor._loop.draw_screen.call_count == 1
+    assert editor._loop.draw_screen.call_args == mock.call()
