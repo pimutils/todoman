@@ -176,9 +176,6 @@ class TodoEditor:
         # geo (lat, lon)
         # RESOURCE: the main room
 
-    def _cancel(self, btn):
-        raise urwid.ExitMainLoop()
-
     def _keypress(self, key):
         if key.lower() == 'f1':
             self._toggle_help()
