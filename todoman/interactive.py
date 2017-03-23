@@ -77,7 +77,11 @@ class TodoEditor:
             ' Ctrl-S: Save (only works if not a shell shortcut already)\n\n'
             'In Textfields:\n'
             + '\n'.join(' {}: {}'.format(k, v) for k, v
-                        in widgets.ExtendedEdit.HELP)
+                        in widgets.ExtendedEdit.HELP) +
+            '\n\n'
+            'In Priority Selector:\n'
+            + '\n'.join(' {}: {}'.format(k, v) for k, v
+                        in widgets.PrioritySelector.HELP)
         )
 
         self.list_selector = []
