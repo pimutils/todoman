@@ -334,11 +334,6 @@ def done(ctx, ids):
         click.echo(ctx.formatter.detailed(todo))
 
 
-def _abort_if_false(ctx, param, value):
-    if not value:
-        ctx.abort()
-
-
 @cli.command()
 @pass_ctx
 @click.confirmation_option(
