@@ -23,6 +23,39 @@ def test_todo_editor_priority(default_database, todo_factory,
     assert todo.priority is 0
 
 
+def test_todo_editor_list(default_database, todo_factory, default_formatter,
+                          tmpdir):
+    tmpdir.mkdir('another_list')
+
+    default_database.paths = [
+        str(tmpdir.join('default')),
+        str(tmpdir.join('another_list')),
+    ]
+    default_database.update_cache()
+
+    todo = todo_factory()
+    lists = list(default_database.lists())
+
+    editor = TodoEditor(todo, lists, default_formatter)
+    default_list = next(filter(
+        lambda x: x.label == 'default',
+        editor.list_selector
+    ))
+    another_list = next(filter(
+        lambda x: x.label == 'another_list',
+        editor.list_selector
+    ))
+
+    assert editor.current_list == todo.list
+    assert default_list.label == todo.list.name
+
+    another_list.set_state(True)
+    editor._save_inner()
+
+    assert editor.current_list == todo.list
+    assert another_list.label == todo.list.name
+
+
 def test_todo_editor_summary(default_database, todo_factory,
                              default_formatter):
     todo = todo_factory()
