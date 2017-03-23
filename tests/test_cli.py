@@ -464,6 +464,41 @@ def test_edit(runner, default_database):
     assert todo.summary == 'Eat paint'
 
 
+def test_edit_move(runner, todo_factory, default_database, tmpdir):
+    """
+    Test that editing the list in the UI edits the todo as expected
+
+    The goal of this test is not to test the editor itself, but rather the
+    `edit` command and its slightly-complex moving logic.
+    """
+    tmpdir.mkdir('another_list')
+
+    default_database.paths = [
+        str(tmpdir.join('default')),
+        str(tmpdir.join('another_list')),
+    ]
+    default_database.update_cache()
+
+    todo_factory(summary='Eat some headphones')
+
+    lists = list(default_database.lists())
+    another_list = next(filter(lambda x: x.name == 'another_list', lists))
+
+    def moving_edit(self):
+        self.current_list = another_list
+        self._save_inner()
+
+    with patch('todoman.interactive.TodoEditor.edit', moving_edit):
+        result = runner.invoke(cli, ['edit', '1'])
+
+    assert not result.exception
+
+    default_database.update_cache()
+    todos = list(default_database.todos())
+    assert len(todos) == 1
+    assert todos[0].list.name == 'another_list'
+
+
 def test_empty_list(tmpdir, runner, create):
     for item in tmpdir.listdir():
         if isdir(str(item)):
