@@ -141,7 +141,7 @@ def test_default_command(tmpdir, runner, create):
     assert 'harhar' in result.output
 
 
-def test_delete(tmpdir, runner, create):
+def test_delete(runner, create):
     create(
         'test.ics',
         'SUMMARY:harhar\n'
@@ -153,6 +153,18 @@ def test_delete(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert not result.output.strip()
+
+
+def test_delete_prompt(todo_factory, runner, default_database):
+    todo_factory()
+
+    result = runner.invoke(cli, ['delete', '1'], input='yes')
+
+    assert not result.exception
+    assert '[y/N]: yes\nDeleting "YARR!"' in result.output
+
+    default_database.update_cache()
+    assert len(list(default_database.todos())) == 0
 
 
 def test_copy(tmpdir, runner, create):
