@@ -679,3 +679,19 @@ def test_bad_start_date(runner):
     result = runner.invoke(cli, ['list', '--start', 'godzilla', '2017-03-22'])
     assert result.exception
     assert ("Format should be '[before|after] [DATE]'" in result.output)
+
+
+def test_done(runner, todo_factory, default_database):
+    todo = todo_factory()
+
+    result = runner.invoke(cli, ['done', '1'])
+    assert not result.exception
+
+    default_database.update_cache()
+    todo = next(default_database.todos(all=True))
+    assert todo.percent_complete == 100
+    assert todo.is_completed is True
+
+    result = runner.invoke(cli, ['done', '17'])
+    assert result.exception
+    assert result.output.strip() == 'No todo with id 17.'
