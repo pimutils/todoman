@@ -18,8 +18,6 @@ class ConfigurationException(Exception):
 
 def expand_path(path):
     """expands `~` as well as variable names"""
-    if path is None:
-        return False
     return os.path.expanduser(os.path.expandvars(path))
 
 
