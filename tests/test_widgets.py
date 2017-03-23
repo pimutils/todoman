@@ -1,3 +1,5 @@
+from unittest import mock
+
 from todoman.widgets import ExtendedEdit
 
 # We ignore `size` when testing keypresses, because it's not used anywhere.
@@ -131,5 +133,28 @@ def test_extended_edit_delete_next_char():
     assert extended_edit.edit_pos == 24
     assert extended_edit.get_edit_text() == 'The lazy fox bla bla\n@ät'
 
-# TODO: plain ol' keypresses
-# TODO: can we test ctrl o (maybe with some unittest.mock?)
+
+def test_extended_edit_input():
+    """
+    Very basic test to make sure we don't break basic editing
+
+    We don't need to do more testing because that's done upstream. We basically
+    want to test that we properly forward unhandled keypresses.
+    """
+    extended_edit = ExtendedEdit(mock.MagicMock())
+    extended_edit.keypress((10,), 'h')
+    extended_edit.keypress((10,), 'i')
+
+    assert extended_edit.get_edit_text() == 'hi'
+
+
+def test_extended_edit_editor():
+    extended_edit = ExtendedEdit(mock.MagicMock())
+    extended_edit.set_edit_text(BASE_STRING)
+
+    with mock.patch('click.edit', return_value='Sheep!') as edit:
+        extended_edit.keypress(10, 'ctrl o')
+
+    assert edit.call_count == 1
+    assert edit.call_args == mock.call(BASE_STRING)
+    assert extended_edit.get_edit_text() == 'Sheep!'

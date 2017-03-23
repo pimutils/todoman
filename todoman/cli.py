@@ -153,10 +153,6 @@ class AppContext:
         )
 
     @cached_property
-    def porcelain_formatter(self):
-        return formatters.PorcelainFormatter()
-
-    @cached_property
     def formatter(self):
         return self.formatter_class(
             self.config['main']['date_format'],
@@ -336,11 +332,6 @@ def done(ctx, ids):
         todo.is_completed = True
         ctx.db.save(todo)
         click.echo(ctx.formatter.detailed(todo))
-
-
-def _abort_if_false(ctx, param, value):
-    if not value:
-        ctx.abort()
 
 
 @cli.command()

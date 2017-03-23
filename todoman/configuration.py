@@ -3,7 +3,7 @@ from os.path import exists, join
 
 import xdg.BaseDirectory
 from configobj import ConfigObj, flatten_errors
-from validate import is_option, Validator, VdtValueError
+from validate import Validator, VdtValueError
 
 from todoman import __documentation__
 
@@ -18,8 +18,6 @@ class ConfigurationException(Exception):
 
 def expand_path(path):
     """expands `~` as well as variable names"""
-    if path is None:
-        return False
     return os.path.expanduser(os.path.expandvars(path))
 
 
@@ -49,15 +47,6 @@ def validate_time_format(fmt):
             'for that.'
         )
     return fmt
-
-
-def validate_color(color):
-    color = is_option(color)
-    if color == 'always':
-        return True
-    elif color == 'never':
-        return False
-    return None
 
 
 def find_config():

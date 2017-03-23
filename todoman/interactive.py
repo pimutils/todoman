@@ -77,16 +77,18 @@ class TodoEditor:
                         in widgets.ExtendedEdit.HELP)
         )
 
-        list_selector = []
+        self.list_selector = []
         for _list in self.lists:
             urwid.RadioButton(
-                list_selector,
+                self.list_selector,
                 _list.name,
                 state=_list == self.current_list,
                 on_state_change=self._change_current_list,
                 user_data=_list,
             )
-        right_column = urwid.ListBox([urwid.Text('List:\n')] + list_selector)
+        right_column = urwid.ListBox(
+            [urwid.Text('List:\n')] + self.list_selector
+        )
 
         self._ui = urwid.Columns([left_column, right_column])
 

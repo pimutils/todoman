@@ -141,7 +141,7 @@ def test_default_command(tmpdir, runner, create):
     assert 'harhar' in result.output
 
 
-def test_delete(tmpdir, runner, create):
+def test_delete(runner, create):
     create(
         'test.ics',
         'SUMMARY:harhar\n'
@@ -153,6 +153,18 @@ def test_delete(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert not result.output.strip()
+
+
+def test_delete_prompt(todo_factory, runner, default_database):
+    todo_factory()
+
+    result = runner.invoke(cli, ['delete', '1'], input='yes')
+
+    assert not result.exception
+    assert '[y/N]: yes\nDeleting "YARR!"' in result.output
+
+    default_database.update_cache()
+    assert len(list(default_database.todos())) == 0
 
 
 def test_copy(tmpdir, runner, create):
@@ -394,6 +406,27 @@ def test_color_due_dates(tmpdir, runner, create, hours):
             .format(due_str)
 
 
+def test_color_flag(runner, todo_factory):
+    todo_factory(due=datetime.datetime(2007, 3, 22))
+
+    result = runner.invoke(cli, ['--color', 'always'], color=True)
+    assert(
+        result.output.strip() ==
+        '1  [ ]    \x1b[31m2007-03-22\x1b[0m  YARR! @default\x1b[0m'
+    )
+    result = runner.invoke(cli, color=True)
+    assert(
+        result.output.strip() ==
+        '1  [ ]    \x1b[31m2007-03-22\x1b[0m  YARR! @default\x1b[0m'
+    )
+
+    result = runner.invoke(cli, ['--color', 'never'], color=True)
+    assert(
+        result.output.strip() ==
+        '1  [ ]    2007-03-22  YARR! @default'
+    )
+
+
 def test_flush(tmpdir, runner, create):
     create(
         'test.ics',
@@ -441,6 +474,41 @@ def test_edit(runner, default_database):
     todo = next(default_database.todos(all=True))
     assert todo.due == datetime.datetime(2017, 2, 1, tzinfo=tzlocal())
     assert todo.summary == 'Eat paint'
+
+
+def test_edit_move(runner, todo_factory, default_database, tmpdir):
+    """
+    Test that editing the list in the UI edits the todo as expected
+
+    The goal of this test is not to test the editor itself, but rather the
+    `edit` command and its slightly-complex moving logic.
+    """
+    tmpdir.mkdir('another_list')
+
+    default_database.paths = [
+        str(tmpdir.join('default')),
+        str(tmpdir.join('another_list')),
+    ]
+    default_database.update_cache()
+
+    todo_factory(summary='Eat some headphones')
+
+    lists = list(default_database.lists())
+    another_list = next(filter(lambda x: x.name == 'another_list', lists))
+
+    def moving_edit(self):
+        self.current_list = another_list
+        self._save_inner()
+
+    with patch('todoman.interactive.TodoEditor.edit', moving_edit):
+        result = runner.invoke(cli, ['edit', '1'])
+
+    assert not result.exception
+
+    default_database.update_cache()
+    todos = list(default_database.todos())
+    assert len(todos) == 1
+    assert todos[0].list.name == 'another_list'
 
 
 def test_empty_list(tmpdir, runner, create):
@@ -623,3 +691,19 @@ def test_bad_start_date(runner):
     result = runner.invoke(cli, ['list', '--start', 'godzilla', '2017-03-22'])
     assert result.exception
     assert ("Format should be '[before|after] [DATE]'" in result.output)
+
+
+def test_done(runner, todo_factory, default_database):
+    todo = todo_factory()
+
+    result = runner.invoke(cli, ['done', '1'])
+    assert not result.exception
+
+    default_database.update_cache()
+    todo = next(default_database.todos(all=True))
+    assert todo.percent_complete == 100
+    assert todo.is_completed is True
+
+    result = runner.invoke(cli, ['done', '17'])
+    assert result.exception
+    assert result.output.strip() == 'No todo with id 17.'

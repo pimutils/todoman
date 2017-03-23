@@ -4,6 +4,7 @@ import pytest
 from click.testing import CliRunner
 
 from todoman.cli import cli
+from todoman.configuration import ConfigurationException, load_config
 
 
 def test_explicit_nonexistant(runner):
@@ -129,3 +130,61 @@ def test_missing_cache_dir(config, runner, tmpdir):
     assert not result.exception
     assert cache_dir.isdir()
     assert cache_file.isfile()
+
+
+def test_date_field_in_time_format(config, runner, tmpdir):
+    config.write(
+        '[main]\n'
+        'path = "/"\n'
+        'time_format = %Y-%m-%d\n'
+    )
+    result = runner.invoke(cli)
+    assert result.exception
+    assert (
+        'Found date component in `time_format`, please use `date_format` for '
+        'that.' in result.output
+    )
+
+
+def test_date_field_in_time(config, runner, tmpdir):
+    config.write(
+        '[main]\n'
+        'path = "/"\n'
+        'date_format = %Y-%d-:%M\n'
+    )
+    result = runner.invoke(cli)
+    assert result.exception
+    assert (
+        'Found time component in `date_format`, please use `time_format` for '
+        'that.' in result.output
+    )
+
+
+def test_colour_validation_auto(config):
+    with patch(
+        'todoman.configuration.find_config',
+        return_value=(str(config)),
+    ):
+        cfg = load_config()
+
+    assert cfg['main']['color'] == 'auto'
+
+
+def test_colour_validation_always(config):
+    config.write("color = 'always'\n", 'a')
+    with patch(
+        'todoman.configuration.find_config',
+        return_value=(str(config)),
+    ):
+        cfg = load_config()
+
+    assert cfg['main']['color'] == 'always'
+
+
+def test_colour_validation_invalid(config):
+    config.write("color = 'on_weekends_only'\n", 'a')
+    with patch(
+        'todoman.configuration.find_config',
+        return_value=(str(config)),
+    ), pytest.raises(ConfigurationException):
+        load_config()
