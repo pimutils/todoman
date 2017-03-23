@@ -105,3 +105,27 @@ def test_toggle_help(default_database, default_formatter, todo_factory):
     # Called event_loop.draw_screen
     assert editor._loop.draw_screen.call_count == 1
     assert editor._loop.draw_screen.call_args == mock.call()
+
+    editor._keypress('f1')
+    # Help text is made visible
+    assert editor._help_text not in editor.left_column.body.contents
+
+    # Called event_loop.draw_screen
+    assert editor._loop.draw_screen.call_count == 2
+    assert editor._loop.draw_screen.call_args == mock.call()
+
+
+def test_show_save_errors(default_database, default_formatter, todo_factory):
+    todo = todo_factory()
+    lists = list(default_database.lists())
+
+    editor = TodoEditor(todo, lists, default_formatter)
+    # editor._loop = mock.MagicMock()
+
+    editor._due.set_edit_text('not a date')
+    editor._keypress('ctrl s')
+
+    assert(
+        editor.left_column.body.contents[2].get_text()[0] ==
+        'Time description not recognized: not a date'
+    )
