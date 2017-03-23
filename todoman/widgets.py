@@ -122,3 +122,53 @@ class ExtendedEdit(urwid.Edit):
         new_text = click.edit(self.get_edit_text())
         if new_text is not None:
             self.set_edit_text(new_text.strip())
+
+
+class PrioritySelector(urwid.Button):
+
+    HELP = [
+        ('left', 'Lower Priority'),
+        ('right', 'Higher Priority'),
+    ]
+
+    RANGES = [
+        [0],
+        [9, 8, 7, 6],
+        [5],
+        [1, 2, 3, 4],
+    ]
+
+    def __init__(self, parent, priority, formatter_function):
+        self._parent = parent
+        self._label = urwid.SelectableIcon("", 0)
+        urwid.WidgetWrap.__init__(self, self._label)
+
+        self._priority = priority
+        self._formatter = formatter_function
+        self._set_label()
+
+    def _set_label(self):
+        self.set_label(self._formatter(self._priority))
+
+    def _update_label(self, delta=0):
+        for i, r in enumerate(PrioritySelector.RANGES):
+            if self._priority in r:
+                self._priority = PrioritySelector.RANGES[
+                    (i + delta) % len(PrioritySelector.RANGES)
+                ][0]
+                self._set_label()
+                return
+
+    def keypress(self, size, key):
+        if key in ['right', 'enter']:
+            self._update_label(1)
+            return
+        if key == 'left':
+            self._update_label(-1)
+            return
+
+        return super().keypress(size, key)
+
+    @property
+    def priority(self):
+        return self._priority

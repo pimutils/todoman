@@ -112,7 +112,7 @@ class DefaultFormatter:
 
     def format_priority(self, priority):
         if not priority:
-            return ''
+            return 'none'
         elif 1 <= priority <= 4:
             return 'high'
         elif priority == 5:

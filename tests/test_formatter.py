@@ -28,8 +28,8 @@ def test_humanized_date(runner, create, interval, now_for_tz, tz):
 
 
 def test_format_priority(default_formatter):
-    assert default_formatter.format_priority(None) == ''
-    assert default_formatter.format_priority(0) == ''
+    assert default_formatter.format_priority(None) == 'none'
+    assert default_formatter.format_priority(0) == 'none'
     assert default_formatter.format_priority(5) == 'medium'
     for i in range(1, 5):
         assert default_formatter.format_priority(i) == 'high'

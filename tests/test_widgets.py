@@ -1,6 +1,6 @@
 from unittest import mock
 
-from todoman.widgets import ExtendedEdit
+from todoman.widgets import ExtendedEdit, PrioritySelector
 
 # We ignore `size` when testing keypresses, because it's not used anywhere.
 # Just pass any number when writing tests, unless we start using the value.
@@ -158,3 +158,43 @@ def test_extended_edit_editor():
     assert edit.call_count == 1
     assert edit.call_args == mock.call(BASE_STRING)
     assert extended_edit.get_edit_text() == 'Sheep!'
+
+
+def test_priority_selector(default_formatter):
+    selector = PrioritySelector(None, 5, default_formatter.format_priority)
+
+    assert selector.label == 'medium'
+    assert selector.priority == 5
+
+    selector.keypress(10, 'right')
+    assert selector.label == 'high'
+    assert selector.priority == 1
+
+    selector.keypress(10, 'left')
+    selector.keypress(10, 'left')
+    assert selector.label == 'low'
+    assert selector.priority == 9
+
+    selector.keypress(10, 'right')
+    assert selector.label == 'medium'
+    assert selector.priority == 5
+
+    # Spin the whoel way around:
+    for i in PrioritySelector.RANGES:
+        selector.keypress(10, 'right')
+
+    assert selector.label == 'medium'
+    assert selector.priority == 5
+
+    # Now the other way
+    for i in PrioritySelector.RANGES:
+        selector.keypress(10, 'left')
+
+    assert selector.label == 'medium'
+    assert selector.priority == 5
+
+    # Should do nothing:
+    selector.keypress(10, 'd')
+    selector.keypress(10, '9')
+    assert selector.label == 'medium'
+    assert selector.priority == 5
