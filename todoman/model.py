@@ -339,9 +339,6 @@ class Cache:
     load times, but, more importantly, provides a simpler interface for
     filtering/querying/sorting.
 
-    The internal sqlite database is copied fully into memory at startup, and
-    dumped again at showdown. This reduces excessive disk I/O.
-
     [1]: Relevant fields are those we show when listing todos, or those which
     may be used for filtering/sorting.
     """
