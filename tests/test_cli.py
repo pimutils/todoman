@@ -707,3 +707,11 @@ def test_done(runner, todo_factory, default_database):
     result = runner.invoke(cli, ['done', '17'])
     assert result.exception
     assert result.output.strip() == 'No todo with id 17.'
+
+
+def test_id_printed_for_new(runner):
+    result = runner.invoke(cli, [
+        'new', '-l', 'default', 'show me an id'
+    ])
+    assert not result.exception
+    assert result.output.strip().startswith('1')
