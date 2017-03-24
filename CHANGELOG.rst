@@ -7,26 +7,30 @@ releases, in reverse chronological order.
 v3.0.0
 ------
 
-* Added a ``today`` setting and flag to show only todos which can be started
-  today (eg: don't start in the future).
+New features
+~~~~~~~~~~~~
+
+* Add a ``today`` setting and flag to exclude todos that start in the future.
 * Add the ``--humanize`` to show friendlier date times (eg: ``in 3 hours``).
-* Dropped ``--urgent`` and introduced ``--priority``
-* Added support for filtering by priority
-* New PyPI dependency ``tabulate``.
-* Basic support for times in due dates, new ``time_format`` configuration
-  parameter.
+* Drop ``--urgent`` and introduced ``--priority``, which allows fine-filtering
+  by priority.
+* Add support for times in due dates, new ``time_format`` setting.
 * Use the system's date format as a default.
-* Add list selector to TodoEditor
-* Add ``--start="[before|after] <date>`` option for ``todo list``. It shows
+* Add list selector to the interactive editor.
+* Add ``--start=[before|after] [DATE]`` option for ``list`` to only show
   todos starting before/after given date.
 * Add flag "--done-only" to todo list. Displays only completed tasks.
-* Make the output of move, delete, copy and flush more consistent with
-  everything else.
+* Make the output of move, delete, copy and flush consistent.
 * Porcelain now outputs proper JSON, rather than one-JSON-per-line.
 * Increment sequence number upon edits.
 * Print a descriptive message when no lists are found.
 * Add full support for locations.
-* Todoman now experimentally support pypy3.
+
+Packaging changes
+~~~~~~~~~~~~~~~~~
+
+* New runtime dependency: ``tabulate``.
+* New supported python version: ``pypy3``.
 
 v2.1.0
 ------
