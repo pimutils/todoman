@@ -260,15 +260,13 @@ def test_due_naive(tmpdir, runner, create):
     assert todos[1].summary == "1"
 
 
-def test_filtering_start(tmpdir, runner, create):
-    result = runner.invoke(cli, ['list'], catch_exceptions=False)
-    assert not result.exception
-    assert not result.output.strip()
-
+def test_filtering_start(tmpdir, runner, todo_factory, default_database):
     today = datetime.now()
     now = today.strftime("%Y-%m-%d")
-    now_plus_day = (today + timedelta(days=1)).strftime("%Y-%m-%d")
-    now_minus_day = (today + timedelta(days=-1)).strftime("%Y-%m-%d")
+
+    tomorrow = (today + timedelta(days=1)).strftime("%Y-%m-%d")
+    yesterday = (today + timedelta(days=-1)).strftime("%Y-%m-%d")
+
     result = runner.invoke(cli, ['list', '--start', 'before', now])
     assert not result.exception
     assert not result.output.strip()
@@ -277,17 +275,28 @@ def test_filtering_start(tmpdir, runner, create):
     assert not result.exception
     assert not result.output.strip()
 
-    tmpdir.mkdir('list_one')
-    runner.invoke(cli, ['new', '-l', 'list_one', 'haha'])
-    runner.invoke(cli, ['new', '-l', 'list_one', 'hoho'])
+    todo_factory(summary='haha', start=today)
+    todo_factory(summary='hoho', start=today)
+    todo_factory(summary='hihi', start=today - timedelta(days=2))
+    todo_factory(summary='huhu')
 
-    result = runner.invoke(cli, ['list', '--start', 'after', now_minus_day])
+    result = runner.invoke(cli, ['list', '--start', 'after', yesterday])
     assert not result.exception
     assert 'haha' in result.output
     assert 'hoho' in result.output
-    result = runner.invoke(cli, ['list', '--start', 'before', now_minus_day])
+    assert 'hihi' not in result.output
+    assert 'huhu' not in result.output
+
+    result = runner.invoke(cli, ['list', '--start', 'before', yesterday])
     assert not result.exception
-    assert not result.output.strip()
-    result = runner.invoke(cli, ['list', '--start', 'after', now_plus_day])
+    assert 'haha' not in result.output
+    assert 'hoho' not in result.output
+    assert 'hihi' in result.output
+    assert 'huhu' not in result.output
+
+    result = runner.invoke(cli, ['list', '--start', 'after', tomorrow])
     assert not result.exception
-    assert not result.output.strip()
+    assert 'haha' not in result.output
+    assert 'hoho' not in result.output
+    assert 'hihi' not in result.output
+    assert 'huhu' not in result.output
