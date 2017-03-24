@@ -903,7 +903,7 @@ class Database:
         mtime = _getmtime(todo.path)
 
         self.cache.add_file(todo.list.name, todo.path, mtime)
-        self.cache.add_vtodo(vtodo, todo.path, todo.id)
+        todo.id = self.cache.add_vtodo(vtodo, todo.path, todo.id)
         self.cache.save_to_disk()
 
 
