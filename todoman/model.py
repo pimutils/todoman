@@ -624,10 +624,10 @@ class Cache:
             is_before, dt = start
             dt = dt.timestamp()
             if is_before:
-                extra_where.append('AND created_at <= ?')
+                extra_where.append('AND start <= ?')
                 params.append(dt)
             else:
-                extra_where.append('AND created_at >= ?')
+                extra_where.append('AND start >= ?')
                 params.append(dt)
         if today:
             extra_where.append('AND (start IS NULL OR start <= ?)')

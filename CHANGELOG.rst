@@ -17,8 +17,8 @@ v3.0.0
   parameter.
 * Use the system's date format as a default.
 * Add list selector to TodoEditor
-* Add ``--start="[before|after] <date>`` option for ``todo list``. It shows todos
-  created before/after given date.
+* Add ``--start="[before|after] <date>`` option for ``todo list``. It shows
+  todos starting before/after given date.
 * Add flag "--done-only" to todo list. Displays only completed tasks.
 * Make the output of move, delete, copy and flush more consistent with
   everything else.
