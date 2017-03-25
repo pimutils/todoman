@@ -281,3 +281,21 @@ def test_todos_today(tmpdir, runner, todo_factory, default_database):
     assert len(todos) == 2
     for todo in todos:
         assert 'unstarted' not in todo.summary
+
+
+def test_filename_uid_colision(create, default_database, runner):
+    create(
+        'ABC.ics',
+        'SUMMARY:My UID is not ABC\n'
+        'UID:NOTABC\n'
+    )
+    default_database.update_cache()
+    len(list(default_database.todos())) == 1
+
+    todo = Todo(new=False)
+    todo.uid = 'ABC'
+    todo.list = next(default_database.lists())
+    default_database.save(todo)
+
+    default_database.update_cache()
+    len(list(default_database.todos())) == 2
