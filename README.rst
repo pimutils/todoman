@@ -43,7 +43,7 @@ Features
   specification.
 * There's support for the most common TODO features for now (summary,
   description, location, due date and priority) for now.
-* Todoman should run on any major operating system.
+* Todoman should run on any major operating system (except Windows).
 * Unsupported fields may not be shown but are *never* deleted or altered.
 
 Documentation

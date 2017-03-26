@@ -30,7 +30,7 @@ def test_querying(create, tmpdir):
     assert len(set(db.todos(lists='ab', location='a'))) == 2
 
 
-def test_retain_tz(tmpdir, create, default_database):
+def test_retain_tz(tmpdir, create, todos):
     create(
         'ar.ics',
         'SUMMARY:blah.ar\n'
@@ -42,8 +42,7 @@ def test_retain_tz(tmpdir, create, default_database):
         'DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n'
     )
 
-    db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
-    todos = list(db.todos())
+    todos = list(todos())
 
     assert len(todos) == 2
     assert todos[0].due == datetime(
@@ -132,7 +131,7 @@ def test_list_no_colour(tmpdir):
     assert list_.color_ansi is None
 
 
-def test_database_priority_sorting(create, default_database):
+def test_database_priority_sorting(create, todos):
     for i in [1, 5, 9, 0]:
         create(
             'test{}.ics'.format(i),
@@ -143,8 +142,7 @@ def test_database_priority_sorting(create, default_database):
         'SUMMARY:No priority (eg: None)\n'
     )
 
-    default_database.update_cache()
-    todos = list(default_database.todos())
+    todos = list(todos())
 
     assert todos[0].priority == 0
     assert todos[1].priority == 0
@@ -271,31 +269,29 @@ def test_clone():
 
 
 @freeze_time('2017, 3, 20')
-def test_todos_today(tmpdir, runner, todo_factory, default_database):
+def test_todos_today(tmpdir, runner, todo_factory, todos):
     todo_factory(summary='started', start=datetime(2017, 3, 15))
     todo_factory(summary='nostart')
     todo_factory(summary='unstarted', start=datetime(2017, 3, 24))
 
-    todos = list(default_database.todos(today=True))
+    todos = list(todos(today=True))
 
     assert len(todos) == 2
     for todo in todos:
         assert 'unstarted' not in todo.summary
 
 
-def test_filename_uid_colision(create, default_database, runner):
+def test_filename_uid_colision(create, default_database, runner, todos):
     create(
         'ABC.ics',
         'SUMMARY:My UID is not ABC\n'
         'UID:NOTABC\n'
     )
-    default_database.update_cache()
-    len(list(default_database.todos())) == 1
+    len(list(todos())) == 1
 
     todo = Todo(new=False)
     todo.uid = 'ABC'
     todo.list = next(default_database.lists())
     default_database.save(todo)
 
-    default_database.update_cache()
-    len(list(default_database.todos())) == 2
+    len(list(todos())) == 2

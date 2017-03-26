@@ -12,7 +12,7 @@ python:
 
 env:
   matrix:
-    - BUILD=py
+    - TOXENV=py
   global:
     secure: IFQzIw/g6qbmZy86w9qPU5vZjoJWtBlP8VpUtBX+La9hyZ6odC0pxB38U7IQNnPKinUvnc0cGEsAJS/abxp3bSdS0H+afr8OjxOgDuLBl47fMHBxFUMF6HRFmKuk66GfM1sxf87xLdiPDF5Dac0cn7IlJrFkQaCukZjinvZRvtU=
 
@@ -21,9 +21,17 @@ matrix:
     - python: 3.7-dev
   include:
     - python: 3.6
-      env: BUILD=flake8
+      env: TOXENV=flake8
     - python: 3.6
-      env: BUILD=docs
+      env: TOXENV=docs
+    - os: osx
+      language: generic
+      env: TOXENV=py
+      before_install:
+        - brew update
+        - brew install python3
+        - virtualenv env -p python3
+        - source env/bin/activate
 
 addons:
   apt:
@@ -34,7 +42,7 @@ install:
   - pip install tox codecov
 
 script:
-  - tox -e $BUILD
+  - tox
 
 after_script:
   - codecov
