@@ -85,6 +85,7 @@ def test_sequence_increment(tmpdir, default_database):
 
     assert sequence == 1
 
+    # XXX: Is this actually reloaded? We should make sure it is.
     default_database.save(todo)
 
     with open(todo.path) as f:
@@ -299,3 +300,7 @@ def test_filename_uid_colision(create, default_database, runner):
 
     default_database.update_cache()
     len(list(default_database.todos())) == 2
+
+
+# XXX: test that makes sure all SUPPORTEF_FIELDS are saved and reloaded from
+# dis

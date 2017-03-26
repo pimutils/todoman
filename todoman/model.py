@@ -420,6 +420,7 @@ class Cache:
                 "description" TEXT,
                 "location" TEXT,
                 "categories" TEXT,
+                "sequence" INTEGER,
 
                 FOREIGN KEY(file_path) REFERENCES files(path) ON DELETE CASCADE
             );
@@ -509,8 +510,9 @@ class Cache:
                 status,
                 description,
                 location,
-                categories
-            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                categories,
+                sequence
+            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             '''
 
         params = (
@@ -528,6 +530,7 @@ class Cache:
             todo.get('description', None),
             todo.get('location', None),
             todo.get('categories', None),
+            todo.get('sequence', 1),
         )
 
         if id:
