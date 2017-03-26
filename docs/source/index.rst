@@ -33,11 +33,6 @@ See :doc:`contributing` for details on contributing.
 Caveats
 -------
 
-Priority granularity hasn't been completely implemented yet. Icalendar
-supports priorities 1-9 or none. Todoman supports only none or 1 (highest).
-
-Due dates are generally shown and editable as dates with no time component.
-
 Support for the ``percent-completed`` attribute is incomplete. Todoman can only
 mark todos as completed (100%), and will nor reflect nor allow editing for
 values for ``percent > 0 ^ percent < 100``.
