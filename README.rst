@@ -31,8 +31,11 @@ means you can sync them via `CalDAV <http://en.wikipedia.org/wiki/CalDAV>`_
 using, for example, `vdirsyncer <https://vdirsyncer.readthedocs.org/>`_.
 
 Todoman is now part of the ``pimutils`` project, and is hosted at `GitHub
-<https://github.com/pimutils/todoman>`_. The original location at `GitLab.com
-<https://gitlab.com/hobarrera/todoman>`_ is still kept as a mirror.
+<https://github.com/pimutils/todoman>`_.
+
+Todoman should run fine on any Unix-like OS. It's been tested on GNU/Linux,
+BSD, and macOS.  We do not support windows, and very basic testing seems to
+indicate it does not work.
 
 Features
 --------
