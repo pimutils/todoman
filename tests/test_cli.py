@@ -293,23 +293,11 @@ def test_sorting_fields(tmpdir, runner, default_database):
 
         default_database.save(todo)
 
-    fields = (
-        'id',
-        'uid',
-        'summary',
-        'due',
-        'priority',
-        'created_at',
-        'completed_at',
-        'dtstamp',
-        'status',
-        'description',
-        'location',
-        'categories',
-    )
+    fields = list(Todo.ALL_SUPPORTED_FIELDS)
+    fields.remove('sequence')
 
     @given(sort_key=st.lists(
-        st.sampled_from(fields + tuple('-' + x for x in fields)),
+        st.sampled_from(fields + ['-' + x for x in fields]),
         unique=True
     ))
     def run_test(sort_key):

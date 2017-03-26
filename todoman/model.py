@@ -130,12 +130,7 @@ class Todo:
         """
         todo = Todo(new=True, list=self.list)
 
-        fields = (
-            Todo.STRING_FIELDS +
-            Todo.INT_FIELDS +
-            Todo.LIST_FIELDS +
-            Todo.DATETIME_FIELDS
-        )
+        fields = list(Todo.ALL_SUPPORTED_FIELDS)
         fields.remove('uid')
 
         for field in fields:
@@ -143,28 +138,28 @@ class Todo:
 
         return todo
 
-    STRING_FIELDS = [
+    STRING_FIELDS = (
         'description',
         'location',
         'status',
         'summary',
         'uid',
-    ]
-    INT_FIELDS = [
+    )
+    INT_FIELDS = (
         'percent_complete',
         'priority',
         'sequence',
-    ]
-    LIST_FIELDS = [
+    )
+    LIST_FIELDS = (
         'categories',
-    ]
-    DATETIME_FIELDS = [
+    )
+    DATETIME_FIELDS = (
         'completed_at',
         'created_at',
         'dtstamp',
         'start',
         'due',
-    ]
+    )
     ALL_SUPPORTED_FIELDS = (
         DATETIME_FIELDS +
         INT_FIELDS +
