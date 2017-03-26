@@ -12,6 +12,7 @@ from todoman.cli import cli
     (-10800, '3 hours ago'),
 ])
 @pytest.mark.parametrize('tz', ['CET', 'HST'])
+@freeze_time('2017-03-25')
 def test_humanized_date(runner, create, interval, now_for_tz, tz):
     seconds, expected = interval
     due = now_for_tz(tz) + timedelta(seconds=seconds)
