@@ -155,7 +155,7 @@ def test_delete(runner, create):
     assert not result.output.strip()
 
 
-def test_delete_prompt(todo_factory, runner, default_database):
+def test_delete_prompt(todo_factory, runner, todos):
     todo_factory()
 
     result = runner.invoke(cli, ['delete', '1'], input='yes')
@@ -163,8 +163,7 @@ def test_delete_prompt(todo_factory, runner, default_database):
     assert not result.exception
     assert '[y/N]: yes\nDeleting "YARR!"' in result.output
 
-    default_database.update_cache()
-    assert len(list(default_database.todos())) == 0
+    assert len(list(todos())) == 0
 
 
 def test_copy(tmpdir, runner, create):
@@ -262,7 +261,7 @@ def test_default_due(
 
 
 @freeze_time(datetime.datetime.now())
-def test_default_due2(tmpdir, runner, create, default_database):
+def test_default_due2(tmpdir, runner, create, todos):
     cfg = tmpdir.join('config')
     cfg.write('default_due = 24\n', 'a')
 
@@ -273,8 +272,7 @@ def test_default_due2(tmpdir, runner, create, default_database):
     r = runner.invoke(cli, ['new', '-ldefault', '-d', 'one hour', 'ccc'])
     assert not r.exception
 
-    default_database.update_cache()
-    todos = {t.summary: t for t in default_database.todos(all=True)}
+    todos = {t.summary: t for t in todos(all=True)}
     assert todos['aaa'].due.date() == todos['bbb'].due.date()
     assert todos['ccc'].due == todos['bbb'].due - datetime.timedelta(hours=23)
 
@@ -459,7 +457,7 @@ def test_flush(tmpdir, runner, create):
     assert '1  [ ]      bbb @default' in result.output
 
 
-def test_edit(runner, default_database):
+def test_edit(runner, default_database, todos):
     todo = Todo(new=True)
     todo.list = next(default_database.lists())
     todo.summary = 'Eat paint'
@@ -470,13 +468,12 @@ def test_edit(runner, default_database):
     assert not result.exception
     assert '2017-02-01' in result.output
 
-    default_database.update_cache()
-    todo = next(default_database.todos(all=True))
+    todo = next(todos(all=True))
     assert todo.due == datetime.datetime(2017, 2, 1, tzinfo=tzlocal())
     assert todo.summary == 'Eat paint'
 
 
-def test_edit_move(runner, todo_factory, default_database, tmpdir):
+def test_edit_move(runner, todo_factory, default_database, tmpdir, todos):
     """
     Test that editing the list in the UI edits the todo as expected
 
@@ -505,8 +502,7 @@ def test_edit_move(runner, todo_factory, default_database, tmpdir):
 
     assert not result.exception
 
-    default_database.update_cache()
-    todos = list(default_database.todos())
+    todos = list(todos())
     assert len(todos) == 1
     assert todos[0].list.name == 'another_list'
 
@@ -693,14 +689,13 @@ def test_bad_start_date(runner):
     assert ("Format should be '[before|after] [DATE]'" in result.output)
 
 
-def test_done(runner, todo_factory, default_database):
+def test_done(runner, todo_factory, todos):
     todo = todo_factory()
 
     result = runner.invoke(cli, ['done', '1'])
     assert not result.exception
 
-    default_database.update_cache()
-    todo = next(default_database.todos(all=True))
+    todo = next(todos(all=True))
     assert todo.percent_complete == 100
     assert todo.is_completed is True
 

@@ -260,7 +260,7 @@ def test_due_naive(tmpdir, runner, create):
     assert todos[1].summary == "1"
 
 
-def test_filtering_start(tmpdir, runner, todo_factory, default_database):
+def test_filtering_start(tmpdir, runner, todo_factory):
     today = datetime.now()
     now = today.strftime("%Y-%m-%d")
 
