@@ -31,6 +31,9 @@ Packaging changes
 
 * New runtime dependency: ``tabulate``.
 * New supported python version: ``pypy3``.
+* Include an alternative [much faster] entry point (aka "bin") which we
+  recommend all downstream packagers use. Please see the :ref:`Notes for
+  Packagers <notes-for-packagers>` documentation for further details.
 
 v2.1.0
 ------
