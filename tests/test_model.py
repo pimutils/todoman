@@ -295,3 +295,10 @@ def test_filename_uid_colision(create, default_database, runner, todos):
     default_database.save(todo)
 
     len(list(todos())) == 2
+
+
+def test_hide_cancelled(todos, todo_factory):
+    todo_factory(status='CANCELLED')
+
+    assert len(list(todos())) == 0
+    assert len(list(todos(all=True))) == 1
