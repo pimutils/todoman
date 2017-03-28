@@ -10,6 +10,8 @@ import icalendar
 from atomicwrites import AtomicWriter
 from dateutil.tz import tzlocal
 
+from todoman import exceptions
+
 logger = logging.getLogger(name=__name__)
 
 
@@ -17,14 +19,6 @@ logger = logging.getLogger(name=__name__)
 # We were doing this all over the place (even if unused!), so at least only do
 # it once.
 LOCAL_TIMEZONE = tzlocal()
-
-
-class NoSuchTodo(Exception):
-    pass
-
-
-class ReadOnlyTodo(Exception):
-    pass
 
 
 class UnsafeOperationException(Exception):
@@ -729,7 +723,7 @@ class Cache:
         ).fetchone()
 
         if not result:
-            raise NoSuchTodo(id)
+            raise exceptions.NoSuchTodo(id)
 
         if not read_only:
             count = self._conn.execute('''
@@ -740,7 +734,7 @@ class Cache:
             ''', (result['path'],)
             ).fetchone()
             if count['c'] > 1:
-                raise ReadOnlyTodo()
+                raise exceptions.ReadOnlyTodo(result['path'])
 
         return self._todo_from_db(result)
 

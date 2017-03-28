@@ -8,7 +8,7 @@ from os.path import expanduser, isdir
 import click
 import click_log
 
-from todoman import formatters, model
+from todoman import exceptions, formatters
 from todoman.configuration import ConfigurationException, load_config
 from todoman.interactive import TodoEditor
 from todoman.model import cached_property, Database, Todo
@@ -129,13 +129,10 @@ def catch_errors(f):
 def handle_error(e):
     try:
         raise e
-    except model.NoSuchTodo:
-        click.echo('No todo with id {}.'.format(str(e)))
-        sys.exit(-2)
-    except model.ReadOnlyTodo:
-        click.echo('Todo is in read-only mode because there are multiple '
-                   'todos in {}.'.format(str(e)))
-        sys.exit(1)
+    except exceptions.TodomanException:
+        click.echo(e)
+
+    sys.exit(e.EXIT_CODE)
 
 
 class AppContext:
@@ -217,10 +214,7 @@ def cli(click_ctx, color, porcelain, humanize):
         if isdir(path)
     ]
     if len(paths) == 0:
-        click.echo("No lists found matching {}, "
-                   "create a directory for a new list"
-                   .format(ctx.config["main"]["path"]))
-        ctx.exit(1)
+        raise exceptions.NoListsFound(ctx.config["main"]["path"])
 
     ctx.db = Database(paths, ctx.config['main']['cache_path'])
 

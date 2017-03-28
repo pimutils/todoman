@@ -96,7 +96,7 @@ def test_show_inexistant(tmpdir, runner, create):
     )
     result = runner.invoke(cli, ['list'])
     result = runner.invoke(cli, ['show', '2'])
-    assert result.exit_code == -2
+    assert result.exit_code == 20
     assert result.output == 'No todo with id 2.\n'
 
 
