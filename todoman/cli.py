@@ -2,6 +2,7 @@ import functools
 import glob
 import locale
 import sys
+from contextlib import contextmanager
 from datetime import timedelta
 from os.path import expanduser, isdir
 
@@ -12,6 +13,24 @@ from todoman import exceptions, formatters
 from todoman.configuration import ConfigurationException, load_config
 from todoman.interactive import TodoEditor
 from todoman.model import cached_property, Database, Todo
+
+
+@contextmanager
+def handle_error():
+    try:
+        yield
+    except exceptions.TodomanException as e:
+        click.echo(e)
+        sys.exit(e.EXIT_CODE)
+
+
+def catch_errors(f):
+    @functools.wraps(f)
+    def wrapper(*a, **kw):
+        with handle_error():
+            return f(*a, **kw)
+    return wrapper
+
 
 TODO_ID_MIN = 1
 with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
@@ -84,6 +103,12 @@ def _validate_today_param(ctx, param, val):
         return ctx.config['main']['today']
 
 
+def _validate_todos(ctx, param, val):
+    ctx = ctx.find_object(AppContext)
+    with handle_error():
+        return [ctx.db.todo(int(id)) for id in val]
+
+
 def _sort_callback(ctx, param, val):
     fields = val.split(',') if val else []
     for field in fields:
@@ -114,25 +139,6 @@ def _todo_property_options(command):
         return command(*a, **kw)
 
     return command_wrap
-
-
-def catch_errors(f):
-    @functools.wraps(f)
-    def wrapper(*a, **kw):
-        try:
-            return f(*a, **kw)
-        except Exception as e:
-            return handle_error(e)
-    return wrapper
-
-
-def handle_error(e):
-    try:
-        raise e
-    except exceptions.TodomanException:
-        click.echo(e)
-
-    sys.exit(e.EXIT_CODE)
 
 
 class AppContext:
@@ -315,14 +321,17 @@ def show(ctx, id):
 
 @cli.command()
 @pass_ctx
-@click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
+@click.argument(
+    'todos',
+    nargs=-1,
+    required=True,
+    type=click.IntRange(0),
+    callback=_validate_todos,
+)
 @catch_errors
-def done(ctx, ids):
-    '''
-    Mark a task as done.
-    '''
-    for id in ids:
-        todo = ctx.db.todo(id)
+def done(ctx, todos):
+    """Mark one or more tasks as done."""
+    for todo in todos:
         todo.is_completed = True
         ctx.db.save(todo)
         click.echo(ctx.formatter.detailed(todo))
