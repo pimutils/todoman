@@ -704,6 +704,16 @@ def test_done(runner, todo_factory, todos):
     assert result.output.strip() == 'No todo with id 17.'
 
 
+def test_cancel(runner, todo_factory, todos):
+    todo = todo_factory()
+
+    result = runner.invoke(cli, ['cancel', '1'])
+    assert not result.exception
+
+    todo = next(todos(all=True))
+    assert todo.status == 'CANCELLED'
+
+
 def test_id_printed_for_new(runner):
     result = runner.invoke(cli, [
         'new', '-l', 'default', 'show me an id'

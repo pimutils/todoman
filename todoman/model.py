@@ -203,6 +203,9 @@ class Todo:
     def path(self):
         return os.path.join(self.list.path, self.filename)
 
+    def cancel(self):
+        self.status = 'CANCELLED'
+
 
 class VtodoWritter:
     """Writes a Todo as a VTODO file."""

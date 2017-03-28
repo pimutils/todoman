@@ -339,6 +339,24 @@ def done(ctx, todos):
 
 @cli.command()
 @pass_ctx
+@click.argument(
+    'todos',
+    nargs=-1,
+    required=True,
+    type=click.IntRange(0),
+    callback=_validate_todos,
+)
+@catch_errors
+def cancel(ctx, todos):
+    """Cancel one or more tasks."""
+    for todo in todos:
+        todo.cancel()
+        ctx.db.save(todo)
+        click.echo(ctx.formatter.detailed(todo))
+
+
+@cli.command()
+@pass_ctx
 @click.confirmation_option(
     prompt='Are you sure you want to delete all done tasks?'
 )
