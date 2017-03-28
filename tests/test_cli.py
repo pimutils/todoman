@@ -96,7 +96,7 @@ def test_show_inexistant(tmpdir, runner, create):
     )
     result = runner.invoke(cli, ['list'])
     result = runner.invoke(cli, ['show', '2'])
-    assert result.exit_code == -2
+    assert result.exit_code == 20
     assert result.output == 'No todo with id 2.\n'
 
 
@@ -702,6 +702,16 @@ def test_done(runner, todo_factory, todos):
     result = runner.invoke(cli, ['done', '17'])
     assert result.exception
     assert result.output.strip() == 'No todo with id 17.'
+
+
+def test_cancel(runner, todo_factory, todos):
+    todo = todo_factory()
+
+    result = runner.invoke(cli, ['cancel', '1'])
+    assert not result.exception
+
+    todo = next(todos(all=True))
+    assert todo.status == 'CANCELLED'
 
 
 def test_id_printed_for_new(runner):
