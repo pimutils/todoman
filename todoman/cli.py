@@ -231,7 +231,7 @@ def cli(click_ctx, color, porcelain, humanize):
         click_ctx.invoke(cli.commands["list"])
 
 
-try:
+try:  # pragma: no cover
     import click_repl
     click_repl.register_repl(cli)
     click_repl.register_repl(cli, name="shell")

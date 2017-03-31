@@ -32,6 +32,10 @@ matrix:
         - brew install python3
         - virtualenv env -p python3
         - source env/bin/activate
+    - # Run tests with optional dependencies:
+      python: 3.6
+      after_install:
+        - echo click_repl >> requirements.txt
 
 addons:
   apt:

@@ -1,4 +1,5 @@
 import datetime
+import sys
 from os.path import isdir
 from unittest.mock import patch
 
@@ -728,3 +729,29 @@ def test_id_printed_for_new(runner):
     ])
     assert not result.exception
     assert result.output.strip().startswith('1')
+
+
+def test_repl(runner):
+    """Test that repl registers properly."""
+    if 'click_repl' not in sys.modules:
+        pytest.skip('Optional dependency "click_repl" is not installed')
+
+    result = runner.invoke(cli, ['--help'])
+
+    assert not result.exception
+    assert 'repl    Start an interactive shell.' in result.output
+    assert 'shell   Start an interactive shell.' in result.output
+
+
+def test_no_repl(runner):
+    """Test that we work fine without click_repl installed."""
+    modules = sys.modules
+    if 'click_repl' in modules:
+        pytest.skip("Test can't be run with click_repl installed")
+
+    result = runner.invoke(cli, ['--help'])
+
+    assert not result.exception
+    assert 'repl' not in result.output
+    assert 'shell' not in result.output
+    assert 'Start an interactive shell.' not in result.output
