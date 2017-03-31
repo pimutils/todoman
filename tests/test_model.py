@@ -269,12 +269,12 @@ def test_clone():
 
 
 @freeze_time('2017, 3, 20')
-def test_todos_today(tmpdir, runner, todo_factory, todos):
+def test_todos_startable(tmpdir, runner, todo_factory, todos):
     todo_factory(summary='started', start=datetime(2017, 3, 15))
     todo_factory(summary='nostart')
     todo_factory(summary='unstarted', start=datetime(2017, 3, 24))
 
-    todos = list(todos(today=True))
+    todos = list(todos(startable=True))
 
     assert len(todos) == 2
     for todo in todos:

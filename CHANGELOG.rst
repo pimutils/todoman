@@ -4,6 +4,11 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.1.0
+------
+
+* Rename ``--today`` flag to ``--startable``.
+
 v3.0.0
 ------
 
