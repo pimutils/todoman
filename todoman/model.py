@@ -515,12 +515,18 @@ class Cache:
             ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             '''
 
+        due = self._serialize_datetime(todo, 'due')
+        start = self._serialize_datetime(todo, 'dtstart')
+
+        if start and due:
+            start = None if start >= due else start
+
         params = (
             file_path,
             todo.get('uid'),
             todo.get('summary'),
-            self._serialize_datetime(todo, 'due'),
-            self._serialize_datetime(todo, 'dtstart'),
+            due,
+            start,
             todo.get('priority', 0) or None,
             self._serialize_datetime(todo, 'created'),
             self._serialize_datetime(todo, 'completed'),

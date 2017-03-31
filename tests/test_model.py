@@ -302,3 +302,15 @@ def test_hide_cancelled(todos, todo_factory):
 
     assert len(list(todos())) == 0
     assert len(list(todos(all=True))) == 1
+
+
+def test_illegal_start_suppression(create, default_database, todos):
+    create(
+        'test.ics',
+        'SUMMARY:Start doing stuff\n'
+        'DUE;VALUE=DATE-TIME;TZID=CET:20170331T120000\n'
+        'DTSTART;VALUE=DATE-TIME;TZID=CET:20170331T140000\n'
+    )
+    todo = next(todos())
+    assert todo.start is None
+    assert todo.due == datetime(2017, 3, 31, 12, tzinfo=tzoffset(None, 7200))

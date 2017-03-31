@@ -8,6 +8,8 @@ v3.1.0
 ------
 
 * Rename ``--today`` flag to ``--startable``.
+* Illegal start dates (eg: start dates that are not before the due date) are
+  ignored and are removed when saving an edited todo.
 
 v3.0.0
 ------
