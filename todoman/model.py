@@ -515,12 +515,18 @@ class Cache:
             ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             '''
 
+        due = self._serialize_datetime(todo, 'due')
+        start = self._serialize_datetime(todo, 'dtstart')
+
+        if start and due:
+            start = None if start >= due else start
+
         params = (
             file_path,
             todo.get('uid'),
             todo.get('summary'),
-            self._serialize_datetime(todo, 'due'),
-            self._serialize_datetime(todo, 'dtstart'),
+            due,
+            start,
             todo.get('priority', 0) or None,
             self._serialize_datetime(todo, 'created'),
             self._serialize_datetime(todo, 'completed'),
@@ -549,7 +555,7 @@ class Cache:
 
     def todos(self, all=False, lists=[], priority=None, location='',
               category='', grep='', sort=[], reverse=True, due=None,
-              done_only=None, start=None, today=False):
+              done_only=None, start=None, startable=False):
         """
         Returns filtered cached todos, in a specified order.
 
@@ -623,7 +629,7 @@ class Cache:
             else:
                 extra_where.append('AND start >= ?')
                 params.append(dt)
-        if today:
+        if startable:
             extra_where.append('AND (start IS NULL OR start <= ?)')
             params.append(datetime.now().timestamp())
         if sort:

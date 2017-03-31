@@ -634,19 +634,27 @@ def test_todo_edit(runner, default_database, todo_factory):
 
 
 @freeze_time('2017, 3, 20')
-def test_list_today(tmpdir, runner, todo_factory):
+def test_list_startable(tmpdir, runner, todo_factory):
     todo_factory(summary='started', start=datetime.datetime(2017, 3, 15))
     todo_factory(summary='nostart')
     todo_factory(summary='unstarted', start=datetime.datetime(2017, 3, 24))
 
-    result = runner.invoke(cli, ['list', '--today'], catch_exceptions=False)
+    result = runner.invoke(
+        cli,
+        ['list', '--startable'],
+        catch_exceptions=False,
+    )
 
     assert not result.exception
     assert 'started' in result.output
     assert 'nostart' in result.output
     assert 'unstarted' not in result.output
 
-    result = runner.invoke(cli, ['list'], catch_exceptions=False)
+    result = runner.invoke(
+        cli,
+        ['list'],
+        catch_exceptions=False,
+    )
 
     assert not result.exception
     assert 'started' in result.output
@@ -654,7 +662,7 @@ def test_list_today(tmpdir, runner, todo_factory):
     assert 'unstarted' in result.output
 
     path = tmpdir.join('config')
-    path.write('today = yes\n', 'a')
+    path.write('startable = yes\n', 'a')
 
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
 

@@ -95,12 +95,12 @@ def _validate_start_date_param(ctx, param, val):
         raise click.BadParameter(e)
 
 
-def _validate_today_param(ctx, param, val):
+def _validate_startable_param(ctx, param, val):
     ctx = ctx.find_object(AppContext)
     if val is not None:
         return val
     else:
-        return ctx.config['main']['today']
+        return ctx.config['main']['startable']
 
 
 def _validate_todos(ctx, param, val):
@@ -445,8 +445,8 @@ def move(ctx, list, ids):
               help='Only show finished tasks')
 @click.option('--start', default=None, callback=_validate_start_date_param,
               nargs=2, help='Only shows tasks before/after given DATE')
-@click.option('--today', default=None, is_flag=True,
-              callback=_validate_today_param, help='Show only todos which '
+@click.option('--startable', default=None, is_flag=True,
+              callback=_validate_startable_param, help='Show only todos which '
               'should can be started today (eg: start time is not in the '
               'future).')
 @catch_errors

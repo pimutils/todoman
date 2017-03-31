@@ -269,12 +269,12 @@ def test_clone():
 
 
 @freeze_time('2017, 3, 20')
-def test_todos_today(tmpdir, runner, todo_factory, todos):
+def test_todos_startable(tmpdir, runner, todo_factory, todos):
     todo_factory(summary='started', start=datetime(2017, 3, 15))
     todo_factory(summary='nostart')
     todo_factory(summary='unstarted', start=datetime(2017, 3, 24))
 
-    todos = list(todos(today=True))
+    todos = list(todos(startable=True))
 
     assert len(todos) == 2
     for todo in todos:
@@ -302,3 +302,15 @@ def test_hide_cancelled(todos, todo_factory):
 
     assert len(list(todos())) == 0
     assert len(list(todos(all=True))) == 1
+
+
+def test_illegal_start_suppression(create, default_database, todos):
+    create(
+        'test.ics',
+        'SUMMARY:Start doing stuff\n'
+        'DUE;VALUE=DATE-TIME;TZID=CET:20170331T120000\n'
+        'DTSTART;VALUE=DATE-TIME;TZID=CET:20170331T140000\n'
+    )
+    todo = next(todos())
+    assert todo.start is None
+    assert todo.due == datetime(2017, 3, 31, 12, tzinfo=tzoffset(None, 7200))
