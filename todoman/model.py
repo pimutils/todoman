@@ -327,6 +327,149 @@ class VtodoWritter:
         return vtodo
 
 
+class CacheQuery:
+    """
+    Utility class to create complex cache queries.
+    """
+
+    DEFAULT_PARAMS = dict(
+        all=False,
+        category='',
+        done_only=None,
+        due=None,
+        grep='',
+        lists=[],
+        location='',
+        priority=None,
+        reverse=True,
+        sort=[],  # TODO: Reflect the actual default here.
+        start=None,
+        startable=False,
+    )
+
+    def __init__(self, **params):
+        self.where = []
+        self.params = []
+        self.order = []
+
+        self._params = params
+
+        for key, default in CacheQuery.DEFAULT_PARAMS.items():
+            value = params.get(key, default)
+
+            func = getattr(self, key)
+            func(value)
+
+    def all(self, value):
+        if value:
+            return
+
+        if self._params['done_only']:
+            self.where.append('AND status == "COMPLETED"')
+        else:
+            self.where.append('AND completed_at is NULL '
+                              'AND status IS NOT "CANCELLED" '
+                              'AND status IS NOT "COMPLETED"')
+
+    def done_only(self, value):
+        pass
+
+    def lists(self, lists):
+        if not lists:
+            return
+        lists = [l.name if isinstance(l, List) else l for l in lists]
+        q = ', '.join(['?'] * len(lists))
+        self.where.append('AND files.list_name IN ({})'.format(q))
+        self.params.extend(lists)
+
+    def priority(self, priority):
+        if not priority:
+            return
+        self.where.append('AND PRIORITY > 0 AND PRIORITY <= ?')
+        self.params.append('{}'.format(priority))
+
+    def location(self, location):
+        if not location:
+            return
+        self.where.append('AND location LIKE ?')
+        self.params.append('%{}%'.format(location))
+
+    def category(self, category):
+        if not category:
+            return
+        self.where.append('AND categories LIKE ?')
+        self.params.append('%{}%'.format(category))
+
+    def grep(self, grep):
+        if not grep:
+            return
+        # # requires sqlite with pcre, which won't be available everywhere:
+        # self.where.append('AND summary REGEXP ?')
+        # self.params.append(grep)
+        self.where.append('AND summary LIKE ?')
+        self.params.append('%{}%'.format(grep))
+
+    def due(self, due):
+        if not due:
+            return
+        max_due = (datetime.now() + timedelta(hours=due)).timestamp()
+        self.where.append('AND due IS NOT NULL AND due < ?')
+        self.params.append(max_due)
+
+    def start(self, start):
+        if not start:
+            return
+        is_before, dt = start
+        dt = dt.timestamp()
+        if is_before:
+            self.where.append('AND start <= ?')
+            self.params.append(dt)
+        else:
+            self.where.append('AND start >= ?')
+            self.params.append(dt)
+
+    def startable(self, startable):
+        if not startable:
+            return
+        self.where.append('AND (start IS NULL OR start <= ?)')
+        self.params.append(datetime.now().timestamp())
+
+    def sort(self, value):
+        if value:
+            self.order = []
+            for s in value:
+                if s.startswith('-'):
+                    self.order.append(' {} ASC'.format(s[1:]))
+                else:
+                    self.order.append(' {} DESC'.format(s))
+            self.order = ','.join(self.order)
+        else:
+            self.order = '''
+                completed_at DESC,
+                priority IS NOT NULL, priority DESC,
+                due IS NOT NULL, due DESC,
+                created_at ASC
+            '''
+
+    def reverse(self, value):
+        self._reverse = value
+
+    def execute(self, conn):
+        # Note the change in case to avoid swapping all of them. sqlite
+        # doesn't care about casing anyway.
+        if not self._reverse:
+            self.order = self.order.replace(' DESC', ' asc') \
+                .replace(' ASC', ' desc')
+
+        query = '''
+              SELECT todos.*, files.list_name, files.path
+                FROM todos, files
+               WHERE todos.file_path = files.path {}
+            ORDER BY {}
+        '''.format(' '.join(self.where), self.order,)
+        return conn.execute(query, self.params)
+
+
 class Cache:
     """
     Caches Todos for faster read and simpler querying interface
@@ -553,9 +696,7 @@ class Cache:
 
         return rv
 
-    def todos(self, all=False, lists=[], priority=None, location='',
-              category='', grep='', sort=[], reverse=True, due=None,
-              done_only=None, start=None, startable=False):
+    def todos(self, **params):
         """
         Returns filtered cached todos, in a specified order.
 
@@ -585,81 +726,9 @@ class Cache:
         :return: A sorted, filtered list of todos.
         :rtype: generator
         """
-        extra_where = []
-        params = []
 
-        if not all:
-            # XXX: Duplicated logic of Todo.is_completed
-            if done_only:
-                extra_where.append('AND status == "COMPLETED"')
-            else:
-                extra_where.append('AND completed_at is NULL '
-                                   'AND status IS NOT "CANCELLED" '
-                                   'AND status IS NOT "COMPLETED"')
-        if lists:
-            lists = [l.name if isinstance(l, List) else l for l in lists]
-            q = ', '.join(['?'] * len(lists))
-            extra_where.append('AND files.list_name IN ({})'.format(q))
-            params.extend(lists)
-        if priority:
-            extra_where.append('AND PRIORITY > 0 AND PRIORITY <= ?')
-            params.append('{}'.format(priority))
-        if location:
-            extra_where.append('AND location LIKE ?')
-            params.append('%{}%'.format(location))
-        if category:
-            extra_where.append('AND categories LIKE ?')
-            params.append('%{}%'.format(category))
-        if grep:
-            # # requires sqlite with pcre, which won't be available everywhere:
-            # extra_where.append('AND summary REGEXP ?')
-            # params.append(grep)
-            extra_where.append('AND summary LIKE ?')
-            params.append('%{}%'.format(grep))
-        if due:
-            max_due = (datetime.now() + timedelta(hours=due)).timestamp()
-            extra_where.append('AND due IS NOT NULL AND due < ?')
-            params.append(max_due)
-        if start:
-            is_before, dt = start
-            dt = dt.timestamp()
-            if is_before:
-                extra_where.append('AND start <= ?')
-                params.append(dt)
-            else:
-                extra_where.append('AND start >= ?')
-                params.append(dt)
-        if startable:
-            extra_where.append('AND (start IS NULL OR start <= ?)')
-            params.append(datetime.now().timestamp())
-        if sort:
-            order = []
-            for s in sort:
-                if s.startswith('-'):
-                    order.append(' {} ASC'.format(s[1:]))
-                else:
-                    order.append(' {} DESC'.format(s))
-            order = ','.join(order)
-        else:
-            order = '''
-                completed_at DESC,
-                priority IS NOT NULL, priority DESC,
-                due IS NOT NULL, due DESC,
-                created_at ASC
-            '''
-
-        if not reverse:
-            # Note the change in case to avoid swapping all of them. sqlite
-            # doesn't care about casing anyway.
-            order = order.replace(' DESC', ' asc').replace(' ASC', ' desc')
-
-        query = '''
-              SELECT todos.*, files.list_name, files.path
-                FROM todos, files
-               WHERE todos.file_path = files.path {}
-            ORDER BY {}
-        '''.format(' '.join(extra_where), order,)
-        result = self._conn.execute(query, params)
+        query = CacheQuery(**params)
+        result = query.execute(self._conn)
 
         seen_paths = set()
         warned_paths = set()

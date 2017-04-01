@@ -7,6 +7,9 @@ _palette = [
 ]
 
 
+# XXX TODO: a widget for status
+
+
 class TodoEditor:
     """
     The UI for a single todo entry.
