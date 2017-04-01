@@ -508,6 +508,18 @@ def test_edit_move(runner, todo_factory, default_database, tmpdir, todos):
     assert todos[0].list.name == 'another_list'
 
 
+def test_edit_retains_id(runner, todos, todo_factory):
+    """Tests that we retain a todo's ID after editing."""
+    original_id = todo_factory().id
+
+    result = runner.invoke(cli, ['edit', '1', '--due', '2017-04-01'])
+    assert not result.exception
+
+    todo = next(todos())
+    assert todo.due == datetime.datetime(2017, 4, 1, tzinfo=tzlocal())
+    assert todo.id == original_id
+
+
 def test_empty_list(tmpdir, runner, create):
     for item in tmpdir.listdir():
         if isdir(str(item)):
