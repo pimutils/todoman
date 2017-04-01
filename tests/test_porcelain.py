@@ -15,7 +15,7 @@ def test_list_all(tmpdir, runner, create):
         'DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n'
         'PERCENT-COMPLETE:26\n'
     )
-    result = runner.invoke(cli, ['--porcelain', 'list', '--all'])
+    result = runner.invoke(cli, ['--porcelain', 'list', '--status', 'ANY'])
 
     expected = [{
         'completed': True,

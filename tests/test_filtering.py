@@ -4,27 +4,6 @@ from todoman.cli import cli
 from todoman.model import Database, Todo
 
 
-def test_all(tmpdir, runner, create):
-    result = runner.invoke(cli, ['list'], catch_exceptions=False)
-    assert not result.exception
-    assert not result.output.strip()
-
-    create(
-        'one.ics',
-        'SUMMARY:haha\n'
-    )
-    create(
-        'two.ics',
-        'SUMMARY:hoho\n'
-        'PERCENT-COMPLETE:100\n'
-        'STATUS:COMPLETED\n'
-    )
-    result = runner.invoke(cli, ['list', '--all'])
-    assert not result.exception
-    assert 'haha' in result.output
-    assert 'hoho' in result.output
-
-
 def test_priority(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
@@ -106,27 +85,6 @@ def test_location(tmpdir, runner, create):
     assert 'haha' in result.output
     assert 'hoho' not in result.output
     assert 'harhar' not in result.output
-
-
-def test_done_only(tmpdir, runner, create):
-    result = runner.invoke(cli, ['list'], catch_exceptions=False)
-    assert not result.exception
-    assert not result.output.strip()
-
-    create(
-        'one.ics',
-        'SUMMARY:haha\n'
-    )
-    create(
-        'two.ics',
-        'SUMMARY:hoho\n'
-        'PERCENT-COMPLETE:100\n'
-        'STATUS:COMPLETED\n'
-    )
-    result = runner.invoke(cli, ['list', '--done-only'])
-    assert not result.exception
-    assert 'haha' not in result.output
-    assert 'hoho' in result.output
 
 
 def test_category(tmpdir, runner, create):
@@ -300,3 +258,29 @@ def test_filtering_start(tmpdir, runner, todo_factory):
     assert 'hoho' not in result.output
     assert 'hihi' not in result.output
     assert 'huhu' not in result.output
+
+
+def test_statuses(todo_factory, todos):
+    cancelled = todo_factory(status='CANCELLED').uid
+    completed = todo_factory(status='COMPLETED').uid
+    in_process = todo_factory(status='IN-PROCESS').uid
+    needs_action = todo_factory(status='NEEDS-ACTION').uid
+    no_status = todo_factory(status='NEEDS-ACTION').uid
+
+    all_todos = set(todos(status=['ANY']))
+    cancelled_todos = set(todos(status=['CANCELLED']))
+    completed_todos = set(todos(status=['COMPLETED']))
+    in_process_todos = set(todos(status=['IN-PROCESS']))
+    needs_action_todos = set(todos(status=['NEEDS-ACTION']))
+
+    assert {t.uid for t in all_todos} == {
+        cancelled,
+        completed,
+        in_process,
+        needs_action,
+        no_status
+    }
+    assert {t.uid for t in cancelled_todos} == {cancelled}
+    assert {t.uid for t in completed_todos} == {completed}
+    assert {t.uid for t in in_process_todos} == {in_process}
+    assert {t.uid for t in needs_action_todos} == {needs_action, no_status}

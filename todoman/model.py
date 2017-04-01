@@ -166,6 +166,13 @@ class Todo:
         STRING_FIELDS
     )
 
+    VALID_STATUSES = (
+        "CANCELLED",
+        "COMPLETED",
+        "IN-PROCESS",
+        "NEEDS-ACTION",
+    )
+
     def __setattr__(self, name, value):
         # Avoids accidentally setting a field to None when that's not a valid
         # attribute.
@@ -532,7 +539,7 @@ class Cache:
             self._serialize_datetime(todo, 'completed'),
             todo.get('percent-complete', None),
             self._serialize_datetime(todo, 'dtstamp'),
-            todo.get('status', None),
+            todo.get('status', 'NEEDS-ACTION'),
             todo.get('description', None),
             todo.get('location', None),
             todo.get('categories', None),
@@ -553,9 +560,9 @@ class Cache:
 
         return rv
 
-    def todos(self, all=False, lists=[], priority=None, location='',
-              category='', grep='', sort=[], reverse=True, due=None,
-              done_only=None, start=None, startable=False):
+    def todos(self, lists=[], priority=None, location='', category='', grep='',
+              sort=[], reverse=True, due=None, start=None, startable=False,
+              status=['NEEDS-ACTION', 'IN-PROCESS']):
         """
         Returns filtered cached todos, in a specified order.
 
@@ -566,7 +573,6 @@ class Cache:
             due
             -created_at
 
-        :param bool all: If true, also return completed todos.
         :param list lists: Only return todos for these lists.
         :param str location: Only return todos with a location containing this
             string.
@@ -579,23 +585,22 @@ class Cache:
         :param int due: Return only todos due within ``due`` hours.
         :param str priority: Only return todos with priority at least as
             high as specified.
-        :param bool done_only: If true, return done tasks, else incomplete
-            tasks
-        :param start: Return only todos before/after ``start`` date
+        :param tuple(bool, datetime) start: Return only todos before/after
+            ``start`` date
+        :param list(str) status: Return only todos with any of the given
+            statuses.
         :return: A sorted, filtered list of todos.
         :rtype: generator
         """
         extra_where = []
         params = []
 
-        if not all:
-            # XXX: Duplicated logic of Todo.is_completed
-            if done_only:
-                extra_where.append('AND status == "COMPLETED"')
-            else:
-                extra_where.append('AND completed_at is NULL '
-                                   'AND status IS NOT "CANCELLED" '
-                                   'AND status IS NOT "COMPLETED"')
+        if 'ANY' not in status:
+            extra_where.append(
+                'AND status IN ({})'.format(', '.join(['?'] * len(status)))
+            )
+            params.extend(s.upper() for s in status)
+
         if lists:
             lists = [l.name if isinstance(l, List) else l for l in lists]
             q = ', '.join(['?'] * len(lists))
@@ -659,6 +664,10 @@ class Cache:
                WHERE todos.file_path = files.path {}
             ORDER BY {}
         '''.format(' '.join(extra_where), order,)
+
+        logger.debug(query)
+        logger.debug(params)
+
         result = self._conn.execute(query, params)
 
         seen_paths = set()
@@ -887,7 +896,7 @@ class Database:
         os.remove(path)
 
     def flush(self):
-        for todo in self.todos(all=True):
+        for todo in self.todos(status=['ANY']):
             if todo.is_completed:
                 yield todo
                 self.delete(todo)

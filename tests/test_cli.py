@@ -3,6 +3,7 @@ import sys
 from os.path import isdir
 from unittest.mock import patch
 
+import click
 import hypothesis.strategies as st
 import pytest
 from dateutil.tz import tzlocal
@@ -273,7 +274,7 @@ def test_default_due2(tmpdir, runner, create, todos):
     r = runner.invoke(cli, ['new', '-ldefault', '-d', 'one hour', 'ccc'])
     assert not r.exception
 
-    todos = {t.summary: t for t in todos(all=True)}
+    todos = {t.summary: t for t in todos(status='ANY')}
     assert todos['aaa'].due.date() == todos['bbb'].due.date()
     assert todos['ccc'].due == todos['bbb'].due - datetime.timedelta(hours=23)
 
@@ -388,7 +389,7 @@ def test_color_due_dates(tmpdir, runner, create, hours):
     create(
         'test.ics',
         'SUMMARY:aaa\n'
-        'STATUS:IN-PROGRESS\n'
+        'STATUS:IN-PROCESS\n'
         'DUE;VALUE=DATE-TIME;TZID=ART:{}\n'
         .format(due.strftime('%Y%m%dT%H%M%S'))
     )
@@ -469,7 +470,7 @@ def test_edit(runner, default_database, todos):
     assert not result.exception
     assert '2017-02-01' in result.output
 
-    todo = next(todos(all=True))
+    todo = next(todos(status='ANY'))
     assert todo.due == datetime.datetime(2017, 2, 1, tzinfo=tzlocal())
     assert todo.summary == 'Eat paint'
 
@@ -577,7 +578,7 @@ def test_sort_mixed_timezones(runner, create):
         'DUE;VALUE=DATE-TIME;TZID=HST:20170304T080000\n'  # 1800 UTC
     )
 
-    result = runner.invoke(cli, ['list', '--all'])
+    result = runner.invoke(cli, ['list', '--status', 'ANY'])
     assert not result.exception
     output = result.output.strip()
     assert len(output.splitlines()) == 2
@@ -724,7 +725,7 @@ def test_done(runner, todo_factory, todos):
     result = runner.invoke(cli, ['done', '1'])
     assert not result.exception
 
-    todo = next(todos(all=True))
+    todo = next(todos(status='ANY'))
     assert todo.percent_complete == 100
     assert todo.is_completed is True
 
@@ -739,7 +740,7 @@ def test_cancel(runner, todo_factory, todos):
     result = runner.invoke(cli, ['cancel', '1'])
     assert not result.exception
 
-    todo = next(todos(all=True))
+    todo = next(todos(status='ANY'))
     assert todo.status == 'CANCELLED'
 
 
@@ -775,3 +776,50 @@ def test_no_repl(runner):
     assert 'repl' not in result.output
     assert 'shell' not in result.output
     assert 'Start an interactive shell.' not in result.output
+
+
+def test_status_validation():
+    from todoman import cli
+
+    @given(statuses=st.lists(
+        st.sampled_from(Todo.VALID_STATUSES + ('ANY',)),
+        min_size=1,
+        max_size=5,
+        unique=True
+    ))
+    def run_test(statuses):
+        validated = cli.validate_status(val=','.join(statuses))
+
+        if 'ANY' in statuses:
+            assert len(validated) == 4
+        else:
+            assert len(validated) == len(statuses)
+
+        for status in validated:
+            assert status in Todo.VALID_STATUSES
+
+    run_test()
+
+
+def test_bad_status_validation():
+    from todoman import cli
+    with pytest.raises(click.BadParameter):
+        cli.validate_status(val='INVALID')
+
+    with pytest.raises(click.BadParameter):
+        cli.validate_status(val='IN-PROGRESS')
+
+
+def test_status_filtering(runner, todo_factory):
+    todo_factory(summary='one', status='CANCELLED')
+    todo_factory(summary='two')
+
+    result = runner.invoke(cli, ['list', '--status', 'cancelled'])
+    assert not result.exception
+    assert len(result.output.splitlines()) == 1
+    assert 'one 'in result.output
+
+    result = runner.invoke(cli, ['list', '--status', 'NEEDS-action'])
+    assert not result.exception
+    assert len(result.output.splitlines()) == 1
+    assert 'two' in result.output

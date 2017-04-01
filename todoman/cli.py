@@ -97,10 +97,7 @@ def _validate_start_date_param(ctx, param, val):
 
 def _validate_startable_param(ctx, param, val):
     ctx = ctx.find_object(AppContext)
-    if val is not None:
-        return val
-    else:
-        return ctx.config['main']['startable']
+    return val or ctx.config['main']['startable']
 
 
 def _validate_todos(ctx, param, val):
@@ -119,6 +116,28 @@ def _sort_callback(ctx, param, val):
             raise click.BadParameter('Unknown field "{}"'.format(field))
 
     return fields
+
+
+def validate_status(ctx=None, param=None, val=None):
+    # The default command doesn't run callbacks as expected, so it needs to
+    # specify the callback'd type. When `list` is called explicitly, this
+    # callback *IS* run, so we need to handle that edge case:
+    if not isinstance(val, str):
+        return val
+
+    statuses = val.upper().split(',')
+
+    if 'ANY' in statuses:
+        return Todo.VALID_STATUSES
+
+    for status in statuses:
+        if status not in Todo.VALID_STATUSES:
+            raise click.BadParameter(
+                'Invalid status, "{}", statuses must be one of "{}", or "ANY"'
+                .format(status, ', '.join(Todo.VALID_STATUSES))
+            )
+
+    return statuses
 
 
 def _todo_property_options(command):
@@ -426,7 +445,6 @@ def move(ctx, list, ids):
 
 @cli.command()
 @pass_ctx
-@click.option('--all', '-a', is_flag=True, help='Also show finished tasks.')
 @click.argument('lists', nargs=-1, callback=_validate_lists_param)
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
@@ -441,14 +459,17 @@ def move(ctx, list, ids):
 @click.option('--priority', default=None, help='Only show tasks with'
               ' priority at least as high as the specified one', type=str,
               callback=_validate_priority_param)
-@click.option('--done-only', default=False, is_flag=True,
-              help='Only show finished tasks')
 @click.option('--start', default=None, callback=_validate_start_date_param,
               nargs=2, help='Only shows tasks before/after given DATE')
 @click.option('--startable', default=None, is_flag=True,
               callback=_validate_startable_param, help='Show only todos which '
               'should can be started today (eg: start time is not in the '
               'future).')
+@click.option('--status', '-s', default=['NEEDS-ACTION', 'IN-PROCESS'],
+              callback=validate_status, help='Show only todos with the '
+              'provided comma-separated statuses. Valid statuses are '
+              '"NEEDS-ACTION", "CANCELLED", "COMPLETED", "IN-PROCESS" or "ANY"'
+              )
 @catch_errors
 def list(ctx, **kwargs):
     """
