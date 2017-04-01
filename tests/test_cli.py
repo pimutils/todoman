@@ -9,7 +9,7 @@ from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
 
-from todoman.cli import cli
+from todoman.cli import cli, exceptions
 from todoman.model import Database, Todo
 
 # TODO: test --grep
@@ -518,6 +518,14 @@ def test_edit_retains_id(runner, todos, todo_factory):
     todo = next(todos())
     assert todo.due == datetime.datetime(2017, 4, 1, tzinfo=tzlocal())
     assert todo.id == original_id
+
+
+def test_edit_inexistant(runner):
+    """Tests that we show the right output and exit code for inexistant ids."""
+    result = runner.invoke(cli, ['edit', '1', '--due', '2017-04-01'])
+    assert result.exception
+    assert result.exit_code == exceptions.NoSuchTodo.EXIT_CODE
+    assert result.output.strip() == 'No todo with id 1.'
 
 
 def test_empty_list(tmpdir, runner, create):
