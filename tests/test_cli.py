@@ -1,4 +1,5 @@
 import datetime
+import sys
 from os.path import isdir
 from unittest.mock import patch
 
@@ -8,7 +9,7 @@ from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
 
-from todoman.cli import cli
+from todoman.cli import cli, exceptions
 from todoman.model import Database, Todo
 
 # TODO: test --grep
@@ -507,6 +508,26 @@ def test_edit_move(runner, todo_factory, default_database, tmpdir, todos):
     assert todos[0].list.name == 'another_list'
 
 
+def test_edit_retains_id(runner, todos, todo_factory):
+    """Tests that we retain a todo's ID after editing."""
+    original_id = todo_factory().id
+
+    result = runner.invoke(cli, ['edit', '1', '--due', '2017-04-01'])
+    assert not result.exception
+
+    todo = next(todos())
+    assert todo.due == datetime.datetime(2017, 4, 1, tzinfo=tzlocal())
+    assert todo.id == original_id
+
+
+def test_edit_inexistant(runner):
+    """Tests that we show the right output and exit code for inexistant ids."""
+    result = runner.invoke(cli, ['edit', '1', '--due', '2017-04-01'])
+    assert result.exception
+    assert result.exit_code == exceptions.NoSuchTodo.EXIT_CODE
+    assert result.output.strip() == 'No todo with id 1.'
+
+
 def test_empty_list(tmpdir, runner, create):
     for item in tmpdir.listdir():
         if isdir(str(item)):
@@ -728,3 +749,29 @@ def test_id_printed_for_new(runner):
     ])
     assert not result.exception
     assert result.output.strip().startswith('1')
+
+
+def test_repl(runner):
+    """Test that repl registers properly."""
+    if 'click_repl' not in sys.modules:
+        pytest.skip('Optional dependency "click_repl" is not installed')
+
+    result = runner.invoke(cli, ['--help'])
+
+    assert not result.exception
+    assert 'repl    Start an interactive shell.' in result.output
+    assert 'shell   Start an interactive shell.' in result.output
+
+
+def test_no_repl(runner):
+    """Test that we work fine without click_repl installed."""
+    modules = sys.modules
+    if 'click_repl' in modules:
+        pytest.skip("Test can't be run with click_repl installed")
+
+    result = runner.invoke(cli, ['--help'])
+
+    assert not result.exception
+    assert 'repl' not in result.output
+    assert 'shell' not in result.output
+    assert 'Start an interactive shell.' not in result.output

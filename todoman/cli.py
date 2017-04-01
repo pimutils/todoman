@@ -224,14 +224,14 @@ def cli(click_ctx, color, porcelain, humanize):
 
     ctx.db = Database(paths, ctx.config['main']['cache_path'])
 
-    if not click_ctx.invoked_subcommand:
-        click_ctx.invoke(cli.commands["list"])
-
     # Make python actually use LC_TIME, or the user's locale settings
     locale.setlocale(locale.LC_TIME, "")
 
+    if not click_ctx.invoked_subcommand:
+        click_ctx.invoke(cli.commands["list"])
 
-try:
+
+try:  # pragma: no cover
     import click_repl
     click_repl.register_repl(cli)
     click_repl.register_repl(cli, name="shell")
