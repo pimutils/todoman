@@ -23,7 +23,7 @@ def test_humanized_date(runner, create, interval, now_for_tz, tz):
         .format(tz, due.strftime('%Y%m%dT%H%M%S'))
     )
 
-    result = runner.invoke(cli, ['--humanize', 'list', '--all'])
+    result = runner.invoke(cli, ['--humanize', 'list', '--status', 'ANY'])
     assert not result.exception
     assert expected in result.output
 

@@ -301,7 +301,7 @@ def test_hide_cancelled(todos, todo_factory):
     todo_factory(status='CANCELLED')
 
     assert len(list(todos())) == 0
-    assert len(list(todos(all=True))) == 1
+    assert len(list(todos(status='ANY'))) == 1
 
 
 def test_illegal_start_suppression(create, default_database, todos):
@@ -314,3 +314,12 @@ def test_illegal_start_suppression(create, default_database, todos):
     todo = next(todos())
     assert todo.start is None
     assert todo.due == datetime(2017, 3, 31, 12, tzinfo=tzoffset(None, 7200))
+
+
+def test_default_status(create, todos):
+    create(
+        'test.ics',
+        'SUMMARY:Finish all these status tests\n'
+    )
+    todo = next(todos())
+    assert todo.status == 'NEEDS-ACTION'

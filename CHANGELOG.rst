@@ -7,6 +7,9 @@ releases, in reverse chronological order.
 v3.1.0
 ------
 
+* Replace ``--all`` and ``--done-only`` with  ``--status``, which allows
+  fine-grained status filtering. Use ``--status ANY`` or ``--status COMPLETED``
+  to obtain the same results as the previous flags.
 * Rename ``--today`` flag to ``--startable``.
 * Illegal start dates (eg: start dates that are not before the due date) are
   ignored and are removed when saving an edited todo.
