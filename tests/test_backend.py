@@ -2,6 +2,7 @@ from datetime import datetime
 
 import pytest
 import pytz
+from dateutil.tz import tzlocal
 
 from todoman.model import Todo, VtodoWritter
 
@@ -35,3 +36,24 @@ def test_supported_fields_are_serializeable():
     serialized_fields = set(VtodoWritter.FIELD_MAP.keys())
 
     assert supported_fields == serialized_fields
+
+
+def test_vtodo_serialization(todo_factory):
+    """Test VTODO serialization: one field of each type."""
+    description = 'A tea would be nice, thanks.'
+    todo = todo_factory(
+        categories=['tea', 'drinking', 'hot'],
+        description=description,
+        due=datetime(3000, 3, 21),
+        priority=7,
+        status='IN-PROCESS',
+        summary='Some tea',
+    )
+    writer = VtodoWritter(todo)
+    vtodo = writer.serialize()
+
+    assert str(vtodo.get('categories')) == 'tea,drinking,hot'
+    assert str(vtodo.get('description')) == description
+    assert vtodo.get('priority') == 7
+    assert vtodo.decoded('due') == datetime(3000, 3, 21, tzinfo=tzlocal())
+    assert str(vtodo.get('status')) == 'IN-PROCESS'
