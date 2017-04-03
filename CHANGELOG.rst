@@ -7,6 +7,7 @@ releases, in reverse chronological order.
 v3.1.0
 ------
 
+* Add a new setting ``default_command``.
 * Replace ``--all`` and ``--done-only`` with  ``--status``, which allows
   fine-grained status filtering. Use ``--status ANY`` or ``--status COMPLETED``
   to obtain the same results as the previous flags.
