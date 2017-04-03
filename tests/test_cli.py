@@ -1,6 +1,7 @@
 import datetime
 import sys
 from os.path import isdir
+from unittest import mock
 from unittest.mock import patch
 
 import click
@@ -823,3 +824,28 @@ def test_status_filtering(runner, todo_factory):
     assert not result.exception
     assert len(result.output.splitlines()) == 1
     assert 'two' in result.output
+
+
+def test_invoke_command(runner, tmpdir):
+    path = tmpdir.join('config')
+    path.write('default_command = flush\n', 'a')
+
+    flush = mock.MagicMock()
+    with patch.dict(cli.commands, values=dict(flush=flush)):
+        result = runner.invoke(cli, catch_exceptions=False)
+
+    assert not result.exception
+    assert not result.output.strip()
+    assert flush.call_count == 1
+
+
+def test_invoke_invalid_command(runner, tmpdir):
+    path = tmpdir.join('config')
+    path.write('default_command = DoTheRobot\n', 'a')
+
+    result = runner.invoke(cli, catch_exceptions=False)
+
+    assert result.exception
+    assert (
+        'Error: Invalid setting for [main][default_command]' in result.output
+    )
