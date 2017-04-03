@@ -99,6 +99,7 @@ class Todo:
         self.dtstamp = now
         self.due = None
         self.id = None
+        self.last_modified = None
         self.location = ''
         self.percent_complete = 0
         self.priority = 0
@@ -158,6 +159,7 @@ class Todo:
         'dtstamp',
         'start',
         'due',
+        'last_modified',
     ]
     ALL_SUPPORTED_FIELDS = (
         DATETIME_FIELDS +
@@ -234,6 +236,7 @@ class VtodoWritter:
         'priority': 'priority',
         'status': 'status',
         'created_at': 'created',
+        'last_modified': 'last-modified',
     }
 
     def __init__(self, todo):
@@ -427,6 +430,7 @@ class Cache:
                 "location" TEXT,
                 "categories" TEXT,
                 "sequence" INTEGER,
+                "last_modified" INTEGER,
 
                 FOREIGN KEY(file_path) REFERENCES files(path) ON DELETE CASCADE
             );
@@ -517,8 +521,9 @@ class Cache:
                 description,
                 location,
                 categories,
-                sequence
-            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                sequence,
+                last_modified
+            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             '''
 
         due = self._serialize_datetime(todo, 'due')
@@ -543,6 +548,7 @@ class Cache:
             todo.get('location', None),
             todo.get('categories', None),
             todo.get('sequence', 1),
+            self._serialize_datetime(todo, 'last-modified'),
         )
 
         if id:
@@ -705,6 +711,7 @@ class Cache:
         todo.description = row['description']
         todo.location = row['location']
         todo.sequence = row['sequence']
+        todo.last_modified = row['last_modified']
         todo.list = self.lists_map[row['list_name']]
         todo.filename = os.path.basename(row['path'])
         return todo
@@ -907,6 +914,8 @@ class Database:
 
     def save(self, todo):
         todo.sequence += 1
+        todo.last_modified = datetime.now(LOCAL_TIMEZONE)
+
         vtodo = VtodoWritter(todo).write()
 
         self.cache.expire_file(todo.path)
