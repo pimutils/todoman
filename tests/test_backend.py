@@ -57,3 +57,15 @@ def test_vtodo_serialization(todo_factory):
     assert vtodo.get('priority') == 7
     assert vtodo.decoded('due') == datetime(3000, 3, 21, tzinfo=tzlocal())
     assert str(vtodo.get('status')) == 'IN-PROCESS'
+
+
+def test_sequence_increment(default_database, todo_factory, todos):
+    todo = todo_factory()
+    assert todo.sequence == 1
+
+    default_database.save(todo)
+    assert todo.sequence == 2
+
+    # Relaod (and check the caching flow for the sequence)
+    todo = next(todos())
+    assert todo.sequence == 2
