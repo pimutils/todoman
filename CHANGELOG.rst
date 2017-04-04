@@ -15,6 +15,12 @@ v3.1.0
 * Illegal start dates (eg: start dates that are not before the due date) are
   ignored and are removed when saving an edited todo.
 
+v3.0.1
+------
+
+* Fix a crash for users upgrading from pre-v3.0.0, caused due to the cache's
+  schema not being updated.
+
 v3.0.0
 ------
 
@@ -41,6 +47,7 @@ Packaging changes
 ~~~~~~~~~~~~~~~~~
 
 * New runtime dependency: ``tabulate``.
+* New runtime dependency: ``humanize``.
 * New supported python version: ``pypy3``.
 * Include an alternative [much faster] entry point (aka "bin") which we
   recommend all downstream packagers use. Please see the :ref:`Notes for
