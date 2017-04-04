@@ -263,7 +263,7 @@ def test_default_due(
         )
 
 
-@freeze_time(datetime.datetime.now())
+@freeze_time("2017-04-04 09:50:29")
 def test_default_due2(tmpdir, runner, create, todos):
     cfg = tmpdir.join('config')
     cfg.write('default_due = 24\n', 'a')
