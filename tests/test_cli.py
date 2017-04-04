@@ -276,8 +276,15 @@ def test_default_due2(tmpdir, runner, create, todos):
     assert not r.exception
 
     todos = {t.summary: t for t in todos(status='ANY')}
-    assert todos['aaa'].due.date() == todos['bbb'].due.date()
-    assert todos['ccc'].due == todos['bbb'].due - datetime.timedelta(hours=23)
+    now = datetime.datetime.now(tzlocal())
+
+    assert todos['aaa'].due == datetime.datetime.combine(
+        datetime.date.today() + datetime.timedelta(days=1),
+        datetime.time(9),
+        tzlocal(),
+    )
+    assert todos['bbb'].due == now + datetime.timedelta(hours=24)
+    assert todos['ccc'].due == now + datetime.timedelta(hours=1)
 
 
 def test_sorting_fields(tmpdir, runner, default_database):
