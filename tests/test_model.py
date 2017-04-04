@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import icalendar
 import pytest
 import pytz
 from dateutil.tz import tzlocal
@@ -70,29 +69,6 @@ def test_change_paths(tmpdir, create):
 
     assert len(list(db.lists())) == 1
     assert not list(db.todos())
-
-
-def test_sequence_increment(tmpdir, default_database):
-    todo = Todo(new=True, list=next(default_database.lists()))
-    default_database.save(todo)
-
-    with open(todo.path) as f:
-        cal = icalendar.Calendar.from_ical(f.read())
-    sequence, = [component.get("SEQUENCE", 0)
-                 for component in cal.subcomponents
-                 if component.name == "VTODO"]
-
-    assert sequence == 1
-
-    default_database.save(todo)
-
-    with open(todo.path) as f:
-        cal = icalendar.Calendar.from_ical(f.read())
-    sequence, = [component.get("SEQUENCE", 0)
-                 for component in cal.subcomponents
-                 if component.name == "VTODO"]
-
-    assert sequence == 2
 
 
 def test_list_displayname(tmpdir):
