@@ -281,8 +281,7 @@ def test_default_due2(tmpdir, runner, create, todos):
     assert todos['aaa'].due == datetime.datetime.combine(
         datetime.date.today() + datetime.timedelta(days=1),
         datetime.time(9),
-        tzlocal(),
-    )
+    ).replace(tzinfo=tzlocal())
     assert todos['bbb'].due == now + datetime.timedelta(hours=24)
     assert todos['ccc'].due == now + datetime.timedelta(hours=1)
 
