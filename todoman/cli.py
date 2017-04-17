@@ -407,7 +407,13 @@ def flush(ctx):
 @click.option('--yes', is_flag=True, default=False)
 @catch_errors
 def delete(ctx, ids, yes):
-    '''Delete tasks.'''
+    '''
+    Delete tasks.
+
+    Permanently deletes one or more task. It is recommended that you use the
+    `cancel` command if you wish to remove this from the pending list, but keep
+    the actual task around.
+    '''
 
     todos = []
     for i in ids:
