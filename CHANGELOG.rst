@@ -7,6 +7,10 @@ releases, in reverse chronological order.
 v3.1.0
 ------
 
+* Last-modified fields of todos are now updated upon edition.
+* Sequence numbers are now properly increased upon edition.
+* Add new command ``todo cancel`` to cancel an existing todo without deleting
+  it.
 * Add a new setting ``default_command``.
 * Replace ``--all`` and ``--done-only`` with  ``--status``, which allows
   fine-grained status filtering. Use ``--status ANY`` or ``--status COMPLETED``
