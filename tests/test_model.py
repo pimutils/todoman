@@ -292,3 +292,16 @@ def test_default_status(create, todos):
     )
     todo = next(todos())
     assert todo.status == 'NEEDS-ACTION'
+
+
+def test_nullify_field(default_database, todo_factory, todos):
+    todo_factory(due=datetime.now())
+
+    todo = next(todos(status='ANY'))
+    assert todo.due is not None
+
+    todo.due = None
+    default_database.save(todo)
+
+    todo = next(todos(status='ANY'))
+    assert todo.due is None

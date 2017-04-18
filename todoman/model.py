@@ -280,8 +280,8 @@ class VtodoWritter:
         raise Exception('Unknown field {} serialized.'.format(name))
 
     def set_field(self, name, value):
-        if name in self.vtodo:
-            del(self.vtodo[name])
+        # If serialized value is None:
+        self.vtodo.pop(name)
         if value:
             logger.debug("Setting field %s to %s.", name, value)
             self.vtodo.add(name, value)
@@ -293,6 +293,7 @@ class VtodoWritter:
         self.vtodo = original
 
         for source, target in self.FIELD_MAP.items():
+            self.vtodo.pop(target)
             if getattr(self.todo, source):
                 self.set_field(
                     target,
