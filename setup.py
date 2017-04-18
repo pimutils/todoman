@@ -25,7 +25,9 @@ setup(
         'write_to': 'todoman/version.py',
     },
     setup_requires=['setuptools_scm != 1.12.0', 'pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=[
+        open('requirements-dev.txt').readlines()
+    ],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
