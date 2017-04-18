@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
 import pytz
@@ -196,6 +196,73 @@ def test_is_completed():
     assert todo.completed_at == datetime.now(pytz.UTC)
     assert todo.percent_complete == 100
     assert todo.status == 'COMPLETED'
+
+
+@pytest.mark.parametrize('until', [
+    '20990315T020000Z',  # TZ-aware UNTIL
+    '20990315T020000',  # TZ-naive UNTIL
+])
+@pytest.mark.parametrize('tz', [
+    pytz.UTC,  # TZ-aware todos
+    None,  # TZ-naive todos
+])
+@pytest.mark.parametrize('due', [
+    True,
+    False,
+])
+def test_complete_recurring(default_database, due, todo_factory, tz, until):
+    # We'll lose the milis when casting, so:
+    now = datetime.now(tz).replace(microsecond=0)
+
+    original_start = now
+    if due:
+        original_due = now + timedelta(hours=12)
+    else:
+        due = original_due = None
+
+    rrule = 'FREQ=DAILY;UNTIL=20990315T020000Z'
+    todo = todo_factory(rrule=rrule, due=original_due, start=original_start)
+
+    todo.complete()
+    related = todo.related[0]
+
+    if due:
+        assert todo.due == original_due
+    else:
+        assert todo.due is None
+    assert todo.start == original_start
+    assert todo.is_completed
+    assert not todo.rrule
+
+    if due:
+        assert related.due == original_due + timedelta(days=1)
+    else:
+        assert related.due is None
+    assert related.start == original_start + timedelta(days=1)
+    # check due/start tz
+    assert not related.is_completed
+    assert related.rrule == rrule
+
+
+def test_save_recurring_related(default_database, todo_factory, todos):
+    now = datetime.now(pytz.UTC)
+    original_due = now + timedelta(hours=12)
+    rrule = 'FREQ=DAILY;UNTIL=20990315T020000Z'
+    todo = todo_factory(rrule=rrule, due=original_due)
+    todo.complete()
+
+    default_database.save(todo)
+
+    todos = todos(status='ANY')
+    todo = next(todos)
+    assert todo.percent_complete == 100
+    assert todo.is_completed is True
+    assert not todo.rrule
+
+    todo = next(todos)
+    assert todo.percent_complete == 0
+    assert todo.is_completed is False
+    assert todo.rrule == rrule
 
 
 def test_todo_filename_absolute_path():

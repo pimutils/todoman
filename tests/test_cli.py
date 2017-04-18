@@ -735,6 +735,25 @@ def test_done(runner, todo_factory, todos):
     assert result.output.strip() == 'No todo with id 17.'
 
 
+def test_done_recurring(runner, todo_factory, todos):
+    rrule = 'FREQ=DAILY;UNTIL=20990315T020000Z'
+    todo = todo_factory(rrule=rrule)
+
+    result = runner.invoke(cli, ['done', '1'])
+    assert not result.exception
+
+    todos = todos(status='ANY')
+    todo = next(todos)
+    assert todo.percent_complete == 100
+    assert todo.is_completed is True
+    assert not todo.rrule
+
+    todo = next(todos)
+    assert todo.percent_complete == 0
+    assert todo.is_completed is False
+    assert todo.rrule == rrule
+
+
 def test_cancel(runner, todo_factory, todos):
     todo = todo_factory()
 

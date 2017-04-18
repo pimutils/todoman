@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import icalendar
 from atomicwrites import AtomicWriter
+from dateutil.rrule import rrulestr
 from dateutil.tz import tzlocal
 
 from todoman import exceptions
@@ -110,6 +111,7 @@ class Todo:
         self.summary = ''
 
         self.filename = filename or "{}.ics".format(self.uid)
+        self.related = []
 
         if os.path.basename(self.filename) != self.filename:
             raise ValueError(
@@ -203,13 +205,51 @@ class Todo:
             self.status in ('CANCELLED', 'COMPLETED')
         )
 
+    @property
+    def is_recurring(self):
+        return bool(self.rrule)
+
+    def _apply_recurrence_to_dt(self, dt):
+        if not dt:
+            return None
+
+        recurrence = rrulestr(self.rrule, dtstart=dt)
+
+        # Nasty hack around: https://github.com/dateutil/dateutil/issues/341
+        try:
+            return recurrence.after(dt)
+        except TypeError:
+            tz = dt.tzinfo
+            dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
+            recurrence = rrulestr(self.rrule, dtstart=dt)
+            return recurrence.after(dt).replace(tzinfo=tz)
+
+    def _create_next_instance(self):
+        copy = self.clone()
+        copy.due = self._apply_recurrence_to_dt(self.due)
+        copy.start = self._apply_recurrence_to_dt(self.start)
+
+        assert copy.uid != self.uid
+
+        # TODO: Push copy's alarms.
+        return copy
+
     def complete(self):
         """
         Immediately completes this todo
 
         Immediately marks this todo as completed, sets the percentage to 100%
         and the completed_at datetime to now.
+
+        If this todo belongs to a series, newly created todo are added to the
+        ``related`` list.
         """
+        if self.is_recurring:
+            related = self._create_next_instance()
+            if related:
+                self.rrule = None
+                self.related.append(related)
+
         self.completed_at = datetime.now(tz=LOCAL_TIMEZONE)
         self.percent_complete = 100
         self.status = 'COMPLETED'
@@ -934,6 +974,9 @@ class Database:
         self.cache = None
 
     def save(self, todo):
+        for related in todo.related:
+            self.save(related)
+
         todo.sequence += 1
         todo.last_modified = datetime.now(LOCAL_TIMEZONE)
 
