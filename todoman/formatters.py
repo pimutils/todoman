@@ -45,11 +45,13 @@ class DefaultFormatter:
             if todo.due and todo.due <= self.now and not todo.is_completed:
                 due = click.style(due, fg='red')
 
+            recurring = '⟳' if todo.is_recurring else ''
+
             table.append([
                 todo.id,
                 "[{}]".format(completed),
                 priority,
-                due,
+                '{} {}'.format(due, recurring),
                 "{} {}{}".format(
                     todo.summary,
                     self.format_database(todo.list),
