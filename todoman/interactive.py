@@ -166,7 +166,11 @@ class TodoEditor:
         self.todo.location = self.location
         self.todo.due = self.formatter.parse_datetime(self.due)
         self.todo.start = self.formatter.parse_datetime(self.dtstart)
-        self.todo.is_completed = self._completed.get_state()
+        if not self.todo.is_completed and self._completed.get_state():
+            self.todo.complete()
+        elif self.todo.is_completed and not self._completed.get_state():
+            self.todo.status = 'NEEDS-ACTION'
+            self.todo.completed_at = None
         self.todo.priority = self.priority
 
         # TODO: categories

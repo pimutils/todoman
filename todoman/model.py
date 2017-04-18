@@ -195,18 +195,16 @@ class Todo:
             self.status in ('CANCELLED', 'COMPLETED')
         )
 
-    @is_completed.setter
-    def is_completed(self, val):
-        if val:
-            # Don't fiddle with completed_at if this was already completed:
-            if not self.is_completed:
-                self.completed_at = datetime.now(tz=LOCAL_TIMEZONE)
-            self.percent_complete = 100
-            self.status = 'COMPLETED'
-        else:
-            self.completed_at = None
-            self.percent_complete = None
-            self.status = 'NEEDS-ACTION'
+    def complete(self):
+        """
+        Immediately completes this todo
+
+        Immediately marks this todo as completed, sets the percentage to 100%
+        and the completed_at datetime to now.
+        """
+        self.completed_at = datetime.now(tz=LOCAL_TIMEZONE)
+        self.percent_complete = 100
+        self.status = 'COMPLETED'
 
     @cached_property
     def path(self):
