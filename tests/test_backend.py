@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import icalendar
 import pytest
 import pytz
 from dateutil.tz import tzlocal
@@ -49,6 +50,7 @@ def test_vtodo_serialization(todo_factory):
         priority=7,
         status='IN-PROCESS',
         summary='Some tea',
+        rrule='FREQ=MONTHLY',
     )
     writer = VtodoWritter(todo)
     vtodo = writer.serialize()
@@ -58,6 +60,7 @@ def test_vtodo_serialization(todo_factory):
     assert vtodo.get('priority') == 7
     assert vtodo.decoded('due') == datetime(3000, 3, 21, tzinfo=tzlocal())
     assert str(vtodo.get('status')) == 'IN-PROCESS'
+    assert vtodo.get('rrule') == icalendar.vRecur.from_ical('FREQ=MONTHLY')
 
 
 @freeze_time('2017-04-04 20:11:57')

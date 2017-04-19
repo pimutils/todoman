@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import icalendar
 from atomicwrites import AtomicWriter
+from dateutil.rrule import rrulestr
 from dateutil.tz import tzlocal
 
 from todoman import exceptions
@@ -103,12 +104,14 @@ class Todo:
         self.location = ''
         self.percent_complete = 0
         self.priority = 0
+        self.rrule = ''
         self.sequence = 0
         self.start = None
         self.status = 'NEEDS-ACTION'
         self.summary = ''
 
         self.filename = filename or "{}.ics".format(self.uid)
+        self.related = []
 
         if os.path.basename(self.filename) != self.filename:
             raise ValueError(
@@ -144,6 +147,7 @@ class Todo:
         'status',
         'summary',
         'uid',
+        'rrule',
     ]
     INT_FIELDS = [
         'percent_complete',
@@ -161,10 +165,14 @@ class Todo:
         'due',
         'last_modified',
     ]
+    RRULE_FIELDS = [
+        'rrule',
+    ]
     ALL_SUPPORTED_FIELDS = (
         DATETIME_FIELDS +
         INT_FIELDS +
         LIST_FIELDS +
+        RRULE_FIELDS +
         STRING_FIELDS
     )
 
@@ -179,6 +187,8 @@ class Todo:
         # Avoids accidentally setting a field to None when that's not a valid
         # attribute.
         if not value:
+            if name in Todo.RRULE_FIELDS:
+                return object.__setattr__(self, name, '')
             if name in Todo.STRING_FIELDS:
                 return object.__setattr__(self, name, '')
             if name in Todo.INT_FIELDS:
@@ -195,18 +205,54 @@ class Todo:
             self.status in ('CANCELLED', 'COMPLETED')
         )
 
-    @is_completed.setter
-    def is_completed(self, val):
-        if val:
-            # Don't fiddle with completed_at if this was already completed:
-            if not self.is_completed:
-                self.completed_at = datetime.now(tz=LOCAL_TIMEZONE)
-            self.percent_complete = 100
-            self.status = 'COMPLETED'
-        else:
-            self.completed_at = None
-            self.percent_complete = None
-            self.status = 'NEEDS-ACTION'
+    @property
+    def is_recurring(self):
+        return bool(self.rrule)
+
+    def _apply_recurrence_to_dt(self, dt):
+        if not dt:
+            return None
+
+        recurrence = rrulestr(self.rrule, dtstart=dt)
+
+        # Nasty hack around: https://github.com/dateutil/dateutil/issues/341
+        try:
+            return recurrence.after(dt)
+        except TypeError:
+            tz = dt.tzinfo
+            dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
+            recurrence = rrulestr(self.rrule, dtstart=dt)
+            return recurrence.after(dt).replace(tzinfo=tz)
+
+    def _create_next_instance(self):
+        copy = self.clone()
+        copy.due = self._apply_recurrence_to_dt(self.due)
+        copy.start = self._apply_recurrence_to_dt(self.start)
+
+        assert copy.uid != self.uid
+
+        # TODO: Push copy's alarms.
+        return copy
+
+    def complete(self):
+        """
+        Immediately completes this todo
+
+        Immediately marks this todo as completed, sets the percentage to 100%
+        and the completed_at datetime to now.
+
+        If this todo belongs to a series, newly created todo are added to the
+        ``related`` list.
+        """
+        if self.is_recurring:
+            related = self._create_next_instance()
+            if related:
+                self.rrule = None
+                self.related.append(related)
+
+        self.completed_at = datetime.now(tz=LOCAL_TIMEZONE)
+        self.percent_complete = 100
+        self.status = 'COMPLETED'
 
     @cached_property
     def path(self):
@@ -237,6 +283,7 @@ class VtodoWritter:
         'status': 'status',
         'created_at': 'created',
         'last_modified': 'last-modified',
+        'rrule': 'rrule',
     }
 
     def __init__(self, todo):
@@ -259,6 +306,8 @@ class VtodoWritter:
         return dt
 
     def serialize_field(self, name, value):
+        if name in Todo.RRULE_FIELDS:
+            return icalendar.vRecur.from_ical(value)
         if name in Todo.DATETIME_FIELDS:
             return self.normalize_datetime(value)
         if name in Todo.LIST_FIELDS:
@@ -271,8 +320,8 @@ class VtodoWritter:
         raise Exception('Unknown field {} serialized.'.format(name))
 
     def set_field(self, name, value):
-        if name in self.vtodo:
-            del(self.vtodo[name])
+        # If serialized value is None:
+        self.vtodo.pop(name)
         if value:
             logger.debug("Setting field %s to %s.", name, value)
             self.vtodo.add(name, value)
@@ -284,6 +333,7 @@ class VtodoWritter:
         self.vtodo = original
 
         for source, target in self.FIELD_MAP.items():
+            self.vtodo.pop(target)
             if getattr(self.todo, source):
                 self.set_field(
                     target,
@@ -347,7 +397,7 @@ class Cache:
     may be used for filtering/sorting.
     """
 
-    SCHEMA_VERSION = 4
+    SCHEMA_VERSION = 5
 
     def __init__(self, path):
         self.cache_path = str(path)
@@ -431,6 +481,7 @@ class Cache:
                 "categories" TEXT,
                 "sequence" INTEGER,
                 "last_modified" INTEGER,
+                "rrule" TEXT,
 
                 FOREIGN KEY(file_path) REFERENCES files(path) ON DELETE CASCADE
             );
@@ -497,6 +548,13 @@ class Cache:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
         return dt.timestamp()
 
+    def _serialize_rrule(self, todo, field):
+        rrule = todo.get(field)
+        if not rrule:
+            return None
+
+        return rrule.to_ical().decode()
+
     def add_vtodo(self, todo, file_path, id=None):
         """
         Adds a todo into the cache.
@@ -522,8 +580,9 @@ class Cache:
                 location,
                 categories,
                 sequence,
-                last_modified
-            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                last_modified,
+                rrule
+            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             '''
 
         due = self._serialize_datetime(todo, 'due')
@@ -549,6 +608,7 @@ class Cache:
             todo.get('categories', None),
             todo.get('sequence', 1),
             self._serialize_datetime(todo, 'last-modified'),
+            self._serialize_rrule(todo, 'rrule'),
         )
 
         if id:
@@ -714,6 +774,7 @@ class Cache:
         todo.last_modified = row['last_modified']
         todo.list = self.lists_map[row['list_name']]
         todo.filename = os.path.basename(row['path'])
+        todo.rrule = row['rrule']
         return todo
 
     def lists(self):
@@ -913,6 +974,9 @@ class Database:
         self.cache = None
 
     def save(self, todo):
+        for related in todo.related:
+            self.save(related)
+
         todo.sequence += 1
         todo.last_modified = datetime.now(LOCAL_TIMEZONE)
 

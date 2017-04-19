@@ -129,3 +129,17 @@ def test_show_save_errors(default_database, default_formatter, todo_factory):
         editor.left_column.body.contents[2].get_text()[0] ==
         'Time description not recognized: not a date'
     )
+
+
+@pytest.mark.parametrize('completed', [True, False])
+@pytest.mark.parametrize('check', [True, False])
+def test_save_completed(check, completed, default_formatter, todo_factory):
+    todo = todo_factory()
+    if completed:
+        todo.complete()
+    editor = TodoEditor(todo, [todo.list], default_formatter)
+
+    editor._completed.state = check
+    with pytest.raises(ExitMainLoop):
+        editor._keypress('ctrl s')
+    assert todo.is_completed is check
