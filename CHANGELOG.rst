@@ -7,8 +7,18 @@ releases, in reverse chronological order.
 v3.2.0
 ------
 
+New features
+~~~~~~~~~~~~
+
+* Allow passing arguments to the shortcut ``todo``, so ``todo --startable`` now
+  works as expected.
 * Completing recurring todos now works as expected and does not make if
   dissapear forever.
+
+Packaging changes
+~~~~~~~~~~~~~~~~~
+
+* New runtime dependency: ``click-default-group``.
 
 v3.1.0
 ------
