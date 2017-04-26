@@ -868,3 +868,22 @@ def test_invoke_invalid_command(runner, tmpdir):
     assert (
         'Error: Invalid setting for [main][default_command]' in result.output
     )
+
+
+def test_show_priority(tmpdir, runner, create):
+    create(
+        'test.ics',
+        'SUMMARY:harhar\n'
+        'Priority:High\n'
+    )
+
+    result = runner.invoke(cli, ['show', '1'])
+    assert 'High' in result.output
+
+
+def test_priority(runner):
+    result = runner.invoke(cli, [
+        'new', '-l', 'default', '--priority', 'Chembur', 'Event Test'
+    ])
+    assert not result.exception
+    assert 'Chembur' in result.output

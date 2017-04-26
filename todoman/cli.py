@@ -141,6 +141,10 @@ def validate_status(ctx=None, param=None, val=None):
 
 
 def _todo_property_options(command):
+    click.option(
+        '--priority', default='', callback=_validate_priority_param,
+        help=('Only show tasks with'
+              ' priority such as low, medium or high.'))(command)
     click.option('--location', help=('The location where '
                  'this todo takes place.'))(command)
     click.option(
