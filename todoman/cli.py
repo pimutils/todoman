@@ -157,7 +157,7 @@ def _todo_property_options(command):
     @functools.wraps(command)
     def command_wrap(*a, **kw):
         kw['todo_properties'] = {key: kw.pop(key) for key in
-                                 ('due', 'start', 'location')}
+                                 ('due', 'start', 'location', 'priority')}
         return command(*a, **kw)
 
     return command_wrap
