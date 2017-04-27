@@ -82,9 +82,6 @@ class DefaultFormatter:
             extra_rows += self._columnize('Description', todo.description)
         if todo.location:
             extra_rows += self._columnize('Location', todo.location)
-        if todo.priority:
-            extra_rows += self._columnize('Priority', todo.priority)
-
         if extra_rows:
             return '{}\n\n{}'.format(
                 self.compact(todo), tabulate(extra_rows, tablefmt='plain')

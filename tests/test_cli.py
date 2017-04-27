@@ -874,16 +874,16 @@ def test_show_priority(tmpdir, runner, create):
     create(
         'test.ics',
         'SUMMARY:harhar\n'
-        'Priority:High\n'
+        'Priority:high\n'
     )
 
     result = runner.invoke(cli, ['show', '1'])
-    assert 'High' in result.output
+    assert 'high' in result.output
 
 
 def test_priority(runner):
     result = runner.invoke(cli, [
-        'new', '-l', 'default', '--priority', 'Chembur', 'Event Test'
+        'new', '-l', 'default', '--priority', 'high', 'Priority Test'
     ])
     assert not result.exception
-    assert 'Chembur' in result.output
+    assert 'high' in result.output
