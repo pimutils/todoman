@@ -3,9 +3,9 @@ from os.path import exists, join
 
 import xdg.BaseDirectory
 from configobj import ConfigObj, flatten_errors
-from validate import is_option, Validator, VdtValueError
+from validate import Validator, VdtValueError
 
-from . import __documentation__
+from todoman import __documentation__
 
 
 class ConfigurationException(Exception):
@@ -18,8 +18,6 @@ class ConfigurationException(Exception):
 
 def expand_path(path):
     """expands `~` as well as variable names"""
-    if path is None:
-        return False
     return os.path.expanduser(os.path.expandvars(path))
 
 
@@ -33,13 +31,22 @@ def validate_cache_path(path):
         )
 
 
-def validate_color(color):
-    color = is_option(color)
-    if color == 'always':
-        return True
-    elif color == 'never':
-        return False
-    return None
+def validate_date_format(fmt):
+    if any(x in fmt for x in ('%H', '%M', '%S', '%X')):
+        raise ConfigurationException(
+            'Found time component in `date_format`, please use `time_format` '
+            'for that.'
+        )
+    return fmt
+
+
+def validate_time_format(fmt):
+    if any(x in fmt for x in ('%Y', '%y', '%m', '%d', '%x')):
+        raise ConfigurationException(
+            'Found date component in `time_format`, please use `date_format` '
+            'for that.'
+        )
+    return fmt
 
 
 def find_config():
@@ -67,6 +74,8 @@ def load_config():
     validator = Validator({
         'expand_path': expand_path,
         'cache_path': validate_cache_path,
+        'date_format': validate_date_format,
+        'time_format': validate_time_format,
     })
 
     config = ConfigObj(path, configspec=specpath, file_error=True)

@@ -4,9 +4,65 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.1.0
+------
+
+* Last-modified fields of todos are now updated upon edition.
+* Sequence numbers are now properly increased upon edition.
+* Add new command ``todo cancel`` to cancel an existing todo without deleting
+  it.
+* Add a new setting ``default_command``.
+* Replace ``--all`` and ``--done-only`` with  ``--status``, which allows
+  fine-grained status filtering. Use ``--status ANY`` or ``--status COMPLETED``
+  to obtain the same results as the previous flags.
+* Rename ``--today`` flag to ``--startable``.
+* Illegal start dates (eg: start dates that are not before the due date) are
+  ignored and are removed when saving an edited todo.
+
+v3.0.1
+------
+
+* Fix a crash for users upgrading from pre-v3.0.0, caused due to the cache's
+  schema not being updated.
+
+v3.0.0
+------
+
+New features
+~~~~~~~~~~~~
+
+* Add a ``today`` setting and flag to exclude todos that start in the future.
+* Add the ``--humanize`` to show friendlier date times (eg: ``in 3 hours``).
+* Drop ``--urgent`` and introduced ``--priority``, which allows fine-filtering
+  by priority.
+* Add support for times in due dates, new ``time_format`` setting.
+* Use the system's date format as a default.
+* Add list selector to the interactive editor.
+* Add ``--start=[before|after] [DATE]`` option for ``list`` to only show
+  todos starting before/after given date.
+* Add flag "--done-only" to todo list. Displays only completed tasks.
+* Make the output of move, delete, copy and flush consistent.
+* Porcelain now outputs proper JSON, rather than one-JSON-per-line.
+* Increment sequence number upon edits.
+* Print a descriptive message when no lists are found.
+* Add full support for locations.
+
+Packaging changes
+~~~~~~~~~~~~~~~~~
+
+* New runtime dependency: ``tabulate``.
+* New runtime dependency: ``humanize``.
+* New supported python version: ``pypy3``.
+* Include an alternative [much faster] entry point (aka "bin") which we
+  recommend all downstream packagers use. Please see the :ref:`Notes for
+  Packagers <notes-for-packagers>` documentation for further details.
+
 v2.1.0
 ------
 
+* The global ``--verbosity`` option has been introduced. It doesn't do much for
+  now though, because we do not have many debug logging statements.
+* New PyPI dependency ``click-log``.
 * The ``--no-human-time`` flag is gone. Integrations/scripts might want to look
   at ``--porcelain`` as an alternative.
 * Fix crash when running ``todo new``.
@@ -45,3 +101,4 @@ Packaging changes
 * New runtime dependency: configobj
 * New runtime dependency: python-dateutil
 * New test dependency: flake8-import-order.
+

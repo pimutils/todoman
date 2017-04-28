@@ -21,14 +21,21 @@ Todoman
   :target: https://github.com/pimutils/todoman/blob/master/LICENCE
   :alt: licence
 
+.. image:: https://img.shields.io/badge/Say%20Thanks!-%F0%9F%A6%89-1EAEDB.svg
+  :target: https://saythanks.io/to/hobarrera
+  :alt: Say Thanks!
+
 Todoman is a simple, standards-based, cli todo (aka: task) manager. Todos
 are stored into `icalendar <https://tools.ietf.org/html/rfc5545>`_ files, which
 means you can sync them via `CalDAV <http://en.wikipedia.org/wiki/CalDAV>`_
 using, for example, `vdirsyncer <https://vdirsyncer.readthedocs.org/>`_.
 
 Todoman is now part of the ``pimutils`` project, and is hosted at `GitHub
-<https://github.com/pimutils/todoman>`_. The original location at `GitLab.com
-<https://gitlab.com/hobarrera/todoman>`_ is still kept as a mirror.
+<https://github.com/pimutils/todoman>`_.
+
+Todoman should run fine on any Unix-like OS. It's been tested on GNU/Linux,
+BSD, and macOS.  We do not support windows, and very basic testing seems to
+indicate it does not work.
 
 Features
 --------
@@ -39,7 +46,7 @@ Features
   specification.
 * There's support for the most common TODO features for now (summary,
   description, location, due date and priority) for now.
-* Todoman should run on any major operating system.
+* Todoman should run on any major operating system (except Windows).
 * Unsupported fields may not be shown but are *never* deleted or altered.
 
 Documentation

@@ -1,57 +1,70 @@
 from datetime import datetime, timedelta
 
-import pytz
-from dateutil.tz import tzlocal
-
 from todoman.cli import cli
-from todoman.model import Database, FileTodo
+from todoman.model import Database, Todo
 
 
-def test_all(tmpdir, runner, create):
+def test_priority(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     create(
         'one.ics',
         'SUMMARY:haha\n'
+        'PRIORITY:4\n'
     )
     create(
         'two.ics',
         'SUMMARY:hoho\n'
-        'PERCENT-COMPLETE:100\n'
-        'STATUS:COMPLETED\n'
-    )
-    result = runner.invoke(cli, ['list', '--all'])
-    assert not result.exception
-    assert 'haha' in result.output
-    assert 'hoho' in result.output
-
-
-def test_urgent(tmpdir, runner, create):
-    result = runner.invoke(cli, ['list'], catch_exceptions=False)
-    assert not result.exception
-    assert result.output == ''
-
-    create(
-        'one.ics',
-        'SUMMARY:haha\n'
-        'PRIORITY: 9\n'
+        'PRIORITY:9\n'
     )
     create(
-        'two.ics',
-        'SUMMARY:hoho\n'
+        'three.ics',
+        'SUMMARY:hehe\n'
+        'PRIORITY:5\n'
     )
-    result = runner.invoke(cli, ['list', '--urgent'])
-    assert not result.exception
-    assert 'haha' in result.output
-    assert 'hoho' not in result.output
+    create(
+        'four.ics',
+        'SUMMARY:huhu\n'
+    )
+
+    result_high = runner.invoke(cli, ['list', '--priority=high'])
+    assert not result_high.exception
+    assert 'haha' in result_high.output
+    assert 'hoho' not in result_high.output
+    assert 'huhu' not in result_high.output
+    assert 'hehe' not in result_high.output
+
+    result_medium = runner.invoke(cli, ['list', '--priority=medium'])
+    assert not result_medium.exception
+    assert 'haha' in result_medium.output
+    assert 'hehe' in result_medium.output
+    assert 'hoho' not in result_medium.output
+    assert 'huhu' not in result_medium.output
+
+    result_low = runner.invoke(cli, ['list', '--priority=low'])
+    assert not result_low.exception
+    assert 'haha' in result_low.output
+    assert 'hehe' in result_low.output
+    assert 'hoho' in result_low.output
+    assert 'huhu' not in result_low.output
+
+    result_none = runner.invoke(cli, ['list', '--priority=none'])
+    assert not result_none.exception
+    assert 'haha' in result_none.output
+    assert 'hehe' in result_none.output
+    assert 'hoho' in result_none.output
+    assert 'huhu' in result_none.output
+
+    result_error = runner.invoke(cli, ['list', '--priority=blah'])
+    assert result_error.exception
 
 
 def test_location(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     create(
         'one.ics',
@@ -77,7 +90,7 @@ def test_location(tmpdir, runner, create):
 def test_category(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     create(
         'one.ics',
@@ -103,7 +116,7 @@ def test_category(tmpdir, runner, create):
 def test_grep(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
-    assert result.output == ''
+    assert not result.output.strip()
 
     create(
         'one.ics',
@@ -162,20 +175,18 @@ def test_filtering_lists(tmpdir, runner, create):
     assert 'todo two' in result.output
 
 
-def test_due_aware(tmpdir, runner, create):
-    now = datetime.now()
-
+def test_due_aware(tmpdir, runner, create, now_for_tz):
     db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
     l = next(db.lists())
 
     for tz in ['CET', 'HST']:
         for i in [1, 23, 25, 48]:
-            todo = FileTodo()
-            todo.due = (now + timedelta(hours=i)).replace(tzinfo=tzlocal()) \
-                .astimezone(pytz.timezone(tz))
+            todo = Todo(new=True)
+            todo.due = now_for_tz(tz) + timedelta(hours=i)
             todo.summary = '{}'.format(i)
 
-            db.save(todo, l)
+            todo.list = l
+            db.save(todo)
 
     todos = list(db.todos(due=24))
 
@@ -205,3 +216,71 @@ def test_due_naive(tmpdir, runner, create):
     assert len(todos) == 2
     assert todos[0].summary == "23"
     assert todos[1].summary == "1"
+
+
+def test_filtering_start(tmpdir, runner, todo_factory):
+    today = datetime.now()
+    now = today.strftime("%Y-%m-%d")
+
+    tomorrow = (today + timedelta(days=1)).strftime("%Y-%m-%d")
+    yesterday = (today + timedelta(days=-1)).strftime("%Y-%m-%d")
+
+    result = runner.invoke(cli, ['list', '--start', 'before', now])
+    assert not result.exception
+    assert not result.output.strip()
+
+    result = runner.invoke(cli, ['list', '--start', 'after', now])
+    assert not result.exception
+    assert not result.output.strip()
+
+    todo_factory(summary='haha', start=today)
+    todo_factory(summary='hoho', start=today)
+    todo_factory(summary='hihi', start=today - timedelta(days=2))
+    todo_factory(summary='huhu')
+
+    result = runner.invoke(cli, ['list', '--start', 'after', yesterday])
+    assert not result.exception
+    assert 'haha' in result.output
+    assert 'hoho' in result.output
+    assert 'hihi' not in result.output
+    assert 'huhu' not in result.output
+
+    result = runner.invoke(cli, ['list', '--start', 'before', yesterday])
+    assert not result.exception
+    assert 'haha' not in result.output
+    assert 'hoho' not in result.output
+    assert 'hihi' in result.output
+    assert 'huhu' not in result.output
+
+    result = runner.invoke(cli, ['list', '--start', 'after', tomorrow])
+    assert not result.exception
+    assert 'haha' not in result.output
+    assert 'hoho' not in result.output
+    assert 'hihi' not in result.output
+    assert 'huhu' not in result.output
+
+
+def test_statuses(todo_factory, todos):
+    cancelled = todo_factory(status='CANCELLED').uid
+    completed = todo_factory(status='COMPLETED').uid
+    in_process = todo_factory(status='IN-PROCESS').uid
+    needs_action = todo_factory(status='NEEDS-ACTION').uid
+    no_status = todo_factory(status='NEEDS-ACTION').uid
+
+    all_todos = set(todos(status=['ANY']))
+    cancelled_todos = set(todos(status=['CANCELLED']))
+    completed_todos = set(todos(status=['COMPLETED']))
+    in_process_todos = set(todos(status=['IN-PROCESS']))
+    needs_action_todos = set(todos(status=['NEEDS-ACTION']))
+
+    assert {t.uid for t in all_todos} == {
+        cancelled,
+        completed,
+        in_process,
+        needs_action,
+        no_status
+    }
+    assert {t.uid for t in cancelled_todos} == {cancelled}
+    assert {t.uid for t in completed_todos} == {completed}
+    assert {t.uid for t in in_process_todos} == {in_process}
+    assert {t.uid for t in needs_action_todos} == {needs_action, no_status}
