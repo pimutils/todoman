@@ -874,7 +874,7 @@ def test_show_priority(runner, todo_factory, todos):
     todo = todo_factory(summary='harhar\n', priority=1)
 
     result = runner.invoke(cli, ['show', '1'])
-    assert '1' in result.output
+    assert '!!!' in result.output
 
 
 def test_priority(runner):
@@ -882,5 +882,4 @@ def test_priority(runner):
         'new', '-l', 'default', '--priority', 'high', 'Priority Test'
     ])
 
-    assert 'high' not in result.output
-
+    assert '!!!' in result.output
