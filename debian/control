@@ -16,7 +16,8 @@ Build-Depends: debhelper (>= 10),
  python3-xdg,
  python3-urwid,
  python3-pytest,
- python3-pytest-runner
+ python3-pytest-runner,
+ python3-tabulate,
 Standards-Version: 3.9.8
 Homepage: https://github.com/pimutils/todoman
 Vcs-Git: https://git.gueux.org/todoman.git
