@@ -86,10 +86,8 @@ class ExtendedEdit(urwid.Edit):
     def _delete_till_beginning_of_line(self):
         """delete till start of line before cursor"""
         text = self.get_edit_text()
-        sol = text.rfind('\n', self.edit_pos)
+        sol = text.rfind('\n', 0, self.edit_pos) + 1
 
-        if sol == -1:
-            sol = 0
         before_line = text[:sol]
 
         self.set_edit_text(before_line + text[self.edit_pos:])
@@ -109,9 +107,7 @@ class ExtendedEdit(urwid.Edit):
 
     def _goto_beginning_of_line(self):
         text = self.get_edit_text()
-        sol = text.rfind('\n', 0, self.edit_pos)
-        if sol == -1:
-            sol = 0
+        sol = text.rfind('\n', 0, self.edit_pos) + 1
         self.set_edit_pos(sol)
 
     def _goto_end_of_line(self):
@@ -126,3 +122,53 @@ class ExtendedEdit(urwid.Edit):
         new_text = click.edit(self.get_edit_text())
         if new_text is not None:
             self.set_edit_text(new_text.strip())
+
+
+class PrioritySelector(urwid.Button):
+
+    HELP = [
+        ('left', 'Lower Priority'),
+        ('right', 'Higher Priority'),
+    ]
+
+    RANGES = [
+        [0],
+        [9, 8, 7, 6],
+        [5],
+        [1, 2, 3, 4],
+    ]
+
+    def __init__(self, parent, priority, formatter_function):
+        self._parent = parent
+        self._label = urwid.SelectableIcon("", 0)
+        urwid.WidgetWrap.__init__(self, self._label)
+
+        self._priority = priority
+        self._formatter = formatter_function
+        self._set_label()
+
+    def _set_label(self):
+        self.set_label(self._formatter(self._priority))
+
+    def _update_label(self, delta=0):
+        for i, r in enumerate(PrioritySelector.RANGES):
+            if self._priority in r:
+                self._priority = PrioritySelector.RANGES[
+                    (i + delta) % len(PrioritySelector.RANGES)
+                ][0]
+                self._set_label()
+                return
+
+    def keypress(self, size, key):
+        if key in ['right', 'enter']:
+            self._update_label(1)
+            return
+        if key == 'left':
+            self._update_label(-1)
+            return
+
+        return super().keypress(size, key)
+
+    @property
+    def priority(self):
+        return self._priority

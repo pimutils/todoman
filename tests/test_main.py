@@ -1,4 +1,5 @@
 import os
+import sys
 from subprocess import PIPE, Popen
 
 from todoman.cli import cli
@@ -12,7 +13,7 @@ def test_main(tmpdir, runner):
     cli_result = runner.invoke(cli, ['--version'])
 
     pipe = Popen(
-        ['python', '-m', 'todoman', '--version'], stdout=PIPE, env=env
+        [sys.executable, '-m', 'todoman', '--version'], stdout=PIPE, env=env
     )
     main_output = pipe.communicate()[0]
 

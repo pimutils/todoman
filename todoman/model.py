@@ -6,17 +6,19 @@ from datetime import date, datetime, time, timedelta
 from os.path import normpath, split
 from uuid import uuid4
 
-import dateutil.parser
 import icalendar
 from atomicwrites import AtomicWriter
 from dateutil.tz import tzlocal
 
+from todoman import exceptions
+
 logger = logging.getLogger(name=__name__)
-# logger.addHandler(logging.FileHandler('model.log'))
 
 
-class NoSuchTodo(Exception):
-    pass
+# Initialize this only once
+# We were doing this all over the place (even if unused!), so at least only do
+# it once.
+LOCAL_TIMEZONE = tzlocal()
 
 
 class UnsafeOperationException(Exception):
@@ -68,199 +70,179 @@ class Todo:
     the local system's one.
     """
 
-    _localtimezone = tzlocal()
-
-    def __init__(self, todo=None, filename=None, mtime=None, new=False):
+    def __init__(self, filename=None, mtime=None, new=False, list=None):
         """
         Creates a new todo using `todo` as a source.
 
-        :param icalendar.Todo todo: The icalendar component object on which
-        this todo is based, if applicable.
         :param str filename: The name of the file for this todo. Defaults to
         the <uid>.ics
         :param mtime int: The last modified time for the file backing this
         Todo.
         :param bool new: Indicate that a new Todo is being created and should
         be populated with default values.
+        :param List list: The list to which this Todo belongs.
         """
-
-        if todo:
-            self.todo = todo
-        else:
-            self.todo = icalendar.Todo()
+        self.list = list
+        now = datetime.now(LOCAL_TIMEZONE)
+        self.uid = '{}@{}'.format(uuid4().hex, socket.gethostname())
+        self.list = list
 
         if new:
-            now = datetime.now(self._localtimezone)
-            uid = uuid4().hex + socket.gethostname()
-            self.todo.add('uid', uid)
-            self.todo.add('percent-complete', 0)
-            self.todo.add('priority', 0)
-            self.todo.add('created', now)
+            self.created_at = now
+        else:
+            self.created_at = None
 
-        if self.todo.get('dtstamp', None) is None:
-            self.todo.add('dtstamp', datetime.utcnow())
+        # Default values for supported fields
+        self.categories = []
+        self.completed_at = None
+        self.description = ''
+        self.dtstamp = now
+        self.due = None
+        self.id = None
+        self.last_modified = None
+        self.location = ''
+        self.percent_complete = 0
+        self.priority = 0
+        self.sequence = 0
+        self.start = None
+        self.status = 'NEEDS-ACTION'
+        self.summary = ''
 
-        self.filename = filename or "{}.ics".format(self.todo.get('uid'))
+        self.filename = filename or "{}.ics".format(self.uid)
+
         if os.path.basename(self.filename) != self.filename:
-            raise ValueError('Must not be an absolute path: {}'
-                             .format(self.filename))
+            raise ValueError(
+                'Must not be an absolute path: {}' .format(self.filename)
+            )
         self.mtime = mtime or datetime.now()
 
-    def _set_field(self, name, value):
-        if name in self.todo:
-            del(self.todo[name])
-        # We want to save things like [] or 0, but not null, or nullstrings
-        if value is not None and value is not '':
-            logger.debug("Setting field %s to %s.", name, value)
-            self.todo.add(name, value)
+    def clone(self):
+        """
+        Returns a clone of this todo
 
-    @property
-    def status(self):
-        return self.todo.get('status', 'NEEDS-ACTION')
+        Returns a copy of this todo, which is almost identical, except that is
+        has a different UUID and filename.
+        """
+        todo = Todo(new=True, list=self.list)
 
-    @status.setter
-    def status(self, value):
-        self._set_field('status', value)
+        fields = (
+            Todo.STRING_FIELDS +
+            Todo.INT_FIELDS +
+            Todo.LIST_FIELDS +
+            Todo.DATETIME_FIELDS
+        )
+        fields.remove('uid')
+
+        for field in fields:
+            setattr(todo, field, getattr(self, field))
+
+        return todo
+
+    STRING_FIELDS = [
+        'description',
+        'location',
+        'status',
+        'summary',
+        'uid',
+    ]
+    INT_FIELDS = [
+        'percent_complete',
+        'priority',
+        'sequence',
+    ]
+    LIST_FIELDS = [
+        'categories',
+    ]
+    DATETIME_FIELDS = [
+        'completed_at',
+        'created_at',
+        'dtstamp',
+        'start',
+        'due',
+        'last_modified',
+    ]
+    ALL_SUPPORTED_FIELDS = (
+        DATETIME_FIELDS +
+        INT_FIELDS +
+        LIST_FIELDS +
+        STRING_FIELDS
+    )
+
+    VALID_STATUSES = (
+        "CANCELLED",
+        "COMPLETED",
+        "IN-PROCESS",
+        "NEEDS-ACTION",
+    )
+
+    def __setattr__(self, name, value):
+        # Avoids accidentally setting a field to None when that's not a valid
+        # attribute.
+        if not value:
+            if name in Todo.STRING_FIELDS:
+                return object.__setattr__(self, name, '')
+            if name in Todo.INT_FIELDS:
+                return object.__setattr__(self, name, 0)
+            if name in Todo.LIST_FIELDS:
+                return object.__setattr__(self, name, [])
+
+        return object.__setattr__(self, name, value)
 
     @property
     def is_completed(self):
-        return bool(self.completed_at) or \
+        return (
+            bool(self.completed_at) or
             self.status in ('CANCELLED', 'COMPLETED')
+        )
 
     @is_completed.setter
     def is_completed(self, val):
         if val:
             # Don't fiddle with completed_at if this was already completed:
             if not self.is_completed:
-                self.completed_at = self._normalize_datetime(datetime.now())
+                self.completed_at = datetime.now(tz=LOCAL_TIMEZONE)
             self.percent_complete = 100
             self.status = 'COMPLETED'
         else:
-            for name in ['completed', 'percent-complete']:
-                if name in self.todo:
-                    del(self.todo[name])
+            self.completed_at = None
+            self.percent_complete = None
             self.status = 'NEEDS-ACTION'
 
-    @property
-    def summary(self):
-        return self.todo.get('summary', "")
+    @cached_property
+    def path(self):
+        return os.path.join(self.list.path, self.filename)
 
-    @summary.setter
-    def summary(self, summary):
-        self._set_field('summary', summary)
+    def cancel(self):
+        self.status = 'CANCELLED'
 
-    @property
-    def description(self):
-        return self.todo.get('description', "")
 
-    @description.setter
-    def description(self, description):
-        self._set_field('description', description)
+class VtodoWritter:
+    """Writes a Todo as a VTODO file."""
 
-    @property
-    def categories(self):
-        categories = self.todo.get('categories', '').split(',')
-        return tuple(filter(None, categories))
+    """Maps Todo field names to VTODO field names"""
+    FIELD_MAP = {
+        'summary': 'summary',
+        'priority': 'priority',
+        'sequence': 'sequence',
+        'uid': 'uid',
+        'categories': 'categories',
+        'completed_at': 'completed',
+        'description': 'description',
+        'dtstamp': 'dtstamp',
+        'start': 'dtstart',
+        'due': 'due',
+        'location': 'location',
+        'percent_complete': 'percent-complete',
+        'priority': 'priority',
+        'status': 'status',
+        'created_at': 'created',
+        'last_modified': 'last-modified',
+    }
 
-    @property
-    def raw_categories(self):
-        return self.todo.get('categories', '')
+    def __init__(self, todo):
+        self.todo = todo
 
-    @categories.setter
-    def categories(self, categories):
-        self._set_field('categories', ','.join(categories))
-
-    @property
-    def location(self):
-        return self.todo.get('location', "")
-
-    @location.setter
-    def location(self, location):
-        self._set_field('location', location)
-
-    @property
-    def due(self):
-        """
-        Returns the due date, as a datetime object, if set, or None.
-        """
-        if self.todo.get('due', None) is None:
-            return None
-        else:
-            return self._normalize_datetime(self.todo.decoded('due'))
-
-    @due.setter
-    def due(self, due):
-        self._set_field('due', due)
-
-    @property
-    def start(self):
-        """
-        Returns the dtstart date, as a datetime object, if set, or None.
-        """
-        if self.todo.get('dtstart', None) is None:
-            return None
-        else:
-            return self._normalize_datetime(self.todo.decoded('dtstart'))
-
-    @start.setter
-    def start(self, dtstart):
-        self._set_field('dtstart', dtstart)
-
-    @property
-    def completed_at(self):
-        if self.todo.get('completed', None) is None:
-            return None
-        else:
-            return self._normalize_datetime(self.todo.decoded('completed'))
-
-    @completed_at.setter
-    def completed_at(self, completed):
-        self._set_field('completed', completed)
-
-    @property
-    def percent_complete(self):
-        return int(self.todo.get('percent-complete', 0))
-
-    @percent_complete.setter
-    def percent_complete(self, percent_complete):
-        self._set_field('percent-complete', percent_complete)
-
-    @property
-    def priority(self):
-        return self.todo.get('priority', 0)
-
-    @priority.setter
-    def priority(self, priority):
-        self._set_field('priority', priority)
-
-    @property
-    def created_at(self):
-        if self.todo.get('created', None) is None:
-            return None
-        else:
-            return self._normalize_datetime(self.todo.decoded('created'))
-
-    @created_at.setter
-    def created_at(self, created):
-        self._set_field('created', created)
-
-    @property
-    def uid(self):
-        return self.todo.get('uid')
-
-    @uid.setter
-    def uid(self, uid):
-        self._set_field('uid', uid)
-
-    @property
-    def dtstamp(self):
-        return self.todo.decoded('dtstamp')
-
-    @dtstamp.setter
-    def dtstamp(self, dtstamp):
-        self._set_field('dtstamp', dtstamp)
-
-    def _normalize_datetime(self, x):
+    def normalize_datetime(self, dt):
         '''
         Eliminate several differences between dates, times and datetimes which
         are hindering comparison:
@@ -268,81 +250,88 @@ class Todo:
         - Convert everything to datetime
         - Add missing timezones
         '''
-        if isinstance(x, date) and not isinstance(x, datetime):
-            x = datetime(x.year, x.month, x.day)
-        elif isinstance(x, time):
-            x = datetime.combine(date.today(), x)
+        if isinstance(dt, date) and not isinstance(dt, datetime):
+            dt = datetime(dt.year, dt.month, dt.day)
 
-        if not x.tzinfo:
-            x = x.replace(tzinfo=self._localtimezone)
-        else:
-            x = x.astimezone(self._localtimezone)
-        return x
+        if not dt.tzinfo:
+            dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
 
-    @property
-    def list(self):
-        return self._list
+        return dt
 
-    @list.setter
-    def list(self, list_):
-        self._list = list_
+    def serialize_field(self, name, value):
+        if name in Todo.DATETIME_FIELDS:
+            return self.normalize_datetime(value)
+        if name in Todo.LIST_FIELDS:
+            return ','.join(value)
+        if name in Todo.INT_FIELDS:
+            return int(value)
+        if name in Todo.STRING_FIELDS:
+            return value
 
-    def save(self):
-        raise UnsafeOperationException()
+        raise Exception('Unknown field {} serialized.'.format(name))
 
+    def set_field(self, name, value):
+        if name in self.vtodo:
+            del(self.vtodo[name])
+        if value:
+            logger.debug("Setting field %s to %s.", name, value)
+            self.vtodo.add(name, value)
 
-class FileTodo(Todo):
-    """
-    A Todo backed by a file
+    def serialize(self, original=None):
+        """Serialize a Todo into a VTODO."""
+        if not original:
+            original = icalendar.Todo()
+        self.vtodo = original
 
-    This model represents a Todo loaded and backed by a file. Saving it is a
-    valid operation.
-    """
+        for source, target in self.FIELD_MAP.items():
+            if getattr(self.todo, source):
+                self.set_field(
+                    target,
+                    self.serialize_field(source, getattr(self.todo, source)),
+                )
 
-    def __init__(self, new=True, **kwargs):
-        super().__init__(new=new, **kwargs)
+        return self.vtodo
 
-    @classmethod
-    def from_file(cls, path, id=None):
+    def _read(self, path):
         with open(path, 'rb') as f:
             cal = f.read()
             cal = icalendar.Calendar.from_ical(cal)
-            try:
-                component = cal.walk('VTODO')[0]
-                todo = cls(
-                    new=False,
-                    todo=component,
-                    filename=os.path.basename(path),
-                )
-                todo.id = id
-                return todo
-            except IndexError:
-                pass
+            for component in cal.walk('VTODO'):
+                return component
 
-    def save(self, list_=None):
-        list_ = list_ or self.list
-        path = os.path.join(list_.path, self.filename)
-        assert path.startswith(list_.path)
-
-        if os.path.exists(path):
-            # Update an existing entry:
-            with open(path, 'rb') as f:
-                cal = icalendar.Calendar.from_ical(f.read())
-                for index, component in enumerate(cal.subcomponents):
-                    if component.get('uid', None) == self.uid:
-                        cal.subcomponents[index] = self.todo
-
-            with AtomicWriter(path, overwrite=True).open() as f:
-                f.write(cal.to_ical().decode("UTF-8"))
+    def write(self):
+        if os.path.exists(self.todo.path):
+            self._write_existing(self.todo.path)
         else:
-            # Save a new entry:
-            c = icalendar.Calendar()
+            self._write_new(self.todo.path)
+
+        return self.vtodo
+
+    def _write_existing(self, path):
+        original = self._read(path)
+        vtodo = self.serialize(original)
+
+        with open(path, 'rb') as f:
+            cal = icalendar.Calendar.from_ical(f.read())
+            for index, component in enumerate(cal.subcomponents):
+                if component.get('uid', None) == self.todo.uid:
+                    cal.subcomponents[index] = vtodo
+
+        with AtomicWriter(path, overwrite=True).open() as f:
+            f.write(cal.to_ical().decode("UTF-8"))
+
+    def _write_new(self, path):
+        vtodo = self.serialize()
+
+        c = icalendar.Calendar()
+        c.add_component(vtodo)
+
+        with AtomicWriter(path).open() as f:
             c.add('prodid', 'io.barrera.todoman')
             c.add('version', '2.0')
-            c.add_component(self.todo)
+            f.write(c.to_ical().decode("UTF-8"))
 
-            with AtomicWriter(path).open() as f:
-                f.write(c.to_ical().decode("UTF-8"))
+        return vtodo
 
 
 class Cache:
@@ -354,14 +343,11 @@ class Cache:
     load times, but, more importantly, provides a simpler interface for
     filtering/querying/sorting.
 
-    The internal sqlite database is copied fully into memory at startup, and
-    dumped again at showdown. This reduces excesive disk I/O.
-
-    [1]: Relevent fields are those we show when listing todos, or those which
+    [1]: Relevant fields are those we show when listing todos, or those which
     may be used for filtering/sorting.
     """
 
-    SCHEMA_VERSION = 2
+    SCHEMA_VERSION = 4
 
     def __init__(self, path):
         self.cache_path = str(path)
@@ -432,18 +418,20 @@ class Cache:
                 "id" INTEGER PRIMARY KEY,
                 "uid" TEXT,
                 "summary" TEXT,
-                "due" INT,
+                "due" INTEGER,
+                "start" INTEGER,
                 "priority" INTEGER,
-                "created_at" TEXT,
-                "completed_at" TEXT,
+                "created_at" INTEGER,
+                "completed_at" INTEGER,
                 "percent_complete" INTEGER,
-                "dtstamp" TEXT,
+                "dtstamp" INTEGER,
                 "status" TEXT,
                 "description" TEXT,
                 "location" TEXT,
                 "categories" TEXT,
+                "sequence" INTEGER,
+                "last_modified" INTEGER,
 
-                CONSTRAINT file_unique UNIQUE (file_path),
                 FOREIGN KEY(file_path) REFERENCES files(path) ON DELETE CASCADE
             );
         ''')
@@ -494,7 +482,22 @@ class Cache:
         except sqlite3.IntegrityError as e:
             raise AlreadyExists(list_name) from e
 
-    def add_todo(self, todo, file_path):
+    def _serialize_datetime(self, todo, field):
+        dt = todo.decoded(field, None)
+        if not dt:
+            return None
+
+        if isinstance(dt, date) and not isinstance(dt, datetime):
+            dt = datetime(dt.year, dt.month, dt.day)
+        # XXX: Can we actually read times from files?
+        elif isinstance(dt, time):
+            dt = datetime.combine(date.today(), dt)
+
+        if not dt.tzinfo:
+            dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
+        return dt.timestamp()
+
+    def add_vtodo(self, todo, file_path, id=None):
         """
         Adds a todo into the cache.
 
@@ -503,10 +506,12 @@ class Cache:
 
         sql = '''
             INSERT INTO todos (
+                {}
                 file_path,
                 uid,
                 summary,
                 due,
+                start,
                 priority,
                 created_at,
                 completed_at,
@@ -515,25 +520,42 @@ class Cache:
                 status,
                 description,
                 location,
-                categories
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                categories,
+                sequence,
+                last_modified
+            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             '''
+
+        due = self._serialize_datetime(todo, 'due')
+        start = self._serialize_datetime(todo, 'dtstart')
+
+        if start and due:
+            start = None if start >= due else start
 
         params = (
             file_path,
-            todo.uid,
-            todo.summary,
-            todo.due.timestamp() if todo.due else None,
-            todo.priority,
-            todo.created_at,
-            todo.completed_at,
-            todo.percent_complete,
-            todo.dtstamp,
-            todo.status,
-            todo.description,
-            todo.location,
-            todo.raw_categories,
+            todo.get('uid'),
+            todo.get('summary'),
+            due,
+            start,
+            todo.get('priority', 0) or None,
+            self._serialize_datetime(todo, 'created'),
+            self._serialize_datetime(todo, 'completed'),
+            todo.get('percent-complete', None),
+            self._serialize_datetime(todo, 'dtstamp'),
+            todo.get('status', 'NEEDS-ACTION'),
+            todo.get('description', None),
+            todo.get('location', None),
+            todo.get('categories', None),
+            todo.get('sequence', 1),
+            self._serialize_datetime(todo, 'last-modified'),
         )
+
+        if id:
+            params = (id,) + params
+            sql = sql.format('id,\n', '?, ')
+        else:
+            sql = sql.format('', '')
 
         cursor = self._conn.cursor()
         try:
@@ -544,8 +566,9 @@ class Cache:
 
         return rv
 
-    def todos(self, all=False, lists=[], urgent=False, location='',
-              category='', grep='', sort=[], reverse=True, due=None):
+    def todos(self, lists=[], priority=None, location='', category='', grep='',
+              sort=[], reverse=True, due=None, start=None, startable=False,
+              status=['NEEDS-ACTION', 'IN-PROCESS']):
         """
         Returns filtered cached todos, in a specified order.
 
@@ -556,9 +579,7 @@ class Cache:
             due
             -created_at
 
-        :param bool all: If true, also return completed todos.
         :param list lists: Only return todos for these lists.
-        :param bool urgent: Only return urgent todos.
         :param str location: Only return todos with a location containing this
             string.
         :param str category: Only return todos with a category containing this
@@ -568,26 +589,32 @@ class Cache:
             with a ``-`` prepended will be used to sort in reverse order.
         :param bool reverse: Reverse the order of the todos after sorting.
         :param int due: Return only todos due within ``due`` hours.
+        :param str priority: Only return todos with priority at least as
+            high as specified.
+        :param tuple(bool, datetime) start: Return only todos before/after
+            ``start`` date
+        :param list(str) status: Return only todos with any of the given
+            statuses.
         :return: A sorted, filtered list of todos.
         :rtype: generator
         """
-        list_map = {list.name: list for list in self.lists()}
-
         extra_where = []
         params = []
 
-        if not all:
-            # XXX: Duplicated logic of Todo.is_completed
-            extra_where.append('AND completed_at is NULL '
-                               'AND status != "CANCELLED" '
-                               'AND status != "COMPLETED"')
+        if 'ANY' not in status:
+            extra_where.append(
+                'AND status IN ({})'.format(', '.join(['?'] * len(status)))
+            )
+            params.extend(s.upper() for s in status)
+
         if lists:
             lists = [l.name if isinstance(l, List) else l for l in lists]
             q = ', '.join(['?'] * len(lists))
             extra_where.append('AND files.list_name IN ({})'.format(q))
             params.extend(lists)
-        if urgent:
-            extra_where.append('AND priority = 9')
+        if priority:
+            extra_where.append('AND PRIORITY > 0 AND PRIORITY <= ?')
+            params.append('{}'.format(priority))
         if location:
             extra_where.append('AND location LIKE ?')
             params.append('%{}%'.format(location))
@@ -595,7 +622,7 @@ class Cache:
             extra_where.append('AND categories LIKE ?')
             params.append('%{}%'.format(category))
         if grep:
-            # # requires sqlite with pcre, which won't be availabel everywhere:
+            # # requires sqlite with pcre, which won't be available everywhere:
             # extra_where.append('AND summary REGEXP ?')
             # params.append(grep)
             extra_where.append('AND summary LIKE ?')
@@ -604,7 +631,18 @@ class Cache:
             max_due = (datetime.now() + timedelta(hours=due)).timestamp()
             extra_where.append('AND due IS NOT NULL AND due < ?')
             params.append(max_due)
-
+        if start:
+            is_before, dt = start
+            dt = dt.timestamp()
+            if is_before:
+                extra_where.append('AND start <= ?')
+                params.append(dt)
+            else:
+                extra_where.append('AND start >= ?')
+                params.append(dt)
+        if startable:
+            extra_where.append('AND (start IS NULL OR start <= ?)')
+            params.append(datetime.now().timestamp())
         if sort:
             order = []
             for s in sort:
@@ -616,7 +654,7 @@ class Cache:
         else:
             order = '''
                 completed_at DESC,
-                priority ASC,
+                priority IS NOT NULL, priority DESC,
                 due IS NOT NULL, due DESC,
                 created_at ASC
             '''
@@ -632,29 +670,51 @@ class Cache:
                WHERE todos.file_path = files.path {}
             ORDER BY {}
         '''.format(' '.join(extra_where), order,)
+
+        logger.debug(query)
+        logger.debug(params)
+
         result = self._conn.execute(query, params)
 
+        seen_paths = set()
+        warned_paths = set()
+
         for row in result:
-            todo = Todo()
-            todo.id = row['id']
-            todo.uid = row['uid']
-            todo.summary = row['summary']
-            if row['due']:
-                todo.due = datetime.fromtimestamp(row['due'])
-            todo.priority = row['priority']
-            if row['created_at']:
-                todo.created_at = dateutil.parser.parse(row['created_at'])
-            if row['completed_at']:
-                todo.completed_at = dateutil.parser.parse(row['completed_at'])
-            if row['dtstamp']:
-                todo.dtstamp = dateutil.parser.parse(row['dtstamp'])
-            todo.percent_complete = row['percent_complete']
-            todo.status = row['status']
-            todo.description = row['description']
-            todo.location = row['location']
-            todo.list = list_map[row['list_name']]
-            todo.filename = os.path.basename(row['path'])
+            todo = self._todo_from_db(row)
+            path = row['path']
+
+            if path in seen_paths and path not in warned_paths:
+                logger.warning('Todo is in read-only mode because there are '
+                               'multiple todos in %s', path)
+                warned_paths.add(path)
+            seen_paths.add(path)
             yield todo
+
+    def _dt_from_db(self, dt):
+        if dt:
+            return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
+        return None
+
+    def _todo_from_db(self, row):
+        todo = Todo()
+        todo.id = row['id']
+        todo.uid = row['uid']
+        todo.summary = row['summary']
+        todo.due = self._dt_from_db(row['due'])
+        todo.start = self._dt_from_db(row['start'])
+        todo.priority = row['priority']
+        todo.created_at = self._dt_from_db(row['created_at'])
+        todo.completed_at = self._dt_from_db(row['completed_at'])
+        todo.dtstamp = self._dt_from_db(row['dtstamp'])
+        todo.percent_complete = row['percent_complete']
+        todo.status = row['status']
+        todo.description = row['description']
+        todo.location = row['location']
+        todo.sequence = row['sequence']
+        todo.last_modified = row['last_modified']
+        todo.list = self.lists_map[row['list_name']]
+        todo.filename = os.path.basename(row['path'])
+        return todo
 
     def lists(self):
         result = self._conn.execute("SELECT * FROM lists")
@@ -665,17 +725,9 @@ class Cache:
                 colour=row['colour'],
             )
 
-    def list(self, name):
-        row = self._conn.execute(
-            "SELECT * FROM lists WHERE name = ?",
-            (name,),
-        ).fetchone()
-
-        return List(
-            name=row['name'],
-            path=row['path'],
-            colour=row['colour'],
-        )
+    @cached_property
+    def lists_map(self):
+        return {l.name: l for l in self.lists()}
 
     def expire_lists(self, paths):
         results = self._conn.execute("SELECT path, name from lists")
@@ -686,24 +738,31 @@ class Cache:
     def delete_list(self, name):
         self._conn.execute("DELETE FROM lists WHERE lists.name = ?", (name,))
 
-    def todo(self, id):
+    def todo(self, id, read_only=False):
+        # XXX: DON'T USE READ_ONLY
         result = self._conn.execute('''
-            SELECT files.path, list_name
-              FROM files, todos
-             WHERE files.path = todos.file_path
-               AND todos.id = ?
-        ''', (id,),
+            SELECT todos.*, files.list_name, files.path
+              FROM todos, files
+            WHERE files.path = todos.file_path
+              AND todos.id = ?
+        ''', (id,)
         ).fetchone()
 
         if not result:
-            raise NoSuchTodo()
+            raise exceptions.NoSuchTodo(id)
 
-        path = result['path']
-        todo = FileTodo.from_file(path, id)
-        assert todo is not None
-        todo.list = self.list(result['list_name'])
+        if not read_only:
+            count = self._conn.execute('''
+                SELECT count(id) AS c
+                  FROM files, todos
+                 WHERE todos.file_path = files.path
+                   AND path=?
+            ''', (result['path'],)
+            ).fetchone()
+            if count['c'] > 1:
+                raise exceptions.ReadOnlyTodo(result['path'])
 
-        return todo
+        return self._todo_from_db(result)
 
     def expire_files(self, paths_to_mtime):
         """Remove stale cache entries based on the given fresh data."""
@@ -720,33 +779,49 @@ class Cache:
 class List:
 
     def __init__(self, name, path, colour=None):
-        self.name = name
         self.path = path
-        self.colour = colour
+        self.name = name or List.name_for_path(path)
+        self.colour = colour or List.colour_for_path(self.path)
 
-    @cached_property
-    def color_raw(self):
-        '''
-        The color is a file whose content is of the format `#RRGGBB`.
-        '''
-
+    @staticmethod
+    def colour_for_path(path):
         try:
-            with open(os.path.join(self.path, 'color')) as f:
+            with open(os.path.join(path, 'color')) as f:
                 return f.read().strip()
         except (OSError, IOError):
-            pass
+            logger.debug('No colour for list %s', path)
+
+    @staticmethod
+    def name_for_path(path):
+        try:
+            with open(os.path.join(path, 'displayname')) as f:
+                return f.read().strip()
+        except (OSError, IOError):
+            return split(normpath(path))[1]
 
     @cached_property
     def color_rgb(self):
-        rv = self.color_raw
-        if rv:
-            return _parse_color(rv)
+        color = self.colour
+        if not color or not color.startswith('#'):
+            return
+
+        r = color[1:3]
+        g = color[3:5]
+        b = color[5:8]
+
+        if len(r) == len(g) == len(b) == 2:
+            return int(r, 16), int(g, 16), int(b, 16)
 
     @cached_property
     def color_ansi(self):
         rv = self.color_rgb
         if rv:
             return '\33[38;2;{!s};{!s};{!s}m'.format(*rv)
+
+    def __eq__(self, other):
+        if isinstance(other, List):
+            return self.name == other.name
+        return object.__eq__(self, other)
 
     def __str__(self):
         return self.name
@@ -774,9 +849,9 @@ class Database:
 
         for path in self.paths:
             list_name = self.cache.add_list(
-                self._list_name(path),
+                List.name_for_path(path),
                 path,
-                self._list_colour(path),
+                List.colour_for_path(path),
             )
             for entry in os.listdir(path):
                 if not entry.endswith('.ics'):
@@ -790,31 +865,36 @@ class Database:
 
         for entry_path, mtime in paths_to_mtime.items():
             list_name = paths_to_list_name[entry_path]
+
             try:
                 self.cache.add_file(list_name, entry_path, mtime)
             except AlreadyExists:
+                logger.debug('File already in cache: %s', entry_path)
                 continue
 
-            try:
-                todo = FileTodo.from_file(entry_path)
-                if todo:
-                    self.cache.add_todo(todo, entry_path)
-            except Exception as e:
-                logger.exception("Failed to read entry %s.", entry_path)
+            with open(entry_path, 'rb') as f:
+                try:
+                    cal = f.read()
+                    cal = icalendar.Calendar.from_ical(cal)
+                    for component in cal.walk('VTODO'):
+                        self.cache.add_vtodo(component, entry_path)
+                except Exception as e:
+                    logger.exception("Failed to read entry %s.", entry_path)
 
         self.cache.save_to_disk()
 
     def todos(self, **kwargs):
         return self.cache.todos(**kwargs)
 
-    def todo(self, id):
-        return self.cache.todo(id)
+    def todo(self, id, **kwargs):
+        return self.cache.todo(id, **kwargs)
 
     def lists(self):
         return self.cache.lists()
 
-    def move(self, todo, new_list):
-        orig_path = os.path.join(todo.list.path, todo.filename)
+    def move(self, todo, new_list, from_list=None):
+        from_list = from_list or todo.list
+        orig_path = os.path.join(from_list.path, todo.filename)
         dest_path = os.path.join(new_list.path, todo.filename)
 
         os.rename(orig_path, dest_path)
@@ -823,26 +903,8 @@ class Database:
         path = os.path.join(todo.list.path, todo.filename)
         os.remove(path)
 
-    def _list_name(self, path):
-        try:
-            with open(os.path.join(path, 'displayname')) as f:
-                return f.read().strip()
-        except (OSError, IOError):
-            return split(normpath(path))[1]
-
-    def _list_colour(self, path):
-        '''
-        The color is a file whose content is of the format `#RRGGBB`.
-        '''
-
-        try:
-            with open(os.path.join(path, 'color')) as f:
-                return f.read().strip()
-        except (OSError, IOError):
-            pass
-
     def flush(self):
-        for todo in self.todos(all=True):
+        for todo in self.todos(status=['ANY']):
             if todo.is_completed:
                 yield todo
                 self.delete(todo)
@@ -850,27 +912,18 @@ class Database:
         self.cache.clear()
         self.cache = None
 
-    def save(self, todo, list_):
-        todo.save(list_)
-        path = os.path.join(list_.path, todo.filename)
-        self.cache.expire_file(path)
-        mtime = _getmtime(path)
-        self.cache.add_file(list_.name, path, mtime)
-        id = self.cache.add_todo(todo, path)
+    def save(self, todo):
+        todo.sequence += 1
+        todo.last_modified = datetime.now(LOCAL_TIMEZONE)
+
+        vtodo = VtodoWritter(todo).write()
+
+        self.cache.expire_file(todo.path)
+        mtime = _getmtime(todo.path)
+
+        self.cache.add_file(todo.list.name, todo.path, mtime)
+        todo.id = self.cache.add_vtodo(vtodo, todo.path, todo.id)
         self.cache.save_to_disk()
-        todo.id = id
-
-
-def _parse_color(color):
-    if not color.startswith('#'):
-        return
-
-    r = color[1:3]
-    g = color[3:5]
-    b = color[5:8]
-
-    if len(r) == len(g) == len(b) == 2:
-        return int(r, 16), int(g, 16), int(b, 16)
 
 
 def _getmtime(path):
