@@ -871,7 +871,7 @@ def test_invoke_invalid_command(runner, tmpdir):
 
 
 def test_show_priority(runner, todo_factory, todos):
-    todo = todo_factory(summary='harhar\n', priority=1)
+    todo_factory(summary='harhar\n', priority=1)
 
     result = runner.invoke(cli, ['show', '1'])
     assert '!!!' in result.output
