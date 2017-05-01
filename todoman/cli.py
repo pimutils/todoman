@@ -202,11 +202,47 @@ class ConfigurableDefaultGroup(DefaultGroup):
         return super(DefaultGroup, self).get_command(ctx, cmd_name)
 
 
-@click.group(
-    cls=ConfigurableDefaultGroup,
-    default='default',  # click crashes in this is None
-    default_if_no_args=True,
-)
+class Cli(ConfigurableDefaultGroup):
+
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw, default='default', default_if_no_args=True)
+
+    def callback(click_ctx, color, porcelain, humanize):
+        ctx = click_ctx.ensure_object(AppContext)
+
+        if porcelain and humanize:
+            raise click.ClickException('--porcelain and --humanize cannot be used'
+                                       ' at the same time.')
+
+        if humanize is None:  # False means explicitly disabled
+            humanize = ctx.config['main']['humanize']
+
+        if humanize:
+            ctx.formatter_class = formatters.HumanizedFormatter
+        elif porcelain:
+            ctx.formatter_class = formatters.PorcelainFormatter
+        else:
+            ctx.formatter_class = formatters.DefaultFormatter
+
+        color = color or ctx.config['main']['color']
+        if color == 'always':
+            click_ctx.color = True
+        elif color == 'never':
+            click_ctx.color = False
+
+        paths = [
+            path for path in glob.iglob(expanduser(ctx.config["main"]["path"]))
+            if isdir(path)
+        ]
+        if len(paths) == 0:
+            raise exceptions.NoListsFound(ctx.config["main"]["path"])
+
+        ctx.db = Database(paths, ctx.config['main']['cache_path'])
+
+        # Make python actually use LC_TIME, or the user's locale settings
+        locale.setlocale(locale.LC_TIME, "")
+
+
 @click_log.init('todoman')
 @click_log.simple_verbosity_option()
 @click.option('--colour', '--color', default=None,
@@ -222,40 +258,10 @@ class ConfigurableDefaultGroup(DefaultGroup):
 @click.pass_context
 @click.version_option(prog_name='todoman')
 @catch_errors
-def cli(click_ctx, color, porcelain, humanize):
-    ctx = click_ctx.ensure_object(AppContext)
+def get_cli():
+    return Cli()
 
-    if porcelain and humanize:
-        raise click.ClickException('--porcelain and --humanize cannot be used'
-                                   ' at the same time.')
-
-    if humanize is None:  # False means explicitly disabled
-        humanize = ctx.config['main']['humanize']
-
-    if humanize:
-        ctx.formatter_class = formatters.HumanizedFormatter
-    elif porcelain:
-        ctx.formatter_class = formatters.PorcelainFormatter
-    else:
-        ctx.formatter_class = formatters.DefaultFormatter
-
-    color = color or ctx.config['main']['color']
-    if color == 'always':
-        click_ctx.color = True
-    elif color == 'never':
-        click_ctx.color = False
-
-    paths = [
-        path for path in glob.iglob(expanduser(ctx.config["main"]["path"]))
-        if isdir(path)
-    ]
-    if len(paths) == 0:
-        raise exceptions.NoListsFound(ctx.config["main"]["path"])
-
-    ctx.db = Database(paths, ctx.config['main']['cache_path'])
-
-    # Make python actually use LC_TIME, or the user's locale settings
-    locale.setlocale(locale.LC_TIME, "")
+cli = get_cli()
 
 
 def invoke_command(click_ctx, command):
