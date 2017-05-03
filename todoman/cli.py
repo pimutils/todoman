@@ -509,3 +509,18 @@ def list(ctx, **kwargs):
     """
     todos = ctx.db.todos(**kwargs)
     click.echo(ctx.formatter.compact_multiple(todos))
+
+
+@cli.command()
+@pass_ctx
+@catch_errors
+def cache(ctx):
+    """
+    Updates the cache silently without printing anything.
+
+    Note that the cache is automatically updated with any other command that
+    reads todos; this is a utilitary command useful as part of scripts that do
+    mass import of syncs (eg: vdirsyncer on some server that heavily modified
+    existing todos).
+    """
+    # cli.command does everything implicitly
