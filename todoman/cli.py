@@ -141,6 +141,9 @@ def validate_status(ctx=None, param=None, val=None):
 
 
 def _todo_property_options(command):
+    click.option(
+        '--priority', default='', callback=_validate_priority_param,
+        help=('The priority for this todo'))(command)
     click.option('--location', help=('The location where '
                  'this todo takes place.'))(command)
     click.option(
@@ -154,7 +157,7 @@ def _todo_property_options(command):
     @functools.wraps(command)
     def command_wrap(*a, **kw):
         kw['todo_properties'] = {key: kw.pop(key) for key in
-                                 ('due', 'start', 'location')}
+                                 ('due', 'start', 'location', 'priority')}
         return command(*a, **kw)
 
     return command_wrap

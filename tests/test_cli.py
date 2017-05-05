@@ -868,3 +868,18 @@ def test_invoke_invalid_command(runner, tmpdir):
     assert (
         'Error: Invalid setting for [main][default_command]' in result.output
     )
+
+
+def test_show_priority(runner, todo_factory, todos):
+    todo_factory(summary='harhar\n', priority=1)
+
+    result = runner.invoke(cli, ['show', '1'])
+    assert '!!!' in result.output
+
+
+def test_priority(runner):
+    result = runner.invoke(cli, [
+        'new', '-l', 'default', '--priority', 'high', 'Priority Test'
+    ])
+
+    assert '!!!' in result.output
