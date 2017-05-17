@@ -363,7 +363,7 @@ def show(ctx, id):
 def done(ctx, todos):
     """Mark one or more tasks as done."""
     for todo in todos:
-        todo.is_completed = True
+        todo.complete()
         ctx.db.save(todo)
         click.echo(ctx.formatter.detailed(todo))
 
