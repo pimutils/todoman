@@ -2,7 +2,7 @@ Installing
 ==========
 
 If todoman is packaged for your OS/distribution, using your system's
-standard package manager is probably the easiest way to install khal:
+standard package manager is probably the easiest way to install todoman:
 
 - ArchLinux (AUR_)
 
