@@ -4,6 +4,12 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.2.0
+------
+
+* Completing recurring todos now works as expected and does not make if
+  dissapear forever.
+
 v3.1.0
 ------
 
