@@ -1,5 +1,10 @@
 #!/usr/bin/make -f
 
+# exports needed to make the tests succeed (python3-click)
+export TZ=UTC
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+
 override_dh_auto_clean:
 
 %:
