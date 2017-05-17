@@ -2,6 +2,8 @@
 
 # manually copy todoman/confspec.ini to build_dir/todoman/ (needed for tests)
 export PYBUILD_BEFORE_BUILD=mkdir -p {build_dir}/todoman/ && cp {dir}/todoman/confspec.ini {build_dir}/todoman/
+# manually remove files needed for tests
+export PYBUILD_AFTER_TEST=rm {build_dir}/.coverage {build_dir}/todoman/confspec.ini
 
 # exports needed to make the tests succeed (python3-click)
 export TZ=UTC
