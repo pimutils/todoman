@@ -1,3 +1,6 @@
+.. image:: https://badge.waffle.io/pimutils/todoman.png?label=ready&title=Ready 
+ :target: https://waffle.io/pimutils/todoman
+ :alt: 'Stories in Ready'
 Todoman
 =======
 
