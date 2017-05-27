@@ -24,7 +24,9 @@ class DefaultFormatter:
         self.tz = tz_override or tzlocal()
         self.now = datetime.datetime.now().replace(tzinfo=self.tz)
 
-        self._parsedatetime_calendar = parsedatetime.Calendar()
+        self._parsedatetime_calendar = parsedatetime.Calendar(
+            version=parsedatetime.VERSION_CONTEXT_STYLE,
+        )
 
     def simple_action(self, action, todo):
         return '{} "{}"'.format(action, todo.summary)
@@ -158,11 +160,9 @@ class DefaultFormatter:
         except ValueError:
             pass
 
-        rv, certainty = self._parsedatetime_calendar.parse(dt)
-        if not certainty:
-            raise ValueError(
-                'Time description not recognized: {}' .format(dt)
-            )
+        rv, pd_ctx = self._parsedatetime_calendar.parse(dt)
+        if not pd_ctx.hasDateOrTime:
+            raise ValueError('Time description not recognized: {}' .format(dt))
         return datetime.datetime.fromtimestamp(mktime(rv))
 
     def format_database(self, database):
