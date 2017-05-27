@@ -47,15 +47,15 @@ class TodoEditor:
         grid = urwid.Pile(pile_items)
         spacer = urwid.Divider()
 
-        self.left_column = urwid.ListBox([
+        self.left_column = urwid.ListBox(urwid.SimpleListWalker([
             grid,
             spacer,
             self._status,
             buttons,
-        ])
-        right_column = urwid.ListBox(
+        ]))
+        right_column = urwid.ListBox(urwid.SimpleListWalker(
             [urwid.Text('List:\n')] + self.list_selector
-        )
+        ))
 
         self._ui = urwid.Columns([self.left_column, right_column])
 
