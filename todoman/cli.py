@@ -223,10 +223,10 @@ def cli(click_ctx, color, porcelain, humanize):
     if humanize is None:  # False means explicitly disabled
         humanize = ctx.config['main']['humanize']
 
-    if humanize:
-        ctx.formatter_class = formatters.HumanizedFormatter
-    elif porcelain:
+    if porcelain:
         ctx.formatter_class = formatters.PorcelainFormatter
+    elif humanize:
+        ctx.formatter_class = formatters.HumanizedFormatter
     else:
         ctx.formatter_class = formatters.DefaultFormatter
 
