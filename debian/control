@@ -22,6 +22,7 @@ Build-Depends: debhelper (>= 10),
  python3-setuptools,
  python3-setuptools-scm,
  python3-sphinx,
+ python3-sphinx-autorun,
  python3-tabulate,
  python3-urwid,
  python3-xdg
