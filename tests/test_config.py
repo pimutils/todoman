@@ -31,7 +31,8 @@ def test_xdg_nonexistant(runner):
 
 def test_xdg_existant(runner, tmpdir, config):
     with tmpdir.mkdir('todoman').join('todoman.conf').open('w') as f:
-        f.write(config.open().read())
+        with config.open() as c:
+            f.write(c.read())
 
     with patch('xdg.BaseDirectory.xdg_config_dirs', [str(tmpdir)]):
         result = CliRunner().invoke(
