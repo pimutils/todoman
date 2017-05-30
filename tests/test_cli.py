@@ -883,3 +883,15 @@ def test_priority(runner):
     ])
 
     assert '!!!' in result.output
+
+
+def test_porcelain_precedence(runner, tmpdir):
+    """Test that --humanize flag takes precedence over `porcelain` config"""
+
+    path = tmpdir.join('config')
+    path.write('humanize = true\n', 'a')
+
+    with patch('todoman.formatters.PorcelainFormatter') as mocked_formatter:
+        runner.invoke(cli, ['--porcelain', 'list'])
+
+    assert mocked_formatter.call_count is 1
