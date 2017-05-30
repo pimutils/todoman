@@ -8,6 +8,7 @@ from os.path import expanduser, isdir
 
 import click
 import click_log
+from click_default_group import DefaultGroup
 
 from todoman import exceptions, formatters
 from todoman.configuration import ConfigurationException, load_config
@@ -118,12 +119,6 @@ def _sort_callback(ctx, param, val):
 
 
 def validate_status(ctx=None, param=None, val=None):
-    # The default command doesn't run callbacks as expected, so it needs to
-    # specify the callback'd type. When `list` is called explicitly, this
-    # callback *IS* run, so we need to handle that edge case:
-    if not isinstance(val, str):
-        return val
-
     statuses = val.upper().split(',')
 
     if 'ANY' in statuses:
@@ -164,9 +159,16 @@ def _todo_property_options(command):
 
 class AppContext:
     def __init__(self):
-        self.config = None
         self.db = None
         self.formatter_class = None
+
+        self.init_config()
+
+    def init_config(self):
+        try:
+            self.config = load_config()
+        except ConfigurationException as e:
+            raise click.ClickException(e.args[0])
 
     @cached_property
     def ui_formatter(self):
@@ -193,7 +195,56 @@ _interactive_option = click.option(
     help='Go into interactive mode before saving the task.')
 
 
-@click.group(invoke_without_command=True)
+class ConfigurableDefaultGroup(DefaultGroup):
+
+    def get_command(self, ctx, cmd_name):
+        if cmd_name not in self.commands:
+            ctx = ctx.ensure_object(AppContext)
+            cmd_name = ctx.config['main']['default_command']
+        return super(DefaultGroup, self).get_command(ctx, cmd_name)
+
+
+class Cli(ConfigurableDefaultGroup):
+
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw, default='default', default_if_no_args=True)
+
+    def callback(click_ctx, color, porcelain, humanize):
+        ctx = click_ctx.ensure_object(AppContext)
+
+        if porcelain and humanize:
+            raise click.ClickException('--porcelain and --humanize cannot be used'
+                                       ' at the same time.')
+
+        if humanize is None:  # False means explicitly disabled
+            humanize = ctx.config['main']['humanize']
+
+        if humanize:
+            ctx.formatter_class = formatters.HumanizedFormatter
+        elif porcelain:
+            ctx.formatter_class = formatters.PorcelainFormatter
+        else:
+            ctx.formatter_class = formatters.DefaultFormatter
+
+        color = color or ctx.config['main']['color']
+        if color == 'always':
+            click_ctx.color = True
+        elif color == 'never':
+            click_ctx.color = False
+
+        paths = [
+            path for path in glob.iglob(expanduser(ctx.config["main"]["path"]))
+            if isdir(path)
+        ]
+        if len(paths) == 0:
+            raise exceptions.NoListsFound(ctx.config["main"]["path"])
+
+        ctx.db = Database(paths, ctx.config['main']['cache_path'])
+
+        # Make python actually use LC_TIME, or the user's locale settings
+        locale.setlocale(locale.LC_TIME, "")
+
+
 @click_log.init('todoman')
 @click_log.simple_verbosity_option()
 @click.option('--colour', '--color', default=None,
@@ -209,50 +260,10 @@ _interactive_option = click.option(
 @click.pass_context
 @click.version_option(prog_name='todoman')
 @catch_errors
-def cli(click_ctx, color, porcelain, humanize):
-    ctx = click_ctx.ensure_object(AppContext)
-    try:
-        ctx.config = load_config()
-    except ConfigurationException as e:
-        raise click.ClickException(e.args[0])
+def get_cli():
+    return Cli()
 
-    if porcelain and humanize:
-        raise click.ClickException('--porcelain and --humanize cannot be used'
-                                   ' at the same time.')
-
-    if humanize is None:  # False means explicitly disabled
-        humanize = ctx.config['main']['humanize']
-
-    if humanize:
-        ctx.formatter_class = formatters.HumanizedFormatter
-    elif porcelain:
-        ctx.formatter_class = formatters.PorcelainFormatter
-    else:
-        ctx.formatter_class = formatters.DefaultFormatter
-
-    color = color or ctx.config['main']['color']
-    if color == 'always':
-        click_ctx.color = True
-    elif color == 'never':
-        click_ctx.color = False
-
-    paths = [
-        path for path in glob.iglob(expanduser(ctx.config["main"]["path"]))
-        if isdir(path)
-    ]
-    if len(paths) == 0:
-        raise exceptions.NoListsFound(ctx.config["main"]["path"])
-
-    ctx.db = Database(paths, ctx.config['main']['cache_path'])
-
-    # Make python actually use LC_TIME, or the user's locale settings
-    locale.setlocale(locale.LC_TIME, "")
-
-    if not click_ctx.invoked_subcommand:
-        invoke_command(
-            click_ctx,
-            ctx.config['main']['default_command'],
-        )
+cli = get_cli()
 
 
 def invoke_command(click_ctx, command):
@@ -485,7 +496,7 @@ def move(ctx, list, ids):
               callback=_validate_startable_param, help='Show only todos which '
               'should can be started today (i.e.: start time is not in the '
               'future).')
-@click.option('--status', '-s', default=['NEEDS-ACTION', 'IN-PROCESS'],
+@click.option('--status', '-s', default='NEEDS-ACTION,IN-PROCESS',
               callback=validate_status, help='Show only todos with the '
               'provided comma-separated statuses. Valid statuses are '
               '"NEEDS-ACTION", "CANCELLED", "COMPLETED", "IN-PROCESS" or "ANY"'
