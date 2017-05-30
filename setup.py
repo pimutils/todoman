@@ -25,7 +25,7 @@ setup(
     setup_requires=['setuptools_scm', 'pytest-runner'],
     tests_require=open('requirements-dev.txt').readlines(),
     extras_require={
-        'docs': ['sphinx_autorun'],
+        'docs': open('requirements-docs.txt').readlines(),
     },
     classifiers=[
         'Development Status :: 4 - Beta',
