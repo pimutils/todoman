@@ -626,9 +626,9 @@ class Cache:
 
         return rv
 
-    def todos(self, lists=[], priority=None, location='', category='', grep='',
-              sort=[], reverse=True, due=None, start=None, startable=False,
-              status=['NEEDS-ACTION', 'IN-PROCESS']):
+    def todos(self, lists=(), priority=None, location='', category='', grep='',
+              sort=(), reverse=True, due=None, start=None, startable=False,
+              status=('NEEDS-ACTION', 'IN-PROCESS',)):
         """
         Returns filtered cached todos, in a specified order.
 
