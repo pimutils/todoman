@@ -214,13 +214,16 @@ def test_complete_recurring(default_database, due, todo_factory, tz, until):
     # We'll lose the milis when casting, so:
     now = datetime.now(tz).replace(microsecond=0)
 
+    if tz and not until.endswith('Z'):
+        pytest.skip('This combination is invalid, as per the spec')
+
     original_start = now
     if due:
         original_due = now + timedelta(hours=12)
     else:
         due = original_due = None
 
-    rrule = 'FREQ=DAILY;UNTIL=20990315T020000Z'
+    rrule = 'FREQ=DAILY;UNTIL={}'.format(until)
     todo = todo_factory(rrule=rrule, due=original_due, start=original_start)
 
     todo.complete()
