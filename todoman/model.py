@@ -22,16 +22,6 @@ logger = logging.getLogger(name=__name__)
 LOCAL_TIMEZONE = tzlocal()
 
 
-class UnsafeOperationException(Exception):
-    """
-    Raised when attempting to perform an unsafe operation.
-
-    Typical examples of unsafe operations are attempting to save a
-    partially-loaded todo.
-    """
-    pass
-
-
 class AlreadyExists(Exception):
     """
     Raise when two objects have a same identity.
