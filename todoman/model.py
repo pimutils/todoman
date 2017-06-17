@@ -2,7 +2,7 @@ import logging
 import os
 import socket
 import sqlite3
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, timedelta
 from os.path import normpath, split
 from uuid import uuid4
 
