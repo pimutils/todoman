@@ -5,6 +5,7 @@ import pytz
 from freezegun import freeze_time
 
 from todoman.cli import cli
+from todoman.formatters import rgb_to_ansi
 
 
 @pytest.mark.parametrize('interval', [
@@ -132,3 +133,11 @@ def test_formatting_parsing_consitency(default_formatter):
 
     formatted = default_formatter.format_datetime(dt)
     assert default_formatter.parse_datetime(formatted) == dt
+
+
+def test_rgb_to_ansi():
+    assert rgb_to_ansi(None) is None
+    assert rgb_to_ansi('#8ab6d') is None
+    assert rgb_to_ansi('#8ab6d2f') is None
+    assert rgb_to_ansi('red') is None
+    assert rgb_to_ansi('#8ab6d2') == '\x1b[38;2;138;182;210m'
