@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 import icalendar
 import pytest
@@ -79,3 +79,25 @@ def test_sequence_increment(default_database, todo_factory, todos):
     # Relaod (and check the caching flow for the sequence)
     todo = next(todos())
     assert todo.sequence == 2
+
+
+def test_normalize_datetime():
+    writter = VtodoWritter(None)
+    assert (
+        writter.normalize_datetime(date(2017, 6, 17)) ==
+        datetime(2017, 6, 17, tzinfo=tzlocal())
+    )
+    assert (
+        writter.normalize_datetime(datetime(2017, 6, 17)) ==
+        datetime(2017, 6, 17, tzinfo=tzlocal())
+    )
+    assert (
+        writter.normalize_datetime(datetime(2017, 6, 17, 12, 19)) ==
+        datetime(2017, 6, 17, 12, 19, tzinfo=tzlocal())
+    )
+    assert (
+        writter.normalize_datetime(
+            datetime(2017, 6, 17, 12, tzinfo=tzlocal())
+        ) ==
+        datetime(2017, 6, 17, 12, tzinfo=tzlocal())
+    )
