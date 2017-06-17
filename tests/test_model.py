@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 import pytest
 import pytz
@@ -401,3 +402,21 @@ def test_duplicate_list(tmpdir):
             [tmpdir.join('personal1'), tmpdir.join('personal2')],
             tmpdir.join('cache.sqlite3'),
         )
+
+
+def test_unreadable_ics(todo_factory, todos, tmpdir):
+    """
+    Test that we properly handle an unreadable ICS file
+
+    In this case, it's a directory, which will
+    fail even if you run the tests as root (you shouldn't!!), but the same
+    codepath is followed for readonly files, etc.
+    """
+    tmpdir.join('default').join('fake.ics').mkdir()
+    todo_factory()
+
+    with patch('logging.Logger.exception') as mocked_exception:
+        todos = list(todos())
+
+    assert len(todos) == 1
+    assert mocked_exception.call_count == 1
