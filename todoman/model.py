@@ -831,8 +831,8 @@ class List:
 
     def __init__(self, name, path, colour=None):
         self.path = path
-        self.name = name or List.name_for_path(path)
-        self.colour = colour or List.colour_for_path(self.path)
+        self.name = name
+        self.colour = colour
 
     @staticmethod
     def colour_for_path(path):
@@ -849,25 +849,6 @@ class List:
                 return f.read().strip()
         except (OSError, IOError):
             return split(normpath(path))[1]
-
-    @cached_property
-    def color_rgb(self):
-        color = self.colour
-        if not color or not color.startswith('#'):
-            return
-
-        r = color[1:3]
-        g = color[3:5]
-        b = color[5:8]
-
-        if len(r) == len(g) == len(b) == 2:
-            return int(r, 16), int(g, 16), int(b, 16)
-
-    @cached_property
-    def color_ansi(self):
-        rv = self.color_rgb
-        if rv:
-            return '\33[38;2;{!s};{!s};{!s}m'.format(*rv)
 
     def __eq__(self, other):
         if isinstance(other, List):

@@ -92,8 +92,6 @@ def test_list_colour(tmpdir):
     list_ = next(db.lists())
 
     assert list_.colour == '#8ab6d2'
-    assert list_.color_rgb == (138, 182, 210)
-    assert list_.color_ansi == '\x1b[38;2;138;182;210m'
 
 
 def test_list_no_colour(tmpdir):
@@ -103,8 +101,6 @@ def test_list_no_colour(tmpdir):
     list_ = next(db.lists())
 
     assert list_.colour is None
-    assert list_.color_rgb is None
-    assert list_.color_ansi is None
 
 
 def test_database_priority_sorting(create, todos):

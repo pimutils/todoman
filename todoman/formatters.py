@@ -10,6 +10,23 @@ from dateutil.tz import tzlocal
 from tabulate import tabulate
 
 
+def rgb_to_ansi(colour):
+    """
+    Convert a string containing an RGB colour to ANSI escapes
+    """
+    if not colour or not colour.startswith('#'):
+        return
+
+    r, g, b = colour[1:3], colour[3:5], colour[5:8]
+
+    if not len(r) == len(g) == len(b) == 2:
+        return
+
+    return '\33[38;2;{!s};{!s};{!s}m'.format(
+        int(r, 16), int(g, 16), int(b, 16)
+    )
+
+
 class DefaultFormatter:
 
     def __init__(self, date_format='%Y-%m-%d', time_format='%H:%M',
@@ -166,8 +183,10 @@ class DefaultFormatter:
         return datetime.datetime.fromtimestamp(mktime(rv))
 
     def format_database(self, database):
-        return '{}@{}'.format(database.color_ansi or '',
-                              click.style(database.name))
+        return '{}@{}'.format(
+            rgb_to_ansi(database.colour) or '',
+            click.style(database.name)
+        )
 
 
 class HumanizedFormatter(DefaultFormatter):
