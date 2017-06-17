@@ -53,6 +53,19 @@ def test_retain_tz(tmpdir, create, todos):
     )
 
 
+def test_due_date(tmpdir, create, todos):
+    create(
+        'ar.ics',
+        'SUMMARY:blah.ar\n'
+        'DUE;VALUE=DATE:20170617\n'
+    )
+
+    todos = list(todos())
+
+    assert len(todos) == 1
+    assert todos[0].due == datetime(2017, 6, 17, tzinfo=tzlocal())
+
+
 def test_change_paths(tmpdir, create):
     old_todos = set('abcdefghijk')
     for x in old_todos:
