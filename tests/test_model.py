@@ -6,6 +6,7 @@ from dateutil.tz import tzlocal
 from dateutil.tz.tz import tzoffset
 from freezegun import freeze_time
 
+from todoman.exceptions import AlreadyExists
 from todoman.model import Database, List, Todo
 
 
@@ -371,3 +372,19 @@ def test_nullify_field(default_database, todo_factory, todos):
 
     todo = next(todos(status='ANY'))
     assert todo.due is None
+
+
+def test_duplicate_list(tmpdir):
+    tmpdir.join('personal1').mkdir()
+    with tmpdir.join('personal1').join('displayname').open('w') as f:
+        f.write('personal')
+
+    tmpdir.join('personal2').mkdir()
+    with tmpdir.join('personal2').join('displayname').open('w') as f:
+        f.write('personal')
+
+    with pytest.raises(AlreadyExists):
+        Database(
+            [tmpdir.join('personal1'), tmpdir.join('personal2')],
+            tmpdir.join('cache.sqlite3'),
+        )

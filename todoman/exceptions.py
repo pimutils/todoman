@@ -32,3 +32,17 @@ class NoListsFound(TodomanException):
             'No lists found matching {}, create a directory for a new list.'
             .format(self.args[0])
         )
+
+
+class AlreadyExists(TodomanException):
+    """
+    Raised when two objects have a same identity.
+
+    This can ocurrs when two lists have the same name, or when two Todos have
+    the same path.
+    """
+
+    EXIT_CODE = 23
+
+    def __str__(self):
+        return 'More than one {} has the same identity: {}.'.format(*self.args)

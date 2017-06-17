@@ -895,3 +895,19 @@ def test_porcelain_precedence(runner, tmpdir):
         runner.invoke(cli, ['--porcelain', 'list'])
 
     assert mocked_formatter.call_count is 1
+
+
+def test_duplicate_list(tmpdir, runner):
+    tmpdir.join('personal1').mkdir()
+    with tmpdir.join('personal1').join('displayname').open('w') as f:
+        f.write('personal')
+
+    tmpdir.join('personal2').mkdir()
+    with tmpdir.join('personal2').join('displayname').open('w') as f:
+        f.write('personal')
+
+    result = runner.invoke(cli, ['list'])
+    assert result.exception
+    assert result.exit_code == exceptions.AlreadyExists.EXIT_CODE
+    assert result.output.strip() == \
+        'More than one list has the same identity: personal.'

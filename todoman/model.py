@@ -22,16 +22,6 @@ logger = logging.getLogger(name=__name__)
 LOCAL_TIMEZONE = tzlocal()
 
 
-class AlreadyExists(Exception):
-    """
-    Raise when two objects have a same identity.
-
-    This can ocurrs when two lists have the same name, or when two Todos have
-    the same path.
-    """
-    pass
-
-
 class cached_property:  # noqa
     '''A read-only @property that is only evaluated once. Only usable on class
     instances' methods.
@@ -503,7 +493,7 @@ class Cache:
                 (name, path, colour,),
             )
         except sqlite3.IntegrityError as e:
-            raise AlreadyExists(name) from e
+            raise exceptions.AlreadyExists('list', name) from e
 
         return self.add_list(name, path, colour)
 
@@ -521,7 +511,7 @@ class Cache:
                 mtime,
             ))
         except sqlite3.IntegrityError as e:
-            raise AlreadyExists(list_name) from e
+            raise exceptions.AlreadyExists('file', list_name) from e
 
     def _serialize_datetime(self, todo, field):
         dt = todo.decoded(field, None)
@@ -900,7 +890,7 @@ class Database:
 
             try:
                 self.cache.add_file(list_name, entry_path, mtime)
-            except AlreadyExists:
+            except exceptions.AlreadyExists:
                 logger.debug('File already in cache: %s', entry_path)
                 continue
 
