@@ -143,12 +143,8 @@ class TodoEditor:
         )
         try:
             self._loop.run()
-        except Exception:
-            try:  # Try to leave terminal in usable state
-                self._loop.stop()
-            except Exception:
-                pass
-            raise
+        except KeyboardInterrupt:
+            self._loop.stop()  # Try to leave terminal in usable state
         self._loop = None
 
     def _save(self, btn=None):
