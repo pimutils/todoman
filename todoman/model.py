@@ -831,8 +831,8 @@ class List:
 
     def __init__(self, name, path, colour=None):
         self.path = path
-        self.name = name or List.name_for_path(path)
-        self.colour = colour or List.colour_for_path(self.path)
+        self.name = name
+        self.colour = colour
 
     @staticmethod
     def colour_for_path(path):
