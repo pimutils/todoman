@@ -520,9 +520,6 @@ class Cache:
 
         if isinstance(dt, date) and not isinstance(dt, datetime):
             dt = datetime(dt.year, dt.month, dt.day)
-        # XXX: Can we actually read times from files?
-        elif isinstance(dt, time):
-            dt = datetime.combine(date.today(), dt)
 
         if not dt.tzinfo:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
