@@ -428,36 +428,19 @@ def test_color_flag(runner, todo_factory):
     )
 
 
-def test_flush(tmpdir, runner, create):
-    create(
-        'test.ics',
-        'SUMMARY:aaa\n'
-        'STATUS:COMPLETED\n'
-    )
+def test_flush(tmpdir, runner, create, todo_factory, todos):
+    todo_factory(summary='aaa', status='COMPLETED')
+    todo_factory(summary='bbb')
 
-    result = runner.invoke(cli, ['list'])
-    assert not result.exception
-
-    create(
-        'test2.ics',
-        'SUMMARY:bbb\n'
-    )
-
-    result = runner.invoke(cli, ['list'])
-    assert not result.exception
-    assert '2  [ ]      bbb @default' in result.output
+    all_todos = list(todos(status='ANY'))
+    assert len(all_todos) == 2
 
     result = runner.invoke(cli, ['flush'], input='y\n', catch_exceptions=False)
     assert not result.exception
 
-    create(
-        'test2.ics',
-        'SUMMARY:bbb\n'
-    )
-
-    result = runner.invoke(cli, ['list'])
-    assert not result.exception
-    assert '1  [ ]      bbb @default' in result.output
+    all_todos = list(todos(status='ANY'))
+    assert len(all_todos) == 1
+    assert all_todos[0].summary == 'bbb'
 
 
 def test_edit(runner, default_database, todos):
