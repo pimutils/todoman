@@ -603,7 +603,8 @@ class Cache:
 
         return rv
 
-    def todos(self, lists=(), priority=None, location='', category='', grep='',
+    def todos(self, lists=(), priority=None, location='',
+              description='', category='', grep='',
               sort=(), reverse=True, due=None, start=None, startable=False,
               status=('NEEDS-ACTION', 'IN-PROCESS',)):
         """
@@ -652,6 +653,9 @@ class Cache:
         if priority:
             extra_where.append('AND PRIORITY > 0 AND PRIORITY <= ?')
             params.append('{}'.format(priority))
+        if description:
+            extra_where.append('AND description LIKE ?')
+            params.append('%{}%'.format(description))
         if location:
             extra_where.append('AND location LIKE ?')
             params.append('%{}%'.format(location))
