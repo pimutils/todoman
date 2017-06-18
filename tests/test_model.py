@@ -1,6 +1,7 @@
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -8,7 +9,6 @@ import pytz
 from dateutil.tz import tzlocal
 from dateutil.tz.tz import tzoffset
 from freezegun import freeze_time
-
 from todoman.exceptions import AlreadyExists
 from todoman.model import Database
 from todoman.model import Todo
@@ -65,7 +65,7 @@ def test_change_paths(tmpdir, create):
 
     assert {t.summary for t in db.todos()} == old_todos
 
-    db.paths = [str(tmpdir.join("3"))]
+    db.paths = [Path(tmpdir.join("3"))]
     db.update_cache()
 
     assert len(list(db.lists())) == 1

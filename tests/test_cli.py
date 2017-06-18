@@ -1,6 +1,8 @@
 import datetime
 import sys
 from os.path import exists
+from os.path import isdir
+from pathlib import Path
 from unittest import mock
 from unittest.mock import call
 from unittest.mock import patch
@@ -11,13 +13,13 @@ import pytest
 from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
-
-from tests.helpers import fs_case_sensitive
-from tests.helpers import pyicu_sensitive
 from todoman.cli import cli
 from todoman.cli import exceptions
 from todoman.model import Database
 from todoman.model import Todo
+
+from tests.helpers import fs_case_sensitive
+from tests.helpers import pyicu_sensitive
 
 # TODO: test --grep
 
@@ -468,8 +470,8 @@ def test_edit_move(runner, todo_factory, default_database, tmpdir, todos):
     tmpdir.mkdir("another_list")
 
     default_database.paths = [
-        str(tmpdir.join("default")),
-        str(tmpdir.join("another_list")),
+        Path(tmpdir.join("default")),
+        Path(tmpdir.join("another_list")),
     ]
     default_database.update_cache()
 

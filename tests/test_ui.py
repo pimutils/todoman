@@ -1,12 +1,12 @@
 from datetime import datetime
+from pathlib import Path
 from unittest import mock
 
 import pytest
 import pytz
 from freezegun import freeze_time
-from urwid import ExitMainLoop
-
 from todoman.interactive import TodoEditor
+from urwid import ExitMainLoop
 
 
 def test_todo_editor_priority(default_database, todo_factory, default_formatter):
@@ -27,8 +27,8 @@ def test_todo_editor_list(default_database, todo_factory, default_formatter, tmp
     tmpdir.mkdir("another_list")
 
     default_database.paths = [
-        str(tmpdir.join("default")),
-        str(tmpdir.join("another_list")),
+        Path(tmpdir.join("default")),
+        Path(tmpdir.join("another_list")),
     ]
     default_database.update_cache()
 
