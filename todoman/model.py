@@ -29,7 +29,17 @@ logger = logging.getLogger(name=__name__)
 LOCAL_TIMEZONE = tzlocal()
 
 
-class cached_property:
+def register_adapters_and_converters():
+    sqlite3.register_converter(
+        'timestamp',
+        lambda d: datetime.fromtimestamp(float(d), LOCAL_TIMEZONE)
+    )
+
+
+register_adapters_and_converters()
+
+
+class cached_property:  # noqa
     """A read-only @property that is only evaluated once. Only usable on class
     instances' methods.
     """
@@ -426,7 +436,10 @@ class Cache:
         self.cache_path = str(path)
         os.makedirs(os.path.dirname(self.cache_path), exist_ok=True)
 
-        self._conn = sqlite3.connect(self.cache_path)
+        self._conn = sqlite3.connect(
+            str(self.cache_path),
+            detect_types=sqlite3.PARSE_DECLTYPES,
+        )
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA foreign_keys = ON")
 
@@ -498,15 +511,15 @@ class Cache:
                 "id" INTEGER PRIMARY KEY,
                 "uid" TEXT,
                 "summary" TEXT,
-                "due" INTEGER,
+                "due" TIMESTAMP,
                 "due_dt" INTEGER,
-                "start" INTEGER,
+                "start" TIMESTAMP,
                 "start_dt" INTEGER,
                 "priority" INTEGER,
-                "created_at" INTEGER,
-                "completed_at" INTEGER,
+                "created_at" timestamp,
+                "completed_at" timestamp,
                 "percent_complete" INTEGER,
-                "dtstamp" INTEGER,
+                "dtstamp" timestamp,
                 "status" TEXT,
                 "description" TEXT,
                 "location" TEXT,
@@ -841,41 +854,26 @@ class Cache:
             seen_paths.add(path)
             yield todo
 
-    def _datetime_from_db(self, dt) -> datetime | None:
-        if dt:
-            return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
-        return None
-
-    def _date_from_db(self, dt, is_date=False) -> date | None:
-        """Deserialise a date (possible datetime)."""
-        if not dt:
-            return dt
-
-        if is_date:
-            return datetime.fromtimestamp(dt, LOCAL_TIMEZONE).date()
-        else:
-            return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
-
     def _todo_from_db(self, row: dict) -> Todo:
         todo = Todo()
-        todo.id = row["id"]
-        todo.uid = row["uid"]
-        todo.summary = row["summary"]
-        todo.due = self._date_from_db(row["due"], row["due_dt"])
-        todo.start = self._date_from_db(row["start"], row["start_dt"])
-        todo.priority = row["priority"]
-        todo.created_at = self._datetime_from_db(row["created_at"])
-        todo.completed_at = self._datetime_from_db(row["completed_at"])
-        todo.dtstamp = self._datetime_from_db(row["dtstamp"])
-        todo.percent_complete = row["percent_complete"]
-        todo.status = row["status"]
-        todo.description = row["description"]
-        todo.location = row["location"]
-        todo.sequence = row["sequence"]
-        todo.last_modified = row["last_modified"]
-        todo.list = self.lists_map[row["list_name"]]
-        todo.filename = os.path.basename(row["path"])
-        todo.rrule = row["rrule"]
+        todo.id = row['id']
+        todo.uid = row['uid']
+        todo.summary = row['summary']
+        todo.due = row['due']
+        todo.start = row['start']
+        todo.priority = row['priority']
+        todo.created_at = row['created_at']
+        todo.completed_at = row['completed_at']
+        todo.dtstamp = row['dtstamp']
+        todo.percent_complete = row['percent_complete']
+        todo.status = row['status']
+        todo.description = row['description']
+        todo.location = row['location']
+        todo.sequence = row['sequence']
+        todo.last_modified = row['last_modified']
+        todo.list = self.lists_map[row['list_name']]
+        todo.filename = os.path.basename(row['path'])
+        todo.rrule = row['rrule']
         return todo
 
     def lists(self) -> Iterable[TodoList]:
