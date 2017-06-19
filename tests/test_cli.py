@@ -933,9 +933,9 @@ def test_description(runner):
 
 
 def test_edit_description(runner, todos, todo_factory):
-    todo_factory(summary='harhar\n', description='Parnidi')
+    todo_factory(summary='harhar', description='Parnidi')
 
-    result = runner.invoke(cli, ['edit', '1', '--description', 'Parnidi'])
+    result = runner.invoke(cli, ['edit', '1', '--description', 'Kimple'])
 
     assert not result.exception
-    assert 'Parnidi' in result.output
+    assert 'Kimple' in result.output

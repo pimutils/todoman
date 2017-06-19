@@ -653,9 +653,6 @@ class Cache:
         if priority:
             extra_where.append('AND PRIORITY > 0 AND PRIORITY <= ?')
             params.append('{}'.format(priority))
-        if description:
-            extra_where.append('AND description LIKE ?')
-            params.append('%{}%'.format(description))
         if location:
             extra_where.append('AND location LIKE ?')
             params.append('%{}%'.format(location))
