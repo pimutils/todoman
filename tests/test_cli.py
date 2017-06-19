@@ -930,3 +930,12 @@ def test_description(runner):
     ])
 
     assert 'Takshila' in result.output
+
+
+def test_edit_description(runner, todos, todo_factory):
+    todo_factory(summary='harhar\n', description='Parnidi')
+
+    result = runner.invoke(cli, ['edit', '1', '--description', 'Parnidi'])
+
+    assert not result.exception
+    assert 'Parnidi' in result.output
