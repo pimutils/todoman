@@ -911,3 +911,22 @@ def test_duplicate_list(tmpdir, runner):
     assert result.exit_code == exceptions.AlreadyExists.EXIT_CODE
     assert result.output.strip() == \
         'More than one list has the same identity: personal.'
+
+
+def test_show_description(tmpdir, runner, create):
+    create(
+        'test.ics',
+        'SUMMARY:harhar\n'
+        'DESCRIPTION:Parnidi\n'
+    )
+
+    result = runner.invoke(cli, ['show', '1'])
+    assert 'Parnidi' in result.output
+
+
+def test_description(runner):
+    result = runner.invoke(cli, [
+        'new', '-l', 'default', '--description', 'Takshila', 'Event Test'
+    ])
+
+    assert 'Takshila' in result.output
