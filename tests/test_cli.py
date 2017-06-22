@@ -21,7 +21,6 @@ def test_list(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
     assert not result.output.strip()
-
     create(
         'test.ics',
         'SUMMARY:harhar\n'
@@ -939,3 +938,14 @@ def test_edit_description(runner, todos, todo_factory):
 
     assert not result.exception
     assert 'Kimple' in result.output
+
+
+def test_filter_description(runner, create):
+    create(
+        'test.ics',
+        'SUMMARY:harhar\n'
+        'DESCRIPTION:Shubik'
+    )
+    result = runner.invoke(cli, ['list'])
+
+    assert 'Shubik' in result.output

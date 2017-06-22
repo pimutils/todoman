@@ -618,6 +618,8 @@ class Cache:
             -created_at
 
         :param list lists: Only return todos for these lists.
+        :param str description: Only return todos with a description
+            containing this string.
         :param str location: Only return todos with a location containing this
             string.
         :param str category: Only return todos with a category containing this
@@ -653,6 +655,9 @@ class Cache:
         if priority:
             extra_where.append('AND PRIORITY > 0 AND PRIORITY <= ?')
             params.append('{}'.format(priority))
+        if description:
+            extra_where.append('AND description LIKE ?')
+            params.append('%{}%'.format(description))
         if location:
             extra_where.append('AND location LIKE ?')
             params.append('%{}%'.format(location))
