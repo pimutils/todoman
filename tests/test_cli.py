@@ -940,7 +940,8 @@ def test_edit_description(runner, todos, todo_factory):
     assert 'Kimple' in result.output
 
 
-def test_filter_description(runner, create):
+def test_filter_description(runner, create, todos, todo_factory):
+    todo_factory(summary='harhar', description='Takshila')
     create(
         'test.ics',
         'SUMMARY:harhar\n'
