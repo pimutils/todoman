@@ -944,7 +944,7 @@ def test_filter_description(runner, create, todos, todo_factory):
     todo_factory(summary='harhar', description='Takshila')
     create(
         'test.ics',
-        'SUMMARY:harhar\n'
+        'SUMMARY:manika\n'
         'DESCRIPTION:Shubik'
     )
     result = runner.invoke(cli, ['list'])
