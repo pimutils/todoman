@@ -1,0 +1,35 @@
+From: =?utf-8?q?F=C3=A9lix_Sipma?= <felix+debian@gueux.org>
+Date: Tue, 25 Jul 2017 18:27:01 +0200
+Subject: fix spelling issues
+
+---
+ CHANGELOG.rst         | 2 +-
+ docs/source/usage.rst | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/CHANGELOG.rst b/CHANGELOG.rst
+index 0d5d4b9..60da3cd 100644
+--- a/CHANGELOG.rst
++++ b/CHANGELOG.rst
+@@ -8,7 +8,7 @@ v3.2.0
+ ------
+ 
+ * Completing recurring todos now works as expected and does not make if
+-  dissapear forever.
++  disappear forever.
+ 
+ v3.1.0
+ ------
+diff --git a/docs/source/usage.rst b/docs/source/usage.rst
+index 78505d5..114baf7 100644
+--- a/docs/source/usage.rst
++++ b/docs/source/usage.rst
+@@ -55,7 +55,7 @@ Interactive shell
+ -----------------
+ 
+ If you install `click-repl <https://github.com/untitaker/click-repl>`_, todoman
+-gets a new command called ``repl``, which lauches an interactive shell with
++gets a new command called ``repl``, which launches an interactive shell with
+ tab-completion.
+ 
+ Integrations
