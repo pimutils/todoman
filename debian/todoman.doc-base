@@ -1,0 +1,12 @@
+Document: todoman
+Title: Todoman Manual
+Abstract: The documentation for Todoman, a simple CalDAV-based todo manager
+Section: Data Management
+
+Format: Text
+Index: /usr/share/doc/todoman/text/index.txt
+Files: /usr/share/doc/todoman/text/*
+
+Format: HTML
+Index: /usr/share/doc/todoman/html/index.html
+Files: /usr/share/doc/todoman/html/*
