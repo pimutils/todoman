@@ -1,6 +1,13 @@
 todoman (3.2.0-1) UNRELEASED; urgency=medium
 
   * Initial release. (Closes: #855887)
-  * New upstream version 3.2.0
+  * set TZ, LANG & LC_ALL in tests
+  * manually copy todoman/confspec.ini before build (needed for tests)
+  * manually remove files needed for tests
+  * install manpage for todo binary instead of todoman
+  * fix-spelling-issues patch
+  * remove duplicate license file from doc
+  * avoid lintian complaining about license.rst file
+  * avoid embedding jquery.js & underscore.js from sphinx
 
- -- Félix Sipma <felix+debian@gueux.org>  Wed, 17 May 2017 14:42:09 +0200
+ -- Félix Sipma <felix+debian@gueux.org>  Wed, 26 Jul 2017 12:03:50 +0200
