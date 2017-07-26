@@ -1,0 +1,3 @@
+# ignore warning against license.rst in docs (license.rst does not contain
+# license text)
+extra-license-file
