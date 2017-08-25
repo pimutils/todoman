@@ -8,7 +8,7 @@ v3.2.0
 ------
 
 * Completing recurring todos now works as expected and does not make if
-  dissapear forever.
+  disappear forever.
 
 v3.1.0
 ------
