@@ -589,7 +589,7 @@ def test_due_bad_date(runner):
 
 
 def test_multiple_todos_in_file(runner, create):
-    create(
+    path = create(
         'test.ics',
         'SUMMARY:a\n'
         'END:VTODO\n'
@@ -598,10 +598,15 @@ def test_multiple_todos_in_file(runner, create):
     )
 
     for _ in range(2):
-        result = runner.invoke(cli, ['list'])
-        assert ' a ' in result.output
-        assert ' b ' in result.output
-        assert 'warning: Todo is in read-only mode' in result.output
+        with patch('todoman.model.logger', spec=True) as mocked_logger:
+            result = runner.invoke(cli, ['list'])
+            assert ' a ' in result.output
+            assert ' b ' in result.output
+        assert mocked_logger.warning.call_count == 1
+        assert mocked_logger.warning.call_args == mock.call(
+            'Todo is in read-only mode because there are multiple todos in %s',
+            path,
+        )
 
     result = runner.invoke(cli, ['done', '1'])
     assert result.exception
