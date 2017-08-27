@@ -4,6 +4,12 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.2.1
+------
+
+* Fix start-up crash caused by click_log interface change.
+* Dropped runtime dependency: ``click_log``.
+
 v3.2.0
 ------
 
