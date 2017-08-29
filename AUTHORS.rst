@@ -21,5 +21,6 @@ Authors are listed in alphabetical order.
 * Paweł Fertyk <pfertyk@openmailbox.org>
 * Rimsha Khan <rimshakhan.rk03@gmail.com>
 * Sakshi Saraswat <saraswatsakshi.121@gmail.com>
+* Stephan Weller <stephan.weller@web.de>
 * Swati Garg <swati4star@gmail.com>
 * Thomas Glanzmann <thomas@glanzmann.de>
