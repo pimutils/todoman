@@ -1,3 +1,21 @@
+_todo_get_ids()
+{
+	local pattern='^\s*"id": \([0-9]\+\),'
+	todo --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort
+}
+
+_todo_get_lists()
+{
+	local pattern='^\s*"list": "\(.*\)",'
+	todo --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort | uniq
+}
+
+_todo_get_locations()
+{
+	local pattern='^\s*"location": \([0-9]\)\+,'
+	todo --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort | uniq
+}
+
 _todo_single_dash_options()
 {
 	local prev_word=$1
@@ -48,7 +66,7 @@ _todo_double_dash_options()
 			echo " --list"
 			;;
 		new)
-			echo " --list --start --due --location --interactive"
+			echo " --list --start --due --location --priority --interactive"
 			;;
 		show)
 		;;
@@ -79,6 +97,33 @@ _todo_complete()
 			;;
 			--color|--colour)
 				arg_list="always auto never"
+			;;
+			--list)
+				arg_list="$(_todo_get_lists)"
+			;;
+			--location)
+				arg_list="$(_todo_get_locations)"
+			;;
+			--priority)
+				arg_list="none low medium high"
+			;;
+			-s|--start|-d|--due)
+				arg_list=""
+			;;
+			--help)
+				arg_list=""
+			;;
+			cancel|copy|delete|done|edit|move|show)
+				arg_list="$(_todo_get_ids)"
+			;;
+			flush)
+				arg_list=""
+			;;
+			list)
+				arg_list="$(_todo_get_lists)"
+			;;
+			new)
+				arg_list=""
 			;;
 			*)
 				arg_list="cancel copy delete done edit flush list move new show"
