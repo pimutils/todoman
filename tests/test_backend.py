@@ -9,6 +9,14 @@ from freezegun import freeze_time
 from todoman.model import Todo, VtodoWritter
 
 
+def test_datetime_serialization(todo_factory, tmpdir):
+    now = datetime(2017, 8, 31, 23, 49, 53, tzinfo=pytz.UTC)
+    todo = todo_factory(created_at=now)
+    filename = tmpdir.join('default').join(todo.filename)
+    with open(filename) as f:
+        assert 'CREATED;VALUE=DATE-TIME:20170831T234953Z\n' in f.readlines()
+
+
 def test_serialize_created_at(todo_factory):
     now = datetime.now(tz=pytz.UTC)
     todo = todo_factory(created_at=now)

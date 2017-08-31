@@ -7,6 +7,7 @@ from os.path import normpath, split
 from uuid import uuid4
 
 import icalendar
+import pytz
 from atomicwrites import AtomicWriter
 from dateutil.rrule import rrulestr
 from dateutil.tz import tzlocal
@@ -276,6 +277,11 @@ class VtodoWritter:
 
         - Convert everything to datetime
         - Add missing timezones
+        - Cast to UTC
+
+        Datetimes are cast to UTC because icalendar doesn't include the
+        VTIMEZONE information upon serialization, and some clients have issues
+        dealing with that.
         '''
         if isinstance(dt, date) and not isinstance(dt, datetime):
             dt = datetime(dt.year, dt.month, dt.day)
@@ -283,7 +289,7 @@ class VtodoWritter:
         if not dt.tzinfo:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
 
-        return dt
+        return dt.astimezone(pytz.UTC)
 
     def serialize_field(self, name, value):
         if name in Todo.RRULE_FIELDS:
