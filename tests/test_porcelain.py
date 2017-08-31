@@ -14,6 +14,7 @@ def test_list_all(tmpdir, runner, create):
         'STATUS:COMPLETED\n'
         'DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n'
         'PERCENT-COMPLETE:26\n'
+        'LOCATION:Wherever\n'
     )
     result = runner.invoke(cli, ['--porcelain', 'list', '--status', 'ANY'])
 
@@ -22,6 +23,7 @@ def test_list_all(tmpdir, runner, create):
         'due': 1451689200,
         'id': 1,
         'list': 'default',
+        'location': 'Wherever',
         'percent': 26,
         'priority': 0,
         'summary': 'Do stuff',
@@ -46,6 +48,7 @@ def test_list_nodue(tmpdir, runner, create):
         'due': None,
         'id': 1,
         'list': 'default',
+        'location': '',
         'percent': 12,
         'priority': 4,
         'summary': 'Do stuff',
@@ -132,6 +135,7 @@ def test_show(tmpdir, runner, create):
         'due': None,
         'id': 1,
         'list': 'default',
+        'location': '',
         'percent': 0,
         'priority': 5,
         'summary': 'harhar',
@@ -151,6 +155,7 @@ def test_simple_action(todo_factory):
         "due": None,
         "id": 7,
         "list": "default",
+        "location": "Downtown",
         "percent": 0,
         "priority": 0,
         "summary": "YARR!"
