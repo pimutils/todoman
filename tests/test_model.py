@@ -8,7 +8,7 @@ from dateutil.tz.tz import tzoffset
 from freezegun import freeze_time
 
 from todoman.exceptions import AlreadyExists
-from todoman.model import Database, List, Todo
+from todoman.model import cached_property, Database, List, Todo
 
 
 def test_querying(create, tmpdir):
@@ -420,3 +420,47 @@ def test_unreadable_ics(todo_factory, todos, tmpdir):
 
     assert len(todos) == 1
     assert mocked_exception.call_count == 1
+
+
+def test_cached_property_caching():
+    class TestClass:
+        i = 0
+
+        @cached_property
+        def a(self):
+            TestClass.i += 1
+            return TestClass.i
+
+    obj = TestClass()
+    assert obj.a == 1
+    assert obj.a == 1
+    assert obj.a == 1
+
+
+def test_cached_property_overwriting():
+    class TestClass:
+        i = 0
+
+        @cached_property
+        def a(self):
+            TestClass.i += 1
+            return TestClass.i
+
+    obj = TestClass()
+
+    # Overriting will overwrite the cached_property:
+    obj.a = 12
+    assert obj.a == 12
+    assert obj.a == 12
+
+    obj.a += 1
+    assert obj.a == 13
+
+
+def test_cached_property_property():
+    class TestClass:
+        @cached_property
+        def a(self):
+            return 0
+
+    assert TestClass.a.__class__ == cached_property
