@@ -1,7 +1,7 @@
 Licence
 =======
 
-Todoman is licensed under the MIT licence::
+Todoman is licensed under the ISC licence::
 
     Copyright (c) 2015-2016, Hugo Osvaldo Barrera <hugo@barrera.io>
 
