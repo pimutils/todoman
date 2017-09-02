@@ -3,7 +3,7 @@ Licence
 
 Todoman is licensed under the ISC licence::
 
-    Copyright (c) 2015-2016, Hugo Osvaldo Barrera <hugo@barrera.io>
+    Copyright (c) 2015-2017, Hugo Osvaldo Barrera <hugo@barrera.io>
 
     Permission to use, copy, modify, and/or distribute this software for any
     purpose with or without fee is hereby granted, provided that the above
