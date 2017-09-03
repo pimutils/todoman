@@ -12,7 +12,7 @@ _todo_get_lists()
 
 _todo_get_locations()
 {
-	local pattern='^\s*"location": \([0-9]\)\+,'
+	local pattern='^\s*"location": \(.*\)\+,'
 	todo --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort | uniq
 }
 

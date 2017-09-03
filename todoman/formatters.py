@@ -213,6 +213,7 @@ class PorcelainFormatter(DefaultFormatter):
             percent=todo.percent_complete,
             summary=todo.summary,
             priority=todo.priority,
+            location=todo.location,
         )
 
     def compact(self, todo):
