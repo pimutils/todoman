@@ -8,6 +8,7 @@ v3.2.2
 ------
 
 * Initial support for (bash) autocompletion.
+* The location field is not printed as part of ``--porcelain``.
 
 v3.2.1
 ------
