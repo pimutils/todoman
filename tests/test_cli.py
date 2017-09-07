@@ -11,6 +11,7 @@ from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
 
+from tests.helpers import pyicu_sensitive
 from todoman.cli import cli, exceptions
 from todoman.model import Database, Todo
 
@@ -209,6 +210,7 @@ def test_move(tmpdir, runner, create):
     assert 'other_list' in result.output
 
 
+@pyicu_sensitive
 @freeze_time('2017-03-17 20:22:19')
 def test_dtstamp(tmpdir, runner, create):
     """Test that we add the DTSTAMP to new entries as per RFC5545."""
@@ -263,6 +265,7 @@ def test_default_due(
         )
 
 
+@pyicu_sensitive
 @freeze_time(datetime.datetime.now())
 def test_default_due2(tmpdir, runner, create, todos):
     cfg = tmpdir.join('config')
@@ -644,6 +647,7 @@ def test_todo_edit(runner, default_database, todo_factory):
     assert 'YARR!' in result.output
 
 
+@pyicu_sensitive
 @freeze_time('2017, 3, 20')
 def test_list_startable(tmpdir, runner, todo_factory):
     todo_factory(summary='started', start=datetime.datetime(2017, 3, 15))

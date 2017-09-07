@@ -36,6 +36,10 @@ matrix:
       python: 3.6
       after_install:
         - echo click_repl >> requirements.txt
+    - # Run tests with incompatible test dependencies:
+      python: 3.6
+      after_install:
+        - echo pyicu >> requirements.txt
 
 addons:
   apt:
