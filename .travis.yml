@@ -36,6 +36,12 @@ matrix:
       python: 3.6
       after_install:
         - echo click_repl >> requirements.txt
+      env: TOXENV=py EXTRAS=click_repl
+    - # Run tests with incompatible test dependencies:
+      python: 3.6
+      after_install:
+        - echo pyicu >> requirements.txt
+      env: TOXENV=py EXTRAS=pyicu
 
 addons:
   apt:

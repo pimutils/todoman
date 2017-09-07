@@ -4,10 +4,12 @@ import pytest
 import pytz
 from freezegun import freeze_time
 
+from tests.helpers import pyicu_sensitive
 from todoman.cli import cli
 from todoman.formatters import rgb_to_ansi
 
 
+@pyicu_sensitive
 @pytest.mark.parametrize('interval', [
     (65, 'in a minute'),
     (-10800, '3 hours ago'),
