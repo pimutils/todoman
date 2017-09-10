@@ -4,6 +4,12 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.2.3
+------
+
+* Tests should no longer fail with ``pyicu`` installed.
+* Improved documentation regarding how to test locally.
+
 v3.2.2
 ------
 
