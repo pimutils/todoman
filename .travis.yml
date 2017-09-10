@@ -69,6 +69,7 @@ deploy:
     on:
       tags: true
     distributions: "sdist bdist_wheel"
+    server: https://upload.pypi.org/legacy/
   - provider: releases
     api_key:
       secure: g60yeYa+BX7XCe7L4mpV5NiaCPkuJzxk+PP3rL/durPF/CudWW2xUuTCLf30WwfrYBg3bJCQKNnzOpL8+d4Maly3UqquDFjK58Z/JBFw6erzg/RAxAnfJzFbWy2mgqKTpBHaDdRnhVtqp23Ov1I/+Jb51DIhij6ILNgGxW1OP8Y=
