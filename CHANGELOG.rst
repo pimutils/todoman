@@ -4,6 +4,12 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.2.4
+------
+
+* Deploy new versions to PyPI using ``twine``. Travis doesn't seem to be
+  working.
+
 v3.2.3
 ------
 
