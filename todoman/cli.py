@@ -197,7 +197,7 @@ _interactive_option = click.option(
 
 
 @click.group(invoke_without_command=True)
-@click_log.simple_verbosity_option(None)
+@click_log.simple_verbosity_option()
 @click.option('--colour', '--color', default=None,
               type=click.Choice(['always', 'auto', 'never']),
               help=('By default todoman will disable colored output if stdout '
