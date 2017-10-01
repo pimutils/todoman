@@ -1,5 +1,6 @@
 atomicwrites
 click>=6.0
+click_log
 configobj
 humanize
 icalendar

@@ -4,6 +4,11 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.3.0
+------
+
+* New runtime dependency: ``click-log``.
+
 v3.2.4
 ------
 

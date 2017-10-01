@@ -1,18 +1,21 @@
 import functools
 import glob
 import locale
-import logging
 import sys
 from contextlib import contextmanager
 from datetime import timedelta
 from os.path import expanduser, isdir
 
 import click
+import click_log
 
 from todoman import exceptions, formatters
 from todoman.configuration import ConfigurationException, load_config
 from todoman.interactive import TodoEditor
 from todoman.model import cached_property, Database, Todo
+
+
+click_log.basic_config()
 
 
 @contextmanager
@@ -194,13 +197,7 @@ _interactive_option = click.option(
 
 
 @click.group(invoke_without_command=True)
-@click.option(
-    '-v',
-    '--verbosity',
-    type=click.Choice(['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']),
-    help='Set verbosity to the given level.',
-    default='WARNING',
-)
+@click_log.simple_verbosity_option()
 @click.option('--colour', '--color', default=None,
               type=click.Choice(['always', 'auto', 'never']),
               help=('By default todoman will disable colored output if stdout '
@@ -214,8 +211,7 @@ _interactive_option = click.option(
 @click.pass_context
 @click.version_option(prog_name='todoman')
 @catch_errors
-def cli(click_ctx, color, porcelain, humanize, verbosity):
-    logging.basicConfig(level=verbosity)
+def cli(click_ctx, color, porcelain, humanize):
     ctx = click_ctx.ensure_object(AppContext)
     try:
         ctx.config = load_config()
