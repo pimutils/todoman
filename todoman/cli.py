@@ -146,6 +146,7 @@ def _todo_property_options(command):
     click.option(
         '--priority', default='', callback=_validate_priority_param,
         help=('The priority for this todo'))(command)
+    click.option('--description', help=('The description of todo.'))(command)
     click.option('--location', help=('The location where '
                  'this todo takes place.'))(command)
     click.option(
@@ -159,7 +160,8 @@ def _todo_property_options(command):
     @functools.wraps(command)
     def command_wrap(*a, **kw):
         kw['todo_properties'] = {key: kw.pop(key) for key in
-                                 ('due', 'start', 'location', 'priority')}
+                                 ('due', 'start', 'location', 'priority',
+                                  'description')}
         return command(*a, **kw)
 
     return command_wrap
@@ -468,6 +470,8 @@ def move(ctx, list, ids):
 @cli.command()
 @pass_ctx
 @click.argument('lists', nargs=-1, callback=_validate_lists_param)
+@click.option('--description',
+              help='Only show tasks with description containg TEXT')
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')

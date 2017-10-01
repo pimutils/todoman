@@ -22,7 +22,6 @@ def test_list(tmpdir, runner, create):
     result = runner.invoke(cli, ['list'], catch_exceptions=False)
     assert not result.exception
     assert not result.output.strip()
-
     create(
         'test.ics',
         'SUMMARY:harhar\n'
@@ -903,3 +902,43 @@ def test_duplicate_list(tmpdir, runner):
     assert result.exit_code == exceptions.AlreadyExists.EXIT_CODE
     assert result.output.strip() == \
         'More than one list has the same identity: personal.'
+
+
+def test_show_description(tmpdir, runner, create):
+    create(
+        'test.ics',
+        'SUMMARY:harhar\n'
+        'DESCRIPTION:Parnidi\n'
+    )
+
+    result = runner.invoke(cli, ['show', '1'])
+    assert 'Parnidi' in result.output
+
+
+def test_description(runner):
+    result = runner.invoke(cli, [
+        'new', '-l', 'default', '--description', 'Takshila', 'Event Test'
+    ])
+
+    assert 'Takshila' in result.output
+
+
+def test_edit_description(runner, todos, todo_factory):
+    todo_factory(summary='harhar', description='Parnidi')
+
+    result = runner.invoke(cli, ['edit', '1', '--description', 'Kimple'])
+
+    assert not result.exception
+    assert 'Kimple' in result.output
+
+
+def test_filter_description(runner, create, todos, todo_factory):
+    todo_factory(summary='harhar', description='Takshila')
+    create(
+        'test.ics',
+        'SUMMARY:manika\n'
+        'DESCRIPTION:Shubik'
+    )
+    result = runner.invoke(cli, ['list'])
+
+    assert 'Shubik' in result.output
