@@ -32,6 +32,7 @@ def catch_errors(f):
     def wrapper(*a, **kw):
         with handle_error():
             return f(*a, **kw)
+
     return wrapper
 
 
@@ -50,8 +51,7 @@ def _validate_list_param(ctx, param=None, name=None):
             name = ctx.config['main']['default_list']
         else:
             raise click.BadParameter(
-                'You must set "default_list" or use -l.'
-                .format(name)
+                'You must set "default_list" or use -l.'.format(name)
             )
     for l in ctx.db.lists():
         if l.name == name:
@@ -59,8 +59,7 @@ def _validate_list_param(ctx, param=None, name=None):
     else:
         list_names = [l.name for l in ctx.db.lists()]
         raise click.BadParameter(
-            "{}. Available lists are: {}"
-            .format(name, ', '.join(list_names))
+            "{}. Available lists are: {}".format(name, ', '.join(list_names))
         )
 
 
@@ -144,22 +143,39 @@ def validate_status(ctx=None, param=None, val=None):
 
 def _todo_property_options(command):
     click.option(
-        '--priority', default='', callback=_validate_priority_param,
-        help=('The priority for this todo'))(command)
-    click.option('--location', help=('The location where '
-                 'this todo takes place.'))(command)
+        '--priority',
+        default='',
+        callback=_validate_priority_param,
+        help=('The priority for this todo')
+    )(command)
     click.option(
-        '--due', '-d', default='', callback=_validate_date_param,
-        help=('The due date of the task, in the format specified in the '
-              'configuration file.'))(command)
+        '--location', help=('The location where '
+                            'this todo takes place.')
+    )(command)
     click.option(
-        '--start', '-s', default='', callback=_validate_date_param,
-        help='When the task starts.')(command)
+        '--due',
+        '-d',
+        default='',
+        callback=_validate_date_param,
+        help=(
+            'The due date of the task, in the format specified in the '
+            'configuration file.'
+        )
+    )(command)
+    click.option(
+        '--start',
+        '-s',
+        default='',
+        callback=_validate_date_param,
+        help='When the task starts.'
+    )(command)
 
     @functools.wraps(command)
     def command_wrap(*a, **kw):
-        kw['todo_properties'] = {key: kw.pop(key) for key in
-                                 ('due', 'start', 'location', 'priority')}
+        kw['todo_properties'] = {
+            key: kw.pop(key)
+            for key in ('due', 'start', 'location', 'priority')
+        }
         return command(*a, **kw)
 
     return command_wrap
@@ -190,24 +206,42 @@ class AppContext:
 
 pass_ctx = click.make_pass_decorator(AppContext)
 
-
 _interactive_option = click.option(
-    '--interactive', '-i', is_flag=True, default=None,
-    help='Go into interactive mode before saving the task.')
+    '--interactive',
+    '-i',
+    is_flag=True,
+    default=None,
+    help='Go into interactive mode before saving the task.'
+)
 
 
 @click.group(invoke_without_command=True)
 @click_log.simple_verbosity_option()
-@click.option('--colour', '--color', default=None,
-              type=click.Choice(['always', 'auto', 'never']),
-              help=('By default todoman will disable colored output if stdout '
-                    'is not a TTY (value `auto`). Set to `never` to disable '
-                    'colored output entirely, or `always` to enable it '
-                    'regardless.'))
-@click.option('--porcelain', is_flag=True, help='Use a JSON format that will '
-              'remain stable regardless of configuration or version.')
-@click.option('--humanize', '-h', default=None, is_flag=True,
-              help='Format all dates and times in a human friendly way')
+@click.option(
+    '--colour',
+    '--color',
+    default=None,
+    type=click.Choice(['always', 'auto', 'never']),
+    help=(
+        'By default todoman will disable colored output if stdout '
+        'is not a TTY (value `auto`). Set to `never` to disable '
+        'colored output entirely, or `always` to enable it '
+        'regardless.'
+    )
+)
+@click.option(
+    '--porcelain',
+    is_flag=True,
+    help='Use a JSON format that will '
+    'remain stable regardless of configuration or version.'
+)
+@click.option(
+    '--humanize',
+    '-h',
+    default=None,
+    is_flag=True,
+    help='Format all dates and times in a human friendly way'
+)
 @click.pass_context
 @click.version_option(prog_name='todoman')
 @catch_errors
@@ -219,8 +253,10 @@ def cli(click_ctx, color, porcelain, humanize):
         raise click.ClickException(e.args[0])
 
     if porcelain and humanize:
-        raise click.ClickException('--porcelain and --humanize cannot be used'
-                                   ' at the same time.')
+        raise click.ClickException(
+            '--porcelain and --humanize cannot be used'
+            ' at the same time.'
+        )
 
     if humanize is None:  # False means explicitly disabled
         humanize = ctx.config['main']['humanize']
@@ -276,8 +312,12 @@ except ImportError:
 
 @cli.command()
 @click.argument('summary', nargs=-1)
-@click.option('--list', '-l', callback=_validate_list_param,
-              help='The list to create the task in.')
+@click.option(
+    '--list',
+    '-l',
+    callback=_validate_list_param,
+    help='The list to create the task in.'
+)
 @_todo_property_options
 @_interactive_option
 @pass_ctx
@@ -435,8 +475,12 @@ def delete(ctx, ids, yes):
 
 @cli.command()
 @pass_ctx
-@click.option('--list', '-l', callback=_validate_list_param,
-              help='The list to copy the tasks to.')
+@click.option(
+    '--list',
+    '-l',
+    callback=_validate_list_param,
+    help='The list to copy the tasks to.'
+)
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
 @catch_errors
 def copy(ctx, list, ids):
@@ -452,8 +496,12 @@ def copy(ctx, list, ids):
 
 @cli.command()
 @pass_ctx
-@click.option('--list', '-l', callback=_validate_list_param,
-              help='The list to move the tasks to.')
+@click.option(
+    '--list',
+    '-l',
+    callback=_validate_list_param,
+    help='The list to move the tasks to.'
+)
 @click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
 @catch_errors
 def move(ctx, list, ids):
@@ -471,27 +519,57 @@ def move(ctx, list, ids):
 @click.option('--location', help='Only show tasks with location containg TEXT')
 @click.option('--category', help='Only show tasks with category containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
-@click.option('--sort', help='Sort tasks using these fields',
-              callback=_sort_callback)
-@click.option('--reverse/--no-reverse', default=True,
-              help='Sort tasks in reverse order (see --sort). '
-              'Defaults to true.')
-@click.option('--due', default=None, help='Only show tasks due in INTEGER '
-              'hours', type=int)
-@click.option('--priority', default=None, help='Only show tasks with'
-              ' priority at least as high as TEXT (low, medium or high).',
-              type=str, callback=_validate_priority_param)
-@click.option('--start', default=None, callback=_validate_start_date_param,
-              nargs=2, help='Only shows tasks before/after given DATE')
-@click.option('--startable', default=None, is_flag=True,
-              callback=_validate_startable_param, help='Show only todos which '
-              'should can be started today (i.e.: start time is not in the '
-              'future).')
-@click.option('--status', '-s', default=['NEEDS-ACTION', 'IN-PROCESS'],
-              callback=validate_status, help='Show only todos with the '
-              'provided comma-separated statuses. Valid statuses are '
-              '"NEEDS-ACTION", "CANCELLED", "COMPLETED", "IN-PROCESS" or "ANY"'
-              )
+@click.option(
+    '--sort',
+    help='Sort tasks using these fields',
+    callback=_sort_callback,
+)
+@click.option(
+    '--reverse/--no-reverse',
+    default=True,
+    help='Sort tasks in reverse order (see --sort). '
+    'Defaults to true.'
+)
+@click.option(
+    '--due',
+    default=None,
+    help='Only show tasks due in INTEGER '
+    'hours',
+    type=int
+)
+@click.option(
+    '--priority',
+    default=None,
+    help='Only show tasks with'
+    ' priority at least as high as TEXT (low, medium or high).',
+    type=str,
+    callback=_validate_priority_param
+)
+@click.option(
+    '--start',
+    default=None,
+    callback=_validate_start_date_param,
+    nargs=2,
+    help='Only shows tasks before/after given DATE'
+)
+@click.option(
+    '--startable',
+    default=None,
+    is_flag=True,
+    callback=_validate_startable_param,
+    help='Show only todos which '
+    'should can be started today (i.e.: start time is not in the '
+    'future).'
+)
+@click.option(
+    '--status',
+    '-s',
+    default=['NEEDS-ACTION', 'IN-PROCESS'],
+    callback=validate_status,
+    help='Show only todos with the '
+    'provided comma-separated statuses. Valid statuses are '
+    '"NEEDS-ACTION", "CANCELLED", "COMPLETED", "IN-PROCESS" or "ANY"'
+)
 @catch_errors
 def list(ctx, **kwargs):
     """

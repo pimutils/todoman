@@ -10,18 +10,19 @@ from todoman.formatters import rgb_to_ansi
 
 
 @pyicu_sensitive
-@pytest.mark.parametrize('interval', [
-    (65, 'in a minute'),
-    (-10800, '3 hours ago'),
-])
+@pytest.mark.parametrize(
+    'interval', [
+        (65, 'in a minute'),
+        (-10800, '3 hours ago'),
+    ]
+)
 @pytest.mark.parametrize('tz', ['CET', 'HST'])
 @freeze_time('2017-03-25')
 def test_humanized_date(runner, create, interval, now_for_tz, tz):
     seconds, expected = interval
     due = now_for_tz(tz) + timedelta(seconds=seconds)
     create(
-        'test.ics',
-        'SUMMARY:Hi human!\n'
+        'test.ics', 'SUMMARY:Hi human!\n'
         'DUE;VALUE=DATE-TIME;TZID={}:{}\n'
         .format(tz, due.strftime('%Y%m%dT%H%M%S'))
     )

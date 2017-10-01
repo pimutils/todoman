@@ -14,7 +14,7 @@ setup(
     entry_points={
         'console_scripts': [
             'todo = todoman.cli:cli',
-        ]
+        ],
     },
     install_requires=open('requirements.txt').readlines(),
     long_description=open('README.rst').read(),

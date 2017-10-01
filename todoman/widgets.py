@@ -153,9 +153,9 @@ class PrioritySelector(urwid.Button):
     def _update_label(self, delta=0):
         for i, r in enumerate(PrioritySelector.RANGES):
             if self._priority in r:
-                self._priority = PrioritySelector.RANGES[
-                    (i + delta) % len(PrioritySelector.RANGES)
-                ][0]
+                self._priority = PrioritySelector.RANGES[(
+                    i + delta
+                ) % len(PrioritySelector.RANGES)][0]
                 self._set_label()
                 return
 
