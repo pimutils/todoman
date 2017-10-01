@@ -8,6 +8,7 @@ v3.3.0
 ------
 
 * New runtime dependency: ``click-log``.
+* Drop support for Python 3.3, which has reached its end of life cycle.
 
 v3.2.4
 ------
