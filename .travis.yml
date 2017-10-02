@@ -64,14 +64,9 @@ jobs:
         - pip install wheel twine
         - python setup.py sdist bdist_wheel
         - twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
-
-deploy:
-  - provider: releases
-    api_key:
-      secure: g60yeYa+BX7XCe7L4mpV5NiaCPkuJzxk+PP3rL/durPF/CudWW2xUuTCLf30WwfrYBg3bJCQKNnzOpL8+d4Maly3UqquDFjK58Z/JBFw6erzg/RAxAnfJzFbWy2mgqKTpBHaDdRnhVtqp23Ov1I/+Jb51DIhij6ILNgGxW1OP8Y=
-    file_glob: true
-    file: dist/*
-    skip_cleanup: true
-    on:
-      tags: true
-    distributions: "sdist bdist_wheel"
+    - stage: deploy
+      script:
+        - pip install wheel
+        - python setup.py sdist bdist_wheel
+        - gem install dpl
+        - dpl --api-key=$RELEASES_TOKEN --provider=releases --file=dist/* --file_glob=true
