@@ -43,6 +43,11 @@ addons:
     packages:
       - language-pack-de
 
+stages:
+  - test
+  - name: deploy
+    if: tag IS present
+
 install:
   - pip install tox codecov
 
@@ -52,10 +57,13 @@ script:
 after_script:
   - codecov
 
-after_success:
-  - pip install wheel twine
-  - python setup.py sdist bdist_wheel
-  - test -n $TRAVIS_TAG && twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
+jobs:
+  include:
+    - stage: deploy
+      script:
+        - pip install wheel twine
+        - python setup.py sdist bdist_wheel
+        - twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
 
 deploy:
   - provider: releases
