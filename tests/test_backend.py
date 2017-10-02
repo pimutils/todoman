@@ -92,20 +92,22 @@ def test_sequence_increment(default_database, todo_factory, todos):
 def test_normalize_datetime():
     writter = VtodoWritter(None)
     assert (
-        writter.normalize_datetime(date(2017, 6, 17)) ==
-        datetime(2017, 6, 17, tzinfo=tzlocal())
+        writter.normalize_datetime(date(2017, 6, 17)) == datetime(
+            2017, 6, 17, tzinfo=tzlocal()
+        )
     )
     assert (
-        writter.normalize_datetime(datetime(2017, 6, 17)) ==
-        datetime(2017, 6, 17, tzinfo=tzlocal())
+        writter.normalize_datetime(datetime(2017, 6, 17)) == datetime(
+            2017, 6, 17, tzinfo=tzlocal()
+        )
     )
     assert (
-        writter.normalize_datetime(datetime(2017, 6, 17, 12, 19)) ==
-        datetime(2017, 6, 17, 12, 19, tzinfo=tzlocal())
+        writter.normalize_datetime(datetime(2017, 6, 17, 12, 19)) == datetime(
+            2017, 6, 17, 12, 19, tzinfo=tzlocal()
+        )
     )
     assert (
         writter.normalize_datetime(
             datetime(2017, 6, 17, 12, tzinfo=tzlocal())
-        ) ==
-        datetime(2017, 6, 17, 12, tzinfo=tzlocal())
+        ) == datetime(2017, 6, 17, 12, tzinfo=tzlocal())
     )

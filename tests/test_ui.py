@@ -9,8 +9,9 @@ from urwid import ExitMainLoop
 from todoman.interactive import TodoEditor
 
 
-def test_todo_editor_priority(default_database, todo_factory,
-                              default_formatter):
+def test_todo_editor_priority(
+    default_database, todo_factory, default_formatter
+):
     todo = todo_factory(priority=1)
     lists = list(default_database.lists())
 
@@ -24,8 +25,9 @@ def test_todo_editor_priority(default_database, todo_factory,
     assert todo.priority is 0
 
 
-def test_todo_editor_list(default_database, todo_factory, default_formatter,
-                          tmpdir):
+def test_todo_editor_list(
+    default_database, todo_factory, default_formatter, tmpdir
+):
     tmpdir.mkdir('another_list')
 
     default_database.paths = [
@@ -38,14 +40,12 @@ def test_todo_editor_list(default_database, todo_factory, default_formatter,
     lists = list(default_database.lists())
 
     editor = TodoEditor(todo, lists, default_formatter)
-    default_list = next(filter(
-        lambda x: x.label == 'default',
-        editor.list_selector
-    ))
-    another_list = next(filter(
-        lambda x: x.label == 'another_list',
-        editor.list_selector
-    ))
+    default_list = next(
+        filter(lambda x: x.label == 'default', editor.list_selector)
+    )
+    another_list = next(
+        filter(lambda x: x.label == 'another_list', editor.list_selector)
+    )
 
     assert editor.current_list == todo.list
     assert default_list.label == todo.list.name
@@ -57,8 +57,9 @@ def test_todo_editor_list(default_database, todo_factory, default_formatter,
     assert another_list.label == todo.list.name
 
 
-def test_todo_editor_summary(default_database, todo_factory,
-                             default_formatter):
+def test_todo_editor_summary(
+    default_database, todo_factory, default_formatter
+):
     todo = todo_factory()
     lists = list(default_database.lists())
 
@@ -125,7 +126,7 @@ def test_show_save_errors(default_database, default_formatter, todo_factory):
     editor._due.set_edit_text('not a date')
     editor._keypress('ctrl s')
 
-    assert(
+    assert (
         editor.left_column.body.contents[2].get_text()[0] ==
         'Time description not recognized: not a date'
     )
@@ -152,8 +153,7 @@ def test_ctrl_c_clears(default_formatter, todo_factory):
     # Simulate that ctrl+c gets pressed, since we can't *really* do that
     # trivially inside unit tests.
     with mock.patch(
-        'urwid.main_loop.MainLoop.run',
-        side_effect=KeyboardInterrupt
+        'urwid.main_loop.MainLoop.run', side_effect=KeyboardInterrupt
     ), mock.patch(
         'urwid.main_loop.MainLoop.stop',
     ) as mocked_stop:
