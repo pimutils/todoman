@@ -9,10 +9,7 @@ python:
   - pypy3.3-5.2-alpha1
 
 env:
-  matrix:
-    - TOXENV=py
-  global:
-    secure: IFQzIw/g6qbmZy86w9qPU5vZjoJWtBlP8VpUtBX+La9hyZ6odC0pxB38U7IQNnPKinUvnc0cGEsAJS/abxp3bSdS0H+afr8OjxOgDuLBl47fMHBxFUMF6HRFmKuk66GfM1sxf87xLdiPDF5Dac0cn7IlJrFkQaCukZjinvZRvtU=
+  - TOXENV=py
 
 matrix:
   allow_failures:
