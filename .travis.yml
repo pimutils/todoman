@@ -33,7 +33,11 @@ after_script:
 jobs:
   include:
     - env: TOXENV=flake8
+      python: 3.6
     - env: TOXENV=docs
+    - env: TOXENV=repl
+    - env: TOXENV=pyicu
+
     - os: osx
       language: generic
       env: TOXENV=py
@@ -42,14 +46,6 @@ jobs:
         - brew install python3
         - virtualenv env -p python3
         - source env/bin/activate
-    - # Run tests with optional dependencies:
-      after_install:
-        - echo click_repl >> requirements.txt
-      env: TOXENV=py EXTRAS=click_repl
-    - # Run tests with incompatible test dependencies:
-      after_install:
-        - echo pyicu >> requirements.txt
-      env: TOXENV=py EXTRAS=pyicu
 
     - stage: deploy
       script:
