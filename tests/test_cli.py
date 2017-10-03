@@ -1,6 +1,6 @@
 import datetime
 import sys
-from os.path import isdir
+from os.path import exists, isdir
 from unittest import mock
 from unittest.mock import patch
 
@@ -857,3 +857,19 @@ def test_duplicate_list(tmpdir, runner):
     assert result.exit_code == exceptions.AlreadyExists.EXIT_CODE
     assert result.output.strip() == \
         'More than one list has the same identity: personal.'
+
+
+def test_edit_raw(todo_factory, runner):
+    todo = todo_factory()
+    assert exists(todo.path)
+
+    with patch('click.edit', spec=True) as mocked_edit:
+        result = runner.invoke(
+            cli, ['edit', '--raw', '1'], catch_exceptions=False
+        )
+
+    assert mocked_edit.call_count == 1
+    assert mocked_edit.call_args == mock.call(filename=todo.path)
+
+    assert not result.exception
+    assert not result.output
