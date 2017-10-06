@@ -352,15 +352,26 @@ def new(ctx, summary, list, todo_properties, interactive):
 
 @cli.command()
 @pass_ctx
+@click.option(
+    '--raw',
+    is_flag=True,
+    help=(
+        'Open the raw file for editing in $EDITOR.\n'
+        "Only use this if you REALLY know what you're doing!"
+    )
+)
 @_todo_property_options
 @_interactive_option
 @with_id_arg
 @catch_errors
-def edit(ctx, id, todo_properties, interactive):
+def edit(ctx, id, todo_properties, interactive, raw):
     '''
     Edit the task with id ID.
     '''
     todo = ctx.db.todo(id)
+    if raw:
+        click.edit(filename=todo.path)
+        return
     old_list = todo.list
 
     changes = False
