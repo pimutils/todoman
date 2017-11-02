@@ -21,6 +21,7 @@ stages:
 install:
   - pip install pipenv
   - pipenv install --ignore-pipfile --dev
+  - pip freeze
 
 script:
   - py.test --cov todoman
