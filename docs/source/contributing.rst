@@ -16,15 +16,13 @@ working on it.
 Hacking
 ~~~~~~~
 
-Runtime dependencies are listed in ``setup.py``. We recommend that you use
-virtualenv to make sure that no additional dependencies are required without
-them being properly documented.
-Run ``pip install -e .`` to install todoman and its dependencies into a
-virtualenv.
+We use `Pipenv` for development, and we recommend you read their basic
+documentation. To get started though, running `pipenv install --dev` should
+suffice.
 
 We strictly follow the `Style Guide for Python Code`_, which I strongly
-recommend you read, though you may simply run ``flake8`` to verify that your
-code is compliant.
+recommend you read, though you may simply run ``pipenv run flake8`` to verify
+that your code is compliant.
 
 Commits should follow `Git Commit Guidelines`_ whenever possible, including
 rewriting branch histories to remove any noise, and using a 50-message
@@ -32,6 +30,7 @@ imperative present tense for commit summary messages.
 
 All commits should pass all tests to facilitate bisecting in future.
 
+.. _Pipenv: https://docs.pipenv.org/
 .. _Style Guide for Python Code: http://python.org/dev/peps/pep-0008/
 .. _Git Commit Guidelines: https://www.git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project#_commit_guidelines
 

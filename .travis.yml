@@ -8,9 +8,6 @@ python:
   - 3.7-dev
   - pypy3.3-5.2-alpha1
 
-env:
-  - TOXENV=py
-
 addons:
   apt:
     packages:
@@ -22,23 +19,39 @@ stages:
     if: tag IS present
 
 install:
-  - pip install tox codecov
+  - pip install pipenv
+  - pipenv install --ignore-pipfile --dev
 
 script:
-  - tox
+  - py.test --cov todoman
 
 after_script:
+  - pip install codecov
   - codecov
 
 jobs:
   include:
-    - env: TOXENV=flake8
+    # Note: envs are set to identify jobs in travis' UI. They have no impact.
+    - env: ENV=flake8
       python: 3.6
-    - env: TOXENV=docs
-    - env: TOXENV=repl
-    - env: TOXENV=pyicu
-
-    - os: osx
+      script: flake8
+    - env: ENV=yapf
+      python: 3.6
+      script: yapf --recursive --diff -p todoman tests docs setup.py
+    - env: ENV=docs
+      python: 3.6
+      script:
+        # These two steps imitate RTD as best as possible.
+        - pip install -rrequirements-docs.txt
+        - make -C docs html
+    - env: ENV=repl
+      before_script:
+        - pip install click_repl
+    - env: ENV=pyicu
+      before_script:
+        - pip install pyicu
+    - env: ENV=
+      os: osx
       language: generic
       env: TOXENV=py
       before_install:
