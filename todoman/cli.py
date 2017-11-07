@@ -318,11 +318,18 @@ except ImportError:
     callback=_validate_list_param,
     help='The list to create the task in.'
 )
+@click.option(
+    '--read-description',
+    '-r',
+    is_flag=True,
+    default=False,
+    help='Read task description from stdin'
+)
 @_todo_property_options
 @_interactive_option
 @pass_ctx
 @catch_errors
-def new(ctx, summary, list, todo_properties, interactive):
+def new(ctx, summary, list, todo_properties, read_description, interactive):
     '''
     Create a new task with SUMMARY.
     '''
@@ -337,6 +344,9 @@ def new(ctx, summary, list, todo_properties, interactive):
         if value:
             setattr(todo, key, value)
     todo.summary = ' '.join(summary)
+
+    if read_description:
+        todo.description = '\n'.join(sys.stdin)
 
     if interactive or (not summary and interactive is None):
         ui = TodoEditor(todo, ctx.db.lists(), ctx.ui_formatter)
