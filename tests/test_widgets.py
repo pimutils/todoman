@@ -180,14 +180,14 @@ def test_priority_selector(default_formatter):
     assert selector.priority == 5
 
     # Spin the whoel way around:
-    for i in PrioritySelector.RANGES:
+    for _ in PrioritySelector.RANGES:
         selector.keypress(10, 'right')
 
     assert selector.label == 'medium'
     assert selector.priority == 5
 
     # Now the other way
-    for i in PrioritySelector.RANGES:
+    for _ in PrioritySelector.RANGES:
         selector.keypress(10, 'left')
 
     assert selector.label == 'medium'

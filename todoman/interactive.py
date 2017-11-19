@@ -47,15 +47,15 @@ class TodoEditor:
         grid = urwid.Pile(pile_items)
         spacer = urwid.Divider()
 
-        self.left_column = urwid.ListBox([
+        self.left_column = urwid.ListBox(urwid.SimpleListWalker([
             grid,
             spacer,
             self._status,
             buttons,
-        ])
-        right_column = urwid.ListBox(
+        ]))
+        right_column = urwid.ListBox(urwid.SimpleListWalker(
             [urwid.Text('List:\n')] + self.list_selector
-        )
+        ))
 
         self._ui = urwid.Columns([self.left_column, right_column])
 
@@ -143,12 +143,8 @@ class TodoEditor:
         )
         try:
             self._loop.run()
-        except Exception:
-            try:  # Try to leave terminal in usable state
-                self._loop.stop()
-            except Exception:
-                pass
-            raise
+        except KeyboardInterrupt:
+            self._loop.stop()  # Try to leave terminal in usable state
         self._loop = None
 
     def _save(self, btn=None):

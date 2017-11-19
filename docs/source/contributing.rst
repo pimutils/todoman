@@ -58,6 +58,23 @@ The main goal of this is to simplify how many conversions we have. If we read
 from disk to the editor, we'd need an extra VTodo->Todo conversion code that
 skips the cache.
 
+Running and testing locally
+---------------------------
+
+The easiest way to run tests, it to install ``tox``, and then simply run
+``tox``. By default, several python versions and environments are tested. If
+you want to run a specific one use ``tox -e ENV``, where ``ENV`` should be one
+of the environments listed by ``tox -l``.
+
+See the `tox`_ documentation for further details.
+
+To run your modified copy of ``todoman`` without installing it, it's
+recommended you set up a virtualenv, and run ``pip install -e .`` to install
+your checked-out copy into it (this'll make ``todo`` run your local copy while
+the virtualenv is active).
+
+.. _tox: http://tox.readthedocs.io/en/latest/
+
 Patch review checklist
 ~~~~~~~~~~~~~~~~~~~~~~
 

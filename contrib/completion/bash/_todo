@@ -1,0 +1,139 @@
+_todo_get_ids()
+{
+	local pattern='^\s*"id": \([0-9]\+\),'
+	todo --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort
+}
+
+_todo_get_lists()
+{
+	local pattern='^\s*"list": "\(.*\)",'
+	todo --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort | uniq
+}
+
+_todo_get_locations()
+{
+	local pattern='^\s*"location": \(.*\)\+,'
+	todo --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort | uniq
+}
+
+_todo_single_dash_options()
+{
+	local prev_word=$1
+
+	case $prev_word in
+		copy)
+			echo "-l"
+			;;
+		edit)
+			echo "-s -d -i"
+			;;
+		list)
+			echo "-s"
+			;;
+		move)
+			echo "-l"
+			;;
+		new)
+			echo "-l -s -d -i"
+			;;
+		*)
+			echo "-v -h"
+		;;
+	esac
+}
+
+_todo_double_dash_options()
+{
+	local prev_word=$1
+
+	case $prev_word in
+		copy)
+			echo "--list"
+			;;
+		delete)
+			echo " --yes"
+			;;
+		edit)
+			echo " --start --due --location --interactive"
+			;;
+		flush)
+			echo " --yes"
+			;;
+		list)
+			echo " --location --category --grep --sort --reverse --no-reverse --due --priority --start --startable --status"
+			;;
+		move)
+			echo " --list"
+			;;
+		new)
+			echo " --list --start --due --location --priority --interactive"
+			;;
+		show)
+		;;
+		*)
+			echo " --verbosity --color --colour --porcelain --humanize --version"
+		;;
+	esac
+
+	echo " --help"
+}
+
+_todo_complete()
+{
+	local cur_word prev_word arg_list
+
+	cur_word="${COMP_WORDS[COMP_CWORD]}"
+	prev_word="${COMP_WORDS[COMP_CWORD-1]}"
+	arg_list=""
+
+	if [[ ${cur_word} == --* ]] ; then
+		arg_list="$(_todo_double_dash_options ${prev_word})"
+	elif [[ ${cur_word} == -* ]] ; then
+		arg_list="$(_todo_single_dash_options ${prev_word}) $(_todo_double_dash_options ${prev_word})"
+	else
+		case ${prev_word} in
+			-v|--verbosity)
+				arg_list="CRITICAL ERROR WARNING INFO DEBUG"
+			;;
+			--color|--colour)
+				arg_list="always auto never"
+			;;
+			--list)
+				arg_list="$(_todo_get_lists)"
+			;;
+			--location)
+				arg_list="$(_todo_get_locations)"
+			;;
+			--priority)
+				arg_list="none low medium high"
+			;;
+			-s|--start|-d|--due)
+				arg_list=""
+			;;
+			--help)
+				arg_list=""
+			;;
+			cancel|copy|delete|done|edit|move|show)
+				arg_list="$(_todo_get_ids)"
+			;;
+			flush)
+				arg_list=""
+			;;
+			list)
+				arg_list="$(_todo_get_lists)"
+			;;
+			new)
+				arg_list=""
+			;;
+			*)
+				arg_list="cancel copy delete done edit flush list move new show"
+			;;
+		esac
+	fi
+
+	COMPREPLY=( $(compgen -W "${arg_list}" -- ${cur_word}) )
+
+	return 0
+}
+
+complete -F _todo_complete todo

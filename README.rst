@@ -60,4 +60,4 @@ consult the latest version of the manual at readthedocs_.
 LICENCE
 -------
 
-Todoman is licensed under the MIT licence. See LICENCE for details.
+Todoman is licensed under the ISC licence. See LICENCE for details.

@@ -143,3 +143,20 @@ def test_save_completed(check, completed, default_formatter, todo_factory):
     with pytest.raises(ExitMainLoop):
         editor._keypress('ctrl s')
     assert todo.is_completed is check
+
+
+def test_ctrl_c_clears(default_formatter, todo_factory):
+    todo = todo_factory()
+    editor = TodoEditor(todo, [todo.list], default_formatter)
+
+    # Simulate that ctrl+c gets pressed, since we can't *really* do that
+    # trivially inside unit tests.
+    with mock.patch(
+        'urwid.main_loop.MainLoop.run',
+        side_effect=KeyboardInterrupt
+    ), mock.patch(
+        'urwid.main_loop.MainLoop.stop',
+    ) as mocked_stop:
+        editor.edit()
+
+    assert mocked_stop.call_count == 1

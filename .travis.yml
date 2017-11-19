@@ -36,6 +36,12 @@ matrix:
       python: 3.6
       after_install:
         - echo click_repl >> requirements.txt
+      env: TOXENV=py EXTRAS=click_repl
+    - # Run tests with incompatible test dependencies:
+      python: 3.6
+      after_install:
+        - echo pyicu >> requirements.txt
+      env: TOXENV=py EXTRAS=pyicu
 
 addons:
   apt:
@@ -51,18 +57,12 @@ script:
 after_script:
   - codecov
 
-before_deploy:
-  - pip install wheel
+after_success:
+  - pip install wheel twine
   - python setup.py sdist bdist_wheel
+  - test -n $TRAVIS_TAG && twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
 
 deploy:
-  - provider: pypi
-    user: hobarrera
-    password:
-      secure: LXSgJZMZICS0Xv5qyR/IRgki1Wy23lurmdepsOsjzBM2fv7rgKPlU/MASVCUCmLi9vYYqZu+7ViHeT6uhJXLdwE0NisVYqTg6L4aD1kqDmbjkWFhLKA7DAz1QTAYxrk6TQYmDb+ZbNFZlF21g29nqvqtLwdC4dFnDjXGnupCoeU=
-    on:
-      tags: true
-    distributions: "sdist bdist_wheel"
   - provider: releases
     api_key:
       secure: g60yeYa+BX7XCe7L4mpV5NiaCPkuJzxk+PP3rL/durPF/CudWW2xUuTCLf30WwfrYBg3bJCQKNnzOpL8+d4Maly3UqquDFjK58Z/JBFw6erzg/RAxAnfJzFbWy2mgqKTpBHaDdRnhVtqp23Ov1I/+Jb51DIhij6ILNgGxW1OP8Y=

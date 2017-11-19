@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 import pytest
 import pytz
@@ -6,7 +7,8 @@ from dateutil.tz import tzlocal
 from dateutil.tz.tz import tzoffset
 from freezegun import freeze_time
 
-from todoman.model import Database, List, Todo
+from todoman.exceptions import AlreadyExists
+from todoman.model import cached_property, Database, List, Todo
 
 
 def test_querying(create, tmpdir):
@@ -52,6 +54,19 @@ def test_retain_tz(tmpdir, create, todos):
     )
 
 
+def test_due_date(tmpdir, create, todos):
+    create(
+        'ar.ics',
+        'SUMMARY:blah.ar\n'
+        'DUE;VALUE=DATE:20170617\n'
+    )
+
+    todos = list(todos())
+
+    assert len(todos) == 1
+    assert todos[0].due == datetime(2017, 6, 17, tzinfo=tzlocal())
+
+
 def test_change_paths(tmpdir, create):
     old_todos = set('abcdefghijk')
     for x in old_todos:
@@ -92,8 +107,6 @@ def test_list_colour(tmpdir):
     list_ = next(db.lists())
 
     assert list_.colour == '#8ab6d2'
-    assert list_.color_rgb == (138, 182, 210)
-    assert list_.color_ansi == '\x1b[38;2;138;182;210m'
 
 
 def test_list_no_colour(tmpdir):
@@ -103,8 +116,6 @@ def test_list_no_colour(tmpdir):
     list_ = next(db.lists())
 
     assert list_.colour is None
-    assert list_.color_rgb is None
-    assert list_.color_ansi is None
 
 
 def test_database_priority_sorting(create, todos):
@@ -214,13 +225,16 @@ def test_complete_recurring(default_database, due, todo_factory, tz, until):
     # We'll lose the milis when casting, so:
     now = datetime.now(tz).replace(microsecond=0)
 
+    if tz and not until.endswith('Z'):
+        pytest.skip('This combination is invalid, as per the spec')
+
     original_start = now
     if due:
         original_due = now + timedelta(hours=12)
     else:
         due = original_due = None
 
-    rrule = 'FREQ=DAILY;UNTIL=20990315T020000Z'
+    rrule = 'FREQ=DAILY;UNTIL={}'.format(until)
     todo = todo_factory(rrule=rrule, due=original_due, start=original_start)
 
     todo.complete()
@@ -372,3 +386,81 @@ def test_nullify_field(default_database, todo_factory, todos):
 
     todo = next(todos(status='ANY'))
     assert todo.due is None
+
+
+def test_duplicate_list(tmpdir):
+    tmpdir.join('personal1').mkdir()
+    with tmpdir.join('personal1').join('displayname').open('w') as f:
+        f.write('personal')
+
+    tmpdir.join('personal2').mkdir()
+    with tmpdir.join('personal2').join('displayname').open('w') as f:
+        f.write('personal')
+
+    with pytest.raises(AlreadyExists):
+        Database(
+            [tmpdir.join('personal1'), tmpdir.join('personal2')],
+            tmpdir.join('cache.sqlite3'),
+        )
+
+
+def test_unreadable_ics(todo_factory, todos, tmpdir):
+    """
+    Test that we properly handle an unreadable ICS file
+
+    In this case, it's a directory, which will
+    fail even if you run the tests as root (you shouldn't!!), but the same
+    codepath is followed for readonly files, etc.
+    """
+    tmpdir.join('default').join('fake.ics').mkdir()
+    todo_factory()
+
+    with patch('logging.Logger.exception') as mocked_exception:
+        todos = list(todos())
+
+    assert len(todos) == 1
+    assert mocked_exception.call_count == 1
+
+
+def test_cached_property_caching():
+    class TestClass:
+        i = 0
+
+        @cached_property
+        def a(self):
+            TestClass.i += 1
+            return TestClass.i
+
+    obj = TestClass()
+    assert obj.a == 1
+    assert obj.a == 1
+    assert obj.a == 1
+
+
+def test_cached_property_overwriting():
+    class TestClass:
+        i = 0
+
+        @cached_property
+        def a(self):
+            TestClass.i += 1
+            return TestClass.i
+
+    obj = TestClass()
+
+    # Overriting will overwrite the cached_property:
+    obj.a = 12
+    assert obj.a == 12
+    assert obj.a == 12
+
+    obj.a += 1
+    assert obj.a == 13
+
+
+def test_cached_property_property():
+    class TestClass:
+        @cached_property
+        def a(self):
+            return 0
+
+    assert TestClass.a.__class__ == cached_property

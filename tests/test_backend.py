@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 import icalendar
 import pytest
@@ -7,6 +7,14 @@ from dateutil.tz import tzlocal
 from freezegun import freeze_time
 
 from todoman.model import Todo, VtodoWritter
+
+
+def test_datetime_serialization(todo_factory, tmpdir):
+    now = datetime(2017, 8, 31, 23, 49, 53, tzinfo=pytz.UTC)
+    todo = todo_factory(created_at=now)
+    filename = tmpdir.join('default').join(todo.filename)
+    with open(str(filename)) as f:
+        assert 'CREATED;VALUE=DATE-TIME:20170831T234953Z\n' in f.readlines()
 
 
 def test_serialize_created_at(todo_factory):
@@ -79,3 +87,25 @@ def test_sequence_increment(default_database, todo_factory, todos):
     # Relaod (and check the caching flow for the sequence)
     todo = next(todos())
     assert todo.sequence == 2
+
+
+def test_normalize_datetime():
+    writter = VtodoWritter(None)
+    assert (
+        writter.normalize_datetime(date(2017, 6, 17)) ==
+        datetime(2017, 6, 17, tzinfo=tzlocal())
+    )
+    assert (
+        writter.normalize_datetime(datetime(2017, 6, 17)) ==
+        datetime(2017, 6, 17, tzinfo=tzlocal())
+    )
+    assert (
+        writter.normalize_datetime(datetime(2017, 6, 17, 12, 19)) ==
+        datetime(2017, 6, 17, 12, 19, tzinfo=tzlocal())
+    )
+    assert (
+        writter.normalize_datetime(
+            datetime(2017, 6, 17, 12, tzinfo=tzlocal())
+        ) ==
+        datetime(2017, 6, 17, 12, tzinfo=tzlocal())
+    )
