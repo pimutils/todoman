@@ -2,10 +2,10 @@ todoman (3.2.4-1) UNRELEASED; urgency=medium
 
   * Initial release. (Closes: #855887)
   * install manpage for todo binary instead of todoman
-  * fix-spelling-issues patch
   * remove duplicate license file from doc
   * avoid lintian complaining about license.rst file
   * avoid embedding jquery.js & underscore.js from sphinx
-  * avoid generating github banner in docs (contains privacy-breach-logo, see #869693)
+  * avoid generating github banner in docs (contains privacy-breach-logo, see
+    #869693)
 
- -- Félix Sipma <felix+debian@gueux.org>  Sun, 19 Nov 2017 15:25:18 +0100
+ -- Félix Sipma <felix+debian@gueux.org>  Sun, 19 Nov 2017 15:29:38 +0100
