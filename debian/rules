@@ -7,7 +7,7 @@ export PYBUILD_AFTER_BUILD=python3 setup.py build_sphinx -b html && \
 	python3 setup.py build_sphinx -b text && \
 	python3 setup.py build_sphinx -b man
 # manually remove files needed for tests
-export PYBUILD_AFTER_TEST=rm {build_dir}/.coverage {build_dir}/todoman/confspec.ini
+export PYBUILD_AFTER_TEST=rm {build_dir}/.coverage
 
 # exports needed to make the tests succeed (python3-click)
 export TZ=UTC
