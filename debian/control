@@ -32,7 +32,6 @@ Vcs-Browser: https://git.gueux.org/?p=todoman.git;a=summary
 
 Package: todoman
 Architecture: any
-Section: misc
 Depends: ${misc:Depends}, ${python3:Depends}
 Suggests: vdirsyncer, libjs-jquery, libjs-underscore
 Description: Simple CalDAV-based todo manager
