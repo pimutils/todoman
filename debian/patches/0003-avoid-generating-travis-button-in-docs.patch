@@ -1,0 +1,21 @@
+From: =?utf-8?q?F=C3=A9lix_Sipma?= <felix+debian@gueux.org>
+Date: Sun, 19 Nov 2017 15:44:39 +0100
+Subject: avoid generating travis button in docs
+
+---
+ docs/source/conf.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/docs/source/conf.py b/docs/source/conf.py
+index 020f31e..0668a64 100644
+--- a/docs/source/conf.py
++++ b/docs/source/conf.py
+@@ -194,7 +194,7 @@ html_theme = 'alabaster'
+ html_theme_options = {
+     'github_user': 'pimutils',
+     'github_repo': 'todoman',
+-    'travis_button': 'true',
++    'travis_button': 'false',
+     'github_banner': 'false',
+     'github_button': 'false',
+ }
