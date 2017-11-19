@@ -4,6 +4,7 @@ Priority: optional
 Section: utils
 Build-Depends: debhelper (>= 10),
  dh-python,
+ bash-completion,
  python3-all,
  python3-atomicwrites,
  python3-click,
