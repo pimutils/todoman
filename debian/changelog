@@ -1,4 +1,4 @@
-todoman (3.2.4-1) UNRELEASED; urgency=medium
+todoman (3.2.4-1) unstable; urgency=medium
 
   * Initial release. (Closes: #855887)
   * install manpage for todo binary instead of todoman
@@ -10,4 +10,4 @@ todoman (3.2.4-1) UNRELEASED; urgency=medium
   * avoid generating travis button in docs (fixes privacy-breach-generic
     lintian warning)
 
- -- Félix Sipma <felix+debian@gueux.org>  Sun, 19 Nov 2017 15:45:46 +0100
+ -- Félix Sipma <felix+debian@gueux.org>  Sun, 19 Nov 2017 19:06:38 +0100
