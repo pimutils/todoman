@@ -5,13 +5,13 @@ Source: https://github.com/pimutils/todoman
 
 Files: *
 Copyright: 2015-2016 Hugo Osvaldo Barrera <hugo@barrera.io>
-License: Expat
+License: ISC
 
 Files: debian/*
 Copyright: 2016 Félix Sipma <felix+debian@gueux.org>
 License: GPL-3+
 
-License: Expat
+License: ISC
  Permission to use, copy, modify, and/or distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
  copyright notice and this permission notice appear in all copies.
