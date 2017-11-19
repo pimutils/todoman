@@ -8,4 +8,4 @@ todoman (3.2.4-1) UNRELEASED; urgency=medium
   * avoid embedding jquery.js & underscore.js from sphinx
   * avoid generating github banner in docs (contains privacy-breach-logo, see #869693)
 
- -- Félix Sipma <felix+debian@gueux.org>  Sun, 19 Nov 2017 15:19:17 +0100
+ -- Félix Sipma <felix+debian@gueux.org>  Sun, 19 Nov 2017 15:25:18 +0100
