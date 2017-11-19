@@ -1,4 +1,4 @@
-todoman (3.2.0-1) UNRELEASED; urgency=medium
+todoman (3.2.4-1) UNRELEASED; urgency=medium
 
   * Initial release. (Closes: #855887)
   * install manpage for todo binary instead of todoman
@@ -8,4 +8,4 @@ todoman (3.2.0-1) UNRELEASED; urgency=medium
   * avoid embedding jquery.js & underscore.js from sphinx
   * avoid generating github banner in docs (contains privacy-breach-logo, see #869693)
 
- -- Félix Sipma <felix+debian@gueux.org>  Wed, 26 Jul 2017 12:30:57 +0200
+ -- Félix Sipma <felix+debian@gueux.org>  Sun, 19 Nov 2017 15:19:17 +0100
