@@ -3,20 +3,22 @@ Date: Tue, 25 Jul 2017 18:48:18 +0200
 Subject: remove duplicate license file
 
 ---
- docs/source/licence.rst | 17 ++---------------
- 1 file changed, 2 insertions(+), 15 deletions(-)
+ docs/source/licence.rst | 18 ------------------
+ 1 file changed, 18 deletions(-)
+ delete mode 100644 docs/source/licence.rst
 
 diff --git a/docs/source/licence.rst b/docs/source/licence.rst
-index 6a19de4..609d9ea 100644
+deleted file mode 100644
+index b98599d..0000000
 --- a/docs/source/licence.rst
-+++ b/docs/source/licence.rst
-@@ -1,18 +1,5 @@
- Licence
- =======
- 
--Todoman is licensed under the MIT licence::
++++ /dev/null
+@@ -1,18 +0,0 @@
+-Licence
+-=======
 -
--    Copyright (c) 2015-2016, Hugo Osvaldo Barrera <hugo@barrera.io>
+-Todoman is licensed under the ISC licence::
+-
+-    Copyright (c) 2015-2017, Hugo Osvaldo Barrera <hugo@barrera.io>
 -
 -    Permission to use, copy, modify, and/or distribute this software for any
 -    purpose with or without fee is hereby granted, provided that the above
@@ -29,5 +31,3 @@ index 6a19de4..609d9ea 100644
 -    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 -    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 -    PERFORMANCE OF THIS SOFTWARE.
-+Todoman is licensed under the MIT licence:: (see
-+/usr/share/doc/todoman/copyright for complete text)
