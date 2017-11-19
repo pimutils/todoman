@@ -1,13 +1,13 @@
 import functools
 import glob
 import locale
+import logging
 import sys
 from contextlib import contextmanager
 from datetime import timedelta
 from os.path import expanduser, isdir
 
 import click
-import click_log
 
 from todoman import exceptions, formatters
 from todoman.configuration import ConfigurationException, load_config
@@ -36,9 +36,8 @@ TODO_ID_MIN = 1
 with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
 
 
-def _validate_lists_param(ctx, param=None, lists=None):
-    if lists:
-        return [_validate_list_param(ctx, name=l) for l in lists]
+def _validate_lists_param(ctx, param=None, lists=()):
+    return [_validate_list_param(ctx, name=l) for l in lists]
 
 
 def _validate_list_param(ctx, param=None, name=None):
@@ -141,6 +140,9 @@ def validate_status(ctx=None, param=None, val=None):
 
 
 def _todo_property_options(command):
+    click.option(
+        '--priority', default='', callback=_validate_priority_param,
+        help=('The priority for this todo'))(command)
     click.option('--location', help=('The location where '
                  'this todo takes place.'))(command)
     click.option(
@@ -154,7 +156,7 @@ def _todo_property_options(command):
     @functools.wraps(command)
     def command_wrap(*a, **kw):
         kw['todo_properties'] = {key: kw.pop(key) for key in
-                                 ('due', 'start', 'location')}
+                                 ('due', 'start', 'location', 'priority')}
         return command(*a, **kw)
 
     return command_wrap
@@ -192,8 +194,13 @@ _interactive_option = click.option(
 
 
 @click.group(invoke_without_command=True)
-@click_log.init('todoman')
-@click_log.simple_verbosity_option()
+@click.option(
+    '-v',
+    '--verbosity',
+    type=click.Choice(['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']),
+    help='Set verbosity to the given level.',
+    default='WARNING',
+)
 @click.option('--colour', '--color', default=None,
               type=click.Choice(['always', 'auto', 'never']),
               help=('By default todoman will disable colored output if stdout '
@@ -207,7 +214,8 @@ _interactive_option = click.option(
 @click.pass_context
 @click.version_option(prog_name='todoman')
 @catch_errors
-def cli(click_ctx, color, porcelain, humanize):
+def cli(click_ctx, color, porcelain, humanize, verbosity):
+    logging.basicConfig(level=verbosity)
     ctx = click_ctx.ensure_object(AppContext)
     try:
         ctx.config = load_config()
@@ -221,10 +229,10 @@ def cli(click_ctx, color, porcelain, humanize):
     if humanize is None:  # False means explicitly disabled
         humanize = ctx.config['main']['humanize']
 
-    if humanize:
-        ctx.formatter_class = formatters.HumanizedFormatter
-    elif porcelain:
+    if porcelain:
         ctx.formatter_class = formatters.PorcelainFormatter
+    elif humanize:
+        ctx.formatter_class = formatters.HumanizedFormatter
     else:
         ctx.formatter_class = formatters.DefaultFormatter
 

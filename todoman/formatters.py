@@ -10,6 +10,23 @@ from dateutil.tz import tzlocal
 from tabulate import tabulate
 
 
+def rgb_to_ansi(colour):
+    """
+    Convert a string containing an RGB colour to ANSI escapes
+    """
+    if not colour or not colour.startswith('#'):
+        return
+
+    r, g, b = colour[1:3], colour[3:5], colour[5:8]
+
+    if not len(r) == len(g) == len(b) == 2:
+        return
+
+    return '\33[38;2;{!s};{!s};{!s}m'.format(
+        int(r, 16), int(g, 16), int(b, 16)
+    )
+
+
 class DefaultFormatter:
 
     def __init__(self, date_format='%Y-%m-%d', time_format='%H:%M',
@@ -24,7 +41,9 @@ class DefaultFormatter:
         self.tz = tz_override or tzlocal()
         self.now = datetime.datetime.now().replace(tzinfo=self.tz)
 
-        self._parsedatetime_calendar = parsedatetime.Calendar()
+        self._parsedatetime_calendar = parsedatetime.Calendar(
+            version=parsedatetime.VERSION_CONTEXT_STYLE,
+        )
 
     def simple_action(self, action, todo):
         return '{} "{}"'.format(action, todo.summary)
@@ -158,16 +177,16 @@ class DefaultFormatter:
         except ValueError:
             pass
 
-        rv, certainty = self._parsedatetime_calendar.parse(dt)
-        if not certainty:
-            raise ValueError(
-                'Time description not recognized: {}' .format(dt)
-            )
+        rv, pd_ctx = self._parsedatetime_calendar.parse(dt)
+        if not pd_ctx.hasDateOrTime:
+            raise ValueError('Time description not recognized: {}' .format(dt))
         return datetime.datetime.fromtimestamp(mktime(rv))
 
     def format_database(self, database):
-        return '{}@{}'.format(database.color_ansi or '',
-                              click.style(database.name))
+        return '{}@{}'.format(
+            rgb_to_ansi(database.colour) or '',
+            click.style(database.name)
+        )
 
 
 class HumanizedFormatter(DefaultFormatter):
@@ -194,6 +213,7 @@ class PorcelainFormatter(DefaultFormatter):
             percent=todo.percent_complete,
             summary=todo.summary,
             priority=todo.priority,
+            location=todo.location,
         )
 
     def compact(self, todo):

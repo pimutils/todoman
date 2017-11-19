@@ -11,6 +11,7 @@ from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
 
+from tests.helpers import pyicu_sensitive
 from todoman.cli import cli, exceptions
 from todoman.model import Database, Todo
 
@@ -209,6 +210,7 @@ def test_move(tmpdir, runner, create):
     assert 'other_list' in result.output
 
 
+@pyicu_sensitive
 @freeze_time('2017-03-17 20:22:19')
 def test_dtstamp(tmpdir, runner, create):
     """Test that we add the DTSTAMP to new entries as per RFC5545."""
@@ -263,6 +265,7 @@ def test_default_due(
         )
 
 
+@pyicu_sensitive
 @freeze_time(datetime.datetime.now())
 def test_default_due2(tmpdir, runner, create, todos):
     cfg = tmpdir.join('config')
@@ -428,36 +431,19 @@ def test_color_flag(runner, todo_factory):
     )
 
 
-def test_flush(tmpdir, runner, create):
-    create(
-        'test.ics',
-        'SUMMARY:aaa\n'
-        'STATUS:COMPLETED\n'
-    )
+def test_flush(tmpdir, runner, create, todo_factory, todos):
+    todo_factory(summary='aaa', status='COMPLETED')
+    todo_factory(summary='bbb')
 
-    result = runner.invoke(cli, ['list'])
-    assert not result.exception
-
-    create(
-        'test2.ics',
-        'SUMMARY:bbb\n'
-    )
-
-    result = runner.invoke(cli, ['list'])
-    assert not result.exception
-    assert '2  [ ]      bbb @default' in result.output
+    all_todos = list(todos(status='ANY'))
+    assert len(all_todos) == 2
 
     result = runner.invoke(cli, ['flush'], input='y\n', catch_exceptions=False)
     assert not result.exception
 
-    create(
-        'test2.ics',
-        'SUMMARY:bbb\n'
-    )
-
-    result = runner.invoke(cli, ['list'])
-    assert not result.exception
-    assert '1  [ ]      bbb @default' in result.output
+    all_todos = list(todos(status='ANY'))
+    assert len(all_todos) == 1
+    assert all_todos[0].summary == 'bbb'
 
 
 def test_edit(runner, default_database, todos):
@@ -606,7 +592,7 @@ def test_due_bad_date(runner):
 
 
 def test_multiple_todos_in_file(runner, create):
-    create(
+    path = create(
         'test.ics',
         'SUMMARY:a\n'
         'END:VTODO\n'
@@ -615,10 +601,15 @@ def test_multiple_todos_in_file(runner, create):
     )
 
     for _ in range(2):
-        result = runner.invoke(cli, ['list'])
-        assert ' a ' in result.output
-        assert ' b ' in result.output
-        assert 'warning: Todo is in read-only mode' in result.output
+        with patch('todoman.model.logger', spec=True) as mocked_logger:
+            result = runner.invoke(cli, ['list'])
+            assert ' a ' in result.output
+            assert ' b ' in result.output
+        assert mocked_logger.warning.call_count == 1
+        assert mocked_logger.warning.call_args == mock.call(
+            'Todo is in read-only mode because there are multiple todos in %s',
+            path,
+        )
 
     result = runner.invoke(cli, ['done', '1'])
     assert result.exception
@@ -656,6 +647,7 @@ def test_todo_edit(runner, default_database, todo_factory):
     assert 'YARR!' in result.output
 
 
+@pyicu_sensitive
 @freeze_time('2017, 3, 20')
 def test_list_startable(tmpdir, runner, todo_factory):
     todo_factory(summary='started', start=datetime.datetime(2017, 3, 15))
@@ -868,3 +860,46 @@ def test_invoke_invalid_command(runner, tmpdir):
     assert (
         'Error: Invalid setting for [main][default_command]' in result.output
     )
+
+
+def test_show_priority(runner, todo_factory, todos):
+    todo_factory(summary='harhar\n', priority=1)
+
+    result = runner.invoke(cli, ['show', '1'])
+    assert '!!!' in result.output
+
+
+def test_priority(runner):
+    result = runner.invoke(cli, [
+        'new', '-l', 'default', '--priority', 'high', 'Priority Test'
+    ])
+
+    assert '!!!' in result.output
+
+
+def test_porcelain_precedence(runner, tmpdir):
+    """Test that --humanize flag takes precedence over `porcelain` config"""
+
+    path = tmpdir.join('config')
+    path.write('humanize = true\n', 'a')
+
+    with patch('todoman.formatters.PorcelainFormatter') as mocked_formatter:
+        runner.invoke(cli, ['--porcelain', 'list'])
+
+    assert mocked_formatter.call_count is 1
+
+
+def test_duplicate_list(tmpdir, runner):
+    tmpdir.join('personal1').mkdir()
+    with tmpdir.join('personal1').join('displayname').open('w') as f:
+        f.write('personal')
+
+    tmpdir.join('personal2').mkdir()
+    with tmpdir.join('personal2').join('displayname').open('w') as f:
+        f.write('personal')
+
+    result = runner.invoke(cli, ['list'])
+    assert result.exception
+    assert result.exit_code == exceptions.AlreadyExists.EXIT_CODE
+    assert result.output.strip() == \
+        'More than one list has the same identity: personal.'

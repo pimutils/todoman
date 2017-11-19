@@ -1,1 +1,1 @@
-sphinx_autorun>=1.0.0
+sphinx_autorun

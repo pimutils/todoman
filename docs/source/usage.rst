@@ -55,7 +55,7 @@ Interactive shell
 -----------------
 
 If you install `click-repl <https://github.com/untitaker/click-repl>`_, todoman
-gets a new command called ``repl``, which lauches an interactive shell with
+gets a new command called ``repl``, which launches an interactive shell with
 tab-completion.
 
 Integrations

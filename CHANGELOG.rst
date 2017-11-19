@@ -4,11 +4,35 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.2.4
+------
+
+* Deploy new versions to PyPI using ``twine``. Travis doesn't seem to be
+  working.
+
+v3.2.3
+------
+
+* Tests should no longer fail with ``pyicu`` installed.
+* Improved documentation regarding how to test locally.
+
+v3.2.2
+------
+
+* Initial support for (bash) autocompletion.
+* The location field is not printed as part of ``--porcelain``.
+
+v3.2.1
+------
+
+* Fix start-up crash caused by click_log interface change.
+* Dropped runtime dependency: ``click_log``.
+
 v3.2.0
 ------
 
 * Completing recurring todos now works as expected and does not make if
-  dissapear forever.
+  disappear forever.
 
 v3.1.0
 ------

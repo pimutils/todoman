@@ -52,13 +52,15 @@ def runner(config, sleep):
 @pytest.fixture
 def create(tmpdir):
     def inner(name, content, list_name='default'):
-        tmpdir.ensure_dir(list_name).join(name).write(
+        path = tmpdir.ensure_dir(list_name).join(name)
+        path.write(
             'BEGIN:VCALENDAR\n'
             'BEGIN:VTODO\n' +
             content +
             'END:VTODO\n'
             'END:VCALENDAR'
         )
+        return path
 
     return inner
 

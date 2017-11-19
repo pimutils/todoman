@@ -2,7 +2,7 @@ Installing
 ==========
 
 If todoman is packaged for your OS/distribution, using your system's
-standard package manager is probably the easiest way to install khal:
+standard package manager is probably the easiest way to install todoman:
 
 - ArchLinux (AUR_)
 
@@ -30,6 +30,36 @@ the source tarball and install via setup.py, though this is not a recommended
 installation method::
 
     python3 setup.py install
+
+
+bash autocompletion (optional)
+------------------------------
+
+There is an autocompletion function for bash provided in the ``contrib``
+directory. If you want to enable autocompletion for todoman in bash, copy the
+file ``contrib/autocompletion/bash/_todo`` to any directory you want. Typically
+``/etc/bash_completion.d`` is used for system-wide installations or
+``~/.bash_completion.d`` for local installations. In the former case, the file
+is automatically sourced in most distributions, in the latter case, you will
+most likely need to add::
+
+    source ~/.bash_completion.d/_todo
+
+to your ``~/.bashrc``.
+
+
+zsh autocompletion (optional)
+-----------------------------
+
+There is no dedicated zsh completion function for todoman yet, but you can use
+the bash completion function via zsh's bash compatibility layer. This can be
+enabled. Assuming your completion function was copied to
+``~/.bash_completion.d`` as described above, you need to add the following
+lines to your ``~/.zshrc``::
+
+    autoload -U bashcompinit && bashcompinit
+    source ~/.bash_completion.d/*
+
 
 Requirements
 ------------

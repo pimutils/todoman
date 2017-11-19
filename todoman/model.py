@@ -2,11 +2,12 @@ import logging
 import os
 import socket
 import sqlite3
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, timedelta
 from os.path import normpath, split
 from uuid import uuid4
 
 import icalendar
+import pytz
 from atomicwrites import AtomicWriter
 from dateutil.rrule import rrulestr
 from dateutil.tz import tzlocal
@@ -20,26 +21,6 @@ logger = logging.getLogger(name=__name__)
 # We were doing this all over the place (even if unused!), so at least only do
 # it once.
 LOCAL_TIMEZONE = tzlocal()
-
-
-class UnsafeOperationException(Exception):
-    """
-    Raised when attempting to perform an unsafe operation.
-
-    Typical examples of unsafe operations are attempting to save a
-    partially-loaded todo.
-    """
-    pass
-
-
-class AlreadyExists(Exception):
-    """
-    Raise when two objects have a same identity.
-
-    This can ocurrs when two lists have the same name, or when two Todos have
-    the same path.
-    """
-    pass
 
 
 class cached_property:  # noqa
@@ -296,6 +277,11 @@ class VtodoWritter:
 
         - Convert everything to datetime
         - Add missing timezones
+        - Cast to UTC
+
+        Datetimes are cast to UTC because icalendar doesn't include the
+        VTIMEZONE information upon serialization, and some clients have issues
+        dealing with that.
         '''
         if isinstance(dt, date) and not isinstance(dt, datetime):
             dt = datetime(dt.year, dt.month, dt.day)
@@ -303,7 +289,7 @@ class VtodoWritter:
         if not dt.tzinfo:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
 
-        return dt
+        return dt.astimezone(pytz.UTC)
 
     def serialize_field(self, name, value):
         if name in Todo.RRULE_FIELDS:
@@ -513,7 +499,7 @@ class Cache:
                 (name, path, colour,),
             )
         except sqlite3.IntegrityError as e:
-            raise AlreadyExists(name) from e
+            raise exceptions.AlreadyExists('list', name) from e
 
         return self.add_list(name, path, colour)
 
@@ -531,7 +517,7 @@ class Cache:
                 mtime,
             ))
         except sqlite3.IntegrityError as e:
-            raise AlreadyExists(list_name) from e
+            raise exceptions.AlreadyExists('file', list_name) from e
 
     def _serialize_datetime(self, todo, field):
         dt = todo.decoded(field, None)
@@ -540,9 +526,6 @@ class Cache:
 
         if isinstance(dt, date) and not isinstance(dt, datetime):
             dt = datetime(dt.year, dt.month, dt.day)
-        # XXX: Can we actually read times from files?
-        elif isinstance(dt, time):
-            dt = datetime.combine(date.today(), dt)
 
         if not dt.tzinfo:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
@@ -626,9 +609,9 @@ class Cache:
 
         return rv
 
-    def todos(self, lists=[], priority=None, location='', category='', grep='',
-              sort=[], reverse=True, due=None, start=None, startable=False,
-              status=['NEEDS-ACTION', 'IN-PROCESS']):
+    def todos(self, lists=(), priority=None, location='', category='', grep='',
+              sort=(), reverse=True, due=None, start=None, startable=False,
+              status=('NEEDS-ACTION', 'IN-PROCESS',)):
         """
         Returns filtered cached todos, in a specified order.
 
@@ -841,8 +824,8 @@ class List:
 
     def __init__(self, name, path, colour=None):
         self.path = path
-        self.name = name or List.name_for_path(path)
-        self.colour = colour or List.colour_for_path(self.path)
+        self.name = name
+        self.colour = colour
 
     @staticmethod
     def colour_for_path(path):
@@ -859,25 +842,6 @@ class List:
                 return f.read().strip()
         except (OSError, IOError):
             return split(normpath(path))[1]
-
-    @cached_property
-    def color_rgb(self):
-        color = self.colour
-        if not color or not color.startswith('#'):
-            return
-
-        r = color[1:3]
-        g = color[3:5]
-        b = color[5:8]
-
-        if len(r) == len(g) == len(b) == 2:
-            return int(r, 16), int(g, 16), int(b, 16)
-
-    @cached_property
-    def color_ansi(self):
-        rv = self.color_rgb
-        if rv:
-            return '\33[38;2;{!s};{!s};{!s}m'.format(*rv)
 
     def __eq__(self, other):
         if isinstance(other, List):
@@ -929,18 +893,18 @@ class Database:
 
             try:
                 self.cache.add_file(list_name, entry_path, mtime)
-            except AlreadyExists:
+            except exceptions.AlreadyExists:
                 logger.debug('File already in cache: %s', entry_path)
                 continue
 
-            with open(entry_path, 'rb') as f:
-                try:
+            try:
+                with open(entry_path, 'rb') as f:
                     cal = f.read()
                     cal = icalendar.Calendar.from_ical(cal)
                     for component in cal.walk('VTODO'):
                         self.cache.add_vtodo(component, entry_path)
-                except Exception as e:
-                    logger.exception("Failed to read entry %s.", entry_path)
+            except Exception as e:
+                logger.exception("Failed to read entry %s.", entry_path)
 
         self.cache.save_to_disk()
 
