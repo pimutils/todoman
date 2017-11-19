@@ -9,5 +9,7 @@ todoman (3.2.4-1) unstable; urgency=medium
     #869693)
   * avoid generating travis button in docs (fixes privacy-breach-generic
     lintian warning)
+  * add patch to tell the user to look in /usr/share/doc/todoman/ for
+    documentation (instead of https://todoman.rtfd.org/en/latest/)
 
- -- Félix Sipma <felix+debian@gueux.org>  Sun, 19 Nov 2017 19:06:38 +0100
+ -- Félix Sipma <felix+debian@gueux.org>  Sun, 19 Nov 2017 19:35:07 +0100
