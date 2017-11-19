@@ -1,0 +1,18 @@
+From: =?utf-8?q?F=C3=A9lix_Sipma?= <felix+debian@gueux.org>
+Date: Sun, 19 Nov 2017 19:33:44 +0100
+Subject: doc in /usr/share/doc/todoman/
+
+---
+ todoman/__init__.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/todoman/__init__.py b/todoman/__init__.py
+index 39d64a6..1ad072d 100644
+--- a/todoman/__init__.py
++++ b/todoman/__init__.py
+@@ -1,4 +1,4 @@
+ from todoman import version
+ 
+ __version__ = version.version
+-__documentation__ = 'https://todoman.rtfd.org/en/latest/'
++__documentation__ = '/usr/share/doc/todoman/html/'

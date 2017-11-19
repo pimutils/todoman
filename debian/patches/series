@@ -1,3 +1,4 @@
 0002-remove-duplicate-license-file.patch
 0002-avoid-generating-github-banner-in-docs.patch
 0003-avoid-generating-travis-button-in-docs.patch
+0004-doc-in-usr-share-doc-todoman.patch
