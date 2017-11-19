@@ -1,21 +1,20 @@
 From: =?utf-8?q?F=C3=A9lix_Sipma?= <felix+debian@gueux.org>
 Date: Tue, 25 Jul 2017 18:48:18 +0200
-Subject: remove duplicate license file
+Subject: remove duplicate license text
 
 ---
- docs/source/licence.rst | 18 ------------------
- 1 file changed, 18 deletions(-)
- delete mode 100644 docs/source/licence.rst
+ docs/source/licence.rst | 19 +++----------------
+ 1 file changed, 3 insertions(+), 16 deletions(-)
 
 diff --git a/docs/source/licence.rst b/docs/source/licence.rst
-deleted file mode 100644
-index b98599d..0000000
+index b98599d..f9a5114 100644
 --- a/docs/source/licence.rst
-+++ /dev/null
-@@ -1,18 +0,0 @@
++++ b/docs/source/licence.rst
+@@ -1,18 +1,5 @@
 -Licence
--=======
--
++License
+ =======
+ 
 -Todoman is licensed under the ISC licence::
 -
 -    Copyright (c) 2015-2017, Hugo Osvaldo Barrera <hugo@barrera.io>
@@ -31,3 +30,5 @@ index b98599d..0000000
 -    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 -    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 -    PERFORMANCE OF THIS SOFTWARE.
++Todoman is licensed under the ISC licence:: (see
++/usr/share/doc/todoman/copyright for complete text)
