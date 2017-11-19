@@ -11,5 +11,6 @@ todoman (3.2.4-1) unstable; urgency=medium
     lintian warning)
   * add patch to tell the user to look in /usr/share/doc/todoman/ for
     documentation (instead of https://todoman.rtfd.org/en/latest/)
+  * install bash autocompletion file
 
- -- Félix Sipma <felix+debian@gueux.org>  Sun, 19 Nov 2017 19:35:07 +0100
+ -- Félix Sipma <felix+debian@gueux.org>  Sun, 19 Nov 2017 22:38:48 +0100
