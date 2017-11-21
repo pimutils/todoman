@@ -20,7 +20,3 @@ override_dh_auto_clean:
 
 %:
 	dh $@ --with python3,bash-completion --buildsystem=pybuild
-
-override_dh_installman:
-	mv build/sphinx/man/todoman.1 build/sphinx/man/todo.1
-	dh_installman
