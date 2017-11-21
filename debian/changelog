@@ -1,7 +1,7 @@
 todoman (3.2.4-1) unstable; urgency=medium
 
   * Initial release. (Closes: #855887)
-  * install manpage for todo binary instead of todoman
+  * use todoman binary instead of todo
   * remove duplicate license text from doc
   * avoid lintian complaining about license.rst file
   * avoid embedding jquery.js & underscore.js from sphinx
@@ -14,4 +14,4 @@ todoman (3.2.4-1) unstable; urgency=medium
   * install bash autocompletion file
   * avoid removing confspec.ini file (needed for runtime)
 
- -- Félix Sipma <felix+debian@gueux.org>  Sun, 19 Nov 2017 22:56:25 +0100
+ -- Félix Sipma <felix+debian@gueux.org>  Wed, 22 Nov 2017 00:58:18 +0100
