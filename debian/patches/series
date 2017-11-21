@@ -2,3 +2,5 @@
 0002-avoid-generating-github-banner-in-docs.patch
 0003-avoid-generating-travis-button-in-docs.patch
 0004-doc-in-usr-share-doc-todoman.patch
+0005-use-todoman-binary-in-doc.patch
+0006-use-todoman-binary-in-bash-completion.patch

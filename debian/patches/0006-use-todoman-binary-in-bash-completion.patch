@@ -1,0 +1,107 @@
+From: =?utf-8?q?F=C3=A9lix_Sipma?= <felix+debian@gueux.org>
+Date: Wed, 22 Nov 2017 00:04:06 +0100
+Subject: use todoman binary in bash-completion
+
+---
+ contrib/completion/bash/_todo | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/contrib/completion/bash/_todo b/contrib/completion/bash/_todo
+index df3ca7c..b30bb55 100644
+--- a/contrib/completion/bash/_todo
++++ b/contrib/completion/bash/_todo
+@@ -1,22 +1,22 @@
+-_todo_get_ids()
++_todoman_get_ids()
+ {
+ 	local pattern='^\s*"id": \([0-9]\+\),'
+-	todo --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort
++	todoman --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort
+ }
+ 
+-_todo_get_lists()
++_todoman_get_lists()
+ {
+ 	local pattern='^\s*"list": "\(.*\)",'
+-	todo --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort | uniq
++	todoman --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort | uniq
+ }
+ 
+-_todo_get_locations()
++_todoman_get_locations()
+ {
+ 	local pattern='^\s*"location": \(.*\)\+,'
+-	todo --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort | uniq
++	todoman --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort | uniq
+ }
+ 
+-_todo_single_dash_options()
++_todoman_single_dash_options()
+ {
+ 	local prev_word=$1
+ 
+@@ -42,7 +42,7 @@ _todo_single_dash_options()
+ 	esac
+ }
+ 
+-_todo_double_dash_options()
++_todoman_double_dash_options()
+ {
+ 	local prev_word=$1
+ 
+@@ -78,7 +78,7 @@ _todo_double_dash_options()
+ 	echo " --help"
+ }
+ 
+-_todo_complete()
++_todoman_complete()
+ {
+ 	local cur_word prev_word arg_list
+ 
+@@ -87,9 +87,9 @@ _todo_complete()
+ 	arg_list=""
+ 
+ 	if [[ ${cur_word} == --* ]] ; then
+-		arg_list="$(_todo_double_dash_options ${prev_word})"
++		arg_list="$(_todoman_double_dash_options ${prev_word})"
+ 	elif [[ ${cur_word} == -* ]] ; then
+-		arg_list="$(_todo_single_dash_options ${prev_word}) $(_todo_double_dash_options ${prev_word})"
++		arg_list="$(_todoman_single_dash_options ${prev_word}) $(_todoman_double_dash_options ${prev_word})"
+ 	else
+ 		case ${prev_word} in
+ 			-v|--verbosity)
+@@ -99,10 +99,10 @@ _todo_complete()
+ 				arg_list="always auto never"
+ 			;;
+ 			--list)
+-				arg_list="$(_todo_get_lists)"
++				arg_list="$(_todoman_get_lists)"
+ 			;;
+ 			--location)
+-				arg_list="$(_todo_get_locations)"
++				arg_list="$(_todoman_get_locations)"
+ 			;;
+ 			--priority)
+ 				arg_list="none low medium high"
+@@ -114,13 +114,13 @@ _todo_complete()
+ 				arg_list=""
+ 			;;
+ 			cancel|copy|delete|done|edit|move|show)
+-				arg_list="$(_todo_get_ids)"
++				arg_list="$(_todoman_get_ids)"
+ 			;;
+ 			flush)
+ 				arg_list=""
+ 			;;
+ 			list)
+-				arg_list="$(_todo_get_lists)"
++				arg_list="$(_todoman_get_lists)"
+ 			;;
+ 			new)
+ 				arg_list=""
+@@ -136,4 +136,4 @@ _todo_complete()
+ 	return 0
+ }
+ 
+-complete -F _todo_complete todo
++complete -F _todoman_complete todoman

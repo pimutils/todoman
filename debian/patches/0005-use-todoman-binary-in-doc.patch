@@ -1,0 +1,30 @@
+From: =?utf-8?q?F=C3=A9lix_Sipma?= <felix+debian@gueux.org>
+Date: Wed, 22 Nov 2017 00:01:42 +0100
+Subject: use todoman binary in doc
+
+---
+ docs/source/usage.rst | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/docs/source/usage.rst b/docs/source/usage.rst
+index 114baf7..e696817 100644
+--- a/docs/source/usage.rst
++++ b/docs/source/usage.rst
+@@ -8,7 +8,7 @@ First of all, the classic usage output:
+ 
+ .. runblock:: console
+ 
+-    $ todo --help
++    $ todoman --help
+ 
+ The default action is ``list``, which outputs all tasks for all calendars, each
+ with a semi-permanent unique id::
+@@ -34,7 +34,7 @@ command.
+ 
+ To operate on a todo, the id is what's used to reference it. For example, to
+ edit the `Buy soy milk` task from the example above, the proper command is
+-``todo edit 3``, or ``todo undo 3`` to un-mark the task as done.
++``todoman edit 3``, or ``todoman undo 3`` to un-mark the task as done.
+ 
+ Editing tasks can only be done via the TUI interface for now, and cannot be
+ done via the command line yet.
