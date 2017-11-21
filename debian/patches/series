@@ -4,3 +4,4 @@
 0004-doc-in-usr-share-doc-todoman.patch
 0005-use-todoman-binary-in-doc.patch
 0006-use-todoman-binary-in-bash-completion.patch
+0007-use-todoman-console_script.patch
