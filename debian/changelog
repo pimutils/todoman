@@ -1,7 +1,12 @@
+todoman (3.2.4-2) unstable; urgency=medium
+
+  * use todoman binary instead of todo
+
+ -- Félix Sipma <felix+debian@gueux.org>  Thu, 23 Nov 2017 00:58:18 +0100
+
 todoman (3.2.4-1) unstable; urgency=medium
 
   * Initial release. (Closes: #855887)
-  * use todoman binary instead of todo
   * remove duplicate license text from doc
   * avoid lintian complaining about license.rst file
   * avoid embedding jquery.js & underscore.js from sphinx
