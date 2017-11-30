@@ -1,3 +1,9 @@
+todoman (3.2.4-3) unstable; urgency=medium
+
+  * add copyright information of todoman/widgets.py
+
+ -- Félix Sipma <felix+debian@gueux.org>  Thu, 30 Nov 2017 10:35:45 +0100
+
 todoman (3.2.4-2) unstable; urgency=medium
 
   * use todoman binary instead of todo
