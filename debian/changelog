@@ -1,3 +1,11 @@
+todoman (3.2.4-4) unstable; urgency=medium
+
+  * prevent the installation of the Hypothesis example file to make the build
+    reproducible. Thanks, Chris Lamb (Closes: #886100)
+  * bump Standards-Version to 4.1.3 (no change required)
+
+ -- Félix Sipma <felix+debian@gueux.org>  Fri, 05 Jan 2018 15:06:35 +0100
+
 todoman (3.2.4-3) unstable; urgency=medium
 
   * add copyright information of todoman/widgets.py
