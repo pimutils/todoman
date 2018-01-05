@@ -26,7 +26,7 @@ Build-Depends: debhelper (>= 10),
  python3-tabulate,
  python3-urwid,
  python3-xdg
-Standards-Version: 4.1.1
+Standards-Version: 4.1.3
 Homepage: https://github.com/pimutils/todoman
 Vcs-Git: https://git.gueux.org/todoman.git
 Vcs-Browser: https://git.gueux.org/?p=todoman.git;a=summary
