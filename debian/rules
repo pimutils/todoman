@@ -8,6 +8,8 @@ export PYBUILD_AFTER_BUILD=python3 setup.py build_sphinx -b html && \
 	python3 setup.py build_sphinx -b man
 # manually remove files needed for tests
 export PYBUILD_AFTER_TEST=rm {build_dir}/.coverage
+# Don't install Hypothesis example database into binary package.
+export HYPOTHESIS_DATABASE_FILE = $(CURDIR)/debian/hypothesis
 
 # exports needed to make the tests succeed (python3-click)
 export TZ=UTC
@@ -17,6 +19,7 @@ export LC_ALL=C.UTF-8
 # disable dh_auto_clean as "setup.py clean" tries to download packages from the
 # internet
 override_dh_auto_clean:
+	rm -f $(CURDIR)/debian/hypothesis
 
 %:
 	dh $@ --with python3,bash-completion --buildsystem=pybuild
