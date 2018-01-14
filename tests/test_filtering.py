@@ -137,7 +137,7 @@ def test_filtering_lists(tmpdir, runner, create):
 
 def test_due_aware(tmpdir, runner, create, now_for_tz):
     db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
-    l = next(db.lists())
+    list_ = next(db.lists())
 
     for tz in ['CET', 'HST']:
         for i in [1, 23, 25, 48]:
@@ -145,7 +145,7 @@ def test_due_aware(tmpdir, runner, create, now_for_tz):
             todo.due = now_for_tz(tz) + timedelta(hours=i)
             todo.summary = '{}'.format(i)
 
-            todo.list = l
+            todo.list = list_
             db.save(todo)
 
     todos = list(db.todos(due=24))
