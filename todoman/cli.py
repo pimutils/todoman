@@ -534,8 +534,8 @@ def move(ctx, list, ids):
     '--sort',
     help=(
           'Sort tasks using fields like : '
-          '"start", "due", "priority", "created_at", "percent_complete" etc.\n '
-          ' For all fields click: '
+          '"start", "due", "priority", "created_at", "percent_complete" etc.'
+          '\nFor all fields please refer to: '
           '<https://todoman.readthedocs.io/en/stable/usage.html> '
           ),
     callback=_sort_callback,
