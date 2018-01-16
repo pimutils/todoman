@@ -71,3 +71,24 @@ The format is JSON, with a single array containing each todo as a single entry
 given field, it will be printed as ``null``.
 
 Fields MAY be added in future, but will never be removed.
+
+Sorting
+-------
+
+The tasks can be sorted with the ``--sort`` argument. Sorting may be done according to the following fields:
+    - ``description``
+    - ``location``
+    - ``status``
+    - ``summary``
+    - ``uid``
+    - ``rrule``
+    - ``percent_complete``
+    - ``priority``
+    - ``sequence``
+    - ``categories``
+    - ``completed_at``
+    - ``created_at``
+    - ``dtstamp``
+    - ``start``
+    - ``due``
+    - ``last_modified``

@@ -532,7 +532,12 @@ def move(ctx, list, ids):
 @click.option('--grep', help='Only show tasks with message containg TEXT')
 @click.option(
     '--sort',
-    help='Sort tasks using these fields',
+    help=(
+          'Sort tasks using fields like : '
+          '"start", "due", "priority", "created_at", "percent_complete" etc.\n '
+          ' For all fields click: '
+          '<https://todoman.readthedocs.io/en/stable/usage.html> '
+          ),
     callback=_sort_callback,
 )
 @click.option(
