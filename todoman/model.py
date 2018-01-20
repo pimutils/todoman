@@ -2,8 +2,9 @@ import logging
 import os
 import socket
 import sqlite3
+from collections import namedtuple
 from datetime import date, datetime, timedelta
-from os.path import join, normpath, split
+from os.path import normpath, split
 from uuid import uuid4
 
 import icalendar
@@ -38,6 +39,13 @@ class cached_property:  # noqa
             return self
         obj.__dict__[self.__name__] = result = self.fget(obj)
         return result
+
+
+def namedtuple_factory(cursor, row):
+    """Returns sqlite rows as named tuples."""
+    fields = [col[0] for col in cursor.description]
+    Row = namedtuple("Row", fields)
+    return Row(*row)
 
 
 class Todo:
@@ -384,7 +392,7 @@ class Cache:
         os.makedirs(os.path.dirname(self.cache_path), exist_ok=True)
 
         self._conn = sqlite3.connect(self.cache_path)
-        self._conn.row_factory = sqlite3.Row
+        self._conn.row_factory = namedtuple_factory
         self._conn.execute("PRAGMA foreign_keys = ON")
 
         self.create_tables()
@@ -493,7 +501,7 @@ class Cache:
         ).fetchone()
 
         if result:
-            return result['name']
+            return result.name
 
         try:
             self._conn.execute(
@@ -757,7 +765,7 @@ class Cache:
 
         for row in result:
             todo = self._todo_from_db(row)
-            path = row['path']
+            path = row.path
 
             if path in seen_paths and path not in warned_paths:
                 logger.warning(
@@ -775,33 +783,33 @@ class Cache:
 
     def _todo_from_db(self, row):
         todo = Todo()
-        todo.id = row['id']
-        todo.uid = row['uid']
-        todo.summary = row['summary']
-        todo.due = self._dt_from_db(row['due'])
-        todo.start = self._dt_from_db(row['start'])
-        todo.priority = row['priority']
-        todo.created_at = self._dt_from_db(row['created_at'])
-        todo.completed_at = self._dt_from_db(row['completed_at'])
-        todo.dtstamp = self._dt_from_db(row['dtstamp'])
-        todo.percent_complete = row['percent_complete']
-        todo.status = row['status']
-        todo.description = row['description']
-        todo.location = row['location']
-        todo.sequence = row['sequence']
-        todo.last_modified = row['last_modified']
-        todo.list = self.lists_map[row['list_name']]
-        todo.filename = os.path.basename(row['path'])
-        todo.rrule = row['rrule']
+        todo.id = row.id
+        todo.uid = row.uid
+        todo.summary = row.summary
+        todo.due = self._dt_from_db(row.due)
+        todo.start = self._dt_from_db(row.start)
+        todo.priority = row.priority
+        todo.created_at = self._dt_from_db(row.created_at)
+        todo.completed_at = self._dt_from_db(row.completed_at)
+        todo.dtstamp = self._dt_from_db(row.dtstamp)
+        todo.percent_complete = row.percent_complete
+        todo.status = row.status
+        todo.description = row.description
+        todo.location = row.location
+        todo.sequence = row.sequence
+        todo.last_modified = row.last_modified
+        todo.list = self.lists_map[row.list_name]
+        todo.filename = os.path.basename(row.path)
+        todo.rrule = row.rrule
         return todo
 
     def lists(self):
         result = self._conn.execute("SELECT * FROM lists")
         for row in result:
             yield List(
-                name=row['name'],
-                path=row['path'],
-                colour=row['colour'],
+                name=row.name,
+                path=row.path,
+                colour=row.colour,
             )
 
     @cached_property
@@ -811,12 +819,12 @@ class Cache:
     def expire_lists(self, paths):
         results = self._conn.execute("SELECT path, name, mtime from lists")
         for result in results:
-            if result['path'] not in paths:
-                self.delete_list(result['name'])
+            if result.path not in paths:
+                self.delete_list(result.name)
             else:
-                mtime = paths.get(result['path'])
-                if mtime and mtime > result['mtime']:
-                    self.delete_list(result['name'])
+                mtime = paths.get(result.path)
+                if mtime and mtime > result.mtime:
+                    self.delete_list(result.name)
 
     def delete_list(self, name):
         self._conn.execute("DELETE FROM lists WHERE lists.name = ?", (name,))
@@ -842,10 +850,10 @@ class Cache:
                   FROM files, todos
                  WHERE todos.file_path = files.path
                    AND path=?
-            ''', (result['path'],)
+            ''', (result.path,)
             ).fetchone()
-            if count['c'] > 1:
-                raise exceptions.ReadOnlyTodo(result['path'])
+            if count.c > 1:
+                raise exceptions.ReadOnlyTodo(result.path)
 
         return self._todo_from_db(result)
 
@@ -853,7 +861,7 @@ class Cache:
         """Remove stale cache entries based on the given fresh data."""
         result = self._conn.execute("SELECT path, mtime FROM files")
         for row in result:
-            path, mtime = row['path'], row['mtime']
+            path, mtime = row.path, row.mtime
             if paths_to_mtime.get(path, None) != mtime:
                 self.expire_file(path)
 
