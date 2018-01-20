@@ -101,6 +101,27 @@ def test_list_colour(tmpdir):
     assert list_.colour == '#8ab6d2'
 
 
+def test_list_colour_cache_invalidation(tmpdir, sleep):
+    tmpdir.join('default').mkdir()
+    with tmpdir.join('default').join('color').open('w') as f:
+        f.write('#8ab6d2')
+
+    db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite3'))
+    list_ = next(db.lists())
+
+    assert list_.colour == '#8ab6d2'
+
+    sleep()
+
+    with tmpdir.join('default').join('color').open('w') as f:
+        f.write('#f874fd')
+
+    db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite3'))
+    list_ = next(db.lists())
+
+    assert list_.colour == '#f874fd'
+
+
 def test_list_no_colour(tmpdir):
     tmpdir.join('default').mkdir()
 

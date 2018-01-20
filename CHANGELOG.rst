@@ -7,6 +7,7 @@ releases, in reverse chronological order.
 v3.6.0
 ------
 * Allow passing a custom configuration file with the ``--config/-c`` option.
+* Cached list metadata is now invalidated when it has changed on-disk.
 
 v3.5.0
 ------
