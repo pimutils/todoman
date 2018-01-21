@@ -4,6 +4,11 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.4.0
+------
+
+* Add ``-r`` option to ``new`` to read description from ``stdin``.
+
 v3.3.0
 ------
 

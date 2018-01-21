@@ -875,10 +875,10 @@ def test_edit_raw(todo_factory, runner):
     assert not result.output
 
 
-def test_new_description_from_stdin(runner):
+def test_new_description_from_stdin(runner, todos):
     result = runner.invoke(cli, ['new', '-l', 'default', '-r', 'hello'],
                            input='world\n')
     assert not result.exception
-    result = runner.invoke(cli, ['show', '1'], input='world\n')
-    assert not result.exception
-    assert 'world' in result.output
+    todo, = todos()
+    assert 'world' in todo.description
+    assert 'hello' in todo.summary
