@@ -323,7 +323,7 @@ except ImportError:
     '-r',
     is_flag=True,
     default=False,
-    help='Read task description from stdin'
+    help='Read task description from stdin.'
 )
 @_todo_property_options
 @_interactive_option
