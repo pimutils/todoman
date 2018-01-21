@@ -66,10 +66,58 @@ def test_percent(tmpdir, runner, create):
     assert '78%' in result.output
 
 
-def test_list_inexistant(tmpdir, runner, create):
-    result = runner.invoke(cli, ['list', 'nonexistant'])
+@pytest.mark.parametrize(
+    'list_name', [
+        'default',
+        'DEfault',
+        'deFAUlT',
+    ])
+def test_list_case_insensitive(tmpdir, runner, create, list_name):
+    result = runner.invoke(cli, ['list', list_name])
+    assert not result.exception
+
+
+def test_list_case_insensitive_collision(tmpdir, runner, create):
+    """
+    Test that the case-insensitive list name matching is not used if
+    colliding list names exist.
+    """
+    tmpdir.mkdir('DEFaUlT')
+
+    result = runner.invoke(cli, ['list', 'deFaulT'])
     assert result.exception
-    assert 'Error: Invalid value for "lists":' in result.output
+
+    result = runner.invoke(cli, ['list', 'default'])
+    assert not result.exception
+
+    result = runner.invoke(cli, ['list', 'DEFaUlT'])
+    assert not result.exception
+
+
+def test_list_case_insensitive_other_collision(tmpdir, runner, create):
+    """
+    Test that the case-insensitive list name matching is used if a
+    collision exists that does not affect the queried list.
+    """
+    tmpdir.mkdir('coLLiding')
+    tmpdir.mkdir('COLLiDING')
+
+    result = runner.invoke(cli, ['list', 'cOlliDInG'])
+    assert result.exception
+
+    result = runner.invoke(cli, ['list', 'DEfAult'])
+    assert not result.exception
+
+
+@pytest.mark.parametrize(
+    'list_name', [
+        'nonexistant',
+        'NONexistant',
+    ])
+def test_list_inexistant(tmpdir, runner, create, list_name):
+    result = runner.invoke(cli, ['list', list_name])
+    assert result.exception
+    assert 'Error: Invalid value for "lists": %s' % list_name in result.output
 
 
 def test_show_existing(tmpdir, runner, create):
