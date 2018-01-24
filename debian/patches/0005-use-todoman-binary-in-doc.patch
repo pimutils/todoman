@@ -7,7 +7,7 @@ Subject: use todoman binary in doc
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/docs/source/usage.rst b/docs/source/usage.rst
-index 114baf7..e696817 100644
+index 3ed8484..3e89da0 100644
 --- a/docs/source/usage.rst
 +++ b/docs/source/usage.rst
 @@ -8,7 +8,7 @@ First of all, the classic usage output:

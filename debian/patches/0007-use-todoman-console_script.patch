@@ -3,19 +3,21 @@ Date: Wed, 22 Nov 2017 00:55:05 +0100
 Subject: use todoman console_script
 
 ---
- setup.py | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ setup.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/setup.py b/setup.py
-index 60ea58e..ce6784a 100644
+index c52b916..76a8fa4 100644
 --- a/setup.py
 +++ b/setup.py
-@@ -13,7 +13,7 @@ setup(
+@@ -13,8 +13,8 @@ setup(
      include_package_data=True,
      entry_points={
          'console_scripts': [
 -            'todo = todoman.cli:cli',
+-        ],
 +            'todoman = todoman.cli:cli',
-         ]
++        ]
      },
-     install_requires=open('requirements.txt').readlines(),
+     install_requires=[
+         'atomicwrites',
