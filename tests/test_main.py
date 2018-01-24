@@ -13,7 +13,9 @@ def test_main(tmpdir, runner):
     cli_result = runner.invoke(cli, ['--version'])
 
     pipe = Popen(
-        [sys.executable, '-m', 'todoman', '--version'], stdout=PIPE, env=env
+        [sys.executable, '-m', 'todoman', '--version'],
+        stdout=PIPE,
+        env=env,
     )
     main_output = pipe.communicate()[0]
 

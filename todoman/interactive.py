@@ -2,9 +2,7 @@ import urwid
 
 from todoman import widgets
 
-_palette = [
-    ('error', 'light red', '')
-]
+_palette = [('error', 'light red', '')]
 
 
 class TodoEditor:
@@ -32,14 +30,15 @@ class TodoEditor:
         buttons = urwid.Columns([(8, save_btn), cancel_text], dividechars=2)
 
         pile_items = []
-        for label, field in [("Summary", self._summary),
-                             ("Description", self._description),
-                             ("Location", self._location),
-                             ("Start", self._dtstart),
-                             ("Due", self._due),
-                             ("Completed", self._completed),
-                             ("Priority", self._priority),
-                             ]:
+        for label, field in [
+            ("Summary", self._summary),
+            ("Description", self._description),
+            ("Location", self._location),
+            ("Start", self._dtstart),
+            ("Due", self._due),
+            ("Completed", self._completed),
+            ("Priority", self._priority),
+        ]:
             label = urwid.Text(label + ":", align='right')
             column = urwid.Columns([(13, label), field], dividechars=1)
             pile_items.append(('pack', column))
@@ -47,15 +46,18 @@ class TodoEditor:
         grid = urwid.Pile(pile_items)
         spacer = urwid.Divider()
 
-        self.left_column = urwid.ListBox(urwid.SimpleListWalker([
-            grid,
-            spacer,
-            self._status,
-            buttons,
-        ]))
-        right_column = urwid.ListBox(urwid.SimpleListWalker(
-            [urwid.Text('List:\n')] + self.list_selector
-        ))
+        self.left_column = urwid.ListBox(
+            urwid.SimpleListWalker([
+                grid,
+                spacer,
+                self._status,
+                buttons,
+            ])
+        )
+        right_column = urwid.ListBox(
+            urwid.SimpleListWalker([urwid.Text('List:\n')] + self.list_selector
+                                   )
+        )
 
         self._ui = urwid.Columns([self.left_column, right_column])
 
@@ -81,10 +83,7 @@ class TodoEditor:
             parent=self,
             edit_text=self.formatter.format_datetime(self.todo.start),
         )
-        self._completed = urwid.CheckBox(
-            "",
-            state=self.todo.is_completed
-        )
+        self._completed = urwid.CheckBox("", state=self.todo.is_completed)
         self._priority = widgets.PrioritySelector(
             parent=self,
             priority=self.todo.priority,
@@ -110,13 +109,13 @@ class TodoEditor:
             ' Ctrl-C: Cancel\n'
             ' Ctrl-S: Save (only works if not a shell shortcut already)\n'
             '\n'
-            'In Textfields:\n'
-            + '\n'.join(' {}: {}'.format(k, v) for k, v
-                        in widgets.ExtendedEdit.HELP) +
-            '\n\n'
-            'In Priority Selector:\n'
-            + '\n'.join(' {}: {}'.format(k, v) for k, v
-                        in widgets.PrioritySelector.HELP)
+            'In Textfields:\n' + '\n'.join(
+                ' {}: {}'.format(k, v) for k, v in widgets.ExtendedEdit.HELP
+            ) + '\n\n'
+            'In Priority Selector:\n' + '\n'.join(
+                ' {}: {}'.format(k, v)
+                for k, v in widgets.PrioritySelector.HELP
+            )
         )
 
     def _change_current_list(self, radio_button, new_state, new_list):

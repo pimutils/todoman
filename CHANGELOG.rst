@@ -4,6 +4,15 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.3.0
+------
+
+* New runtime dependency: ``click-log``.
+* Drop support for Python 3.3, which has reached its end of life cycle.
+* Add `--raw` flag to `edit`. This allows editing the raw icalendar file, but
+  **only use this if you really know what you're doing**. There's a big risk of
+  data loss, and this is considered a developer / expert feature!
+
 v3.2.4
 ------
 

@@ -9,25 +9,10 @@ def test_priority(tmpdir, runner, create):
     assert not result.exception
     assert not result.output.strip()
 
-    create(
-        'one.ics',
-        'SUMMARY:haha\n'
-        'PRIORITY:4\n'
-    )
-    create(
-        'two.ics',
-        'SUMMARY:hoho\n'
-        'PRIORITY:9\n'
-    )
-    create(
-        'three.ics',
-        'SUMMARY:hehe\n'
-        'PRIORITY:5\n'
-    )
-    create(
-        'four.ics',
-        'SUMMARY:huhu\n'
-    )
+    create('one.ics', 'SUMMARY:haha\n' 'PRIORITY:4\n')
+    create('two.ics', 'SUMMARY:hoho\n' 'PRIORITY:9\n')
+    create('three.ics', 'SUMMARY:hehe\n' 'PRIORITY:5\n')
+    create('four.ics', 'SUMMARY:huhu\n')
 
     result_high = runner.invoke(cli, ['list', '--priority=high'])
     assert not result_high.exception
@@ -66,20 +51,9 @@ def test_location(tmpdir, runner, create):
     assert not result.exception
     assert not result.output.strip()
 
-    create(
-        'one.ics',
-        'SUMMARY:haha\n'
-        'LOCATION: The Pool\n'
-    )
-    create(
-        'two.ics',
-        'SUMMARY:hoho\n'
-        'LOCATION: The Dungeon\n'
-    )
-    create(
-        'two.ics',
-        'SUMMARY:harhar\n'
-    )
+    create('one.ics', 'SUMMARY:haha\n' 'LOCATION: The Pool\n')
+    create('two.ics', 'SUMMARY:hoho\n' 'LOCATION: The Dungeon\n')
+    create('two.ics', 'SUMMARY:harhar\n')
     result = runner.invoke(cli, ['list', '--location', 'Pool'])
     assert not result.exception
     assert 'haha' in result.output
@@ -92,20 +66,9 @@ def test_category(tmpdir, runner, create):
     assert not result.exception
     assert not result.output.strip()
 
-    create(
-        'one.ics',
-        'SUMMARY:haha\n'
-        'CATEGORIES:work,trip\n'
-    )
-    create(
-        'two.ics',
-        'CATEGORIES:trip\n'
-        'SUMMARY:hoho\n'
-    )
-    create(
-        'three.ics',
-        'SUMMARY:harhar\n'
-    )
+    create('one.ics', 'SUMMARY:haha\n' 'CATEGORIES:work,trip\n')
+    create('two.ics', 'CATEGORIES:trip\n' 'SUMMARY:hoho\n')
+    create('three.ics', 'SUMMARY:harhar\n')
     result = runner.invoke(cli, ['list', '--category', 'work'])
     assert not result.exception
     assert 'haha' in result.output
@@ -143,10 +106,7 @@ def test_grep(tmpdir, runner, create):
         'SUMMARY:research\n'
         'DESCRIPTION: Cure cancer\n',
     )
-    create(
-        'six.ics',
-        'SUMMARY:hoho\n'
-    )
+    create('six.ics', 'SUMMARY:hoho\n')
     result = runner.invoke(cli, ['list', '--grep', 'fun'])
     assert not result.exception
     assert 'fun' in result.output
@@ -177,7 +137,7 @@ def test_filtering_lists(tmpdir, runner, create):
 
 def test_due_aware(tmpdir, runner, create, now_for_tz):
     db = Database([tmpdir.join('default')], tmpdir.join('cache.sqlite'))
-    l = next(db.lists())
+    list_ = next(db.lists())
 
     for tz in ['CET', 'HST']:
         for i in [1, 23, 25, 48]:
@@ -185,7 +145,7 @@ def test_due_aware(tmpdir, runner, create, now_for_tz):
             todo.due = now_for_tz(tz) + timedelta(hours=i)
             todo.summary = '{}'.format(i)
 
-            todo.list = l
+            todo.list = list_
             db.save(todo)
 
     todos = list(db.todos(due=24))
@@ -203,10 +163,10 @@ def test_due_naive(tmpdir, runner, create):
     for i in [1, 23, 25, 48]:
         due = now + timedelta(hours=i)
         create(
-            'test_{}.ics'.format(i),
-            'SUMMARY:{}\n'
+            'test_{}.ics'.format(i), 'SUMMARY:{}\n'
             'DUE;VALUE=DATE-TIME:{}\n'.format(
-                i, due.strftime("%Y%m%dT%H%M%S"),
+                i,
+                due.strftime("%Y%m%dT%H%M%S"),
             )
         )
 
@@ -273,13 +233,10 @@ def test_statuses(todo_factory, todos):
     in_process_todos = set(todos(status=['IN-PROCESS']))
     needs_action_todos = set(todos(status=['NEEDS-ACTION']))
 
-    assert {t.uid for t in all_todos} == {
-        cancelled,
-        completed,
-        in_process,
-        needs_action,
-        no_status
-    }
+    assert {t.uid
+            for t in all_todos} == {
+                cancelled, completed, in_process, needs_action, no_status
+            }
     assert {t.uid for t in cancelled_todos} == {cancelled}
     assert {t.uid for t in completed_todos} == {completed}
     assert {t.uid for t in in_process_todos} == {in_process}

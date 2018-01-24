@@ -30,7 +30,7 @@ config = ConfigObj(
     None,
     configspec=specpath,
     stringify=False,
-    list_values=False
+    list_values=False,
 )
 validator = validate.Validator()
 config.validate(validator)
@@ -52,7 +52,9 @@ def write_section(section, secname, key, comment, file_):
         fun_args = []
     if fun_name == 'integer' and len(fun_args) == 2:
         fun_name += ', allowed values are between {} and {}'.format(
-            fun_args[0], fun_args[1])
+            fun_args[0],
+            fun_args[1],
+        )
         fun_args = []
     file_.write('\n')
     if fun_name in ['expand_db_path', 'expand_path']:
@@ -89,8 +91,13 @@ with open('confspec.tmp', 'w') as file_:
                 file_.write('\n')
                 comments = spec[secname]['__many__'].comments
                 for key, comment in sorted(comments.items()):
-                    write_section(spec[secname]['__many__'][key], secname,
-                                  key, comment, file_)
+                    write_section(
+                        spec[secname]['__many__'][key],
+                        secname,
+                        key,
+                        comment,
+                        file_,
+                    )
             else:
                 write_section(spec[secname][key], secname, key, comment, file_)
 
@@ -180,7 +187,6 @@ pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
-
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -314,8 +320,13 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'Todoman.tex', 'Todoman Documentation',
-   'Hugo Osvaldo Barrera', 'manual'),
+    (
+        master_doc,
+        'Todoman.tex',
+        'Todoman Documentation',
+        'Hugo Osvaldo Barrera',
+        'manual',
+    ),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -338,19 +349,20 @@ latex_documents = [
 # If false, no module index is generated.
 #  latex_domain_indices = True
 
-
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'todoman', 'Todoman Documentation',
-     [author], 1)
-]
+man_pages = [(
+    master_doc,
+    'todoman',
+    'Todoman Documentation',
+    [author],
+    1,
+)]
 
 # If true, show URL addresses after external links.
 #  man_show_urls = False
-
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -358,9 +370,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'Todoman', 'Todoman Documentation',
-   author, 'Todoman', 'One line description of project.',
-   'Miscellaneous'),
+    (
+        master_doc,
+        'Todoman',
+        'Todoman Documentation',
+        author,
+        'Todoman',
+        'One line description of project.',
+        'Miscellaneous',
+    ),
 ]
 
 # Documents to append as an appendix to all manuals.

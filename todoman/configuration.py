@@ -63,9 +63,7 @@ def find_config():
         if exists(path):
             return path
 
-    raise ConfigurationException(
-        "No configuration file found.\n\n"
-    )
+    raise ConfigurationException("No configuration file found.\n\n")
 
 
 def load_config():
@@ -83,10 +81,10 @@ def load_config():
 
     for section, key, error in flatten_errors(config, validation):
         if not error:
-            raise ConfigurationException(
-                ('{} is missing from the {} section of the configuration ' +
-                 'file').format(key, section)
-            )
+            raise ConfigurationException((
+                '{} is missing from the {} section of the configuration ' +
+                'file'
+            ).format(key, section))
         if isinstance(error, VdtValueError):
             raise ConfigurationException(
                 'Bad {} setting, {}'.format(key, error.args[0])
