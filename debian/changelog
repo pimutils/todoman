@@ -2,8 +2,9 @@ todoman (3.3.0-1) unstable; urgency=medium
 
   * New upstream version 3.3.0
   * add python3-click-log as dependency
+  * rebase patches
 
- -- Félix Sipma <felix+debian@gueux.org>  Wed, 24 Jan 2018 11:59:32 +0100
+ -- Félix Sipma <felix+debian@gueux.org>  Wed, 24 Jan 2018 12:02:59 +0100
 
 todoman (3.2.4-4) unstable; urgency=medium
 
