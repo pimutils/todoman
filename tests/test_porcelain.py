@@ -9,8 +9,7 @@ from todoman.formatters import PorcelainFormatter
 
 def test_list_all(tmpdir, runner, create):
     create(
-        'test.ics',
-        'SUMMARY:Do stuff\n'
+        'test.ics', 'SUMMARY:Do stuff\n'
         'STATUS:COMPLETED\n'
         'DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n'
         'PERCENT-COMPLETE:26\n'
@@ -30,14 +29,14 @@ def test_list_all(tmpdir, runner, create):
     }]
 
     assert not result.exception
-    assert result.output.strip() == json.dumps(expected, indent=4,
-                                               sort_keys=True)
+    assert result.output.strip() == json.dumps(
+        expected, indent=4, sort_keys=True
+    )
 
 
 def test_list_nodue(tmpdir, runner, create):
     create(
-        'test.ics',
-        'SUMMARY:Do stuff\n'
+        'test.ics', 'SUMMARY:Do stuff\n'
         'PERCENT-COMPLETE:12\n'
         'PRIORITY:4\n'
     )
@@ -55,76 +54,57 @@ def test_list_nodue(tmpdir, runner, create):
     }]
 
     assert not result.exception
-    assert result.output.strip() == json.dumps(expected, indent=4,
-                                               sort_keys=True)
+    assert result.output.strip() == json.dumps(
+        expected, indent=4, sort_keys=True
+    )
 
 
 def test_list_priority(tmpdir, runner, create):
-    result = runner.invoke(cli, ['--porcelain', 'list'],
-                           catch_exceptions=False)
+    result = runner.invoke(
+        cli, ['--porcelain', 'list'], catch_exceptions=False
+    )
     assert not result.exception
     assert result.output.strip() == '[]'
-    create(
-        'one.ics',
-        'SUMMARY:haha\n'
-        'PRIORITY:4\n'
-    )
-    create(
-        'two.ics',
-        'SUMMARY:hoho\n'
-        'PRIORITY:9\n'
-    )
-    create(
-        'three.ics',
-        'SUMMARY:hehe\n'
-        'PRIORITY:5\n'
-    )
-    create(
-        'four.ics',
-        'SUMMARY:huhu\n'
-    )
+    create('one.ics', 'SUMMARY:haha\n' 'PRIORITY:4\n')
+    create('two.ics', 'SUMMARY:hoho\n' 'PRIORITY:9\n')
+    create('three.ics', 'SUMMARY:hehe\n' 'PRIORITY:5\n')
+    create('four.ics', 'SUMMARY:huhu\n')
 
-    result_high = runner.invoke(cli, ['--porcelain', 'list',
-                                '--priority=4'])
+    result_high = runner.invoke(cli, ['--porcelain', 'list', '--priority=4'])
     assert not result_high.exception
     assert 'haha' in result_high.output
     assert 'hoho' not in result_high.output
     assert 'huhu' not in result_high.output
     assert 'hehe' not in result_high.output
 
-    result_medium = runner.invoke(cli, ['--porcelain', 'list',
-                                  '--priority=5'])
+    result_medium = runner.invoke(cli, ['--porcelain', 'list', '--priority=5'])
     assert not result_medium.exception
     assert 'haha' in result_medium.output
     assert 'hehe' in result_medium.output
     assert 'hoho' not in result_medium.output
     assert 'huhu' not in result_medium.output
 
-    result_low = runner.invoke(cli, ['--porcelain', 'list',
-                               '--priority=9'])
+    result_low = runner.invoke(cli, ['--porcelain', 'list', '--priority=9'])
     assert not result_low.exception
     assert 'haha' in result_low.output
     assert 'hehe' in result_low.output
     assert 'hoho' in result_low.output
     assert 'huhu' not in result_low.output
 
-    result_none = runner.invoke(cli, ['--porcelain', 'list',
-                                '--priority=0'])
+    result_none = runner.invoke(cli, ['--porcelain', 'list', '--priority=0'])
     assert not result_none.exception
     assert 'haha' in result_none.output
     assert 'hehe' in result_none.output
     assert 'hoho' in result_none.output
     assert 'huhu' in result_none.output
 
-    result_error = runner.invoke(cli, ['--porcelain', 'list',
-                                 '--priority=18'])
+    result_error = runner.invoke(cli, ['--porcelain', 'list', '--priority=18'])
     assert result_error.exception
 
 
 def test_show(tmpdir, runner, create):
     create(
-        'test.ics',
-        'SUMMARY:harhar\n'
+        'test.ics', 'SUMMARY:harhar\n'
         'DESCRIPTION:Lots of text. Yum!\n'
         'PRIORITY:5\n'
     )
@@ -142,8 +122,9 @@ def test_show(tmpdir, runner, create):
     }
 
     assert not result.exception
-    assert result.output.strip() == json.dumps(expected, indent=4,
-                                               sort_keys=True)
+    assert result.output.strip() == json.dumps(
+        expected, indent=4, sort_keys=True
+    )
 
 
 def test_simple_action(todo_factory):

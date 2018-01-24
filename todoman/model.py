@@ -16,7 +16,6 @@ from todoman import exceptions
 
 logger = logging.getLogger(name=__name__)
 
-
 # Initialize this only once
 # We were doing this all over the place (even if unused!), so at least only do
 # it once.
@@ -27,6 +26,7 @@ class cached_property:  # noqa
     '''A read-only @property that is only evaluated once. Only usable on class
     instances' methods.
     '''
+
     def __init__(self, fget, doc=None):
         self.__name__ = fget.__name__
         self.__module__ = fget.__module__
@@ -96,7 +96,7 @@ class Todo:
 
         if os.path.basename(self.filename) != self.filename:
             raise ValueError(
-                'Must not be an absolute path: {}' .format(self.filename)
+                'Must not be an absolute path: {}'.format(self.filename)
             )
         self.mtime = mtime or datetime.now()
 
@@ -110,9 +110,7 @@ class Todo:
         todo = Todo(new=True, list=self.list)
 
         fields = (
-            Todo.STRING_FIELDS +
-            Todo.INT_FIELDS +
-            Todo.LIST_FIELDS +
+            Todo.STRING_FIELDS + Todo.INT_FIELDS + Todo.LIST_FIELDS +
             Todo.DATETIME_FIELDS
         )
         fields.remove('uid')
@@ -150,10 +148,7 @@ class Todo:
         'rrule',
     ]
     ALL_SUPPORTED_FIELDS = (
-        DATETIME_FIELDS +
-        INT_FIELDS +
-        LIST_FIELDS +
-        RRULE_FIELDS +
+        DATETIME_FIELDS + INT_FIELDS + LIST_FIELDS + RRULE_FIELDS +
         STRING_FIELDS
     )
 
@@ -182,8 +177,8 @@ class Todo:
     @property
     def is_completed(self):
         return (
-            bool(self.completed_at) or
-            self.status in ('CANCELLED', 'COMPLETED')
+            bool(self.completed_at)
+            or self.status in ('CANCELLED', 'COMPLETED')
         )
 
     @property
@@ -245,7 +240,6 @@ class Todo:
 
 class VtodoWritter:
     """Writes a Todo as a VTODO file."""
-
     """Maps Todo field names to VTODO field names"""
     FIELD_MAP = {
         'summary': 'summary',
@@ -412,31 +406,34 @@ class Cache:
         if self.is_latest_version():
             return
 
-        self._conn.executescript('''
+        self._conn.executescript(
+            '''
             DROP TABLE IF EXISTS lists;
             DROP TABLE IF EXISTS files;
             DROP TABLE IF EXISTS todos;
-        ''')
-
-        self._conn.execute(
-            'CREATE TABLE IF NOT EXISTS meta ("version" INT)'
+        '''
         )
+
+        self._conn.execute('CREATE TABLE IF NOT EXISTS meta ("version" INT)')
 
         self._conn.execute(
             'INSERT INTO meta (version) VALUES (?)',
             (Cache.SCHEMA_VERSION,),
         )
 
-        self._conn.execute('''
+        self._conn.execute(
+            '''
             CREATE TABLE IF NOT EXISTS lists (
                 "name" TEXT PRIMARY KEY,
                 "path" TEXT,
                 "colour" TEXT,
                 CONSTRAINT path_unique UNIQUE (path)
             );
-        ''')
+        '''
+        )
 
-        self._conn.execute('''
+        self._conn.execute(
+            '''
             CREATE TABLE IF NOT EXISTS files (
                 "path" TEXT PRIMARY KEY,
                 "list_name" TEXT,
@@ -445,9 +442,11 @@ class Cache:
                 CONSTRAINT path_unique UNIQUE (path),
                 FOREIGN KEY(list_name) REFERENCES lists(name) ON DELETE CASCADE
             );
-        ''')
+        '''
+        )
 
-        self._conn.execute('''
+        self._conn.execute(
+            '''
             CREATE TABLE IF NOT EXISTS todos (
                 "file_path" TEXT,
 
@@ -471,7 +470,8 @@ class Cache:
 
                 FOREIGN KEY(file_path) REFERENCES files(path) ON DELETE CASCADE
             );
-        ''')
+        '''
+        )
 
     def clear(self):
         self._conn.close()
@@ -496,7 +496,11 @@ class Cache:
         try:
             self._conn.execute(
                 "INSERT INTO lists (name, path, colour) VALUES (?, ?, ?)",
-                (name, path, colour,),
+                (
+                    name,
+                    path,
+                    colour,
+                ),
             )
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExists('list', name) from e
@@ -505,17 +509,19 @@ class Cache:
 
     def add_file(self, list_name, path, mtime):
         try:
-            self._conn.execute('''
+            self._conn.execute(
+                '''
                 INSERT INTO files (
                     list_name,
                     path,
                     mtime
                 ) VALUES (?, ?, ?);
                 ''', (
-                list_name,
-                path,
-                mtime,
-            ))
+                    list_name,
+                    path,
+                    mtime,
+                )
+            )
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExists('file', list_name) from e
 
@@ -609,9 +615,23 @@ class Cache:
 
         return rv
 
-    def todos(self, lists=(), priority=None, location='', category='', grep='',
-              sort=(), reverse=True, due=None, start=None, startable=False,
-              status=('NEEDS-ACTION', 'IN-PROCESS',)):
+    def todos(
+        self,
+        lists=(),
+        priority=None,
+        location='',
+        category='',
+        grep='',
+        sort=(),
+        reverse=True,
+        due=None,
+        start=None,
+        startable=False,
+        status=(
+            'NEEDS-ACTION',
+            'IN-PROCESS',
+        )
+    ):
         """
         Returns filtered cached todos, in a specified order.
 
@@ -712,7 +732,10 @@ class Cache:
                 FROM todos, files
                WHERE todos.file_path = files.path {}
             ORDER BY {}
-        '''.format(' '.join(extra_where), order,)
+        '''.format(
+            ' '.join(extra_where),
+            order,
+        )
 
         logger.debug(query)
         logger.debug(params)
@@ -727,8 +750,10 @@ class Cache:
             path = row['path']
 
             if path in seen_paths and path not in warned_paths:
-                logger.warning('Todo is in read-only mode because there are '
-                               'multiple todos in %s', path)
+                logger.warning(
+                    'Todo is in read-only mode because there are '
+                    'multiple todos in %s', path
+                )
                 warned_paths.add(path)
             seen_paths.add(path)
             yield todo
@@ -784,7 +809,8 @@ class Cache:
 
     def todo(self, id, read_only=False):
         # XXX: DON'T USE READ_ONLY
-        result = self._conn.execute('''
+        result = self._conn.execute(
+            '''
             SELECT todos.*, files.list_name, files.path
               FROM todos, files
             WHERE files.path = todos.file_path
@@ -796,7 +822,8 @@ class Cache:
             raise exceptions.NoSuchTodo(id)
 
         if not read_only:
-            count = self._conn.execute('''
+            count = self._conn.execute(
+                '''
                 SELECT count(id) AS c
                   FROM files, todos
                  WHERE todos.file_path = files.path
@@ -821,7 +848,6 @@ class Cache:
 
 
 class List:
-
     def __init__(self, name, path, colour=None):
         self.path = path
         self.name = name

@@ -56,11 +56,7 @@ def test_sane_config(config, runner, tmpdir):
 
 
 def test_invalid_color(config, runner):
-    config.write(
-        '[main]\n'
-        'color = 12\n'
-        'path = "/"\n'
-    )
+    config.write('[main]\n' 'color = 12\n' 'path = "/"\n')
     result = runner.invoke(cli, ['list'])
     assert result.exception
     assert 'Error: Bad color setting, the value "12" is unacceptable.' \
@@ -68,24 +64,20 @@ def test_invalid_color(config, runner):
 
 
 def test_invalid_color_arg(config, runner):
-    config.write(
-        '[main]\n'
-        'path = "/"\n'
-    )
+    config.write('[main]\n' 'path = "/"\n')
     result = runner.invoke(cli, ['--color', '12', 'list'])
     assert result.exception
     assert 'Usage:' in result.output
 
 
 def test_missing_path(config, runner):
-    config.write(
-        '[main]\n'
-        'color = auto\n'
-    )
+    config.write('[main]\n' 'color = auto\n')
     result = runner.invoke(cli, ['list'])
     assert result.exception
-    assert ("Error: path is missing from the ['main'] section of the "
-            "configuration file") in result.output
+    assert (
+        "Error: path is missing from the ['main'] section of the "
+        "configuration file"
+    ) in result.output
 
 
 @pytest.mark.xfail(reason="Not implemented")
@@ -122,10 +114,11 @@ def test_missing_cache_dir(config, runner, tmpdir):
 
     path = tmpdir.join('config')
     path.write('cache_path = {}\n'.format(cache_file), 'a')
-    path.write('[main]\n'
-               'path = {}/*\n'
-               'cache_path = {}\n'
-               .format(str(tmpdir), cache_file))
+    path.write(
+        '[main]\n'
+        'path = {}/*\n'
+        'cache_path = {}\n'.format(str(tmpdir), cache_file)
+    )
 
     result = runner.invoke(cli)
     assert not result.exception
@@ -134,11 +127,7 @@ def test_missing_cache_dir(config, runner, tmpdir):
 
 
 def test_date_field_in_time_format(config, runner, tmpdir):
-    config.write(
-        '[main]\n'
-        'path = "/"\n'
-        'time_format = %Y-%m-%d\n'
-    )
+    config.write('[main]\n' 'path = "/"\n' 'time_format = %Y-%m-%d\n')
     result = runner.invoke(cli)
     assert result.exception
     assert (
@@ -148,11 +137,7 @@ def test_date_field_in_time_format(config, runner, tmpdir):
 
 
 def test_date_field_in_time(config, runner, tmpdir):
-    config.write(
-        '[main]\n'
-        'path = "/"\n'
-        'date_format = %Y-%d-:%M\n'
-    )
+    config.write('[main]\n' 'path = "/"\n' 'date_format = %Y-%d-:%M\n')
     result = runner.invoke(cli)
     assert result.exception
     assert (
