@@ -60,5 +60,5 @@ jobs:
         - dpl --api-key=$RELEASES_TOKEN --provider=releases --file=dist/* --file_glob=true
 
 matrix:
-    allow_failures:
-        - python: 3.7-dev
+  allow_failures:
+    - python: 3.7-dev
