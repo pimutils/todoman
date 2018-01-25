@@ -58,3 +58,7 @@ jobs:
         - python setup.py sdist bdist_wheel
         - gem install dpl
         - dpl --api-key=$RELEASES_TOKEN --provider=releases --file=dist/* --file_glob=true
+
+matrix:
+    allow_failures:
+        - python: 3.7-dev
