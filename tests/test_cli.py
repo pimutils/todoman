@@ -11,7 +11,7 @@ from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
 
-from tests.helpers import pyicu_sensitive
+from tests.helpers import fs_case_sensitive, pyicu_sensitive
 from todoman.cli import cli, exceptions
 from todoman.model import Database, Todo
 
@@ -66,6 +66,7 @@ def test_percent(tmpdir, runner, create):
     assert '78%' in result.output
 
 
+@fs_case_sensitive
 @pytest.mark.parametrize(
     'list_name', [
         'default',
@@ -77,6 +78,7 @@ def test_list_case_insensitive(tmpdir, runner, create, list_name):
     assert not result.exception
 
 
+@fs_case_sensitive
 def test_list_case_insensitive_collision(tmpdir, runner, create):
     """
     Test that the case-insensitive list name matching is not used if
@@ -94,6 +96,7 @@ def test_list_case_insensitive_collision(tmpdir, runner, create):
     assert not result.exception
 
 
+@fs_case_sensitive
 def test_list_case_insensitive_other_collision(tmpdir, runner, create):
     """
     Test that the case-insensitive list name matching is used if a
@@ -109,15 +112,14 @@ def test_list_case_insensitive_other_collision(tmpdir, runner, create):
     assert not result.exception
 
 
-@pytest.mark.parametrize(
-    'list_name', [
-        'nonexistant',
-        'NONexistant',
-    ])
-def test_list_inexistant(tmpdir, runner, create, list_name):
-    result = runner.invoke(cli, ['list', list_name])
+def test_list_inexistant(tmpdir, runner, create):
+    result = runner.invoke(cli, ['list', 'nonexistant'])
     assert result.exception
-    assert 'Error: Invalid value for "lists": %s' % list_name in result.output
+    assert 'Error: Invalid value for "lists": nonexistant' in result.output
+
+    result = runner.invoke(cli, ['list', 'NONexistant'])
+    assert result.exception
+    assert 'Error: Invalid value for "lists": NONexistant' in result.output
 
 
 def test_show_existing(tmpdir, runner, create):
