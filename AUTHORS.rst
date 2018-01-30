@@ -18,6 +18,7 @@ Authors are listed in alphabetical order.
 * José Ribeiro <hello@jlbribeiro.com>
 * Mansimar Kaur <mansimarkaur.mks@gmail.com>
 * Markus Unterwaditzer <markus@unterwaditzer.net>
+* Pascal Wichmann <wichmannpas@gmail.com>
 * Paweł Fertyk <pfertyk@openmailbox.org>
 * Rimsha Khan <rimshakhan.rk03@gmail.com>
 * Sakshi Saraswat <saraswatsakshi.121@gmail.com>
