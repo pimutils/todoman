@@ -448,3 +448,19 @@ def test_cached_property_property():
             return 0
 
     assert TestClass.a.__class__ == cached_property
+
+
+def test_list_mtime_colour_only():
+    pass
+
+
+def test_list_displayname_colour_only():
+    pass
+
+
+def test_list_no_meta():
+    pass
+
+
+def test_list_both_meta():
+    pass
