@@ -1,5 +1,11 @@
 #!/usr/bin/make -f
 
+# exports needed to make the tests succeed (python3-click)
+# and to build reproducibly
+export TZ=UTC
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+
 # manually copy todoman/confspec.ini to build_dir/todoman/ (needed for tests)
 export PYBUILD_BEFORE_BUILD=mkdir -p {build_dir}/todoman/ && cp {dir}/todoman/confspec.ini {build_dir}/todoman/
 # manually build doc: TODO: python3-sphinx-autorun needed
@@ -10,11 +16,6 @@ export PYBUILD_AFTER_BUILD=python3 setup.py build_sphinx -b html && \
 export PYBUILD_AFTER_TEST=rm {build_dir}/.coverage
 # Don't install Hypothesis example database into binary package.
 export HYPOTHESIS_DATABASE_FILE = $(CURDIR)/debian/hypothesis
-
-# exports needed to make the tests succeed (python3-click)
-export TZ=UTC
-export LANG=C.UTF-8
-export LC_ALL=C.UTF-8
 
 # disable dh_auto_clean as "setup.py clean" tries to download packages from the
 # internet
