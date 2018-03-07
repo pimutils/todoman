@@ -1,3 +1,10 @@
+todoman (3.3.0-3) UNRELEASED; urgency=medium
+
+  * bump compat to 11
+  * move packaging repo to salsa
+
+ -- Félix Sipma <felix+debian@gueux.org>  Wed, 07 Mar 2018 11:39:08 +0100
+
 todoman (3.3.0-2) unstable; urgency=medium
 
   * export LC_* & LANG variables before building doc (attempt to make todoman
