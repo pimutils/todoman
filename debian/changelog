@@ -1,3 +1,10 @@
+todoman (3.3.0-3) unstable; urgency=medium
+
+  * manually add todoman binary to PATH to build the doc (Closes: #892381)
+  * add patch to use python3 in binary
+
+ -- Félix Sipma <felix+debian@gueux.org>  Sat, 31 Mar 2018 18:50:58 +0200
+
 todoman (3.3.0-2) unstable; urgency=medium
 
   * export LC_* & LANG variables before building doc (attempt to make todoman
