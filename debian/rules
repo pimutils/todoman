@@ -8,7 +8,7 @@ export LC_ALL=C.UTF-8
 
 # manually copy todoman/confspec.ini to build_dir/todoman/ (needed for tests)
 export PYBUILD_BEFORE_BUILD=mkdir -p {build_dir}/todoman/ && cp {dir}/todoman/confspec.ini {build_dir}/todoman/
-# manually build doc: TODO: python3-sphinx-autorun needed
+# manually build doc: 
 export PYBUILD_AFTER_BUILD=python3 setup.py build_sphinx -b html && \
 	python3 setup.py build_sphinx -b text && \
 	python3 setup.py build_sphinx -b man
