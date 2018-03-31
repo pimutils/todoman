@@ -1,0 +1,18 @@
+From: =?utf-8?q?F=C3=A9lix_Sipma?= <felix+debian@gueux.org>
+Date: Sat, 31 Mar 2018 18:49:58 +0200
+Subject: use env python3 in binary
+
+---
+ bin/todo | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/bin/todo b/bin/todo
+index 9ea88aa..e995537 100755
+--- a/bin/todo
++++ b/bin/todo
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ from todoman.cli import cli
+ 
+ if __name__ == "__main__":

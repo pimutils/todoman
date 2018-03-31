@@ -5,3 +5,4 @@
 0005-use-todoman-binary-in-doc.patch
 0006-use-todoman-binary-in-bash-completion.patch
 0007-use-todoman-console_script.patch
+0008-use-env-python3-in-binary.patch
