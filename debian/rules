@@ -8,8 +8,10 @@ export LC_ALL=C.UTF-8
 
 # manually copy todoman/confspec.ini to build_dir/todoman/ (needed for tests)
 export PYBUILD_BEFORE_BUILD=mkdir -p {build_dir}/todoman/ && cp {dir}/todoman/confspec.ini {build_dir}/todoman/
-# manually build doc: 
-export PYBUILD_AFTER_BUILD=python3 setup.py build_sphinx -b html && \
+# manually build doc:
+# todoman binary is manually added to PATH, as it is needed to build the doc
+export PYBUILD_AFTER_BUILD=mkdir -p {build_dir}/todoman/bin && cp {dir}/bin/todo {build_dir}/todoman/bin/todoman && PATH=$(PATH):{build_dir}/todoman/bin/ \
+	python3 setup.py build_sphinx -b html && \
 	python3 setup.py build_sphinx -b text && \
 	python3 setup.py build_sphinx -b man
 # manually remove files needed for tests
