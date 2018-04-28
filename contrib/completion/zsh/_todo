@@ -30,9 +30,61 @@ __color_mode(){
 	_describe "mode" modes
 }
 # }}}
+# {{{ general helper: set variable of path to configuration file
+__todo_set_conf(){
+	todoman_configuration_file=${XDG_CONFIG_DIR:-${HOME}/.config}/todoman/todoman.conf
+	if [[ -f $todoman_configuration_file ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+# }}}
+# {{{ general helper: set variable main.path from configuration file
+__todo_set_conf_path(){
+	if __todo_set_conf; then
+		tasks_lists_path="$(sed -n -e 's/^[^#]\s*path\s*=\s*\(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null)"
+		# the eval echo is needed since the path may contain ~ which should be evalueated to $HOME
+		tasks_lists_dir="$(eval echo ${tasks_lists_path%/\**})"
+		if [[ -z "${tasks_lists_path}" || ! -d "${tasks_lists_dir}" ]]; then
+			return 1
+		else
+			return 0
+		fi
+	else
+		return 1
+	fi
+}
+# }}}
+# {{{ general helper: set variables related to date and time formats for __todo_date
+__todo_set_conf_dt(){
+	if __todo_set_conf; then
+		date_format="$(eval echo $(sed -n -e 's/^[^#]\s*date_format\s*=\s*\(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null))"
+		dt_separator="$(eval echo $(sed -n -e 's/^[^#]\s*dt_separator\s*=\s*\(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null))"
+		time_format="$(eval echo $(sed -n -e 's/^[^#]\s*time_format\s*=\s*\(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null))"
+		# default value according to documentation: https://todoman.readthedocs.io/en/stable/configure.html
+		if [[ -z "${date_format}" ]]; then
+			date_format="%x"
+		fi
+		if [[ -z "${dt_separator}" ]]; then
+			dt_separator=""
+		fi
+		if [[ -z "${time_format}" ]]; then
+			time_format="%x"
+		fi
+		return 0
+	else
+		return 1
+	fi
+}
+# }}}
 # {{{ option helper: due and start date
-# TODO
 __todo_date(){
+	if __todo_set_conf_dt; then
+		_message "date in format ${date_format//\%/%%}${dt_separator//\%/%%}${time_format//\%/%%}"
+	else
+		_message "date format (couldn't read configuration file and extract date and time formats)"
+	fi
 }
 # }}}
 # {{{ argument helper: sub-command choice
@@ -89,49 +141,37 @@ __todo_lists_cache_policy(){
 	fi
 }
 # }}}
-# {{{ general helper: set configuration variables for various other helpers
-__todo_set_conf_variables(){
-	todoman_configuration_file=${XDG_CONFIG_DIR:-${HOME}/.config}/todoman/todoman.conf
-	if [[ ! -f $todoman_configuration_file ]]; then
-		tasks_lists_path="$(sed -n -e 's/\s\+path = \(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null)"
-		# the eval echo is needed since the path may contain ~ which should be evalueated to $HOME
-		tasks_lists_dir="$(eval echo ${tasks_lists_path%/\**})"
-		return 0
-	else
-		return 1
-	fi
-}
-# }}}
 # {{{ option helper: available lists
 __todo_lists(){
-	if __todo_set_conf_variables; then
-		_message -e "no configuration file for todoman was found in the default location ($todoman_configuration_file)"
-		return
-	fi
-	local update_policy
-	zstyle -s ":completion:${curcontext}:" cache-policy update_policy
-	if [[ -z "$update_policy" ]]; then
-		zstyle ":completion:${curcontext}:" cache-policy __todo_lists_cache_policy
-	fi
-	local -a tasks_lists
-	if _cache_invalid todoman_lists; then
-		if [[ ${tasks_lists_path} =~ '/*$' ]]; then
-			for dir in $(eval echo ${tasks_lists_path}); do
-				if grep "VTODO" -q -R "${dir}"; then
-					list_name="${dir##*/}"
-					tasks_lists+=("${list_name}")
-				fi
-			done
+	if __todo_set_conf_path; then
+		local update_policy
+		zstyle -s ":completion:${curcontext}:" cache-policy update_policy
+		if [[ -z "$update_policy" ]]; then
+			zstyle ":completion:${curcontext}:" cache-policy __todo_lists_cache_policy
 		fi
-		_store_cache todoman_lists tasks_lists
+		local -a tasks_lists
+		if _cache_invalid todoman_lists; then
+			if [[ ${tasks_lists_path} =~ '/*$' ]]; then
+				for dir in $(eval echo ${tasks_lists_path}); do
+					if grep "VTODO" -q -R "${dir}"; then
+						list_name="${dir##*/}"
+						tasks_lists+=("${list_name}")
+					fi
+				done
+			fi
+			_store_cache todoman_lists tasks_lists
+		else
+			_retrieve_cache todoman_lists
+		fi
+		if [[ "${#tasks_lists[@]}" == 1 ]]; then
+			_message "only one list was detected: (\"${tasks_lists[1]}\")"
+			return
+		else
+			_describe "available lists" tasks_lists
+			return
+		fi
 	else
-		_retrieve_cache todoman_lists
-	fi
-	if [[ "${#tasks_lists[@]}" == 1 ]]; then
-		_message "only one list was detected: (\"${tasks_lists[1]}\")"
-		return
-	else
-		_describe "available lists" tasks_lists
+		_message -e "no 'path = ' string was found in todoman's default configuration file ($todoman_configuration_file)"
 		return
 	fi
 }
