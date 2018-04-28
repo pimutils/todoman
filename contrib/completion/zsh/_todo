@@ -1,0 +1,120 @@
+#compdef todo
+
+# {{{ sub commands common options variables
+local common_option_help='(- :)--help[Show a help message and exit]'
+# }}}
+# {{{ option helper: color mode
+__color_mode(){
+	local modes=(
+		"always:enable regardless of stdout"
+		"auto:enable only when not on tty (default)"
+		"never:disable colored output entirely"
+	)
+	_describe "mode" modes
+}
+# }}}
+# {{{ 1st argument helper: sub-command choice
+__todo_command(){
+	local commands=(
+		'cancel:Cancel one or more tasks'
+		'copy:Copy tasks to another list'
+		'delete:Delete tasks'
+		'done:Mark one or more tasks as done'
+		'edit:Edit the task with id ID'
+		'flush:Delete done tasks'
+		'list:List tasks'
+		'move:Move tasks to another list'
+		'new:Create a new task with SUMMARY'
+		'show:Show details about a task'
+	)
+	_describe "command" commands
+}
+# {{{ command `cancel`
+_todo_cancel(){
+}
+# }}}
+# {{{ command `copy`
+_todo_copy(){
+}
+# }}}
+# {{{ command `delete`
+_todo_delete(){
+}
+# }}}
+# {{{ command `done`
+_todo_done(){
+}
+# }}}
+# {{{ command `edit`
+_todo_edit(){
+}
+# }}}
+# {{{ command `flush`
+_todo_flush(){
+}
+# }}}
+# {{{ command `list`
+_todo_list(){
+}
+# }}}
+# {{{ command `move`
+_todo_move(){
+}
+# }}}
+# {{{ command `new`
+_todo_new(){
+}
+# }}}
+# {{{ command `show`
+_todo_show(){
+}
+# }}}
+
+# The real thing
+_arguments -C -A "-*" \
+	{-v,--verbosity=}'[Set verbosity to the given level]:MODE(CRITICAL ERROR WARNING INFO DEBUG)' \
+	'--color=[Set colored output mode]:MODE:__color_mode' \
+	'--porcelain[Use a JSON format that will remain stable regadless of configuration or version]' \
+	{-h,--humanize}'[Format all dates and times in a human friendly way]' \
+	'(- :)--version[Show the version and exit]' \
+	"${common_option_help}" \
+	'1: :__todo_command' \
+	'*::arg:->args'
+
+case $state in
+	(args)
+		curcontext="${curcontext%:*:*}:todo_$words[1]:"
+		case "${words[1]}" in
+			cancel)
+				_todo_cancel
+				;;
+			copy)
+				_todo_copy
+				;;
+			delete)
+				_todo_delete
+				;;
+			done)
+				_todo_done
+				;;
+			edit)
+				_todo_edit
+				;;
+			flush)
+				_todo_flush
+				;;
+			list)
+				_todo_list
+				;;
+			move)
+				_todo_move
+				;;
+			new)
+				_todo_new
+				;;
+			show)
+				_todo_show
+				;;
+		esac
+		;;
+esac
