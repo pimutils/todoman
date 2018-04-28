@@ -1,7 +1,24 @@
 #compdef todo
 
 # {{{ sub commands common options variables
-local common_option_help='(- :)--help[Show a help message and exit]'
+local common_option_help=(
+	'(- :)--help[Show a help message and exit]'
+)
+local common_option_start=(
+	{-s,--start=}'[When the task starts]:DATE:__todo_date'
+)
+local common_option_due=(
+	{-d,--due=}'[When the task is due]:DATE:__todo_date'
+)
+local common_option_priority=(
+	'--priority=[The priority for this todo]:PRIORITY:("low" "medium" "high")'
+)
+local common_option_interactive=(
+	{-i,--interactive}'[Go into interactive mode before saving the task]'
+)
+local common_option_location=(
+	'--location=[The location where this todo takes place]:LOCATION:'
+)
 # }}}
 # {{{ option helper: color mode
 __color_mode(){
@@ -13,7 +30,12 @@ __color_mode(){
 	_describe "mode" modes
 }
 # }}}
-# {{{ 1st argument helper: sub-command choice
+# {{{ option helper: due and start date
+# TODO
+__todo_date(){
+}
+# }}}
+# {{{ argument helper: sub-command choice
 __todo_command(){
 	local commands=(
 		'cancel:Cancel one or more tasks'
@@ -29,44 +51,194 @@ __todo_command(){
 	)
 	_describe "command" commands
 }
+# }}}
+# {{{ argument helper: available tasks choice
+__todo_tasks(){
+	# checking if the command jq exists and it's version
+	# credit: http://stackoverflow.com/a/592649/4935114
+	jq_version=$(jq --version 2>/dev/null)
+	if [ ${${jq_version#jq\-}//./} -lt 15 ]; then
+		_message "we can't complete tasks unless you'll install the latest version of jq: https://stedolan.github.io/jq/"
+		return
+	fi
+	# $1 is a comma-seperated list of statuses to show when trying to complete this
+	local status_search_query="$1"
+	local -a tasks
+	IFS=$'\n'
+	for task_and_description in $(todo --porcelain list --status "${status_search_query}" | jq --raw-output '.[] | .id,":\"@",.list," ",.summary,"\"\\0"' | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g' -e 's/\\0/\n/g'); do
+		tasks+="$(eval echo ${task_and_description})"
+	done
+	_describe tasks tasks
+}
+# }}}
+# {{{ todo available lists cache policy
+__todo_lists_cache_policy(){
+	# the number of seconds since 1970-01-01 the directory
+	local tasks_lists_dir_last_date_modified="$(date -r ${tasks_lists_dir} +%s 2>/dev/null)"
+	# the number of seconds since 1970-01-01 the cache file was modified
+	local cache_last_date_modified="$(date -r $1 +%s 2>/dev/null)"
+	if [[ ! -z ${cache_last_date_modified} && ! -z ${tasks_lists_dir_last_date_modified} ]]; then
+		# if the manifest file is newer then the cache:
+		if [ ${tasks_lists_dir_last_date_modified} -ge ${cache_last_date_modified} ]; then
+			(( 1 ))
+		else
+			(( 0 ))
+		fi
+	else
+		(( 1 ))
+	fi
+}
+# }}}
+# {{{ general helper: set configuration variables for various other helpers
+__todo_set_conf_variables(){
+	todoman_configuration_file=${XDG_CONFIG_DIR:-${HOME}/.config}/todoman/todoman.conf
+	if [[ ! -f $todoman_configuration_file ]]; then
+		tasks_lists_path="$(sed -n -e 's/\s\+path = \(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null)"
+		# the eval echo is needed since the path may contain ~ which should be evalueated to $HOME
+		tasks_lists_dir="$(eval echo ${tasks_lists_path%/\**})"
+		return 0
+	else
+		return 1
+	fi
+}
+# }}}
+# {{{ option helper: available lists
+__todo_lists(){
+	if __todo_set_conf_variables; then
+		_message -e "no configuration file for todoman was found in the default location ($todoman_configuration_file)"
+		return
+	fi
+	local update_policy
+	zstyle -s ":completion:${curcontext}:" cache-policy update_policy
+	if [[ -z "$update_policy" ]]; then
+		zstyle ":completion:${curcontext}:" cache-policy __todo_lists_cache_policy
+	fi
+	local -a tasks_lists
+	if _cache_invalid todoman_lists; then
+		if [[ ${tasks_lists_path} =~ '/*$' ]]; then
+			for dir in $(eval echo ${tasks_lists_path}); do
+				if grep "VTODO" -q -R "${dir}"; then
+					list_name="${dir##*/}"
+					tasks_lists+=("${list_name}")
+				fi
+			done
+		fi
+		_store_cache todoman_lists tasks_lists
+	else
+		_retrieve_cache todoman_lists
+	fi
+	if [[ "${#tasks_lists[@]}" == 1 ]]; then
+		_message "only one list was detected: (\"${tasks_lists[1]}\")"
+		return
+	else
+		_describe "available lists" tasks_lists
+		return
+	fi
+}
+# }}}
 # {{{ command `cancel`
 _todo_cancel(){
+	_arguments \
+		"${common_option_help[@]}" \
+		'*: :{__todo_tasks "IN-PROCESS,NEEDS-ACTION"}'
 }
 # }}}
 # {{{ command `copy`
+local _command_copy_options=(
+	"${common_option_help[@]}"
+	{-l,--list=}'[The list to copy the tasks to]:TEXT:__todo_lists'
+)
 _todo_copy(){
+	_arguments \
+		"${_command_copy_options[@]}" \
+		'*: :{__todo_tasks "IN-PROCESS,NEEDS-ACTION"}'
 }
 # }}}
 # {{{ command `delete`
+local _command_delete_options=(
+	"${common_option_help[@]}"
+	"--yes[Don't ask for permission before deleting]"
+)
 _todo_delete(){
+	_arguments \
+		"${_command_delete_options[@]}" \
+		'*: :{__todo_tasks "IN-PROCESS,NEEDS-ACTION"}'
 }
 # }}}
 # {{{ command `done`
+local _command_done_options=(
+	"${common_option_help[@]}"
+)
 _todo_done(){
+	_arguments \
+		"${_command_done_options[@]}" \
+		'*: :{__todo_tasks "IN-PROCESS,NEEDS-ACTION"}'
 }
 # }}}
 # {{{ command `edit`
+local _command_edit_options=(
+	"${common_option_help[@]}"
+	"${common_option_start[@]}"
+	"${common_option_due[@]}"
+	"${common_option_priority[@]}"
+	"${common_option_location[@]}"
+	"${common_option_interactive[@]}"
+)
 _todo_edit(){
+	_arguments \
+		"${_command_edit_options[@]}" \
+		'*: :{__todo_tasks "IN-PROCESS,NEEDS-ACTION"}'
 }
 # }}}
 # {{{ command `flush`
 _todo_flush(){
+	_todo_delete
 }
 # }}}
 # {{{ command `list`
+_command_list_options=(
+	"${common_option_location[@]}"
+	'--category=[Only show tasks with category containg TEXT]:TEXT:__todo_existing_categories'
+	'--grep=[Only show tasks with message containg TEXT]:TEXT:'
+	'--sort=[Sort tasks using these fields]:TEXT:(description location status summary uid rrule percent_complete priority sequence categories completed_at created_at dtstamp start due last_modified)'
+	'(--reverse --no-reverse)'{--reverse,--no-reverse}'[sort tasks in reverse order (see --sort)]'
+	"${common_option_start[@]}"
+	"${common_option_due[@]}"
+	'--priority[Only show tasks with priority at least as high as TEXT]:TEXT:("low", "medium", "high")'
+	'--startable[Show only todos which should can be started today]'
+	{-s,--status=}'[Show only todos with the provided comma-separated statuses]:STATUS:{_values -s , "status" "NEEDS-ACTION" "CANCELLED" "COMPLETED" "IN-PROCESS" "ANY"}'
+	"${common_option_help[@]}"
+)
 _todo_list(){
+	_arguments \
+		"${_command_list_options[@]}" \
+		'1: :__todo_lists' \
 }
 # }}}
 # {{{ command `move`
 _todo_move(){
+	_todo_copy
 }
 # }}}
 # {{{ command `new`
+local _command_new_options=(
+	"${common_option_start[@]}"
+	"${common_option_due[@]}"
+	"${common_option_help[@]}"
+	{-l,--list=}'[The list to move the tasks to]:TEXT:__todo_lists'
+	'--location[The location where this todo takes place.]:TEXT:__todo_existing_locations'
+	"${common_option_priority[@]}"
+	"${common_option_interactive[@]}"
+)
 _todo_new(){
+	_arguments \
+		"${_command_new_options[@]}" \
+		'*: :{_message "summary"}'
 }
 # }}}
 # {{{ command `show`
 _todo_show(){
+	_todo_done
 }
 # }}}
 
@@ -77,7 +249,7 @@ _arguments -C -A "-*" \
 	'--porcelain[Use a JSON format that will remain stable regadless of configuration or version]' \
 	{-h,--humanize}'[Format all dates and times in a human friendly way]' \
 	'(- :)--version[Show the version and exit]' \
-	"${common_option_help}" \
+	"${common_option_help[@]}" \
 	'1: :__todo_command' \
 	'*::arg:->args'
 
