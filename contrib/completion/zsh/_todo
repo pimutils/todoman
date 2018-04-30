@@ -1,22 +1,22 @@
 #compdef todo
 
 # {{{ sub commands common options variables
-local common_option_help=(
+local common_options_help=(
 	'(- :)--help[Show a help message and exit]'
 )
-local common_option_start=(
+local common_options_start=(
 	{-s,--start=}'[When the task starts]:DATE:__todo_date'
 )
-local common_option_due=(
+local common_options_due=(
 	{-d,--due=}'[When the task is due]:DATE:__todo_date'
 )
-local common_option_priority=(
+local common_options_priority=(
 	'--priority=[The priority for this todo]:PRIORITY:("low" "medium" "high")'
 )
-local common_option_interactive=(
+local common_options_interactive=(
 	{-i,--interactive}'[Go into interactive mode before saving the task]'
 )
-local common_option_location=(
+local common_options_location=(
 	'--location=[The location where this todo takes place]:LOCATION:'
 )
 # }}}
@@ -179,13 +179,13 @@ __todo_lists(){
 # {{{ command `cancel`
 _todo_cancel(){
 	_arguments \
-		"${common_option_help[@]}" \
+		"${common_options_help[@]}" \
 		'*: :{__todo_tasks "IN-PROCESS,NEEDS-ACTION"}'
 }
 # }}}
 # {{{ command `copy`
 local _command_copy_options=(
-	"${common_option_help[@]}"
+	"${common_options_help[@]}"
 	{-l,--list=}'[The list to copy the tasks to]:TEXT:__todo_lists'
 )
 _todo_copy(){
@@ -196,7 +196,7 @@ _todo_copy(){
 # }}}
 # {{{ command `delete`
 local _command_delete_options=(
-	"${common_option_help[@]}"
+	"${common_options_help[@]}"
 	"--yes[Don't ask for permission before deleting]"
 )
 _todo_delete(){
@@ -207,7 +207,7 @@ _todo_delete(){
 # }}}
 # {{{ command `done`
 local _command_done_options=(
-	"${common_option_help[@]}"
+	"${common_options_help[@]}"
 )
 _todo_done(){
 	_arguments \
@@ -217,12 +217,12 @@ _todo_done(){
 # }}}
 # {{{ command `edit`
 local _command_edit_options=(
-	"${common_option_help[@]}"
-	"${common_option_start[@]}"
-	"${common_option_due[@]}"
-	"${common_option_priority[@]}"
-	"${common_option_location[@]}"
-	"${common_option_interactive[@]}"
+	"${common_options_help[@]}"
+	"${common_options_start[@]}"
+	"${common_options_due[@]}"
+	"${common_options_priority[@]}"
+	"${common_options_location[@]}"
+	"${common_options_interactive[@]}"
 )
 _todo_edit(){
 	_arguments \
@@ -237,17 +237,17 @@ _todo_flush(){
 # }}}
 # {{{ command `list`
 _command_list_options=(
-	"${common_option_location[@]}"
+	"${common_options_location[@]}"
 	'--category=[Only show tasks with category containg TEXT]:TEXT:__todo_existing_categories'
 	'--grep=[Only show tasks with message containg TEXT]:TEXT:'
 	'--sort=[Sort tasks using these fields]:TEXT:(description location status summary uid rrule percent_complete priority sequence categories completed_at created_at dtstamp start due last_modified)'
 	'(--reverse --no-reverse)'{--reverse,--no-reverse}'[sort tasks in reverse order (see --sort)]'
-	"${common_option_start[@]}"
-	"${common_option_due[@]}"
+	"${common_options_start[@]}"
+	"${common_options_due[@]}"
 	'--priority[Only show tasks with priority at least as high as TEXT]:TEXT:("low", "medium", "high")'
 	'--startable[Show only todos which should can be started today]'
 	{-s,--status=}'[Show only todos with the provided comma-separated statuses]:STATUS:{_values -s , "status" "NEEDS-ACTION" "CANCELLED" "COMPLETED" "IN-PROCESS" "ANY"}'
-	"${common_option_help[@]}"
+	"${common_options_help[@]}"
 )
 _todo_list(){
 	_arguments \
@@ -262,13 +262,13 @@ _todo_move(){
 # }}}
 # {{{ command `new`
 local _command_new_options=(
-	"${common_option_start[@]}"
-	"${common_option_due[@]}"
-	"${common_option_help[@]}"
+	"${common_options_start[@]}"
+	"${common_options_due[@]}"
+	"${common_options_help[@]}"
 	{-l,--list=}'[The list to move the tasks to]:TEXT:__todo_lists'
 	'--location[The location where this todo takes place.]:TEXT:__todo_existing_locations'
-	"${common_option_priority[@]}"
-	"${common_option_interactive[@]}"
+	"${common_options_priority[@]}"
+	"${common_options_interactive[@]}"
 )
 _todo_new(){
 	_arguments \
@@ -289,7 +289,7 @@ _arguments -C -A "-*" \
 	'--porcelain[Use a JSON format that will remain stable regadless of configuration or version]' \
 	{-h,--humanize}'[Format all dates and times in a human friendly way]' \
 	'(- :)--version[Show the version and exit]' \
-	"${common_option_help[@]}" \
+	"${common_options_help[@]}" \
 	'1: :__todo_command' \
 	'*::arg:->args'
 
