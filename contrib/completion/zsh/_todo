@@ -232,7 +232,6 @@ _todo_edit(){
 # }}}
 # {{{ command `flush`
 _todo_flush(){
-	_todo_delete
 }
 # }}}
 # {{{ command `list`
