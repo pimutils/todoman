@@ -28,15 +28,20 @@ def rgb_to_ansi(colour):
 
 
 class DefaultFormatter:
-
-    def __init__(self, date_format='%Y-%m-%d', time_format='%H:%M',
-                 dt_separator=' ', tz_override=None):
+    def __init__(
+        self,
+        date_format='%Y-%m-%d',
+        time_format='%H:%M',
+        dt_separator=' ',
+        tz_override=None
+    ):
         self.date_format = date_format
         self.time_format = time_format
         self.dt_separator = dt_separator
-        self.datetime_format = dt_separator.join(filter(bool, (
-            date_format, time_format
-        )))
+        self.datetime_format = dt_separator.join(
+            filter(bool,
+                   (date_format, time_format))
+        )
 
         self.tz = tz_override or tzlocal()
         self.now = datetime.datetime.now().replace(tzinfo=self.tz)
@@ -128,8 +133,10 @@ class DefaultFormatter:
         elif priority == 'none':
             return 0
         else:
-            raise ValueError('Priority has to be one of low, medium,'
-                             ' high or none')
+            raise ValueError(
+                'Priority has to be one of low, medium,'
+                ' high or none'
+            )
 
     def format_priority(self, priority):
         if not priority:
@@ -179,18 +186,16 @@ class DefaultFormatter:
 
         rv, pd_ctx = self._parsedatetime_calendar.parse(dt)
         if not pd_ctx.hasDateOrTime:
-            raise ValueError('Time description not recognized: {}' .format(dt))
+            raise ValueError('Time description not recognized: {}'.format(dt))
         return datetime.datetime.fromtimestamp(mktime(rv))
 
     def format_database(self, database):
         return '{}@{}'.format(
-            rgb_to_ansi(database.colour) or '',
-            click.style(database.name)
+            rgb_to_ansi(database.colour) or '', click.style(database.name)
         )
 
 
 class HumanizedFormatter(DefaultFormatter):
-
     def format_datetime(self, dt):
         if not dt:
             return ''
@@ -203,7 +208,6 @@ class HumanizedFormatter(DefaultFormatter):
 
 
 class PorcelainFormatter(DefaultFormatter):
-
     def _todo_as_dict(self, todo):
         return dict(
             completed=todo.is_completed,

@@ -21,10 +21,8 @@ def test_querying(create, tmpdir):
                 list_name=list
             )
 
-    db = Database(
-        [str(tmpdir.ensure_dir(l)) for l in 'abc'],
-        str(tmpdir.join('cache'))
-    )
+    db = Database([str(tmpdir.ensure_dir(l)) for l in 'abc'],
+                  str(tmpdir.join('cache')))
 
     assert len(set(db.todos())) == 9
     assert len(set(db.todos(lists='ab'))) == 6
@@ -33,13 +31,11 @@ def test_querying(create, tmpdir):
 
 def test_retain_tz(tmpdir, create, todos):
     create(
-        'ar.ics',
-        'SUMMARY:blah.ar\n'
+        'ar.ics', 'SUMMARY:blah.ar\n'
         'DUE;VALUE=DATE-TIME;TZID=HST:20160102T000000\n'
     )
     create(
-        'de.ics',
-        'SUMMARY:blah.de\n'
+        'de.ics', 'SUMMARY:blah.de\n'
         'DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n'
     )
 
@@ -55,11 +51,7 @@ def test_retain_tz(tmpdir, create, todos):
 
 
 def test_due_date(tmpdir, create, todos):
-    create(
-        'ar.ics',
-        'SUMMARY:blah.ar\n'
-        'DUE;VALUE=DATE:20170617\n'
-    )
+    create('ar.ics', 'SUMMARY:blah.ar\n' 'DUE;VALUE=DATE:20170617\n')
 
     todos = list(todos())
 
@@ -120,14 +112,8 @@ def test_list_no_colour(tmpdir):
 
 def test_database_priority_sorting(create, todos):
     for i in [1, 5, 9, 0]:
-        create(
-            'test{}.ics'.format(i),
-            'PRIORITY:{}\n'.format(i)
-        )
-    create(
-        'test_none.ics'.format(i),
-        'SUMMARY:No priority (eg: None)\n'
-    )
+        create('test{}.ics'.format(i), 'PRIORITY:{}\n'.format(i))
+    create('test_none.ics'.format(i), 'SUMMARY:No priority (eg: None)\n')
 
     todos = list(todos())
 
@@ -143,8 +129,7 @@ def test_retain_unknown_fields(tmpdir, create, default_database):
     Test that we retain unknown fields after a load/save cycle.
     """
     create(
-        'test.ics',
-        'UID:AVERYUNIQUEID\n'
+        'test.ics', 'UID:AVERYUNIQUEID\n'
         'SUMMARY:RAWR\n'
         'X-RAWR-TYPE:Reptar\n'
     )
@@ -209,14 +194,20 @@ def test_is_completed():
     assert todo.status == 'COMPLETED'
 
 
-@pytest.mark.parametrize('until', [
-    '20990315T020000Z',  # TZ-aware UNTIL
-    '20990315T020000',  # TZ-naive UNTIL
-])
-@pytest.mark.parametrize('tz', [
-    pytz.UTC,  # TZ-aware todos
-    None,  # TZ-naive todos
-])
+@pytest.mark.parametrize(
+    'until',
+    [
+        '20990315T020000Z',  # TZ-aware UNTIL
+        '20990315T020000',  # TZ-naive UNTIL
+    ]
+)
+@pytest.mark.parametrize(
+    'tz',
+    [
+        pytz.UTC,  # TZ-aware todos
+        None,  # TZ-naive todos
+    ]
+)
 @pytest.mark.parametrize('due', [
     True,
     False,
@@ -225,8 +216,8 @@ def test_complete_recurring(default_database, due, todo_factory, tz, until):
     # We'll lose the milis when casting, so:
     now = datetime.now(tz).replace(microsecond=0)
 
-    if tz and not until.endswith('Z'):
-        pytest.skip('This combination is invalid, as per the spec')
+    if bool(tz) != bool(until.endswith('Z')):
+        pytest.skip('These combinations are invalid, as per the spec.')
 
     original_start = now
     if due:
@@ -332,11 +323,7 @@ def test_todos_startable(tmpdir, runner, todo_factory, todos):
 
 
 def test_filename_uid_colision(create, default_database, runner, todos):
-    create(
-        'ABC.ics',
-        'SUMMARY:My UID is not ABC\n'
-        'UID:NOTABC\n'
-    )
+    create('ABC.ics', 'SUMMARY:My UID is not ABC\n' 'UID:NOTABC\n')
     len(list(todos())) == 1
 
     todo = Todo(new=False)
@@ -356,8 +343,7 @@ def test_hide_cancelled(todos, todo_factory):
 
 def test_illegal_start_suppression(create, default_database, todos):
     create(
-        'test.ics',
-        'SUMMARY:Start doing stuff\n'
+        'test.ics', 'SUMMARY:Start doing stuff\n'
         'DUE;VALUE=DATE-TIME;TZID=CET:20170331T120000\n'
         'DTSTART;VALUE=DATE-TIME;TZID=CET:20170331T140000\n'
     )
@@ -367,10 +353,7 @@ def test_illegal_start_suppression(create, default_database, todos):
 
 
 def test_default_status(create, todos):
-    create(
-        'test.ics',
-        'SUMMARY:Finish all these status tests\n'
-    )
+    create('test.ics', 'SUMMARY:Finish all these status tests\n')
     todo = next(todos())
     assert todo.status == 'NEEDS-ACTION'
 
@@ -399,7 +382,8 @@ def test_duplicate_list(tmpdir):
 
     with pytest.raises(AlreadyExists):
         Database(
-            [tmpdir.join('personal1'), tmpdir.join('personal2')],
+            [tmpdir.join('personal1'),
+             tmpdir.join('personal2')],
             tmpdir.join('cache.sqlite3'),
         )
 

@@ -1,52 +1,25 @@
-sudo: false
 language: python
 cache: pip
 
 python:
-  - 3.3
+  - 3.6
   - 3.4
   - 3.5
-  - 3.6
   - 3.7-dev
   - pypy3.3-5.2-alpha1
 
 env:
-  matrix:
-    - TOXENV=py
-  global:
-    secure: IFQzIw/g6qbmZy86w9qPU5vZjoJWtBlP8VpUtBX+La9hyZ6odC0pxB38U7IQNnPKinUvnc0cGEsAJS/abxp3bSdS0H+afr8OjxOgDuLBl47fMHBxFUMF6HRFmKuk66GfM1sxf87xLdiPDF5Dac0cn7IlJrFkQaCukZjinvZRvtU=
-
-matrix:
-  allow_failures:
-    - python: 3.7-dev
-  include:
-    - python: 3.6
-      env: TOXENV=flake8
-    - python: 3.6
-      env: TOXENV=docs
-    - os: osx
-      language: generic
-      env: TOXENV=py
-      before_install:
-        - brew update
-        - brew install python3
-        - virtualenv env -p python3
-        - source env/bin/activate
-    - # Run tests with optional dependencies:
-      python: 3.6
-      after_install:
-        - echo click_repl >> requirements.txt
-      env: TOXENV=py EXTRAS=click_repl
-    - # Run tests with incompatible test dependencies:
-      python: 3.6
-      after_install:
-        - echo pyicu >> requirements.txt
-      env: TOXENV=py EXTRAS=pyicu
+  - TOXENV=py
 
 addons:
   apt:
     packages:
       - language-pack-de
+
+stages:
+  - test
+  - name: deploy
+    if: tag IS present
 
 install:
   - pip install tox codecov
@@ -57,18 +30,37 @@ script:
 after_script:
   - codecov
 
-after_success:
-  - pip install wheel twine
-  - python setup.py sdist bdist_wheel
-  - test -n $TRAVIS_TAG && twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
+jobs:
+  include:
+    - env: TOXENV=flake8
+      python: 3.6
+    - env: TOXENV=docs
+    - env: TOXENV=repl
+    - env: TOXENV=pyicu
 
-deploy:
-  - provider: releases
-    api_key:
-      secure: g60yeYa+BX7XCe7L4mpV5NiaCPkuJzxk+PP3rL/durPF/CudWW2xUuTCLf30WwfrYBg3bJCQKNnzOpL8+d4Maly3UqquDFjK58Z/JBFw6erzg/RAxAnfJzFbWy2mgqKTpBHaDdRnhVtqp23Ov1I/+Jb51DIhij6ILNgGxW1OP8Y=
-    file_glob: true
-    file: dist/*
-    skip_cleanup: true
-    on:
-      tags: true
-    distributions: "sdist bdist_wheel"
+    - os: osx
+      language: generic
+      env: TOXENV=py
+      before_install:
+        - brew update
+        - brew upgrade python
+        - pip3 install -U virtualenv  # Travis' images rename pip to pip3.
+        - virtualenv env -p python3
+        - source env/bin/activate
+
+    - stage: deploy
+      script:
+        - pip install wheel twine
+        - python setup.py sdist bdist_wheel
+        - twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
+    - stage: deploy
+      script:
+        - pip install wheel
+        - python setup.py sdist bdist_wheel
+        - gem install dpl
+        - dpl --api-key=$RELEASES_TOKEN --provider=releases --file=dist/* --file_glob=true --skip_cleanup=true
+
+matrix:
+  allow_failures:
+    - python: pypy3.3-5.2-alpha1
+    - python: 3.7-dev

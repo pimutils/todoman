@@ -24,29 +24,29 @@ def default_database(tmpdir):
 @pytest.fixture
 def config(tmpdir, default_database):
     path = tmpdir.join('config')
-    path.write('[main]\n'
-               'path = {}/*\n'
-               'date_format = %Y-%m-%d\n'
-               'time_format = \n'
-               'cache_path = {}\n'
-               .format(str(tmpdir), str(tmpdir.join('cache.sqlite3'))))
+    path.write(
+        '[main]\n'
+        'path = {}/*\n'
+        'date_format = %Y-%m-%d\n'
+        'time_format = \n'
+        'cache_path = {}\n'
+        .format(str(tmpdir), str(tmpdir.join('cache.sqlite3')))
+    )
     return path
 
 
 @pytest.fixture
 def runner(config, sleep):
-
     class SleepyCliRunner(CliRunner):
         """
         Sleeps before invoking to make sure cache entries have expired.
         """
+
         def invoke(self, *args, **kwargs):
             sleep()
             return super().invoke(*args, **kwargs)
 
-    return SleepyCliRunner(env={
-        'TODOMAN_CONFIG': str(config)
-    })
+    return SleepyCliRunner(env={'TODOMAN_CONFIG': str(config)})
 
 
 @pytest.fixture
@@ -55,9 +55,7 @@ def create(tmpdir):
         path = tmpdir.ensure_dir(list_name).join(name)
         path.write(
             'BEGIN:VCALENDAR\n'
-            'BEGIN:VTODO\n' +
-            content +
-            'END:VTODO\n'
+            'BEGIN:VTODO\n' + content + 'END:VTODO\n'
             'END:VCALENDAR'
         )
         return path
@@ -67,7 +65,6 @@ def create(tmpdir):
 
 @pytest.fixture
 def now_for_tz():
-
     def inner(tz='CET'):
         """
         Provides the current time cast to a given timezone.
@@ -155,7 +152,6 @@ def sleep(tmpdir_factory):
 
 @pytest.fixture
 def todos(default_database, sleep):
-
     def inner(**filters):
         sleep()
         default_database.update_cache()
@@ -164,14 +160,15 @@ def todos(default_database, sleep):
     return inner
 
 
-settings.register_profile("ci", settings(
-    max_examples=1000,
-    verbosity=Verbosity.verbose,
-    suppress_health_check=[HealthCheck.too_slow]
-))
-settings.register_profile("deterministic", settings(
-    derandomize=True,
-))
+settings.register_profile(
+    "ci",
+    settings(
+        max_examples=1000,
+        verbosity=Verbosity.verbose,
+        suppress_health_check=[HealthCheck.too_slow]
+    )
+)
+settings.register_profile("deterministic", settings(derandomize=True,))
 
 if os.getenv('DETERMINISTIC_TESTS', 'false').lower() == 'true':
     settings.load_profile("deterministic")

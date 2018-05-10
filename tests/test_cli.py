@@ -1,6 +1,6 @@
 import datetime
 import sys
-from os.path import isdir
+from os.path import exists, isdir
 from unittest import mock
 from unittest.mock import patch
 
@@ -11,7 +11,7 @@ from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
 
-from tests.helpers import pyicu_sensitive
+from tests.helpers import fs_case_sensitive, pyicu_sensitive
 from todoman.cli import cli, exceptions
 from todoman.model import Database, Todo
 
@@ -23,10 +23,7 @@ def test_list(tmpdir, runner, create):
     assert not result.exception
     assert not result.output.strip()
 
-    create(
-        'test.ics',
-        'SUMMARY:harhar\n'
-    )
+    create('test.ics', 'SUMMARY:harhar\n')
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert 'harhar' in result.output
@@ -36,8 +33,10 @@ def test_no_default_list(runner):
     result = runner.invoke(cli, ['new', 'Configure a default list'])
 
     assert result.exception
-    assert ('Error: Invalid value for "--list" / "-l": You must set '
-            '"default_list" or use -l.' in result.output)
+    assert (
+        'Error: Invalid value for "--list" / "-l": You must set '
+        '"default_list" or use -l.' in result.output
+    )
 
 
 def test_no_extra_whitespace(tmpdir, runner, create):
@@ -54,38 +53,77 @@ def test_no_extra_whitespace(tmpdir, runner, create):
     assert not result.exception
     assert result.output == '\n'
 
-    create(
-        'test.ics',
-        'SUMMARY:harhar\n'
-    )
+    create('test.ics', 'SUMMARY:harhar\n')
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert len(result.output.splitlines()) == 1
 
 
 def test_percent(tmpdir, runner, create):
-    create(
-        'test.ics',
-        'SUMMARY:harhar\n'
-        'PERCENT-COMPLETE:78\n'
-    )
+    create('test.ics', 'SUMMARY:harhar\n' 'PERCENT-COMPLETE:78\n')
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert '78%' in result.output
 
 
+@fs_case_sensitive
+@pytest.mark.parametrize(
+    'list_name', [
+        'default',
+        'DEfault',
+        'deFAUlT',
+    ])
+def test_list_case_insensitive(tmpdir, runner, create, list_name):
+    result = runner.invoke(cli, ['list', list_name])
+    assert not result.exception
+
+
+@fs_case_sensitive
+def test_list_case_insensitive_collision(tmpdir, runner, create):
+    """
+    Test that the case-insensitive list name matching is not used if
+    colliding list names exist.
+    """
+    tmpdir.mkdir('DEFaUlT')
+
+    result = runner.invoke(cli, ['list', 'deFaulT'])
+    assert result.exception
+
+    result = runner.invoke(cli, ['list', 'default'])
+    assert not result.exception
+
+    result = runner.invoke(cli, ['list', 'DEFaUlT'])
+    assert not result.exception
+
+
+@fs_case_sensitive
+def test_list_case_insensitive_other_collision(tmpdir, runner, create):
+    """
+    Test that the case-insensitive list name matching is used if a
+    collision exists that does not affect the queried list.
+    """
+    tmpdir.mkdir('coLLiding')
+    tmpdir.mkdir('COLLiDING')
+
+    result = runner.invoke(cli, ['list', 'cOlliDInG'])
+    assert result.exception
+
+    result = runner.invoke(cli, ['list', 'DEfAult'])
+    assert not result.exception
+
+
 def test_list_inexistant(tmpdir, runner, create):
     result = runner.invoke(cli, ['list', 'nonexistant'])
     assert result.exception
-    assert 'Error: Invalid value for "lists":' in result.output
+    assert 'Error: Invalid value for "lists": nonexistant' in result.output
+
+    result = runner.invoke(cli, ['list', 'NONexistant'])
+    assert result.exception
+    assert 'Error: Invalid value for "lists": NONexistant' in result.output
 
 
 def test_show_existing(tmpdir, runner, create):
-    create(
-        'test.ics',
-        'SUMMARY:harhar\n'
-        'DESCRIPTION:Lots of text. Yum!\n'
-    )
+    create('test.ics', 'SUMMARY:harhar\n' 'DESCRIPTION:Lots of text. Yum!\n')
     result = runner.invoke(cli, ['list'])
     result = runner.invoke(cli, ['show', '1'])
     assert not result.exception
@@ -94,10 +132,7 @@ def test_show_existing(tmpdir, runner, create):
 
 
 def test_show_inexistant(tmpdir, runner, create):
-    create(
-        'test.ics',
-        'SUMMARY:harhar\n'
-    )
+    create('test.ics', 'SUMMARY:harhar\n')
     result = runner.invoke(cli, ['list'])
     result = runner.invoke(cli, ['show', '2'])
     assert result.exit_code == 20
@@ -105,9 +140,9 @@ def test_show_inexistant(tmpdir, runner, create):
 
 
 def test_human(runner):
-    result = runner.invoke(cli, [
-        'new', '-l', 'default', '-d', 'tomorrow', 'hail belzebub'
-    ])
+    result = runner.invoke(
+        cli, ['new', '-l', 'default', '-d', 'tomorrow', 'hail belzebub']
+    )
     assert not result.exception
     assert 'belzebub' in result.output
 
@@ -136,20 +171,14 @@ def test_two_events(tmpdir, runner):
 
 
 def test_default_command(tmpdir, runner, create):
-    create(
-        'test.ics',
-        'SUMMARY:harhar\n'
-    )
+    create('test.ics', 'SUMMARY:harhar\n')
     result = runner.invoke(cli)
     assert not result.exception
     assert 'harhar' in result.output
 
 
 def test_delete(runner, create):
-    create(
-        'test.ics',
-        'SUMMARY:harhar\n'
-    )
+    create('test.ics', 'SUMMARY:harhar\n')
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     result = runner.invoke(cli, ['delete', '1', '--yes'])
@@ -172,10 +201,7 @@ def test_delete_prompt(todo_factory, runner, todos):
 
 def test_copy(tmpdir, runner, create):
     tmpdir.mkdir('other_list')
-    create(
-        'test.ics',
-        'SUMMARY:test_copy\n'
-    )
+    create('test.ics', 'SUMMARY:test_copy\n')
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert 'test_copy' in result.output
@@ -192,10 +218,7 @@ def test_copy(tmpdir, runner, create):
 
 def test_move(tmpdir, runner, create):
     tmpdir.mkdir('other_list')
-    create(
-        'test.ics',
-        'SUMMARY:test_move\n'
-    )
+    create('test.ics', 'SUMMARY:test_move\n')
     result = runner.invoke(cli, ['list'])
     assert not result.exception
     assert 'test_move' in result.output
@@ -217,8 +240,7 @@ def test_dtstamp(tmpdir, runner, create):
     result = runner.invoke(cli, ['new', '-l', 'default', 'test event'])
     assert not result.exception
 
-    db = Database([tmpdir.join('default')],
-                  tmpdir.join('/dtstamp_cache'))
+    db = Database([tmpdir.join('default')], tmpdir.join('/dtstamp_cache'))
     todo = list(db.todos())[0]
     assert todo.dtstamp is not None
     assert todo.dtstamp == datetime.datetime.now(tz=tzlocal())
@@ -235,8 +257,7 @@ def test_default_list(tmpdir, runner, create):
     result = runner.invoke(cli, ['new', 'test default list'])
     assert not result.exception
 
-    db = Database([tmpdir.join('default')],
-                  tmpdir.join('/default_list'))
+    db = Database([tmpdir.join('default')], tmpdir.join('/default_list'))
     todo = list(db.todos())[0]
     assert todo.summary == 'test default list'
 
@@ -245,9 +266,7 @@ def test_default_list(tmpdir, runner, create):
     'default_due, expected_due_hours', [(None, 24), (1, 1), (0, None)],
     ids=['not specified', 'greater than 0', '0']
 )
-def test_default_due(
-    tmpdir, runner, create, default_due, expected_due_hours
-):
+def test_default_due(tmpdir, runner, create, default_due, expected_due_hours):
     """Test setting the due date using the default_due config parameter"""
     if default_due is not None:
         path = tmpdir.join('config')
@@ -312,10 +331,12 @@ def test_sorting_fields(tmpdir, runner, default_database):
         'categories',
     )
 
-    @given(sort_key=st.lists(
-        st.sampled_from(fields + tuple('-' + x for x in fields)),
-        unique=True
-    ))
+    @given(
+        sort_key=st.lists(
+            st.sampled_from(fields + tuple('-' + x for x in fields)),
+            unique=True
+        )
+    )
     def run_test(sort_key):
         sort_key = ','.join(sort_key)
         result = runner.invoke(cli, ['list', '--sort', sort_key])
@@ -328,20 +349,15 @@ def test_sorting_fields(tmpdir, runner, default_database):
 
 def test_sorting_output(tmpdir, runner, create):
     create(
-        'test.ics',
-        'SUMMARY:aaa\n'
+        'test.ics', 'SUMMARY:aaa\n'
         'DUE;VALUE=DATE-TIME;TZID=ART:20160102T000000\n'
     )
     create(
-        'test2.ics',
-        'SUMMARY:bbb\n'
+        'test2.ics', 'SUMMARY:bbb\n'
         'DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n'
     )
 
-    examples = [
-        ('-summary', ['aaa', 'bbb']),
-        ('due', ['aaa', 'bbb'])
-    ]
+    examples = [('-summary', ['aaa', 'bbb']), ('due', ['aaa', 'bbb'])]
 
     # Normal sorting, reversed by default
     all_examples = [(['--sort', key], order) for key, order in examples]
@@ -363,14 +379,9 @@ def test_sorting_output(tmpdir, runner, create):
 
 
 def test_sorting_null_values(tmpdir, runner, create):
+    create('test.ics', 'SUMMARY:aaa\n' 'PRIORITY:9\n')
     create(
-        'test.ics',
-        'SUMMARY:aaa\n'
-        'PRIORITY:9\n'
-    )
-    create(
-        'test2.ics',
-        'SUMMARY:bbb\n'
+        'test2.ics', 'SUMMARY:bbb\n'
         'DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n'
     )
 
@@ -391,8 +402,7 @@ def test_sort_invalid_fields(runner):
 def test_color_due_dates(tmpdir, runner, create, hours):
     due = datetime.datetime.now() + datetime.timedelta(hours=hours)
     create(
-        'test.ics',
-        'SUMMARY:aaa\n'
+        'test.ics', 'SUMMARY:aaa\n'
         'STATUS:IN-PROCESS\n'
         'DUE;VALUE=DATE-TIME;TZID=ART:{}\n'
         .format(due.strftime('%Y%m%dT%H%M%S'))
@@ -414,21 +424,18 @@ def test_color_flag(runner, todo_factory):
     todo_factory(due=datetime.datetime(2007, 3, 22))
 
     result = runner.invoke(cli, ['--color', 'always'], color=True)
-    assert(
+    assert (
         result.output.strip() ==
         '1  [ ]    \x1b[31m2007-03-22\x1b[0m  YARR! @default\x1b[0m'
     )
     result = runner.invoke(cli, color=True)
-    assert(
+    assert (
         result.output.strip() ==
         '1  [ ]    \x1b[31m2007-03-22\x1b[0m  YARR! @default\x1b[0m'
     )
 
     result = runner.invoke(cli, ['--color', 'never'], color=True)
-    assert(
-        result.output.strip() ==
-        '1  [ ]    2007-03-22  YARR! @default'
-    )
+    assert (result.output.strip() == '1  [ ]    2007-03-22  YARR! @default')
 
 
 def test_flush(tmpdir, runner, create, todo_factory, todos):
@@ -522,27 +529,25 @@ def test_empty_list(tmpdir, runner, create):
             item.remove()
 
     result = runner.invoke(cli)
-    expected = ("No lists found matching {}/*, create"
-                " a directory for a new list").format(tmpdir)
+    expected = (
+        "No lists found matching {}/*, create"
+        " a directory for a new list"
+    ).format(tmpdir)
 
     assert expected in result.output
 
 
 def test_show_location(tmpdir, runner, create):
-    create(
-        'test.ics',
-        'SUMMARY:harhar\n'
-        'LOCATION:Boston\n'
-    )
+    create('test.ics', 'SUMMARY:harhar\n' 'LOCATION:Boston\n')
 
     result = runner.invoke(cli, ['show', '1'])
     assert 'Boston' in result.output
 
 
 def test_location(runner):
-    result = runner.invoke(cli, [
-        'new', '-l', 'default', '--location', 'Chembur', 'Event Test'
-    ])
+    result = runner.invoke(
+        cli, ['new', '-l', 'default', '--location', 'Chembur', 'Event Test']
+    )
 
     assert 'Chembur' in result.output
 
@@ -593,8 +598,7 @@ def test_due_bad_date(runner):
 
 def test_multiple_todos_in_file(runner, create):
     path = create(
-        'test.ics',
-        'SUMMARY:a\n'
+        'test.ics', 'SUMMARY:a\n'
         'END:VTODO\n'
         'BEGIN:VTODO\n'
         'SUMMARY:b\n'
@@ -757,9 +761,7 @@ def test_cancel(runner, todo_factory, todos):
 
 
 def test_id_printed_for_new(runner):
-    result = runner.invoke(cli, [
-        'new', '-l', 'default', 'show me an id'
-    ])
+    result = runner.invoke(cli, ['new', '-l', 'default', 'show me an id'])
     assert not result.exception
     assert result.output.strip().startswith('1')
 
@@ -793,12 +795,14 @@ def test_no_repl(runner):
 def test_status_validation():
     from todoman import cli
 
-    @given(statuses=st.lists(
-        st.sampled_from(Todo.VALID_STATUSES + ('ANY',)),
-        min_size=1,
-        max_size=5,
-        unique=True
-    ))
+    @given(
+        statuses=st.lists(
+            st.sampled_from(Todo.VALID_STATUSES + ('ANY',)),
+            min_size=1,
+            max_size=5,
+            unique=True
+        )
+    )
     def run_test(statuses):
         validated = cli.validate_status(val=','.join(statuses))
 
@@ -829,7 +833,7 @@ def test_status_filtering(runner, todo_factory):
     result = runner.invoke(cli, ['list', '--status', 'cancelled'])
     assert not result.exception
     assert len(result.output.splitlines()) == 1
-    assert 'one 'in result.output
+    assert 'one ' in result.output
 
     result = runner.invoke(cli, ['list', '--status', 'NEEDS-action'])
     assert not result.exception
@@ -870,9 +874,9 @@ def test_show_priority(runner, todo_factory, todos):
 
 
 def test_priority(runner):
-    result = runner.invoke(cli, [
-        'new', '-l', 'default', '--priority', 'high', 'Priority Test'
-    ])
+    result = runner.invoke(
+        cli, ['new', '-l', 'default', '--priority', 'high', 'Priority Test']
+    )
 
     assert '!!!' in result.output
 
@@ -903,3 +907,28 @@ def test_duplicate_list(tmpdir, runner):
     assert result.exit_code == exceptions.AlreadyExists.EXIT_CODE
     assert result.output.strip() == \
         'More than one list has the same identity: personal.'
+
+
+def test_edit_raw(todo_factory, runner):
+    todo = todo_factory()
+    assert exists(todo.path)
+
+    with patch('click.edit', spec=True) as mocked_edit:
+        result = runner.invoke(
+            cli, ['edit', '--raw', '1'], catch_exceptions=False
+        )
+
+    assert mocked_edit.call_count == 1
+    assert mocked_edit.call_args == mock.call(filename=todo.path)
+
+    assert not result.exception
+    assert not result.output
+
+
+def test_new_description_from_stdin(runner, todos):
+    result = runner.invoke(cli, ['new', '-l', 'default', '-r', 'hello'],
+                           input='world\n')
+    assert not result.exception
+    todo, = todos()
+    assert 'world' in todo.description
+    assert 'hello' in todo.summary
