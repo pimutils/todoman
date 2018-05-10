@@ -8,6 +8,7 @@ v3.4.0
 ------
 
 * Add ``-r`` option to ``new`` to read description from ``stdin``.
+* Add a dedicated zsh completion function.
 
 v3.3.0
 ------
