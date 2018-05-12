@@ -9,6 +9,9 @@ v3.4.0
 
 * Add ``-r`` option to ``new`` to read description from ``stdin``.
 * Add a dedicated zsh completion function.
+* Lists matching is now case insensitive, unless there are multiple lists with
+  colliding names, in which case those will be treated case-sensitive.
+* Fix some tests that failed due to test dependency changes.
 
 v3.3.0
 ------
