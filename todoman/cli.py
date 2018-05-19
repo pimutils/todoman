@@ -413,7 +413,7 @@ def edit(ctx, id, todo_properties, interactive, raw, description):
     if description:
         old_description = todo.description
         new_description = click.edit(todo.description)
-        if old_description != new_description:
+        if new_description is not None and old_description != new_description:
             todo.description = new_description
             changes = True
 
