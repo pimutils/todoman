@@ -1,9 +1,11 @@
-todoman (3.4.0-1) UNRELEASED; urgency=medium
+todoman (3.4.0-1) unstable; urgency=medium
 
   * New upstream version 3.4.0
   * update Standards-Version to 4.1.4 (no change required)
+  * add patch to rename todo to todoman in zsh completion file
+  * install zsh completion file
 
- -- Félix Sipma <felix+debian@gueux.org>  Sat, 09 Jun 2018 08:46:53 +0200
+ -- Félix Sipma <felix+debian@gueux.org>  Sat, 09 Jun 2018 08:59:31 +0200
 
 todoman (3.3.0-3) unstable; urgency=medium
 
