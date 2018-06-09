@@ -1,0 +1,2 @@
+#!/usr/bin/dh-exec
+contrib/completion/zsh/_todo => /usr/share/zsh/vendor-completions/_todoman
