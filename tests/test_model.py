@@ -216,8 +216,8 @@ def test_complete_recurring(default_database, due, todo_factory, tz, until):
     # We'll lose the milis when casting, so:
     now = datetime.now(tz).replace(microsecond=0)
 
-    if tz and not until.endswith('Z'):
-        pytest.skip('This combination is invalid, as per the spec')
+    if bool(tz) != bool(until.endswith('Z')):
+        pytest.skip('These combinations are invalid, as per the spec.')
 
     original_start = now
     if due:

@@ -51,15 +51,11 @@ to your ``~/.bashrc``.
 zsh autocompletion (optional)
 -----------------------------
 
-There is no dedicated zsh completion function for todoman yet, but you can use
-the bash completion function via zsh's bash compatibility layer. This can be
-enabled. Assuming your completion function was copied to
-``~/.bash_completion.d`` as described above, you need to add the following
-lines to your ``~/.zshrc``::
-
-    autoload -U bashcompinit && bashcompinit
-    source ~/.bash_completion.d/*
-
+There is an autocompletion function for zsh provided in the ``contrib``
+directory. If you want to enable autocompletion for todoman in zsh, copy the
+file ``contrib/autocompletion/zsh/_todo`` to any directory in your ``$fpath``.
+Typically ``/usr/local/share/zsh/site-functions/`` is used for system-wide
+installations.
 
 Requirements
 ------------

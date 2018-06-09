@@ -11,7 +11,7 @@ from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
 
-from tests.helpers import pyicu_sensitive
+from tests.helpers import fs_case_sensitive, pyicu_sensitive
 from todoman.cli import cli, exceptions
 from todoman.model import Database, Todo
 
@@ -66,10 +66,60 @@ def test_percent(tmpdir, runner, create):
     assert '78%' in result.output
 
 
+@fs_case_sensitive
+@pytest.mark.parametrize(
+    'list_name', [
+        'default',
+        'DEfault',
+        'deFAUlT',
+    ])
+def test_list_case_insensitive(tmpdir, runner, create, list_name):
+    result = runner.invoke(cli, ['list', list_name])
+    assert not result.exception
+
+
+@fs_case_sensitive
+def test_list_case_insensitive_collision(tmpdir, runner, create):
+    """
+    Test that the case-insensitive list name matching is not used if
+    colliding list names exist.
+    """
+    tmpdir.mkdir('DEFaUlT')
+
+    result = runner.invoke(cli, ['list', 'deFaulT'])
+    assert result.exception
+
+    result = runner.invoke(cli, ['list', 'default'])
+    assert not result.exception
+
+    result = runner.invoke(cli, ['list', 'DEFaUlT'])
+    assert not result.exception
+
+
+@fs_case_sensitive
+def test_list_case_insensitive_other_collision(tmpdir, runner, create):
+    """
+    Test that the case-insensitive list name matching is used if a
+    collision exists that does not affect the queried list.
+    """
+    tmpdir.mkdir('coLLiding')
+    tmpdir.mkdir('COLLiDING')
+
+    result = runner.invoke(cli, ['list', 'cOlliDInG'])
+    assert result.exception
+
+    result = runner.invoke(cli, ['list', 'DEfAult'])
+    assert not result.exception
+
+
 def test_list_inexistant(tmpdir, runner, create):
     result = runner.invoke(cli, ['list', 'nonexistant'])
     assert result.exception
-    assert 'Error: Invalid value for "lists":' in result.output
+    assert 'Error: Invalid value for "lists": nonexistant' in result.output
+
+    result = runner.invoke(cli, ['list', 'NONexistant'])
+    assert result.exception
+    assert 'Error: Invalid value for "lists": NONexistant' in result.output
 
 
 def test_show_existing(tmpdir, runner, create):
@@ -873,3 +923,12 @@ def test_edit_raw(todo_factory, runner):
 
     assert not result.exception
     assert not result.output
+
+
+def test_new_description_from_stdin(runner, todos):
+    result = runner.invoke(cli, ['new', '-l', 'default', '-r', 'hello'],
+                           input='world\n')
+    assert not result.exception
+    todo, = todos()
+    assert 'world' in todo.description
+    assert 'hello' in todo.summary
