@@ -2,9 +2,9 @@ language: python
 cache: pip
 
 python:
+  - 3.6
   - 3.4
   - 3.5
-  - 3.6
   - 3.7-dev
   - pypy3.3-5.2-alpha1
 
@@ -43,7 +43,8 @@ jobs:
       env: TOXENV=py
       before_install:
         - brew update
-        - brew install python3
+        - brew upgrade python
+        - pip3 install -U virtualenv  # Travis' images rename pip to pip3.
         - virtualenv env -p python3
         - source env/bin/activate
 
@@ -57,4 +58,9 @@ jobs:
         - pip install wheel
         - python setup.py sdist bdist_wheel
         - gem install dpl
-        - dpl --api-key=$RELEASES_TOKEN --provider=releases --file=dist/* --file_glob=true
+        - dpl --api-key=$RELEASES_TOKEN --provider=releases --file=dist/* --file_glob=true --skip_cleanup=true
+
+matrix:
+  allow_failures:
+    - python: pypy3.3-5.2-alpha1
+    - python: 3.7-dev

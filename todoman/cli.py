@@ -53,14 +53,27 @@ def _validate_list_param(ctx, param=None, name=None):
             raise click.BadParameter(
                 'You must set "default_list" or use -l.'.format(name)
             )
-    for l in ctx.db.lists():
-        if l.name == name:
-            return l
-    else:
-        list_names = [l.name for l in ctx.db.lists()]
-        raise click.BadParameter(
-            "{}. Available lists are: {}".format(name, ', '.join(list_names))
-        )
+    lists = {
+        list_.name: list_
+        for list_ in ctx.db.lists()
+    }
+    fuzzy_matches = [
+        list_
+        for list_ in lists.values()
+        if list_.name.lower() == name.lower()
+    ]
+
+    if len(fuzzy_matches) == 1:
+        return fuzzy_matches[0]
+
+    # case-insensitive matching collides or does not find a result,
+    # use exact matching
+    if name in lists:
+        return lists[name]
+    raise click.BadParameter(
+        "{}. Available lists are: {}".format(
+            name, ', '.join(list_.name for list_ in lists.values()))
+    )
 
 
 def _validate_date_param(ctx, param, val):
@@ -318,11 +331,18 @@ except ImportError:
     callback=_validate_list_param,
     help='The list to create the task in.'
 )
+@click.option(
+    '--read-description',
+    '-r',
+    is_flag=True,
+    default=False,
+    help='Read task description from stdin.'
+)
 @_todo_property_options
 @_interactive_option
 @pass_ctx
 @catch_errors
-def new(ctx, summary, list, todo_properties, interactive):
+def new(ctx, summary, list, todo_properties, read_description, interactive):
     '''
     Create a new task with SUMMARY.
     '''
@@ -337,6 +357,9 @@ def new(ctx, summary, list, todo_properties, interactive):
         if value:
             setattr(todo, key, value)
     todo.summary = ' '.join(summary)
+
+    if read_description:
+        todo.description = '\n'.join(sys.stdin)
 
     if interactive or (not summary and interactive is None):
         ui = TodoEditor(todo, ctx.db.lists(), ctx.ui_formatter)

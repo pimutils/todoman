@@ -191,14 +191,7 @@ class Todo:
 
         recurrence = rrulestr(self.rrule, dtstart=dt)
 
-        # Nasty hack around: https://github.com/dateutil/dateutil/issues/341
-        try:
-            return recurrence.after(dt)
-        except TypeError:
-            tz = dt.tzinfo
-            dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
-            recurrence = rrulestr(self.rrule, dtstart=dt)
-            return recurrence.after(dt).replace(tzinfo=tz)
+        return recurrence.after(dt)
 
     def _create_next_instance(self):
         copy = self.clone()
