@@ -1,3 +1,9 @@
+todoman (3.4.0-1) UNRELEASED; urgency=medium
+
+  * New upstream version 3.4.0
+
+ -- Félix Sipma <felix+debian@gueux.org>  Sat, 09 Jun 2018 08:42:02 +0200
+
 todoman (3.3.0-3) unstable; urgency=medium
 
   * manually add todoman binary to PATH to build the doc (Closes: #892381)
