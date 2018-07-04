@@ -219,6 +219,7 @@ class PorcelainFormatter(DefaultFormatter):
             priority=todo.priority,
             location=todo.location,
             description=todo.description,
+            completed_at=self.format_datetime(todo.completed_at),
         )
 
     def compact(self, todo):
