@@ -218,6 +218,7 @@ class PorcelainFormatter(DefaultFormatter):
             summary=todo.summary,
             priority=todo.priority,
             location=todo.location,
+            description=todo.description,
         )
 
     def compact(self, todo):
