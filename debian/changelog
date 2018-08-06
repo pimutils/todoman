@@ -1,3 +1,9 @@
+todoman (3.4.0-2) unstable; urgency=medium
+
+  * add python3-pkg-resources dependency (Closes: #904768)
+
+ -- Félix Sipma <felix+debian@gueux.org>  Mon, 06 Aug 2018 10:41:28 +0200
+
 todoman (3.4.0-1) unstable; urgency=medium
 
   * New upstream version 3.4.0
