@@ -1,15 +1,32 @@
 Installing
 ==========
 
+Distribution packages
+---------------------
+
 If todoman is packaged for your OS/distribution, using your system's
-standard package manager is probably the easiest way to install todoman:
+standard package manager is probably the easiest way to install todoman.
 
-- ArchLinux (AUR_)
+ArchLinux
+~~~~~~~~~
 
-.. _AUR: https://aur.archlinux.org/packages/todoman/
+todoman is packaged in the community_ repository, and can be installed using::
 
-Install via PIP
----------------
+    pacman -S todoman
+
+.. _community: https://www.archlinux.org/packages/community/any/todoman/
+
+macOS
+~~~~~
+
+todoman is packaged in homebrew_, an can be installed using::
+
+    brew install todoman
+
+.. _homebrew: https://formulae.brew.sh/formula/todoman
+
+Installation via PIP
+--------------------
 
 Since *todoman* is written in python, you can use python's package managers,
 *pip* by executing::
