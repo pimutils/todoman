@@ -104,6 +104,8 @@ class DefaultFormatter:
         extra_rows = []
         if todo.description:
             extra_rows += self._columnize('Description', todo.description)
+        if todo.categories:
+            extra_rows += self._columnize('Categories', ','.join(todo.categories))
         if todo.location:
             extra_rows += self._columnize('Location', todo.location)
 
@@ -120,6 +122,18 @@ class DefaultFormatter:
             return dt.strftime(self.datetime_format)
         elif isinstance(dt, datetime.date):
             return dt.strftime(self.date_format)
+
+    def format_categories(self, categories):
+        if not categories:
+            return ""
+        else:
+            return ','.join(categories) 
+
+    def parse_category(self, categories):
+        if categories is None or categories == '':
+            return None
+        else:
+            return categories
 
     def parse_priority(self, priority):
         if priority is None or priority is '':
@@ -217,6 +231,7 @@ class PorcelainFormatter(DefaultFormatter):
             percent=todo.percent_complete,
             summary=todo.summary,
             priority=todo.priority,
+            categories=todo.categories,
             location=todo.location,
         )
 

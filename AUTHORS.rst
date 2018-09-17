@@ -13,6 +13,7 @@ Authors are listed in alphabetical order.
 * Anubha Agrawal <anubhakannu@gmail.com>
 * Benjamin Frank <ben+gitlab@pipsfrank.de>
 * Christian Geier <geier@lostpackets.de>
+* Christof Schulze <christof@christofschulze.com>
 * Doron Behar <me@doronbehar.com>
 * Guilhem Saurel <guilhem.saurel@gmail.com>
 * Hugo Osvaldo Barrera <hugo@barrera.io>

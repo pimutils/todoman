@@ -34,6 +34,7 @@ class TodoEditor:
             ("Summary", self._summary),
             ("Description", self._description),
             ("Location", self._location),
+            ("Categories", self._categories),
             ("Start", self._dtstart),
             ("Due", self._due),
             ("Completed", self._completed),
@@ -74,6 +75,10 @@ class TodoEditor:
         self._location = widgets.ExtendedEdit(
             parent=self,
             edit_text=self.todo.location,
+        )
+        self._categories = widgets.ExtendedEdit(
+            parent=self,
+            edit_text=self.formatter.format_categories(self.todo.categories),
         )
         self._due = widgets.ExtendedEdit(
             parent=self,
@@ -159,6 +164,7 @@ class TodoEditor:
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
+        self.todo.categories = self.categories
         self.todo.due = self.formatter.parse_datetime(self.due)
         self.todo.start = self.formatter.parse_datetime(self.dtstart)
         if not self.todo.is_completed and self._completed.get_state():
@@ -168,7 +174,6 @@ class TodoEditor:
             self.todo.completed_at = None
         self.todo.priority = self.priority
 
-        # TODO: categories
         # TODO: comment
 
         # https://tools.ietf.org/html/rfc5545#section-3.8
@@ -196,6 +201,10 @@ class TodoEditor:
     @property
     def due(self):
         return self._due.edit_text
+
+    @property
+    def categories(self):
+        return self._categories.edit_text
 
     @property
     def dtstart(self):
