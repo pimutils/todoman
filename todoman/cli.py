@@ -640,7 +640,7 @@ def list(ctx, **kwargs):
     List tasks. Filters any completed or cancelled tasks by default.
 
     If no arguments are provided, all lists will be displayed, and only
-    incomplete tasks are show. Otherwise, only todos for the specified list
+    incomplete tasks are shown. Otherwise, only todos for the specified list
     will be displayed.
 
     eg:
