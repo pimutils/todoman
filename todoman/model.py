@@ -633,7 +633,7 @@ class Cache:
             cursor.close()
 
         if todo.get('categories') is not None:
-            logger.debug("Categories: " + str(todo.get('categories')))
+            logger.debug("Categories: %s %s", str(todo.get('categories')), str(type(todo.get('categories'))) )
             for c in todo.get('categories').split(','):
                 logger.debug("adding category: " + c)
                 self.add_category(todo.get('uid'), c)
