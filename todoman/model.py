@@ -707,9 +707,9 @@ class Cache:
             extra_where.append('AND location LIKE ?')
             params.append('%{}%'.format(location))
         if categories:
-            # TODO: wie selektiert man geschickt mit TAbellen und kategorien?
-            extra_where.append('AND categories LIKE ?')
-            params.append('%{}%'.format(category))
+	    # TODO: allow to filter for more than one category. 
+            extra_where.append('AND upper(categories.category) = upper(?)')
+            params.append('{}'.format(categories))
         if grep:
             # # requires sqlite with pcre, which won't be available everywhere:
             # extra_where.append('AND summary REGEXP ?')
@@ -752,16 +752,26 @@ class Cache:
             # Note the change in case to avoid swapping all of them. sqlite
             # doesn't care about casing anyway.
             order = order.replace(' DESC', ' asc').replace(' ASC', ' desc')
-
-        query = '''
-              SELECT todos.*, files.list_name, files.path
-                FROM todos, files
-               WHERE todos.file_path = files.path {}
+        if categories:
+            query = '''
+            SELECT distinct todos.*, files.list_name, files.path
+            FROM todos, files, categories
+            WHERE categories.uid = todos.uid and todos.file_path = files.path {}
             ORDER BY {}
-        '''.format(
+            '''.format(
             ' '.join(extra_where),
-            order,
-        )
+              order,
+            )
+        else:
+            query = '''
+            SELECT todos.*, files.list_name, files.path
+            FROM todos, files
+            WHERE todos.file_path = files.path {}
+            ORDER BY {}
+            '''.format(
+            ' '.join(extra_where),
+              order,
+            )
 
         logger.debug(query)
         logger.debug(params)
@@ -805,8 +815,20 @@ class Cache:
         todo.description = row['description']
         todo.location = row['location']
         todo.categories = None
-	#row['categories']
-        # TODO: category korrekt befüllen
+        query = '''
+            SELECT distinct category
+            FROM categories
+            WHERE categories.uid = '{}'
+            '''.format(
+             todo.uid,
+            )
+        logger.debug("query %s\n", query);
+        result = self._conn.execute(query)
+        for c in result:
+            logger.debug("result %s\n", str(c), str(type(c)) );
+            todo.categories = ','.join(str([todo.categories, c]))
+        todo.categories = result;
+        logger.debug("todo.categories: %s\n", todo.categories)
         todo.sequence = row['sequence']
         todo.last_modified = row['last_modified']
         todo.list = self.lists_map[row['list_name']]
