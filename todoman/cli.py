@@ -611,7 +611,7 @@ def move(ctx, list, ids):
     '"NEEDS-ACTION", "CANCELLED", "COMPLETED", "IN-PROCESS" or "ANY"'
 )
 @catch_errors
-def list(ctx, **kwargs):
+def list(ctx, *args, **kwargs):
     """
     List tasks. Filters any completed or cancelled tasks by default.
 
