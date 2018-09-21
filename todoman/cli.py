@@ -233,6 +233,7 @@ _interactive_option = click.option(
 @click.option(
     '--colour',
     '--color',
+    'colour',
     default=None,
     type=click.Choice(['always', 'auto', 'never']),
     help=(
@@ -258,7 +259,7 @@ _interactive_option = click.option(
 @click.pass_context
 @click.version_option(prog_name='todoman')
 @catch_errors
-def cli(click_ctx, color, porcelain, humanize):
+def cli(click_ctx, colour, porcelain, humanize):
     ctx = click_ctx.ensure_object(AppContext)
     try:
         ctx.config = load_config()
@@ -281,10 +282,10 @@ def cli(click_ctx, color, porcelain, humanize):
     else:
         ctx.formatter_class = formatters.DefaultFormatter
 
-    color = color or ctx.config['main']['color']
-    if color == 'always':
+    colour = colour or ctx.config['main']['color']
+    if colour == 'always':
         click_ctx.color = True
-    elif color == 'never':
+    elif colour == 'never':
         click_ctx.color = False
 
     paths = [
