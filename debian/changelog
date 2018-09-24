@@ -1,3 +1,9 @@
+todoman (3.4.0-3) UNRELEASED; urgency=medium
+
+  * add upstream patch to unbreak Click>=7.0 support (Closes: #908686)
+
+ -- Félix Sipma <felix+debian@gueux.org>  Mon, 24 Sep 2018 10:12:12 +0200
+
 todoman (3.4.0-2) unstable; urgency=medium
 
   * add python3-pkg-resources dependency (Closes: #904768)
