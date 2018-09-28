@@ -179,7 +179,8 @@ def _todo_property_options(command):
         default='',
         multiple=True,
         callback=_validate_categories,
-        help=('A category. May be used multiple times.'))(command)
+        help=('A category. May be used multiple times.')
+    )(command)
     click.option(
         '--due',
         '-d',
@@ -370,9 +371,7 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
 
     for key, value in todo_properties.items():
         if value:
-            logger.debug("property: " + key + " value: " + ','.join(value) +  " (" + str(type(value)) + ")" )
-            if key == "categories":
-                value = [v for v in value]
+            logger.debug("property: %s value: %s type: %s",  key, ','.join(value), type(value) )
             setattr(todo, key, value)
     todo.summary = ' '.join(summary)
 

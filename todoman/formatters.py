@@ -1,3 +1,4 @@
+import logging
 import datetime
 import json
 from time import mktime
@@ -9,6 +10,7 @@ import pytz
 from dateutil.tz import tzlocal
 from tabulate import tabulate
 
+logger = logging.getLogger(name=__name__)
 
 def rgb_to_ansi(colour):
     """
@@ -133,7 +135,8 @@ class DefaultFormatter:
         if categories is None or categories == '':
             return None
         else:
-            return categories
+            logger.debug("categories: value: %s type: %s",  str(list(categories)), str(type(categories)) )
+            return (c for c in str(categories).split(','))
 
     def parse_priority(self, priority):
         if priority is None or priority is '':

@@ -164,7 +164,7 @@ class TodoEditor:
         self.todo.summary = self.summary
         self.todo.description = self.description
         self.todo.location = self.location
-        self.todo.categories = self.categories.split(',')
+        self.todo.categories = [c.strip() for c in self.categories.split(',')]
         self.todo.due = self.formatter.parse_datetime(self.due)
         self.todo.start = self.formatter.parse_datetime(self.dtstart)
         if not self.todo.is_completed and self._completed.get_state():

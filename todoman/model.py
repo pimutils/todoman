@@ -170,7 +170,7 @@ class Todo:
             if name in Todo.INT_FIELDS:
                 return object.__setattr__(self, name, 0)
             if name in Todo.LIST_FIELDS:
-                if value is not None and  not isinstance(value, list):
+                if value is not None and not isinstance(value, list):
                     raise ValueError("Got a {0} for {1} where list was expected!".format(type(value), name))
                 return object.__setattr__(self, name, [])
 
@@ -300,7 +300,8 @@ class VtodoWritter:
         if value:
             logger.debug("Setting field %s to %s.", name, value)
             if name == 'categories':
-                v = icalendar.prop.vInline(','.join(value))
+#                v = icalendar.prop.vInline(','.join(value))
+                v = self.vtodo.set_inline(name, value)
                 self.vtodo.add(name, v)
             else:
                 self.vtodo.add(name, value)
@@ -634,8 +635,8 @@ class Cache:
 
         if todo.get('categories') is not None:
             logger.debug("Categories: %s %s", str(todo.get('categories')), str(type(todo.get('categories'))) )
-            for c in todo.get('categories').split(','):
-                logger.debug("adding category: " + c)
+            for c in todo.get('categories'):
+                logger.debug("adding category: %s", c)
                 self.add_category(todo.get('uid'), c)
 
         return rv
@@ -825,7 +826,7 @@ class Cache:
         logger.debug("query %s\n", query);
         result = self._conn.execute(query)
         for c in result:
-            logger.debug("result %s\n", str(c), str(type(c)) );
+            logger.debug("result %s %s\n", str(c), str(type(c)) );
             todo.categories = ','.join(str([todo.categories, c]))
         todo.categories = result;
         logger.debug("todo.categories: %s\n", todo.categories)
