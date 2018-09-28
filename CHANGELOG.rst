@@ -7,6 +7,7 @@ releases, in reverse chronological order.
 v3.4.1
 ------
 * Support Python 3.7.
+* Support click>=7.0.
 
 v3.4.0
 ------
