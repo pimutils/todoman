@@ -170,6 +170,8 @@ class Todo:
             if name in Todo.INT_FIELDS:
                 return object.__setattr__(self, name, 0)
             if name in Todo.LIST_FIELDS:
+                if value is not None and not isinstance(value, list):
+                    raise ValueError("Got a {0} for {1} where list was expected!".format(type(value), name))
                 return object.__setattr__(self, name, [])
 
         return object.__setattr__(self, name, value)
@@ -284,7 +286,7 @@ class VtodoWritter:
         if name in Todo.DATETIME_FIELDS:
             return self.normalize_datetime(value)
         if name in Todo.LIST_FIELDS:
-            return ','.join(value)
+            return value
         if name in Todo.INT_FIELDS:
             return int(value)
         if name in Todo.STRING_FIELDS:
@@ -297,7 +299,12 @@ class VtodoWritter:
         self.vtodo.pop(name)
         if value:
             logger.debug("Setting field %s to %s.", name, value)
-            self.vtodo.add(name, value)
+            if name == 'categories':
+#                v = icalendar.prop.vInline(','.join(value))
+                v = self.vtodo.set_inline(name, value)
+                self.vtodo.add(name, v)
+            else:
+                self.vtodo.add(name, value)
 
     def serialize(self, original=None):
         """Serialize a Todo into a VTODO."""
@@ -370,7 +377,7 @@ class Cache:
     may be used for filtering/sorting.
     """
 
-    SCHEMA_VERSION = 5
+    SCHEMA_VERSION = 6
 
     def __init__(self, path):
         self.cache_path = str(path)
@@ -404,6 +411,7 @@ class Cache:
             DROP TABLE IF EXISTS lists;
             DROP TABLE IF EXISTS files;
             DROP TABLE IF EXISTS todos;
+            DROP TABLE IF EXISTS categories;
         '''
         )
 
@@ -412,6 +420,15 @@ class Cache:
         self._conn.execute(
             'INSERT INTO meta (version) VALUES (?)',
             (Cache.SCHEMA_VERSION,),
+        )
+
+        self._conn.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS categories (
+                "uid" TEXT,
+                "category" TEXT
+            );
+        '''
         )
 
         self._conn.execute(
@@ -456,7 +473,6 @@ class Cache:
                 "status" TEXT,
                 "description" TEXT,
                 "location" TEXT,
-                "categories" TEXT,
                 "sequence" INTEGER,
                 "last_modified" INTEGER,
                 "rrule" TEXT,
@@ -518,6 +534,19 @@ class Cache:
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExists('file', list_name) from e
 
+    def add_category(self, uid, category):
+            self._conn.execute(
+               '''
+               INSERT INTO categories (
+                   uid,
+                   category
+               ) VALUES ( ?, ?);
+               ''', (
+                  uid,
+                  category
+               )
+           )
+
     def _serialize_datetime(self, todo, field):
         dt = todo.decoded(field, None)
         if not dt:
@@ -560,11 +589,10 @@ class Cache:
                 status,
                 description,
                 location,
-                categories,
                 sequence,
                 last_modified,
                 rrule
-            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             '''
 
         due = self._serialize_datetime(todo, 'due')
@@ -587,7 +615,6 @@ class Cache:
             todo.get('status', 'NEEDS-ACTION'),
             todo.get('description', None),
             todo.get('location', None),
-            todo.get('categories', None),
             todo.get('sequence', 1),
             self._serialize_datetime(todo, 'last-modified'),
             self._serialize_rrule(todo, 'rrule'),
@@ -606,6 +633,12 @@ class Cache:
         finally:
             cursor.close()
 
+        if todo.get('categories') is not None:
+            logger.debug("Categories: %s %s", str(todo.get('categories')), str(type(todo.get('categories'))) )
+            for c in todo.get('categories'):
+                logger.debug("adding category: %s", c)
+                self.add_category(todo.get('uid'), c)
+
         return rv
 
     def todos(
@@ -613,13 +646,13 @@ class Cache:
         lists=(),
         priority=None,
         location='',
-        category='',
         grep='',
         sort=(),
         reverse=True,
         due=None,
         start=None,
         startable=False,
+        categories=None,
         status=(
             'NEEDS-ACTION',
             'IN-PROCESS',
@@ -638,7 +671,7 @@ class Cache:
         :param list lists: Only return todos for these lists.
         :param str location: Only return todos with a location containing this
             string.
-        :param str category: Only return todos with a category containing this
+        :param str categories: Only return todos with a category containing this
             string.
         :param str grep: Filter common fields with this substring.
         :param list sort: Order returned todos by these fields. Field names
@@ -674,9 +707,10 @@ class Cache:
         if location:
             extra_where.append('AND location LIKE ?')
             params.append('%{}%'.format(location))
-        if category:
-            extra_where.append('AND categories LIKE ?')
-            params.append('%{}%'.format(category))
+        if categories:
+	    # TODO: allow to filter for more than one category. 
+            extra_where.append('AND upper(categories.category) = upper(?)')
+            params.append('{}'.format(categories))
         if grep:
             # # requires sqlite with pcre, which won't be available everywhere:
             # extra_where.append('AND summary REGEXP ?')
@@ -719,16 +753,26 @@ class Cache:
             # Note the change in case to avoid swapping all of them. sqlite
             # doesn't care about casing anyway.
             order = order.replace(' DESC', ' asc').replace(' ASC', ' desc')
-
-        query = '''
-              SELECT todos.*, files.list_name, files.path
-                FROM todos, files
-               WHERE todos.file_path = files.path {}
+        if categories:
+            query = '''
+            SELECT distinct todos.*, files.list_name, files.path
+            FROM todos, files, categories
+            WHERE categories.uid = todos.uid and todos.file_path = files.path {}
             ORDER BY {}
-        '''.format(
+            '''.format(
             ' '.join(extra_where),
-            order,
-        )
+              order,
+            )
+        else:
+            query = '''
+            SELECT todos.*, files.list_name, files.path
+            FROM todos, files
+            WHERE todos.file_path = files.path {}
+            ORDER BY {}
+            '''.format(
+            ' '.join(extra_where),
+              order,
+            )
 
         logger.debug(query)
         logger.debug(params)
@@ -771,6 +815,21 @@ class Cache:
         todo.status = row['status']
         todo.description = row['description']
         todo.location = row['location']
+        todo.categories = None
+        query = '''
+            SELECT distinct category
+            FROM categories
+            WHERE categories.uid = '{}'
+            '''.format(
+             todo.uid,
+            )
+        logger.debug("query %s\n", query);
+        result = self._conn.execute(query)
+        for c in result:
+            logger.debug("result %s %s\n", str(c), str(type(c)) );
+            todo.categories = ','.join(str([todo.categories, c]))
+        todo.categories = result;
+        logger.debug("todo.categories: %s\n", todo.categories)
         todo.sequence = row['sequence']
         todo.last_modified = row['last_modified']
         todo.list = self.lists_map[row['list_name']]

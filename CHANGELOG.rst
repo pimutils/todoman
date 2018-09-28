@@ -99,6 +99,7 @@ New features
 * Increment sequence number upon edits.
 * Print a descriptive message when no lists are found.
 * Add full support for locations.
+* Add full support for categories.
 
 Packaging changes
 ~~~~~~~~~~~~~~~~~

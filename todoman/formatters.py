@@ -1,3 +1,4 @@
+import logging
 import datetime
 import json
 from time import mktime
@@ -9,6 +10,7 @@ import pytz
 from dateutil.tz import tzlocal
 from tabulate import tabulate
 
+logger = logging.getLogger(name=__name__)
 
 def rgb_to_ansi(colour):
     """
@@ -104,6 +106,8 @@ class DefaultFormatter:
         extra_rows = []
         if todo.description:
             extra_rows += self._columnize('Description', todo.description)
+        if todo.categories:
+            extra_rows += self._columnize('Categories', ','.join(todo.categories))
         if todo.location:
             extra_rows += self._columnize('Location', todo.location)
 
@@ -120,6 +124,19 @@ class DefaultFormatter:
             return dt.strftime(self.datetime_format)
         elif isinstance(dt, datetime.date):
             return dt.strftime(self.date_format)
+
+    def format_categories(self, categories):
+        if not categories:
+            return ""
+        else:
+            return ','.join(categories) 
+
+    def parse_category(self, categories):
+        if categories is None or categories == '':
+            return None
+        else:
+            logger.debug("categories: value: %s type: %s",  str(list(categories)), str(type(categories)) )
+            return (c for c in str(categories).split(','))
 
     def parse_priority(self, priority):
         if priority is None or priority is '':
@@ -217,6 +234,7 @@ class PorcelainFormatter(DefaultFormatter):
             percent=todo.percent_complete,
             summary=todo.summary,
             priority=todo.priority,
+            categories=todo.categories,
             location=todo.location,
         )
 

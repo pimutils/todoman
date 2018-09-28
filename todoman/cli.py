@@ -1,3 +1,4 @@
+import logging
 import functools
 import glob
 import locale
@@ -14,6 +15,7 @@ from todoman.configuration import ConfigurationException, load_config
 from todoman.interactive import TodoEditor
 from todoman.model import cached_property, Database, Todo
 
+logger = logging.getLogger(name=__name__)
 
 click_log.basic_config()
 
@@ -119,6 +121,13 @@ def _validate_todos(ctx, param, val):
     with handle_error():
         return [ctx.db.todo(int(id)) for id in val]
 
+def _validate_categories(ctx, param, val):
+    ctx = ctx.find_object(AppContext)
+    try:
+        return ctx.formatter.parse_category(val)
+    except ValueError as e:
+        raise click.BadParameter(e)
+
 
 def _sort_callback(ctx, param, val):
     fields = val.split(',') if val else []
@@ -166,6 +175,13 @@ def _todo_property_options(command):
                             'this todo takes place.')
     )(command)
     click.option(
+        '--categories',
+        default='',
+        multiple=True,
+        callback=_validate_categories,
+        help=('A category. May be used multiple times.')
+    )(command)
+    click.option(
         '--due',
         '-d',
         default='',
@@ -187,7 +203,7 @@ def _todo_property_options(command):
     def command_wrap(*a, **kw):
         kw['todo_properties'] = {
             key: kw.pop(key)
-            for key in ('due', 'start', 'location', 'priority')
+            for key in ('due', 'start', 'location', 'priority', 'categories')
         }
         return command(*a, **kw)
 
@@ -356,6 +372,7 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
 
     for key, value in todo_properties.items():
         if value:
+            logger.debug("property: %s value: %s type: %s",  key, ','.join(value), type(value) )
             setattr(todo, key, value)
     todo.summary = ' '.join(summary)
 
@@ -552,7 +569,7 @@ def move(ctx, list, ids):
 @pass_ctx
 @click.argument('lists', nargs=-1, callback=_validate_lists_param)
 @click.option('--location', help='Only show tasks with location containg TEXT')
-@click.option('--category', help='Only show tasks with category containg TEXT')
+@click.option('--categories', help='Only show tasks with categories containg TEXT')
 @click.option('--grep', help='Only show tasks with message containg TEXT')
 @click.option(
     '--sort',
@@ -576,6 +593,13 @@ def move(ctx, list, ids):
     help='Only show tasks due in INTEGER '
     'hours',
     type=int
+)
+@click.option(
+    '--categories',
+    default=None,
+    help='Only show tasks with categories.',
+    type=str,
+    callback=_validate_categories
 )
 @click.option(
     '--priority',
@@ -616,7 +640,7 @@ def list(ctx, *args, **kwargs):
     List tasks. Filters any completed or cancelled tasks by default.
 
     If no arguments are provided, all lists will be displayed, and only
-    incomplete tasks are show. Otherwise, only todos for the specified list
+    incomplete tasks are shown. Otherwise, only todos for the specified list
     will be displayed.
 
     eg:
