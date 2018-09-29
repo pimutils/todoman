@@ -1,9 +1,10 @@
-todoman (3.4.0-3) UNRELEASED; urgency=medium
+todoman (3.4.1-1) unstable; urgency=medium
 
-  * add upstream patch to unbreak Click>=7.0 support (Closes: #908686)
+  * New upstream version 3.4.1 (Closes: #908686)
   * bump Standards-Version to 4.2.1 (no change required)
+  * update patches
 
- -- Félix Sipma <felix+debian@gueux.org>  Mon, 24 Sep 2018 11:23:41 +0200
+ -- Félix Sipma <felix+debian@gueux.org>  Sat, 29 Sep 2018 12:32:47 +0200
 
 todoman (3.4.0-2) unstable; urgency=medium
 
