@@ -17,7 +17,7 @@ def rgb_to_ansi(colour):
     if not colour or not colour.startswith('#'):
         return
 
-    r, g, b = colour[1:3], colour[3:5], colour[5:8]
+    r, g, b = colour[1:3], colour[3:5], colour[5:7]
 
     if not len(r) == len(g) == len(b) == 2:
         return
