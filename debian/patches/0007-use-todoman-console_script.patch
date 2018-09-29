@@ -7,7 +7,7 @@ Subject: use todoman console_script
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/setup.py b/setup.py
-index c52b916..76a8fa4 100644
+index 042d64e..99b6701 100644
 --- a/setup.py
 +++ b/setup.py
 @@ -13,8 +13,8 @@ setup(

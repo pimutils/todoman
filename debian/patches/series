@@ -7,4 +7,3 @@
 0007-use-todoman-console_script.patch
 0008-use-env-python3-in-binary.patch
 0009-remame-todo-to-todoman-in-zsh-completion-file.patch
-0010-explicitly-name-the-colour-option.patch
