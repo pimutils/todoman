@@ -4,6 +4,11 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.5.0
+------
+* Fix crashes due to API changes in icalendar 4.0.3.
+* Dropped compatibility for icalendar < 4.0.3.
+
 v3.4.1
 ------
 * Support Python 3.7.

@@ -284,7 +284,7 @@ class VtodoWritter:
         if name in Todo.DATETIME_FIELDS:
             return self.normalize_datetime(value)
         if name in Todo.LIST_FIELDS:
-            return ','.join(value)
+            return value
         if name in Todo.INT_FIELDS:
             return int(value)
         if name in Todo.STRING_FIELDS:
@@ -537,6 +537,13 @@ class Cache:
 
         return rrule.to_ical().decode()
 
+    def _serialize_categories(self, todo, field):
+        categories = todo.get(field, [])
+        if not categories:
+            return ''
+
+        return ','.join([str(category) for category in categories.cats])
+
     def add_vtodo(self, todo, file_path, id=None):
         """
         Adds a todo into the cache.
@@ -587,7 +594,7 @@ class Cache:
             todo.get('status', 'NEEDS-ACTION'),
             todo.get('description', None),
             todo.get('location', None),
-            todo.get('categories', None),
+            self._serialize_categories(todo, 'categories'),
             todo.get('sequence', 1),
             self._serialize_datetime(todo, 'last-modified'),
             self._serialize_rrule(todo, 'rrule'),
