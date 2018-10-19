@@ -85,13 +85,23 @@ class DefaultFormatter:
 
         return tabulate(table, tablefmt='plain')
 
-    def _columnize(self, label, text):
+    def _columnize_text(self, label, text):
+        """Display text, split text by line-endings, on multiple colums,"""
+        """do nothing if text is empty or None"""
+        lines = text.splitlines() if text else None
+
+        return self._columnize_list(label, lines)
+
+    def _columnize_list(self, label, lst):
+        """Display list on multiple columns,"""
+        """do nothing if list is empty or None"""
+
         rows = []
 
-        lines = text.splitlines()
-        rows.append([label, lines[0]])
-        for line in lines[1:]:
-            rows.append([None, line])
+        if lst:
+            rows.append([label, lst[0]])
+            for line in lst[1:]:
+                rows.append([None, line])
 
         return rows
 
