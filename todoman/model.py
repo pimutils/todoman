@@ -160,19 +160,44 @@ class Todo:
     )
 
     def __setattr__(self, name, value):
-        # Avoids accidentally setting a field to None when that's not a valid
-        # attribute.
-        if not value:
-            if name in Todo.RRULE_FIELDS:
-                return object.__setattr__(self, name, '')
-            if name in Todo.STRING_FIELDS:
-                return object.__setattr__(self, name, '')
-            if name in Todo.INT_FIELDS:
-                return object.__setattr__(self, name, 0)
-            if name in Todo.LIST_FIELDS:
-                return object.__setattr__(self, name, [])
+        """Check type and avoid setting fields to None"""
+        """when that is not a valid attribue."""
 
-        return object.__setattr__(self, name, value)
+        v = value
+
+        if name in Todo.RRULE_FIELDS:
+            if value is None:
+                v = ''
+            else:
+                assert isinstance(value, str), (
+                       "Got {0} for {1} where str was expected"
+                       .format(type(value), name))
+
+        if name in Todo.STRING_FIELDS:
+            if value is None:
+                v = ''
+            else:
+                assert isinstance(value, str), (
+                       "Got {0} for {1} where str was expected"
+                       .format(type(value), name))
+
+        if name in Todo.INT_FIELDS:
+            if value is None:
+                v = 0
+            else:
+                assert isinstance(value, int), (
+                       "Got {0} for {1} where int was expected"
+                       .format(type(value), name))
+
+        if name in Todo.LIST_FIELDS:
+            if value is None:
+                v = []
+            else:
+                assert isinstance(value, list), (
+                       "Got {0} for {1} where list was expected"
+                       .format(type(value), name))
+
+        return object.__setattr__(self, name, v)
 
     @property
     def is_completed(self):
