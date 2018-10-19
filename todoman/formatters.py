@@ -112,10 +112,8 @@ class DefaultFormatter:
         :param Todo todo: The todo component.
         """
         extra_rows = []
-        if todo.description:
-            extra_rows += self._columnize('Description', todo.description)
-        if todo.location:
-            extra_rows += self._columnize('Location', todo.location)
+        extra_rows += self._columnize_text('Description', todo.description)
+        extra_rows += self._columnize_text('Location', todo.location)
 
         if extra_rows:
             return '{}\n\n{}'.format(
