@@ -18,7 +18,13 @@ class ConfigurationException(Exception):
 
 def expand_path(path):
     """expands `~` as well as variable names"""
-    return os.path.expanduser(os.path.expandvars(path))
+    if path:
+        return os.path.expanduser(os.path.expandvars(path))
+    else:
+        return os.path.join(
+            xdg.BaseDirectory.xdg_data_home,
+            'calendars/*',
+        )
 
 
 def validate_cache_path(path):
