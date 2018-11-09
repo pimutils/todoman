@@ -13,6 +13,7 @@ v3.4.1
 ------
 * Support Python 3.7.
 * Support click>=7.0.
+* Properly parse RBGA colours.
 
 v3.4.0
 ------

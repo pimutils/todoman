@@ -929,7 +929,7 @@ class Database:
                     cal = icalendar.Calendar.from_ical(cal)
                     for component in cal.walk('VTODO'):
                         self.cache.add_vtodo(component, entry_path)
-            except Exception as e:
+            except Exception:
                 logger.exception("Failed to read entry %s.", entry_path)
 
         self.cache.save_to_disk()
