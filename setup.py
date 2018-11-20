@@ -22,7 +22,7 @@ setup(
         'click-log>=0.2.1',
         'configobj',
         'humanize',
-        'icalendar',
+        'icalendar>=4.0.3',
         'parsedatetime',
         'python-dateutil',
         'pyxdg',

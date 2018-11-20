@@ -1,8 +1,9 @@
-todoman (3.4.1-2) UNRELEASED; urgency=medium
+todoman (3.5.0-1) UNRELEASED; urgency=medium
 
   * Add basic debian/upstrema/metadata.
+  * New upstream release.
 
- -- Jelmer Vernooĳ <jelmer@debian.org>  Thu, 15 Nov 2018 02:22:03 +0000
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Tue, 20 Nov 2018 04:11:41 +0000
 
 todoman (3.4.1-1) unstable; urgency=medium
 
