@@ -45,6 +45,7 @@ jobs:
       env: TOXENV=py
       before_install:
         - brew update
+        - brew link --overwrite gcc
         - brew upgrade python
         - pip3 install -U virtualenv  # Travis' images rename pip to pip3.
         - virtualenv env -p python3
@@ -65,3 +66,4 @@ jobs:
 matrix:
   allow_failures:
     - python: pypy3.3-5.2-alpha1
+    - os: osx

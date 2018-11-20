@@ -160,19 +160,44 @@ class Todo:
     )
 
     def __setattr__(self, name, value):
-        # Avoids accidentally setting a field to None when that's not a valid
-        # attribute.
-        if not value:
-            if name in Todo.RRULE_FIELDS:
-                return object.__setattr__(self, name, '')
-            if name in Todo.STRING_FIELDS:
-                return object.__setattr__(self, name, '')
-            if name in Todo.INT_FIELDS:
-                return object.__setattr__(self, name, 0)
-            if name in Todo.LIST_FIELDS:
-                return object.__setattr__(self, name, [])
+        """Check type and avoid setting fields to None"""
+        """when that is not a valid attribue."""
 
-        return object.__setattr__(self, name, value)
+        v = value
+
+        if name in Todo.RRULE_FIELDS:
+            if value is None:
+                v = ''
+            else:
+                assert isinstance(value, str), (
+                       "Got {0} for {1} where str was expected"
+                       .format(type(value), name))
+
+        if name in Todo.STRING_FIELDS:
+            if value is None:
+                v = ''
+            else:
+                assert isinstance(value, str), (
+                       "Got {0} for {1} where str was expected"
+                       .format(type(value), name))
+
+        if name in Todo.INT_FIELDS:
+            if value is None:
+                v = 0
+            else:
+                assert isinstance(value, int), (
+                       "Got {0} for {1} where int was expected"
+                       .format(type(value), name))
+
+        if name in Todo.LIST_FIELDS:
+            if value is None:
+                v = []
+            else:
+                assert isinstance(value, list), (
+                       "Got {0} for {1} where list was expected"
+                       .format(type(value), name))
+
+        return object.__setattr__(self, name, v)
 
     @property
     def is_completed(self):
@@ -284,7 +309,7 @@ class VtodoWritter:
         if name in Todo.DATETIME_FIELDS:
             return self.normalize_datetime(value)
         if name in Todo.LIST_FIELDS:
-            return ','.join(value)
+            return value
         if name in Todo.INT_FIELDS:
             return int(value)
         if name in Todo.STRING_FIELDS:
@@ -537,6 +562,13 @@ class Cache:
 
         return rrule.to_ical().decode()
 
+    def _serialize_categories(self, todo, field):
+        categories = todo.get(field, [])
+        if not categories:
+            return ''
+
+        return ','.join([str(category) for category in categories.cats])
+
     def add_vtodo(self, todo, file_path, id=None):
         """
         Adds a todo into the cache.
@@ -587,7 +619,7 @@ class Cache:
             todo.get('status', 'NEEDS-ACTION'),
             todo.get('description', None),
             todo.get('location', None),
-            todo.get('categories', None),
+            self._serialize_categories(todo, 'categories'),
             todo.get('sequence', 1),
             self._serialize_datetime(todo, 'last-modified'),
             self._serialize_rrule(todo, 'rrule'),
@@ -922,7 +954,7 @@ class Database:
                     cal = icalendar.Calendar.from_ical(cal)
                     for component in cal.walk('VTODO'):
                         self.cache.add_vtodo(component, entry_path)
-            except Exception as e:
+            except Exception:
                 logger.exception("Failed to read entry %s.", entry_path)
 
         self.cache.save_to_disk()
