@@ -49,8 +49,7 @@ def validate_time_format(fmt):
     return fmt
 
 
-def find_config():
-    custom_path = os.environ.get('TODOMAN_CONFIG')
+def find_config(custom_path=None):
     if custom_path:
         if not exists(custom_path):
             raise ConfigurationException(
@@ -66,8 +65,8 @@ def find_config():
     raise ConfigurationException("No configuration file found.\n\n")
 
 
-def load_config():
-    path = find_config()
+def load_config(custom_path=None):
+    path = find_config(custom_path)
     specpath = os.path.join(os.path.dirname(__file__), 'confspec.ini')
     validator = Validator({
         'expand_path': expand_path,
