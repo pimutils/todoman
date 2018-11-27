@@ -4,6 +4,10 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.6.0
+------
+* Allow passing a custom configuration file with the ``--config/-c`` option.
+
 v3.5.0
 ------
 * Fix crashes due to API changes in icalendar 4.0.3.
