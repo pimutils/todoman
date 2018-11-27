@@ -38,6 +38,9 @@ setup(
     tests_require=open('requirements-dev.txt').readlines(),
     extras_require={
         'docs': open('requirements-docs.txt').readlines(),
+        'repl': [
+            'click-repl>=0.1.6',
+        ]
     },
     classifiers=[
         'Development Status :: 4 - Beta',
