@@ -395,7 +395,7 @@ class Cache:
     may be used for filtering/sorting.
     """
 
-    SCHEMA_VERSION = 5
+    SCHEMA_VERSION = 6
 
     def __init__(self, path):
         self.cache_path = str(path)
@@ -445,6 +445,8 @@ class Cache:
                 "name" TEXT PRIMARY KEY,
                 "path" TEXT,
                 "colour" TEXT,
+                "mtime" INTEGER,
+
                 CONSTRAINT path_unique UNIQUE (path)
             );
         '''
@@ -496,7 +498,7 @@ class Cache:
         os.remove(self.cache_path)
         self._conn = None
 
-    def add_list(self, name, path, colour):
+    def add_list(self, name, path, colour, mtime):
         """
         Inserts a new list into the cache.
 
@@ -513,17 +515,25 @@ class Cache:
 
         try:
             self._conn.execute(
-                "INSERT INTO lists (name, path, colour) VALUES (?, ?, ?)",
+                '''
+                INSERT INTO lists (
+                    name,
+                    path,
+                    colour,
+                    mtime
+                ) VALUES (?, ?, ?, ?)
+                ''',
                 (
                     name,
                     path,
                     colour,
+                    mtime,
                 ),
             )
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExists('list', name) from e
 
-        return self.add_list(name, path, colour)
+        return self.add_list(name, path, colour, mtime)
 
     def add_file(self, list_name, path, mtime):
         try:
@@ -824,10 +834,14 @@ class Cache:
         return {l.name: l for l in self.lists()}
 
     def expire_lists(self, paths):
-        results = self._conn.execute("SELECT path, name from lists")
+        results = self._conn.execute("SELECT path, name, mtime from lists")
         for result in results:
             if result['path'] not in paths:
                 self.delete_list(result['name'])
+            else:
+                mtime = paths.get(result['path'])
+                if mtime and mtime > result['mtime']:
+                    self.delete_list(result['name'])
 
     def delete_list(self, name):
         self._conn.execute("DELETE FROM lists WHERE lists.name = ?", (name,))
@@ -894,6 +908,22 @@ class List:
         except (OSError, IOError):
             return split(normpath(path))[1]
 
+    @staticmethod
+    def mtime_for_path(path):
+        colour_file = os.path.join(path, 'color')
+        display_file = os.path.join(path, 'displayname')
+
+        mtimes = []
+        if os.path.exists(colour_file):
+            mtimes.append(_getmtime(colour_file))
+        if os.path.exists(display_file):
+            mtimes.append(_getmtime(display_file))
+
+        if mtimes:
+            return max(mtimes)
+        else:
+            return 0
+
     def __eq__(self, other):
         if isinstance(other, List):
             return self.name == other.name
@@ -918,7 +948,8 @@ class Database:
         self.update_cache()
 
     def update_cache(self):
-        self.cache.expire_lists(self.paths)
+        paths = {path: List.mtime_for_path(path) for path in self.paths}
+        self.cache.expire_lists(paths)
 
         paths_to_mtime = {}
         paths_to_list_name = {}
@@ -928,6 +959,7 @@ class Database:
                 List.name_for_path(path),
                 path,
                 List.colour_for_path(path),
+                paths[path],
             )
             for entry in os.listdir(path):
                 if not entry.endswith('.ics'):
