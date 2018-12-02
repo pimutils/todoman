@@ -34,3 +34,13 @@ Color and displayname
 
 See also `this discussion about metadata for collections in
 vdirsyncer <https://github.com/untitaker/vdirsyncer/issues/125>`_.
+
+Timezone
+--------
+
+Todoman will use the system-wide configured timezone. If this doesn't work for
+you, you _may_ override the timezone by specifying the ``TZ`` environment
+variable.
+
+For instruction on changing your system's timezone, consult your distribution's
+documentation.
