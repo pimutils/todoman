@@ -938,3 +938,39 @@ def test_new_description_from_stdin(runner, todos):
     todo, = todos()
     assert 'world' in todo.description
     assert 'hello' in todo.summary
+
+
+def test_default_priority(tmpdir, runner, create):
+    """Test setting the due date using the default_due config parameter"""
+    path = tmpdir.join('config')
+    path.write('default_priority = 3\n', 'a')
+
+    runner.invoke(cli, ['new', '-l', 'default', 'aaa'])
+    db = Database([tmpdir.join('default')], tmpdir.join('/default_list'))
+    todo = list(db.todos())[0]
+
+    assert todo.priority == 3
+
+
+def test_no_default_priority(tmpdir, runner, create):
+    """Test setting the due date using the default_due config parameter"""
+
+    runner.invoke(cli, ['new', '-l', 'default', 'aaa'])
+
+    db = Database([tmpdir.join('default')], tmpdir.join('/default_list'))
+    todo = list(db.todos())[0]
+    assert todo.priority is 0
+
+    todo_file = tmpdir.join('default').join(todo.filename)
+    todo_ics = todo_file.read_text('utf-8')
+    assert 'PRIORITY' not in todo_ics
+
+
+def test_invalid_default_priority(tmpdir, runner, create):
+    """Test setting the due date using the default_due config parameter"""
+    path = tmpdir.join('config')
+    path.write('default_priority = 13\n', 'a')
+
+    result = runner.invoke(cli, ['new', '-l', 'default', 'aaa'])
+    assert result.exception
+    assert 'Bad default_priority setting' in result.output
