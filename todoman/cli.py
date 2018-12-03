@@ -363,7 +363,8 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
         todo.due = todo.created_at + timedelta(hours=default_due)
 
     default_priority = ctx.config['main']['default_priority']
-    todo.priority = default_priority
+    if default_priority is not None:
+        todo.priority = default_priority
 
     for key, value in todo_properties.items():
         if value:

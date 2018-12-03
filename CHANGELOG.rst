@@ -13,6 +13,7 @@ v3.6.0
   version.
 * ``click-repl`` is now listed as an optional dependency. It is required for
   the ``todo repl`` command.
+* Add the ``default_priority`` config setting.
 
 v3.5.0
 ------
