@@ -18,7 +18,7 @@ setup(
     },
     install_requires=[
         'atomicwrites',
-        'click>=6.0',
+        'click>=7.0,<8.0',
         'click-log>=0.2.1',
         'configobj',
         'humanize',
@@ -38,6 +38,9 @@ setup(
     tests_require=open('requirements-dev.txt').readlines(),
     extras_require={
         'docs': open('requirements-docs.txt').readlines(),
+        'repl': [
+            'click-repl>=0.1.6',
+        ]
     },
     classifiers=[
         'Development Status :: 4 - Beta',

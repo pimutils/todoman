@@ -8,6 +8,11 @@ v3.6.0
 ------
 * Allow passing a custom configuration file with the ``--config/-c`` option.
 * Cached list metadata is now invalidated when it has changed on-disk.
+* Support for click < 6.0 has been dropped (it wasn't actually working
+  perfectly any more anyway). Click 7.x is the only currently supported
+  version.
+* ``click-repl`` is now listed as an optional dependency. It is required for
+  the ``todo repl`` command.
 
 v3.5.0
 ------
