@@ -233,6 +233,7 @@ _interactive_option = click.option(
 @click.option(
     '--colour',
     '--color',
+    'colour',
     default=None,
     type=click.Choice(['always', 'auto', 'never']),
     help=(
@@ -255,13 +256,21 @@ _interactive_option = click.option(
     is_flag=True,
     help='Format all dates and times in a human friendly way'
 )
+@click.option(
+    '--config',
+    '-c',
+    default=None,
+    help='The config file to use.',
+    envvar='TODOMAN_CONFIG',
+    metavar='PATH',
+)
 @click.pass_context
 @click.version_option(prog_name='todoman')
 @catch_errors
-def cli(click_ctx, color, porcelain, humanize):
+def cli(click_ctx, colour, porcelain, humanize, config):
     ctx = click_ctx.ensure_object(AppContext)
     try:
-        ctx.config = load_config()
+        ctx.config = load_config(config)
     except ConfigurationException as e:
         raise click.ClickException(e.args[0])
 
@@ -281,10 +290,10 @@ def cli(click_ctx, color, porcelain, humanize):
     else:
         ctx.formatter_class = formatters.DefaultFormatter
 
-    color = color or ctx.config['main']['color']
-    if color == 'always':
+    colour = colour or ctx.config['main']['color']
+    if colour == 'always':
         click_ctx.color = True
-    elif color == 'never':
+    elif colour == 'never':
         click_ctx.color = False
 
     paths = [
@@ -610,7 +619,7 @@ def move(ctx, list, ids):
     '"NEEDS-ACTION", "CANCELLED", "COMPLETED", "IN-PROCESS" or "ANY"'
 )
 @catch_errors
-def list(ctx, **kwargs):
+def list(ctx, *args, **kwargs):
     """
     List tasks. Filters any completed or cancelled tasks by default.
 

@@ -160,19 +160,44 @@ class Todo:
     )
 
     def __setattr__(self, name, value):
-        # Avoids accidentally setting a field to None when that's not a valid
-        # attribute.
-        if not value:
-            if name in Todo.RRULE_FIELDS:
-                return object.__setattr__(self, name, '')
-            if name in Todo.STRING_FIELDS:
-                return object.__setattr__(self, name, '')
-            if name in Todo.INT_FIELDS:
-                return object.__setattr__(self, name, 0)
-            if name in Todo.LIST_FIELDS:
-                return object.__setattr__(self, name, [])
+        """Check type and avoid setting fields to None"""
+        """when that is not a valid attribue."""
 
-        return object.__setattr__(self, name, value)
+        v = value
+
+        if name in Todo.RRULE_FIELDS:
+            if value is None:
+                v = ''
+            else:
+                assert isinstance(value, str), (
+                       "Got {0} for {1} where str was expected"
+                       .format(type(value), name))
+
+        if name in Todo.STRING_FIELDS:
+            if value is None:
+                v = ''
+            else:
+                assert isinstance(value, str), (
+                       "Got {0} for {1} where str was expected"
+                       .format(type(value), name))
+
+        if name in Todo.INT_FIELDS:
+            if value is None:
+                v = 0
+            else:
+                assert isinstance(value, int), (
+                       "Got {0} for {1} where int was expected"
+                       .format(type(value), name))
+
+        if name in Todo.LIST_FIELDS:
+            if value is None:
+                v = []
+            else:
+                assert isinstance(value, list), (
+                       "Got {0} for {1} where list was expected"
+                       .format(type(value), name))
+
+        return object.__setattr__(self, name, v)
 
     @property
     def is_completed(self):
@@ -284,7 +309,7 @@ class VtodoWritter:
         if name in Todo.DATETIME_FIELDS:
             return self.normalize_datetime(value)
         if name in Todo.LIST_FIELDS:
-            return ','.join(value)
+            return value
         if name in Todo.INT_FIELDS:
             return int(value)
         if name in Todo.STRING_FIELDS:
@@ -370,7 +395,7 @@ class Cache:
     may be used for filtering/sorting.
     """
 
-    SCHEMA_VERSION = 5
+    SCHEMA_VERSION = 6
 
     def __init__(self, path):
         self.cache_path = str(path)
@@ -420,6 +445,8 @@ class Cache:
                 "name" TEXT PRIMARY KEY,
                 "path" TEXT,
                 "colour" TEXT,
+                "mtime" INTEGER,
+
                 CONSTRAINT path_unique UNIQUE (path)
             );
         '''
@@ -471,7 +498,7 @@ class Cache:
         os.remove(self.cache_path)
         self._conn = None
 
-    def add_list(self, name, path, colour):
+    def add_list(self, name, path, colour, mtime):
         """
         Inserts a new list into the cache.
 
@@ -488,17 +515,25 @@ class Cache:
 
         try:
             self._conn.execute(
-                "INSERT INTO lists (name, path, colour) VALUES (?, ?, ?)",
+                '''
+                INSERT INTO lists (
+                    name,
+                    path,
+                    colour,
+                    mtime
+                ) VALUES (?, ?, ?, ?)
+                ''',
                 (
                     name,
                     path,
                     colour,
+                    mtime,
                 ),
             )
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExists('list', name) from e
 
-        return self.add_list(name, path, colour)
+        return self.add_list(name, path, colour, mtime)
 
     def add_file(self, list_name, path, mtime):
         try:
@@ -536,6 +571,13 @@ class Cache:
             return None
 
         return rrule.to_ical().decode()
+
+    def _serialize_categories(self, todo, field):
+        categories = todo.get(field, [])
+        if not categories:
+            return ''
+
+        return ','.join([str(category) for category in categories.cats])
 
     def add_vtodo(self, todo, file_path, id=None):
         """
@@ -587,7 +629,7 @@ class Cache:
             todo.get('status', 'NEEDS-ACTION'),
             todo.get('description', None),
             todo.get('location', None),
-            todo.get('categories', None),
+            self._serialize_categories(todo, 'categories'),
             todo.get('sequence', 1),
             self._serialize_datetime(todo, 'last-modified'),
             self._serialize_rrule(todo, 'rrule'),
@@ -792,10 +834,14 @@ class Cache:
         return {l.name: l for l in self.lists()}
 
     def expire_lists(self, paths):
-        results = self._conn.execute("SELECT path, name from lists")
+        results = self._conn.execute("SELECT path, name, mtime from lists")
         for result in results:
             if result['path'] not in paths:
                 self.delete_list(result['name'])
+            else:
+                mtime = paths.get(result['path'])
+                if mtime and mtime > result['mtime']:
+                    self.delete_list(result['name'])
 
     def delete_list(self, name):
         self._conn.execute("DELETE FROM lists WHERE lists.name = ?", (name,))
@@ -862,6 +908,22 @@ class List:
         except (OSError, IOError):
             return split(normpath(path))[1]
 
+    @staticmethod
+    def mtime_for_path(path):
+        colour_file = os.path.join(path, 'color')
+        display_file = os.path.join(path, 'displayname')
+
+        mtimes = []
+        if os.path.exists(colour_file):
+            mtimes.append(_getmtime(colour_file))
+        if os.path.exists(display_file):
+            mtimes.append(_getmtime(display_file))
+
+        if mtimes:
+            return max(mtimes)
+        else:
+            return 0
+
     def __eq__(self, other):
         if isinstance(other, List):
             return self.name == other.name
@@ -886,7 +948,8 @@ class Database:
         self.update_cache()
 
     def update_cache(self):
-        self.cache.expire_lists(self.paths)
+        paths = {path: List.mtime_for_path(path) for path in self.paths}
+        self.cache.expire_lists(paths)
 
         paths_to_mtime = {}
         paths_to_list_name = {}
@@ -896,6 +959,7 @@ class Database:
                 List.name_for_path(path),
                 path,
                 List.colour_for_path(path),
+                paths[path],
             )
             for entry in os.listdir(path):
                 if not entry.endswith('.ics'):
@@ -922,7 +986,7 @@ class Database:
                     cal = icalendar.Calendar.from_ical(cal)
                     for component in cal.walk('VTODO'):
                         self.cache.add_vtodo(component, entry_path)
-            except Exception as e:
+            except Exception:
                 logger.exception("Failed to read entry %s.", entry_path)
 
         self.cache.save_to_disk()

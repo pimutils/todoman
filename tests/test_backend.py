@@ -63,7 +63,10 @@ def test_vtodo_serialization(todo_factory):
     writer = VtodoWritter(todo)
     vtodo = writer.serialize()
 
-    assert str(vtodo.get('categories')) == 'tea,drinking,hot'
+    assert (
+        [str(c) for c in vtodo.get('categories').cats] ==
+        ['tea', 'drinking', 'hot']
+    )
     assert str(vtodo.get('description')) == description
     assert vtodo.get('priority') == 7
     assert vtodo.decoded('due') == datetime(3000, 3, 21, tzinfo=tzlocal())

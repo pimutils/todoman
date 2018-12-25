@@ -18,11 +18,11 @@ setup(
     },
     install_requires=[
         'atomicwrites',
-        'click>=6.0',
+        'click>=7.0,<8.0',
         'click-log>=0.2.1',
         'configobj',
         'humanize',
-        'icalendar',
+        'icalendar>=4.0.3',
         'parsedatetime',
         'python-dateutil',
         'pyxdg',
@@ -38,6 +38,9 @@ setup(
     tests_require=open('requirements-dev.txt').readlines(),
     extras_require={
         'docs': open('requirements-docs.txt').readlines(),
+        'repl': [
+            'click-repl>=0.1.6',
+        ]
     },
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -49,6 +52,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Office/Business :: Scheduling',
         'Topic :: Utilities',

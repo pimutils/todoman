@@ -115,11 +115,17 @@ def test_list_case_insensitive_other_collision(tmpdir, runner, create):
 def test_list_inexistant(tmpdir, runner, create):
     result = runner.invoke(cli, ['list', 'nonexistant'])
     assert result.exception
-    assert 'Error: Invalid value for "lists": nonexistant' in result.output
+    assert (
+        'Error: Invalid value for "[LISTS]...": nonexistant'
+        in result.output
+    )
 
     result = runner.invoke(cli, ['list', 'NONexistant'])
     assert result.exception
-    assert 'Error: Invalid value for "lists": NONexistant' in result.output
+    assert (
+        'Error: Invalid value for "[LISTS]...": NONexistant'
+        in result.output
+    )
 
 
 def test_show_existing(tmpdir, runner, create):

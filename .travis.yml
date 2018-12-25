@@ -5,7 +5,6 @@ python:
   - 3.6
   - 3.4
   - 3.5
-  - 3.7-dev
   - pypy3.3-5.2-alpha1
 
 env:
@@ -32,6 +31,9 @@ after_script:
 
 jobs:
   include:
+    - python: 3.7
+      dist: xenial
+      sudo: true
     - env: TOXENV=flake8
       python: 3.6
     - env: TOXENV=docs
@@ -43,6 +45,7 @@ jobs:
       env: TOXENV=py
       before_install:
         - brew update
+        - brew link --overwrite gcc
         - brew upgrade python
         - pip3 install -U virtualenv  # Travis' images rename pip to pip3.
         - virtualenv env -p python3
@@ -63,4 +66,4 @@ jobs:
 matrix:
   allow_failures:
     - python: pypy3.3-5.2-alpha1
-    - python: 3.7-dev
+    - os: osx
