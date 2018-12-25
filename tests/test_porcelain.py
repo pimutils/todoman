@@ -11,6 +11,7 @@ def test_list_all(tmpdir, runner, create):
     create(
         'test.ics', 'SUMMARY:Do stuff\n'
         'STATUS:COMPLETED\n'
+        'COMPLETED:20181225T191234Z\n'
         'DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n'
         'PERCENT-COMPLETE:26\n'
         'LOCATION:Wherever\n'
@@ -19,6 +20,8 @@ def test_list_all(tmpdir, runner, create):
 
     expected = [{
         'completed': True,
+        'completed_at': 1545765154,
+        'description': '',
         'due': 1451689200,
         'id': 1,
         'list': 'default',
@@ -44,6 +47,8 @@ def test_list_nodue(tmpdir, runner, create):
 
     expected = [{
         'completed': False,
+        'completed_at': None,
+        'description': '',
         'due': None,
         'id': 1,
         'list': 'default',
@@ -112,6 +117,8 @@ def test_show(tmpdir, runner, create):
 
     expected = {
         'completed': False,
+        'completed_at': None,
+        'description': 'Lots of text. Yum!',
         'due': None,
         'id': 1,
         'list': 'default',
@@ -133,6 +140,8 @@ def test_simple_action(todo_factory):
 
     expected = {
         "completed": False,
+        'completed_at': None,
+        'description': '',
         "due": None,
         "id": 7,
         "list": "default",
