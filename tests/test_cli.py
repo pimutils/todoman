@@ -896,7 +896,7 @@ def test_porcelain_precedence(runner, tmpdir):
     with patch('todoman.formatters.PorcelainFormatter') as mocked_formatter:
         runner.invoke(cli, ['--porcelain', 'list'])
 
-    assert mocked_formatter.call_count is 1
+    assert mocked_formatter.call_count == 1
 
 
 def test_duplicate_list(tmpdir, runner):
@@ -959,7 +959,7 @@ def test_no_default_priority(tmpdir, runner, create):
 
     db = Database([tmpdir.join('default')], tmpdir.join('/default_list'))
     todo = list(db.todos())[0]
-    assert todo.priority is 0
+    assert todo.priority == 0
 
     todo_file = tmpdir.join('default').join(todo.filename)
     todo_ics = todo_file.read_text('utf-8')
