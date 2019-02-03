@@ -130,7 +130,7 @@ class DefaultFormatter:
             return dt.strftime(self.date_format)
 
     def parse_priority(self, priority):
-        if priority is None or priority is '':
+        if priority is None or priority == '':
             return None
         if priority == 'low':
             return 9

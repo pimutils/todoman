@@ -22,7 +22,7 @@ def test_todo_editor_priority(
     with pytest.raises(ExitMainLoop):  # Look at editor._msg_text if this fails
         editor._keypress('ctrl s')
 
-    assert todo.priority is 0
+    assert todo.priority == 0
 
 
 def test_todo_editor_list(
