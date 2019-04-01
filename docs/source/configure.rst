@@ -29,8 +29,9 @@ Color and displayname
 
 - You can set a color for each task list by creating a ``color`` file containing
   a colorcode in the format ``#RRGGBB``.
-- A file named ``displayname`` decides how the task list should be named. The
-  default is the directory name.
+- A file named ``displayname`` decides how the task list should be named and
+  is needed when there are mutliple directories shareing a name, eg when using
+  multiple $CloudInstances. The default is the directory name.
 
 See also `this discussion about metadata for collections in
 vdirsyncer <https://github.com/untitaker/vdirsyncer/issues/125>`_.
