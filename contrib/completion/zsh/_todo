@@ -129,58 +129,38 @@ __todo_tasks(){
 	_describe tasks tasks
 }
 # }}}
-# {{{ todo available lists cache policy
-__todo_lists_cache_policy(){
-	# the number of seconds since 1970-01-01 the directory
-	local tasks_lists_dir_last_date_modified="$(date -r ${tasks_lists_dir} +%s 2>/dev/null)"
-	# the number of seconds since 1970-01-01 the cache file was modified
-	local cache_last_date_modified="$(date -r $1 +%s 2>/dev/null)"
-	if [[ ! -z ${cache_last_date_modified} && ! -z ${tasks_lists_dir_last_date_modified} ]]; then
-		# if the manifest file is newer then the cache:
-		# TODO: just return!
-		if [ ${tasks_lists_dir_last_date_modified} -ge ${cache_last_date_modified} ]; then
-			(( 1 ))
-		else
-			(( 0 ))
-		fi
-	else
-		(( 1 ))
-	fi
-}
-# }}}
 # {{{ option helper: available lists
 __todo_lists(){
-	if __todo_set_conf_path; then
-		local update_policy
-		zstyle -s ":completion:${curcontext}:" cache-policy update_policy
-		if [[ -z "$update_policy" ]]; then
-			zstyle ":completion:${curcontext}:" cache-policy __todo_lists_cache_policy
-		fi
-		local -a tasks_lists
-		if _cache_invalid todoman_lists; then
-			if [[ ${tasks_lists_path} =~ '/*$' ]]; then
-				for dir in $(eval echo ${tasks_lists_path}); do
-					if grep "VTODO" -q -R "${dir}"; then
-						list_name="${dir##*/}"
-						tasks_lists+=("${list_name}")
-					fi
-				done
+	local conf_file="${XDG_CONFIG_DIR:-${HOME}/.config}/todoman/todoman.conf"
+	local tasks_path
+	if [[ -f "$conf_file" ]]; then
+		# parse configuration file to get where the tasks are stored (main.path)
+		while read line; do
+			if [[ "$line" =~ '^\s*path\s*=\s*' ]]; then
+				# Note the above check's regex is different then this one. That's
+				# because '=~' type matching and pattern replacement use different
+				# syntaxes. We need to strip the actual path from the whole line with
+				# multiple string replacements
+				#
+				# First, we remove all spaces
+				tasks_path="${line// /}"
+				# And now, we remove the path= prefix
+				tasks_path="${tasks_path#path=}"
+				break
 			fi
-			_store_cache todoman_lists tasks_lists
-		else
-			_retrieve_cache todoman_lists
-		fi
-		if [[ "${#tasks_lists[@]}" == 1 ]]; then
-			_message "only one list was detected: (\"${tasks_lists[1]}\")"
-			return
-		else
-			_describe "available lists" tasks_lists
-			return
+		done < "$conf_file"
+		if [ -z "${tasks_path+1}" ]; then 
+			_message -e "no 'path = ' string was found in todoman's default configuration file ($todoman_configuration_file)"
+			return 1
 		fi
 	else
-		_message -e "no 'path = ' string was found in todoman's default configuration file ($todoman_configuration_file)"
-		return
+		_message -r "can't display tasks' lists since completion function didn't find the configuration file at $todoman_configuration_file"
+		return 1
 	fi
+	local tasks_dir="${tasks_path%\**}"
+	# also evaluate with echo ~ which may appear there as well
+	tasks_dir="$(echo ${~tasks_dir})"
+	_files -W "$tasks_dir" -/
 }
 # }}}
 # {{{ command `cancel`
