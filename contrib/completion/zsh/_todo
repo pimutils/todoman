@@ -30,65 +30,43 @@ __color_mode(){
 	_describe "mode" modes
 }
 # }}}
-# {{{ general helper: set variable of path to configuration file
-__todo_set_conf(){
-	# TODO: fix env leakage or remove func completely and use the logic of it dynamically
-	todoman_configuration_file=${XDG_CONFIG_DIR:-${HOME}/.config}/todoman/todoman.conf
-	if [[ -f $todoman_configuration_file ]]; then
-		return 0
-	else
-		return 1
-	fi
-}
-# }}}
-# {{{ general helper: set variable main.path from configuration file
-# TODO: fix env leakage / use param expansion instead of sed
-__todo_set_conf_path(){
-	if __todo_set_conf; then
-		tasks_lists_path="$(sed -n -e 's/^[^#]\s*path\s*=\s*\(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null)"
-		# the eval echo is needed since the path may contain ~ which should be evalueated to $HOME
-		tasks_lists_dir="$(eval echo ${tasks_lists_path%/\**})"
-		if [[ -z "${tasks_lists_path}" || ! -d "${tasks_lists_dir}" ]]; then
-			return 1
-		else
-			return 0
-		fi
-	else
-		return 1
-	fi
-}
-# }}}
-# {{{ general helper: set variables related to date and time formats for __todo_date
-__todo_set_conf_dt(){
-	if __todo_set_conf; then
-		# TODO: fix env leakage / use param expansion instead of sed
-		date_format="$(eval echo $(sed -n -e 's/^[^#]\s*date_format\s*=\s*\(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null))"
-		dt_separator="$(eval echo $(sed -n -e 's/^[^#]\s*dt_separator\s*=\s*\(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null))"
-		time_format="$(eval echo $(sed -n -e 's/^[^#]\s*time_format\s*=\s*\(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null))"
-		# default value according to documentation: https://todoman.readthedocs.io/en/stable/configure.html
-		if [[ -z "${date_format}" ]]; then
-			date_format="%x"
-		fi
-		if [[ -z "${dt_separator}" ]]; then
-			dt_separator=""
-		fi
-		if [[ -z "${time_format}" ]]; then
-			time_format="%x"
-		fi
-		return 0
-	else
-		return 1
-	fi
-}
-# }}}
 # {{{ option helper: due and start date
 __todo_date(){
-	# TODO: not done right - just calculate format here and just act according to it
-	if __todo_set_conf_dt; then
-		_message "date in format ${date_format//\%/%%}${dt_separator//\%/%%}${time_format//\%/%%}"
-	else
-		_message "date format (couldn't read configuration file and extract date and time formats)"
+	typeset -A date_time_dict 
+	# setting defaults so no matter if these keys will be parsed from config,
+	# we'll have some values here anyway
+	date_time_dict[date_format]='%x'
+	date_time_dict[dt_separator]=' '
+	date_time_dict[time_format]='%X'
+	# parse configuration file to get date and time formats from there
+	local conf_file="${XDG_CONFIG_DIR:-${HOME}/.config}/todoman/todoman.conf"
+	rm -f ~/zdbg
+	if [[ -f "$conf_file" ]]; then
+		while read line; do
+			echo reading line "$line" >> ~/zdbg
+			for key in date_format dt_separator time_format; do
+				if [[ "$line" =~ "^\s*$key\s*=\s*" ]]; then
+					echo matched key "$key" >> ~/zdbg
+					# Note the above check's regex is different then this one. That's
+					# because '=~' type matching and pattern replacement use different
+					# syntaxes. We need to strip the actual value from the whole line with
+					# multiple string replacements
+					#
+					# First, we remove all spaces
+					line="${line// /}"
+					# And now, we remove the date_format= prefix
+					line="${line#$key=}"
+					echo parsed value is "$line" >> ~/zdbg
+					date_time_dict[$key]="$line"
+				fi
+			done
+		done < "$conf_file"
 	fi
+	# substitute '%' from values so it won't get messy
+	local date_format="${date_time_dict[date_format]//\%/%%}"
+	local time_format="${date_time_dict[time_format]//\%/%%}"
+	local dt_separator="${date_time_dict[dt_separator]}"
+	_message -r "date in format ${date_format}${dt_separator}${time_format}"
 }
 # }}}
 # {{{ argument helper: sub-command choice
@@ -110,21 +88,11 @@ __todo_command(){
 # }}}
 # {{{ argument helper: available tasks choice
 __todo_tasks(){
-	# checking if the command jq exists and it's version
-	# credit: http://stackoverflow.com/a/592649/4935114
-	jq_version=$(jq --version 2>/dev/null)
-	if [ ${${jq_version#jq\-}//./} -lt 15 ]; then
-		_message "we can't complete tasks unless you'll install the latest version of jq: https://stedolan.github.io/jq/"
-		return
-	fi
-	# $1 is a comma-seperated list of statuses to show when trying to complete this
-	local status_search_query="$1"
+	local requested_status="$1"
 	local -a tasks
-	# TODO: don't modify IFS!
-	IFS=$'\n'
-	# TODO: use a single jq command and reconsider if it's absolutly nescessary and if not, use only ZSH's param expansion
-	for task_and_description in $(todo --porcelain list --status "${status_search_query}" | jq --raw-output '.[] | .id,":\"@",.list," ",.summary,"\"\\0"' | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g' -e 's/\\0/\n/g'); do
-		tasks+="$(eval echo ${task_and_description})"
+	local i st text
+	todo list --status="$requested_status" | while read i st_text; do
+		tasks+=("$i":"$st_text")
 	done
 	_describe tasks tasks
 }
@@ -252,7 +220,7 @@ local _command_new_options=(
 	"${common_options_due[@]}"
 	"${common_options_help[@]}"
 	{-l,--list=}'[the list to move the tasks to]:text:__todo_lists'
-	'--location[the location where this todo takes place.]:text:__todo_existing_locations'
+	'--location[the location where this todo takes place.]:location:'
 	"${common_options_priority[@]}"
 	"${common_options_interactive[@]}"
 )
