@@ -1,5 +1,8 @@
 #compdef todo
 
+# General TODO:
+# - Fix descriptions letter's case
+
 # {{{ sub commands common options variables
 local common_options_help=(
 	'(- :)--help[Show a help message and exit]'
@@ -32,6 +35,7 @@ __color_mode(){
 # }}}
 # {{{ general helper: set variable of path to configuration file
 __todo_set_conf(){
+	# TODO: fix env leakage or remove func completely and use the logic of it dynamically
 	todoman_configuration_file=${XDG_CONFIG_DIR:-${HOME}/.config}/todoman/todoman.conf
 	if [[ -f $todoman_configuration_file ]]; then
 		return 0
@@ -41,6 +45,7 @@ __todo_set_conf(){
 }
 # }}}
 # {{{ general helper: set variable main.path from configuration file
+# TODO: fix env leakage / use param expansion instead of sed
 __todo_set_conf_path(){
 	if __todo_set_conf; then
 		tasks_lists_path="$(sed -n -e 's/^[^#]\s*path\s*=\s*\(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null)"
@@ -59,6 +64,7 @@ __todo_set_conf_path(){
 # {{{ general helper: set variables related to date and time formats for __todo_date
 __todo_set_conf_dt(){
 	if __todo_set_conf; then
+		# TODO: fix env leakage / use param expansion instead of sed
 		date_format="$(eval echo $(sed -n -e 's/^[^#]\s*date_format\s*=\s*\(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null))"
 		dt_separator="$(eval echo $(sed -n -e 's/^[^#]\s*dt_separator\s*=\s*\(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null))"
 		time_format="$(eval echo $(sed -n -e 's/^[^#]\s*time_format\s*=\s*\(.*\)$/\1/p' $todoman_configuration_file 2>/dev/null))"
@@ -80,6 +86,7 @@ __todo_set_conf_dt(){
 # }}}
 # {{{ option helper: due and start date
 __todo_date(){
+	# TODO: not done right - just calculate format here and just act according to it
 	if __todo_set_conf_dt; then
 		_message "date in format ${date_format//\%/%%}${dt_separator//\%/%%}${time_format//\%/%%}"
 	else
@@ -116,7 +123,9 @@ __todo_tasks(){
 	# $1 is a comma-seperated list of statuses to show when trying to complete this
 	local status_search_query="$1"
 	local -a tasks
+	# TODO: don't modify IFS!
 	IFS=$'\n'
+	# TODO: use a single jq command and reconsider if it's absolutly nescessary and if not, use only ZSH's param expansion
 	for task_and_description in $(todo --porcelain list --status "${status_search_query}" | jq --raw-output '.[] | .id,":\"@",.list," ",.summary,"\"\\0"' | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g' -e 's/\\0/\n/g'); do
 		tasks+="$(eval echo ${task_and_description})"
 	done
@@ -131,6 +140,7 @@ __todo_lists_cache_policy(){
 	local cache_last_date_modified="$(date -r $1 +%s 2>/dev/null)"
 	if [[ ! -z ${cache_last_date_modified} && ! -z ${tasks_lists_dir_last_date_modified} ]]; then
 		# if the manifest file is newer then the cache:
+		# TODO: just return!
 		if [ ${tasks_lists_dir_last_date_modified} -ge ${cache_last_date_modified} ]; then
 			(( 1 ))
 		else
@@ -245,6 +255,7 @@ _command_list_options=(
 	"${common_options_due[@]}"
 	'--priority[Only show tasks with priority at least as high as TEXT]:TEXT:("low", "medium", "high")'
 	'--startable[Show only todos which should can be started today]'
+	# TODO: simplify!
 	{-s,--status=}'[Show only todos with the provided comma-separated statuses]:STATUS:{_values -s , "status" "NEEDS-ACTION" "CANCELLED" "COMPLETED" "IN-PROCESS" "ANY"}'
 	"${common_options_help[@]}"
 )
