@@ -1,26 +1,23 @@
 #compdef todo
 
-# General TODO:
-# - Fix descriptions letter's case
-
 # {{{ sub commands common options variables
 local common_options_help=(
-	'(- :)--help[Show a help message and exit]'
+	'(- :)--help[show a help message and exit]'
 )
 local common_options_start=(
-	{-s,--start=}'[When the task starts]:DATE:__todo_date'
+	{-s,--start=}'[when the task starts]:date:__todo_date'
 )
 local common_options_due=(
-	{-d,--due=}'[When the task is due]:DATE:__todo_date'
+	{-d,--due=}'[when the task is due]:date:__todo_date'
 )
 local common_options_priority=(
-	'--priority=[The priority for this todo]:PRIORITY:("low" "medium" "high")'
+	'--priority=[the priority for this todo]:priority:("low" "medium" "high")'
 )
 local common_options_interactive=(
-	{-i,--interactive}'[Go into interactive mode before saving the task]'
+	{-i,--interactive}'[go into interactive mode before saving the task]'
 )
 local common_options_location=(
-	'--location=[The location where this todo takes place]:LOCATION:'
+	'--location=[the location where this todo takes place]:location:'
 )
 # }}}
 # {{{ option helper: color mode
@@ -97,16 +94,16 @@ __todo_date(){
 # {{{ argument helper: sub-command choice
 __todo_command(){
 	local commands=(
-		'cancel:Cancel one or more tasks'
-		'copy:Copy tasks to another list'
-		'delete:Delete tasks'
-		'done:Mark one or more tasks as done'
-		'edit:Edit the task with id ID'
-		'flush:Delete done tasks'
-		'list:List tasks'
-		'move:Move tasks to another list'
-		'new:Create a new task with SUMMARY'
-		'show:Show details about a task'
+		'cancel:cancel one or more tasks'
+		'copy:copy tasks to another list'
+		'delete:delete tasks'
+		'done:mark one or more tasks as done'
+		'edit:edit the task with id ID'
+		'flush:delete done tasks'
+		'list:list tasks'
+		'move:move tasks to another list'
+		'new:create a new task with SUMMARY'
+		'show:show details about a task'
 	)
 	_describe "command" commands
 }
@@ -196,7 +193,7 @@ _todo_cancel(){
 # {{{ command `copy`
 local _command_copy_options=(
 	"${common_options_help[@]}"
-	{-l,--list=}'[The list to copy the tasks to]:TEXT:__todo_lists'
+	{-l,--list=}'[the list to copy the tasks to]:text:__todo_lists'
 )
 _todo_copy(){
 	_arguments \
@@ -207,7 +204,7 @@ _todo_copy(){
 # {{{ command `delete`
 local _command_delete_options=(
 	"${common_options_help[@]}"
-	"--yes[Don't ask for permission before deleting]"
+	"--yes[don't ask for permission before deleting]"
 )
 _todo_delete(){
 	_arguments \
@@ -247,16 +244,17 @@ _todo_flush(){
 # {{{ command `list`
 _command_list_options=(
 	"${common_options_location[@]}"
-	'--category=[Only show tasks with category containg TEXT]:TEXT:__todo_existing_categories'
-	'--grep=[Only show tasks with message containg TEXT]:TEXT:'
-	'--sort=[Sort tasks using these fields]:TEXT:(description location status summary uid rrule percent_complete priority sequence categories completed_at created_at dtstamp start due last_modified)'
+	'--category=[only show tasks with category containg TEXT]:text:__todo_existing_categories'
+	'--grep=[only show tasks with message containg TEXT]:text:'
+	'--sort=[sort tasks using these fields]:text:(description location status summary uid rrule percent_complete priority sequence categories completed_at created_at dtstamp start due last_modified)'
 	'(--reverse --no-reverse)'{--reverse,--no-reverse}'[sort tasks in reverse order (see --sort)]'
 	"${common_options_start[@]}"
 	"${common_options_due[@]}"
-	'--priority[Only show tasks with priority at least as high as TEXT]:TEXT:("low", "medium", "high")'
-	'--startable[Show only todos which should can be started today]'
+	# TODO: replace with var
+	'--priority[only show tasks with priority at least as high as TEXT]:text:("low", "medium", "high")'
+	'--startable[show only todos which should can be started today]'
 	# TODO: simplify!
-	{-s,--status=}'[Show only todos with the provided comma-separated statuses]:STATUS:{_values -s , "status" "NEEDS-ACTION" "CANCELLED" "COMPLETED" "IN-PROCESS" "ANY"}'
+	{-s,--status=}'[show only todos with the provided comma-separated statuses]:status:{_values -s , "status" "NEEDS-ACTION" "CANCELLED" "COMPLETED" "IN-PROCESS" "ANY"}'
 	"${common_options_help[@]}"
 )
 _todo_list(){
@@ -275,8 +273,8 @@ local _command_new_options=(
 	"${common_options_start[@]}"
 	"${common_options_due[@]}"
 	"${common_options_help[@]}"
-	{-l,--list=}'[The list to move the tasks to]:TEXT:__todo_lists'
-	'--location[The location where this todo takes place.]:TEXT:__todo_existing_locations'
+	{-l,--list=}'[the list to move the tasks to]:text:__todo_lists'
+	'--location[the location where this todo takes place.]:text:__todo_existing_locations'
 	"${common_options_priority[@]}"
 	"${common_options_interactive[@]}"
 )
@@ -294,11 +292,11 @@ _todo_show(){
 
 # The real thing
 _arguments -C -A "-*" \
-	{-v,--verbosity=}'[Set verbosity to the given level]:MODE(CRITICAL ERROR WARNING INFO DEBUG)' \
-	'--color=[Set colored output mode]:MODE:__color_mode' \
-	'--porcelain[Use a JSON format that will remain stable regadless of configuration or version]' \
-	{-h,--humanize}'[Format all dates and times in a human friendly way]' \
-	'(- :)--version[Show the version and exit]' \
+	{-v,--verbosity=}'[set verbosity to the given level]:mode(CRITICAL ERROR WARNING INFO DEBUG)' \
+	'--color=[set colored output mode]:mode:__color_mode' \
+	'--porcelain[use a JSON format that will remain stable regadless of configuration or version]' \
+	{-h,--humanize}'[format all dates and times in a human friendly way]' \
+	'(- :)--version[show the version and exit]' \
 	"${common_options_help[@]}" \
 	'1: :__todo_command' \
 	'*::arg:->args'
