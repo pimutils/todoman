@@ -44,15 +44,7 @@ __todo_date(){
 		while read line; do
 			for key in date_format dt_separator time_format; do
 				if [[ "$line" =~ "^\s*$key\s*=\s*" ]]; then
-					# Note the above check's regex is different then this one. That's
-					# because '=~' type matching and pattern replacement use different
-					# syntaxes. We need to strip the actual value from the whole line with
-					# multiple string replacements
-					#
-					# First, we remove all spaces
-					line="${line// /}"
-					# And now, we remove the date_format= prefix
-					line="${line#$key=}"
+					line="${line[$MEND+1,${#line}]}"
 					date_time_dict[$key]="$line"
 				fi
 			done
@@ -101,15 +93,7 @@ __todo_lists(){
 		# parse configuration file to get where the tasks are stored (main.path)
 		while read line; do
 			if [[ "$line" =~ '^\s*path\s*=\s*' ]]; then
-				# Note the above check's regex is different then this one. That's
-				# because '=~' type matching and pattern replacement use different
-				# syntaxes. We need to strip the actual path from the whole line with
-				# multiple string replacements
-				#
-				# First, we remove all spaces
-				tasks_path="${line// /}"
-				# And now, we remove the path= prefix
-				tasks_path="${tasks_path#path=}"
+				tasks_path="${line[$MEND+1,${#line}]}"
 				break
 			fi
 		done < "$conf_file"
