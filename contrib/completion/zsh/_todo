@@ -40,13 +40,10 @@ __todo_date(){
 	date_time_dict[time_format]='%X'
 	# parse configuration file to get date and time formats from there
 	local conf_file="${XDG_CONFIG_DIR:-${HOME}/.config}/todoman/todoman.conf"
-	rm -f ~/zdbg
 	if [[ -f "$conf_file" ]]; then
 		while read line; do
-			echo reading line "$line" >> ~/zdbg
 			for key in date_format dt_separator time_format; do
 				if [[ "$line" =~ "^\s*$key\s*=\s*" ]]; then
-					echo matched key "$key" >> ~/zdbg
 					# Note the above check's regex is different then this one. That's
 					# because '=~' type matching and pattern replacement use different
 					# syntaxes. We need to strip the actual value from the whole line with
@@ -56,7 +53,6 @@ __todo_date(){
 					line="${line// /}"
 					# And now, we remove the date_format= prefix
 					line="${line#$key=}"
-					echo parsed value is "$line" >> ~/zdbg
 					date_time_dict[$key]="$line"
 				fi
 			done
