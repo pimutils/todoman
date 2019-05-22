@@ -32,7 +32,7 @@ __color_mode(){
 # }}}
 # {{{ option helper: due and start date
 __todo_date(){
-	typeset -A date_time_dict 
+	typeset -A date_time_dict
 	# setting defaults so no matter if these keys will be parsed from config,
 	# we'll have some values here anyway
 	date_time_dict[date_format]='%x'
@@ -96,7 +96,7 @@ __todo_lists(){
 				tasks_paths+=("${line[$MEND+1,${#line}]}")
 			fi
 		done < "$conf_file"
-		if [ -z "${tasks_paths+1}" ]; then 
+		if [ -z "${tasks_paths+1}" ]; then
 			_message -e "no 'path = ' string was found in todoman's default configuration file ($todoman_configuration_file)"
 			return 1
 		fi
