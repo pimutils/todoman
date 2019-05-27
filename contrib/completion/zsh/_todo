@@ -88,15 +88,16 @@ __todo_tasks(){
 # {{{ option helper: available lists
 __todo_lists(){
 	local conf_file="${XDG_CONFIG_DIR:-${HOME}/.config}/todoman/todoman.conf"
-	local -a tasks_paths
+	local tasks_path
 	if [[ -f "$conf_file" ]]; then
 		# parse configuration file to get where the tasks are stored (main.path)
 		while read line; do
 			if [[ "$line" =~ '^\s*path\s*=\s*' ]]; then
-				tasks_paths+=("${line[$MEND+1,${#line}]}")
+				tasks_path=("${line[$MEND+1,${#line}]}")
+				break
 			fi
 		done < "$conf_file"
-		if [ -z "${tasks_paths+1}" ]; then
+		if [ -z "${tasks_path+1}" ]; then
 			_message -e "no 'path = ' string was found in todoman's default configuration file ($todoman_configuration_file)"
 			return 1
 		fi
@@ -104,20 +105,17 @@ __todo_lists(){
 		_message -r "can't display tasks' lists since completion function didn't find the configuration file at $todoman_configuration_file"
 		return 1
 	fi
-	local tasks_path
-	local -a expanded_tasks_paths
-	local expanded_tasks_path
 	local -a actual_suggestions
 	# expand manually * found in tasks_paths array
-	for tasks_path in "${tasks_paths[@]}"; do
-		expanded_tasks_paths+=(${~tasks_path})
-		for expanded_tasks_path in "${expanded_tasks_paths[@]}"; do
-			if [[ -r "${expanded_tasks_path}/displayname" ]]; then
-				actual_suggestions+=("$(< "${expanded_tasks_path}/displayname")")
-			elif [[ -d "${expanded_tasks_path}" ]]; then
-				actual_suggestions+=("${expanded_tasks_path}")
-			fi
-		done
+	local expanded_tasks_paths=(${~tasks_path})
+	local expanded_tasks_path
+	for expanded_tasks_path in "${expanded_tasks_paths[@]}"; do
+		if [[ -r "${expanded_tasks_path}/displayname" ]]; then
+			actual_suggestions+=("$(< "${expanded_tasks_path}/displayname")")
+		elif [[ -d "${expanded_tasks_path}" ]]; then
+			# This leaves only the tail of the expanded path
+			actual_suggestions+=("${expanded_tasks_path:t}")
+		fi
 	done
 	_describe -t values list actual_suggestions
 }
