@@ -208,7 +208,8 @@ class DefaultFormatter:
         except ValueError:
             pass
 
-        rv, pd_ctx = self._parsedatetime_calendar.parse(dt)
+        now = datetime.datetime.now(self.tz)
+        rv, pd_ctx = self._parsedatetime_calendar.parse(dt, now)
         if not pd_ctx.hasDateOrTime:
             raise ValueError('Time description not recognized: {}'.format(dt))
         return datetime.datetime.fromtimestamp(mktime(rv))
