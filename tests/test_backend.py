@@ -55,6 +55,7 @@ def test_vtodo_serialization(todo_factory):
         categories=['tea', 'drinking', 'hot'],
         description=description,
         due=datetime(3000, 3, 21),
+        start=date(3000, 3, 21),
         priority=7,
         status='IN-PROCESS',
         summary='Some tea',
@@ -70,6 +71,7 @@ def test_vtodo_serialization(todo_factory):
     assert str(vtodo.get('description')) == description
     assert vtodo.get('priority') == 7
     assert vtodo.decoded('due') == datetime(3000, 3, 21, tzinfo=tzlocal())
+    assert vtodo.decoded('dtstart') == date(3000, 3, 21)
     assert str(vtodo.get('status')) == 'IN-PROCESS'
     assert vtodo.get('rrule') == icalendar.vRecur.from_ical('FREQ=MONTHLY')
 
@@ -95,9 +97,7 @@ def test_sequence_increment(default_database, todo_factory, todos):
 def test_normalize_datetime():
     writter = VtodoWritter(None)
     assert (
-        writter.normalize_datetime(date(2017, 6, 17)) == datetime(
-            2017, 6, 17, tzinfo=tzlocal()
-        )
+        writter.normalize_datetime(date(2017, 6, 17)) == date(2017, 6, 17)
     )
     assert (
         writter.normalize_datetime(datetime(2017, 6, 17)) == datetime(

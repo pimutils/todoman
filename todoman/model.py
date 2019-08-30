@@ -296,7 +296,7 @@ class VtodoWritter:
         dealing with that.
         '''
         if isinstance(dt, date) and not isinstance(dt, datetime):
-            dt = datetime(dt.year, dt.month, dt.day)
+            return dt
 
         if not dt.tzinfo:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
@@ -474,7 +474,9 @@ class Cache:
                 "uid" TEXT,
                 "summary" TEXT,
                 "due" INTEGER,
+                "due_dt" INTEGER,
                 "start" INTEGER,
+                "start_dt" INTEGER,
                 "priority" INTEGER,
                 "created_at" INTEGER,
                 "completed_at" INTEGER,
@@ -556,14 +558,15 @@ class Cache:
     def _serialize_datetime(self, todo, field):
         dt = todo.decoded(field, None)
         if not dt:
-            return None
+            return None, None
 
-        if isinstance(dt, date) and not isinstance(dt, datetime):
+        is_date = isinstance(dt, date) and not isinstance(dt, datetime)
+        if is_date:
             dt = datetime(dt.year, dt.month, dt.day)
 
         if not dt.tzinfo:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
-        return dt.timestamp()
+        return dt.timestamp(), is_date
 
     def _serialize_rrule(self, todo, field):
         rrule = todo.get(field)
@@ -593,7 +596,9 @@ class Cache:
                 uid,
                 summary,
                 due,
+                due_dt,
                 start,
+                start_dt,
                 priority,
                 created_at,
                 completed_at,
@@ -606,11 +611,12 @@ class Cache:
                 sequence,
                 last_modified,
                 rrule
-            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?)
             '''
 
-        due = self._serialize_datetime(todo, 'due')
-        start = self._serialize_datetime(todo, 'dtstart')
+        due, due_dt = self._serialize_datetime(todo, 'due')
+        start, start_dt = self._serialize_datetime(todo, 'dtstart')
 
         if start and due:
             start = None if start >= due else start
@@ -620,18 +626,20 @@ class Cache:
             todo.get('uid'),
             todo.get('summary'),
             due,
+            due_dt,
             start,
+            start_dt,
             todo.get('priority', 0) or None,
-            self._serialize_datetime(todo, 'created'),
-            self._serialize_datetime(todo, 'completed'),
+            self._serialize_datetime(todo, 'created')[0],
+            self._serialize_datetime(todo, 'completed')[0],
             todo.get('percent-complete', None),
-            self._serialize_datetime(todo, 'dtstamp'),
+            self._serialize_datetime(todo, 'dtstamp')[0],
             todo.get('status', 'NEEDS-ACTION'),
             todo.get('description', None),
             todo.get('location', None),
             self._serialize_categories(todo, 'categories'),
             todo.get('sequence', 1),
-            self._serialize_datetime(todo, 'last-modified'),
+            self._serialize_datetime(todo, 'last-modified')[0],
             self._serialize_rrule(todo, 'rrule'),
         )
 
@@ -793,9 +801,12 @@ class Cache:
             seen_paths.add(path)
             yield todo
 
-    def _dt_from_db(self, dt):
+    def _dt_from_db(self, dt, is_date=False):
         if dt:
-            return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
+            val = datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
+            if is_date:
+                val = val.date()
+            return val
         return None
 
     def _todo_from_db(self, row):
@@ -803,8 +814,8 @@ class Cache:
         todo.id = row['id']
         todo.uid = row['uid']
         todo.summary = row['summary']
-        todo.due = self._dt_from_db(row['due'])
-        todo.start = self._dt_from_db(row['start'])
+        todo.due = self._dt_from_db(row['due'], row['due_dt'])
+        todo.start = self._dt_from_db(row['start'], row['start_dt'])
         todo.priority = row['priority']
         todo.created_at = self._dt_from_db(row['created_at'])
         todo.completed_at = self._dt_from_db(row['completed_at'])
