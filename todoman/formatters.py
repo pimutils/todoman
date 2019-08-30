@@ -67,8 +67,8 @@ class DefaultFormatter:
 
             due = self.format_datetime(todo.due)
             now = (self.now
-                if isinstance(todo.due, datetime.datetime)
-                else self.now.date())
+                   if isinstance(todo.due, datetime.datetime)
+                   else self.now.date())
             if todo.due and todo.due <= now and not todo.is_completed:
                 due = click.style(due, fg='red')
 
@@ -175,8 +175,8 @@ class DefaultFormatter:
 
         rv = self._parse_datetime_naive(dt)
         return (rv.replace(tzinfo=self.tz)
-            if isinstance(rv, datetime.datetime)
-            else rv)
+                if isinstance(rv, datetime.datetime)
+                else rv)
 
     def _parse_datetime_naive(self, dt):
         try:
