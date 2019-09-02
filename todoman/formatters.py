@@ -174,9 +174,11 @@ class DefaultFormatter:
             return None
 
         rv = self._parse_datetime_naive(dt)
-        return (rv.replace(tzinfo=self.tz)
-                if isinstance(rv, datetime.datetime)
-                else rv)
+        return (
+            rv.replace(tzinfo=self.tz)
+            if isinstance(rv, datetime.datetime)
+            else rv
+            )
 
     def _parse_datetime_naive(self, dt):
         try:
