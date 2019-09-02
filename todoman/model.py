@@ -556,6 +556,14 @@ class Cache:
             raise exceptions.AlreadyExists('file', list_name) from e
 
     def _serialize_datetime(self, todo, field):
+        """
+        Serialize a todo field in two value, the first one is the corresponding
+        timestamp, the second one is a boolean indicating if the serialized
+        value is a date or a datetime.
+
+        :param icalendar.Todo todo: An icalendar component object
+        :param str field: The name of the field to serialize
+        """
         dt = todo.decoded(field, None)
         if not dt:
             return None, None

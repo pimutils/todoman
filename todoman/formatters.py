@@ -181,6 +181,7 @@ class DefaultFormatter:
             )
 
     def _parse_datetime_naive(self, dt):
+        """Parse dt and returns a naive datetime or a date"""
         try:
             return datetime.datetime.strptime(dt, self.datetime_format)
         except ValueError:
