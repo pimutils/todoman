@@ -21,4 +21,4 @@ jobs:
       - name: Run tests
         run: tox
         env:
-          TOXENV=py
+          TOXENV: py
