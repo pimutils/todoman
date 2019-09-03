@@ -1,4 +1,4 @@
-name: CI
+name: Tests
 
 on: [push]
 
@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         python: [ '3.5', '3.6', '3.7' ]
-    name: Run tests with Python ${{ matrix.python }}
+    name: Python ${{ matrix.python }}
     steps:
       - uses: actions/checkout@master
       - name: Setup python
