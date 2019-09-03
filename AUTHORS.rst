@@ -19,6 +19,7 @@ Authors are listed in alphabetical order.
 * José Ribeiro <hello@jlbribeiro.com>
 * Mansimar Kaur <mansimarkaur.mks@gmail.com>
 * Markus Unterwaditzer <markus@unterwaditzer.net>
+* Nicolas Évrard <nicoe@openhex.org>
 * Pascal Wichmann <wichmannpas@gmail.com>
 * Paweł Fertyk <pfertyk@openmailbox.org>
 * Rimsha Khan <rimshakhan.rk03@gmail.com>
