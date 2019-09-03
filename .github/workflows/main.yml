@@ -20,3 +20,5 @@ jobs:
         run: pip install tox codecov
       - name: Run tests
         run: tox
+        env:
+          TOXENV=py
