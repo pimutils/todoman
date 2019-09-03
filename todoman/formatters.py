@@ -178,7 +178,7 @@ class DefaultFormatter:
             rv.replace(tzinfo=self.tz)
             if isinstance(rv, datetime.datetime)
             else rv
-            )
+        )
 
     def _parse_datetime_naive(self, dt):
         """Parse dt and returns a naive datetime or a date"""
