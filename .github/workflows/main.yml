@@ -24,7 +24,7 @@ jobs:
         env:
           TOXENV: py
       - name: Report coverage
-        run: codeov
+        run: codecov
   check-styles:
     runs-on: ubuntu-18.04
     name: Check linting
@@ -74,7 +74,7 @@ jobs:
         env:
           TOXENV: pyicu
       - name: Report coverage
-        run: codeov
+        run: codecov
   test-repl:
     runs-on: ubuntu-18.04
     name: Run tests with click-repl installed
@@ -92,4 +92,4 @@ jobs:
         env:
           TOXENV: repl
       - name: Report coverage
-        run: codeov
+        run: codecov
