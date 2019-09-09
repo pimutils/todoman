@@ -19,15 +19,15 @@ jobs:
           python-version: ${{ matrix.python }}
           architecture: x64
       - name: Install test dependencies
-        run: pip install tox
+        run: pip install tox codecov
       - name: Run tests
         run: tox
         env:
           TOXENV: py
       - name: Report coverage
-        uses: codecov/codecov-action@v1.0.2
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
+        run: codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   test-pyicu:
     runs-on: ubuntu-18.04
     name: Run tests with pyicu installed
@@ -40,15 +40,15 @@ jobs:
           python-version: 3.7
           architecture: x64
       - name: Install test dependencies
-        run: pip install tox
+        run: pip install tox codecov
       - name: Run tests
         run: tox
         env:
           TOXENV: pyicu
       - name: Report coverage
-        uses: codecov/codecov-action@v1.0.2
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
+        run: codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   test-repl:
     runs-on: ubuntu-18.04
     name: Run tests with click-repl installed
@@ -61,12 +61,12 @@ jobs:
           python-version: 3.7
           architecture: x64
       - name: Install test dependencies
-        run: pip install tox
+        run: pip install tox codecov
       - name: Run tests
         run: tox
         env:
           TOXENV: repl
       - name: Report coverage
-        uses: codecov/codecov-action@v1.0.2
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
+        run: codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
