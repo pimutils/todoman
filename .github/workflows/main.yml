@@ -68,7 +68,7 @@ jobs:
           python-version: 3.7
           architecture: x64
       - name: Install test dependencies
-        run: pip install tox
+        run: pip install tox codecov
       - name: Run tests
         run: tox
         env:
@@ -86,7 +86,7 @@ jobs:
           python-version: 3.7
           architecture: x64
       - name: Install test dependencies
-        run: pip install tox
+        run: pip install tox codecov
       - name: Run tests
         run: tox
         env:
