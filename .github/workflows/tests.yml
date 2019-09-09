@@ -26,6 +26,8 @@ jobs:
           TOXENV: py
       - name: Report coverage
         run: codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   test-pyicu:
     runs-on: ubuntu-18.04
     name: Run tests with pyicu installed
@@ -45,6 +47,8 @@ jobs:
           TOXENV: pyicu
       - name: Report coverage
         run: codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   test-repl:
     runs-on: ubuntu-18.04
     name: Run tests with click-repl installed
@@ -64,3 +68,5 @@ jobs:
           TOXENV: repl
       - name: Report coverage
         run: codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
