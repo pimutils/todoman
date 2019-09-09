@@ -96,7 +96,7 @@ def test_parse_datetime(default_formatter):
     tz = pytz.timezone('CET')
 
     parsed = default_formatter.parse_datetime('2017-03-05')
-    assert parsed == datetime(2017, 3, 5).replace(tzinfo=tz)
+    assert parsed == date(2017, 3, 5)
 
     parsed = default_formatter.parse_datetime('2017-03-05 12:00')
     assert parsed == datetime(2017, 3, 5, 12).replace(tzinfo=tz)

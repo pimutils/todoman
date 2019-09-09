@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from unittest.mock import patch
 
 import pytest
@@ -56,7 +56,7 @@ def test_due_date(tmpdir, create, todos):
     todos = list(todos())
 
     assert len(todos) == 1
-    assert todos[0].due == datetime(2017, 6, 17, tzinfo=tzlocal())
+    assert todos[0].due == date(2017, 6, 17)
 
 
 def test_change_paths(tmpdir, create):
