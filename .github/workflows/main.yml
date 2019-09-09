@@ -3,8 +3,27 @@ name: Tests
 on: [push]
 
 jobs:
-  build:
+  test-linux:
     runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python: [ '3.5', '3.6', '3.7' ]
+    name: Python ${{ matrix.python }}
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: x64
+      - name: Install test dependencies
+        run: pip install tox codecov
+      - name: Run tests
+        run: tox
+        env:
+          TOXENV: py
+  test-osx:
+    runs-on: macOS-10.14
     strategy:
       matrix:
         python: [ '3.5', '3.6', '3.7' ]
