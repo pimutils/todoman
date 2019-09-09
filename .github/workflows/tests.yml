@@ -11,7 +11,8 @@ jobs:
         python: [ '3.5', '3.6', '3.7' ]
     name: Python ${{ matrix.python }} on ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout repo
+        uses: actions/checkout@master
       - name: Setup python
         uses: actions/setup-python@v1
         with:
@@ -25,43 +26,12 @@ jobs:
           TOXENV: py
       - name: Report coverage
         run: codecov
-  check-styles:
-    runs-on: ubuntu-18.04
-    name: Check linting
-    steps:
-      - uses: actions/checkout@master
-      - name: Setup python
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-          architecture: x64
-      - name: Install test dependencies
-        run: pip install tox
-      - name: Run flake8
-        run: tox
-        env:
-          TOXENV: flake8
-  build-docs:
-    runs-on: ubuntu-18.04
-    name: Build documentation
-    steps:
-      - uses: actions/checkout@master
-      - name: Setup python
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-          architecture: x64
-      - name: Install test dependencies
-        run: pip install tox
-      - name: Build docs
-        run: tox
-        env:
-          TOXENV: docs
   test-pyicu:
     runs-on: ubuntu-18.04
     name: Run tests with pyicu installed
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout repo
+        uses: actions/checkout@master
       - name: Setup python
         uses: actions/setup-python@v1
         with:
@@ -79,7 +49,8 @@ jobs:
     runs-on: ubuntu-18.04
     name: Run tests with click-repl installed
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout repo
+        uses: actions/checkout@master
       - name: Setup python
         uses: actions/setup-python@v1
         with:
