@@ -3,41 +3,97 @@ name: Tests
 on: [push]
 
 jobs:
-  test-linux:
+  tests:
+    # runs-on: 
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macOS-10.14]
+        python: [ '3.5', '3.6', '3.7' ]
+    name: Python ${{ matrix.python }} on ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: x64
+      - name: Install test dependencies
+        run: pip install tox codecov
+      - name: Run tests
+        run: tox
+        env:
+          TOXENV: py
+      - name: Report coverage
+        run: codeov
+  check-styles:
     runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        python: [ '3.5', '3.6', '3.7' ]
-    name: Linux + Python ${{ matrix.python }}
+    python: 3.7
+    name: Check linting
     steps:
       - uses: actions/checkout@master
       - name: Setup python
         uses: actions/setup-python@v1
         with:
-          python-version: ${{ matrix.python }}
+          python-version: 3.7
           architecture: x64
       - name: Install test dependencies
-        run: pip install tox codecov
-      - name: Run tests
+        run: pip install tox
+      - name: Run flake8
         run: tox
         env:
-          TOXENV: py
-  test-osx:
-    runs-on: macOS-10.14
-    strategy:
-      matrix:
-        python: [ '3.5', '3.6', '3.7' ]
-    name: macOS + Python ${{ matrix.python }}
+          TOXENV: flake8
+  build-docs:
+    runs-on: ubuntu-18.04
+    python: 3.7
+    name: Build documentation
     steps:
       - uses: actions/checkout@master
       - name: Setup python
         uses: actions/setup-python@v1
         with:
-          python-version: ${{ matrix.python }}
+          python-version: 3.7
           architecture: x64
       - name: Install test dependencies
-        run: pip install tox codecov
+        run: pip install tox
+      - name: Build docs
+        run: tox
+        env:
+          TOXENV: docs
+  test-pyicu:
+    runs-on: ubuntu-18.04
+    python: 3.7
+    name: Run tests with pyicu installed
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+          architecture: x64
+      - name: Install test dependencies
+        run: pip install tox
       - name: Run tests
         run: tox
         env:
-          TOXENV: py
+          TOXENV: pyicu
+      - name: Report coverage
+        run: codeov
+  test-repl:
+    runs-on: ubuntu-18.04
+    python: 3.7
+    name: Run tests with click-repl installed
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+          architecture: x64
+      - name: Install test dependencies
+        run: pip install tox
+      - name: Run tests
+        run: tox
+        env:
+          TOXENV: repl
+      - name: Report coverage
+        run: codeov
