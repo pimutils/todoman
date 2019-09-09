@@ -1,6 +1,9 @@
 name: Publish
 
-on: [tags]
+on:
+  push:
+    tags:
+      - v*
 
 jobs:
   github-release:
