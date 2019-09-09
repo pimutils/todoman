@@ -1,9 +1,9 @@
 Todoman
 =======
 
-.. image:: https://travis-ci.org/pimutils/todoman.svg?branch=master
-  :target: https://travis-ci.org/pimutils/todoman
-  :alt: Travis CI build status
+.. image:: https://action-badges.now.sh/pimutils/todoman
+  :target: https://github.com/pimutils/todoman/actions
+  :alt: CI status
 
 .. image:: https://codecov.io/gh/pimutils/todoman/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/pimutils/todoman
