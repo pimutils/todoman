@@ -14,6 +14,7 @@ v3.6.0
 * ``click-repl`` is now listed as an optional dependency. It is required for
   the ``todo repl`` command.
 * Add the ``default_priority`` config setting.
+* Properly support iCal files with dates (instead of datetimes).
 
 v3.5.0
 ------
