@@ -4,6 +4,10 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.7.0
+------
+* Properly support iCal files with dates (instead of datetimes).
+
 v3.6.0
 ------
 * Allow passing a custom configuration file with the ``--config/-c`` option.
@@ -14,7 +18,6 @@ v3.6.0
 * ``click-repl`` is now listed as an optional dependency. It is required for
   the ``todo repl`` command.
 * Add the ``default_priority`` config setting.
-* Properly support iCal files with dates (instead of datetimes).
 
 v3.5.0
 ------
