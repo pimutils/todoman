@@ -1,0 +1,72 @@
+name: Tests
+
+on: [push]
+
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macOS-10.14]
+        python: [ '3.5', '3.6', '3.7' ]
+    name: Python ${{ matrix.python }} on ${{ matrix.os }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@master
+      - name: Setup python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: x64
+      - name: Install test dependencies
+        run: pip install tox codecov
+      - name: Run tests
+        run: tox
+        env:
+          TOXENV: py
+      - name: Report coverage
+        run: codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  test-pyicu:
+    runs-on: ubuntu-18.04
+    name: Run tests with pyicu installed
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@master
+      - name: Setup python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+          architecture: x64
+      - name: Install test dependencies
+        run: pip install tox codecov
+      - name: Run tests
+        run: tox
+        env:
+          TOXENV: pyicu
+      - name: Report coverage
+        run: codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  test-repl:
+    runs-on: ubuntu-18.04
+    name: Run tests with click-repl installed
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@master
+      - name: Setup python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+          architecture: x64
+      - name: Install test dependencies
+        run: pip install tox codecov
+      - name: Run tests
+        run: tox
+        env:
+          TOXENV: repl
+      - name: Report coverage
+        run: codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

@@ -4,6 +4,10 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v3.7.0
+------
+* Properly support iCal files with dates (instead of datetimes).
+
 v3.6.0
 ------
 * Allow passing a custom configuration file with the ``--config/-c`` option.

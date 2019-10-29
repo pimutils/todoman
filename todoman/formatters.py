@@ -66,7 +66,10 @@ class DefaultFormatter:
             priority = self.format_priority_compact(todo.priority)
 
             due = self.format_datetime(todo.due)
-            if todo.due and todo.due <= self.now and not todo.is_completed:
+            now = (self.now
+                   if isinstance(todo.due, datetime.datetime)
+                   else self.now.date())
+            if todo.due and todo.due <= now and not todo.is_completed:
                 due = click.style(due, fg='red')
 
             recurring = '⟳' if todo.is_recurring else ''
@@ -171,16 +174,21 @@ class DefaultFormatter:
             return None
 
         rv = self._parse_datetime_naive(dt)
-        return rv.replace(tzinfo=self.tz)
+        return (
+            rv.replace(tzinfo=self.tz)
+            if isinstance(rv, datetime.datetime)
+            else rv
+        )
 
     def _parse_datetime_naive(self, dt):
+        """Parse dt and returns a naive datetime or a date"""
         try:
             return datetime.datetime.strptime(dt, self.datetime_format)
         except ValueError:
             pass
 
         try:
-            return datetime.datetime.strptime(dt, self.date_format)
+            return datetime.datetime.strptime(dt, self.date_format).date()
         except ValueError:
             pass
 
