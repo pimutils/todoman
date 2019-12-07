@@ -34,7 +34,7 @@ Caveats
 -------
 
 Support for the ``percent-completed`` attribute is incomplete. Todoman can only
-mark todos as completed (100%), and will nor reflect nor allow editing for
+mark todos as completed (100%), and will not reflect nor allow editing for
 values for ``percent > 0 ^ percent < 100``.
 
 Table of Contents
