@@ -6,7 +6,7 @@ import pytz
 from dateutil.tz import tzlocal
 from freezegun import freeze_time
 
-from todoman.model import Todo, VtodoWritter
+from todoman.model import Todo, VtodoWriter
 
 
 def test_datetime_serialization(todo_factory, tmpdir):
@@ -20,7 +20,7 @@ def test_datetime_serialization(todo_factory, tmpdir):
 def test_serialize_created_at(todo_factory):
     now = datetime.now(tz=pytz.UTC)
     todo = todo_factory(created_at=now)
-    vtodo = VtodoWritter(todo).serialize()
+    vtodo = VtodoWriter(todo).serialize()
 
     assert vtodo.get('created') is not None
 
@@ -28,14 +28,14 @@ def test_serialize_created_at(todo_factory):
 def test_serialize_dtstart(todo_factory):
     now = datetime.now(tz=pytz.UTC)
     todo = todo_factory(start=now)
-    vtodo = VtodoWritter(todo).serialize()
+    vtodo = VtodoWriter(todo).serialize()
 
     assert vtodo.get('dtstart') is not None
 
 
 def test_serializer_raises(todo_factory):
     todo = todo_factory()
-    writter = VtodoWritter(todo)
+    writter = VtodoWriter(todo)
 
     with pytest.raises(Exception):
         writter.serialize_field('nonexistant', 7)
@@ -43,7 +43,7 @@ def test_serializer_raises(todo_factory):
 
 def test_supported_fields_are_serializeable():
     supported_fields = set(Todo.ALL_SUPPORTED_FIELDS)
-    serialized_fields = set(VtodoWritter.FIELD_MAP.keys())
+    serialized_fields = set(VtodoWriter.FIELD_MAP.keys())
 
     assert supported_fields == serialized_fields
 
@@ -61,7 +61,7 @@ def test_vtodo_serialization(todo_factory):
         summary='Some tea',
         rrule='FREQ=MONTHLY',
     )
-    writer = VtodoWritter(todo)
+    writer = VtodoWriter(todo)
     vtodo = writer.serialize()
 
     assert (
@@ -95,7 +95,7 @@ def test_sequence_increment(default_database, todo_factory, todos):
 
 
 def test_normalize_datetime():
-    writter = VtodoWritter(None)
+    writter = VtodoWriter(None)
     assert (
         writter.normalize_datetime(date(2017, 6, 17)) == date(2017, 6, 17)
     )

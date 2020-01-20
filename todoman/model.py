@@ -256,7 +256,7 @@ class Todo:
         self.status = 'CANCELLED'
 
 
-class VtodoWritter:
+class VtodoWriter:
     """Writes a Todo as a VTODO file."""
     """Maps Todo field names to VTODO field names"""
     FIELD_MAP = {
@@ -1046,7 +1046,7 @@ class Database:
         todo.sequence += 1
         todo.last_modified = datetime.now(LOCAL_TIMEZONE)
 
-        vtodo = VtodoWritter(todo).write()
+        vtodo = VtodoWriter(todo).write()
 
         self.cache.expire_file(todo.path)
         mtime = _getmtime(todo.path)
