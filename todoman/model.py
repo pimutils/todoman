@@ -916,7 +916,7 @@ class List:
         try:
             with open(os.path.join(path, 'color')) as f:
                 return f.read().strip()
-        except (OSError, IOError):
+        except OSError:
             logger.debug('No colour for list %s', path)
 
     @staticmethod
@@ -924,7 +924,7 @@ class List:
         try:
             with open(os.path.join(path, 'displayname')) as f:
                 return f.read().strip()
-        except (OSError, IOError):
+        except OSError:
             return split(normpath(path))[1]
 
     @staticmethod
