@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Hugo Osvaldo Barrera
+# Copyright (c) 2016-2020 Hugo Osvaldo Barrera
 # Copyright (c) 2013-2016 Christian Geier et al.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
