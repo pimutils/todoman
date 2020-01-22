@@ -256,7 +256,7 @@ class Todo:
         self.status = 'CANCELLED'
 
 
-class VtodoWritter:
+class VtodoWriter:
     """Writes a Todo as a VTODO file."""
     """Maps Todo field names to VTODO field names"""
     FIELD_MAP = {
@@ -916,7 +916,7 @@ class List:
         try:
             with open(os.path.join(path, 'color')) as f:
                 return f.read().strip()
-        except (OSError, IOError):
+        except OSError:
             logger.debug('No colour for list %s', path)
 
     @staticmethod
@@ -924,7 +924,7 @@ class List:
         try:
             with open(os.path.join(path, 'displayname')) as f:
                 return f.read().strip()
-        except (OSError, IOError):
+        except OSError:
             return split(normpath(path))[1]
 
     @staticmethod
@@ -1046,7 +1046,7 @@ class Database:
         todo.sequence += 1
         todo.last_modified = datetime.now(LOCAL_TIMEZONE)
 
-        vtodo = VtodoWritter(todo).write()
+        vtodo = VtodoWriter(todo).write()
 
         self.cache.expire_file(todo.path)
         mtime = _getmtime(todo.path)

@@ -16,6 +16,7 @@ Authors are listed in alphabetical order.
 * Doron Behar <me@doronbehar.com>
 * Guilhem Saurel <guilhem.saurel@gmail.com>
 * Hugo Osvaldo Barrera <hugo@barrera.io>
+* Joachim Desroches <joachim.desroches@epfl.ch>
 * José Ribeiro <hello@jlbribeiro.com>
 * Mansimar Kaur <mansimarkaur.mks@gmail.com>
 * Markus Unterwaditzer <markus@unterwaditzer.net>

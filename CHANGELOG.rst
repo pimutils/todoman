@@ -4,6 +4,11 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+unreleased
+----------
+* Fix issue 301: hide the origin list of todo if only one list is available in
+  the database, or if filtered using only one list.
+
 v3.7.0
 ------
 * Properly support iCal files with dates (instead of datetimes).

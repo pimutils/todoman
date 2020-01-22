@@ -13,21 +13,23 @@ First of all, the classic usage output:
 The default action is ``list``, which outputs all tasks for all calendars, each
 with a semi-permanent unique id::
 
-    1 [ ] !!! 2015-04-30 Close bank account (0%)
-    2 [ ] !				 Send minipimer back for warranty replacement (0%)
-    3 [X] 2015-03-29 Buy soy milk (100%)
-    4 [ ] !!             Fix the iPad's screen (0%)
-    5 [ ] !!             Fix the Touchad battery (0%)
+    1 [ ] !!! 2015-04-30 Close bank account @work (0%)
+    2 [ ] !              Send minipimer back for warranty replacement @home (0%)
+    3 [X]     2015-03-29 Buy soy milk @home (100%)
+    4 [ ] !!             Fix the iPad's screen @home (0%)
+    5 [ ] !!             Fix the Touchpad battery @work (0%)
 
 The columns, in order, are:
 
  * An id.
  * Whether the task has been completed or not.
- * An ``!!!`` indicating high priority,``!!`` indicating medium priority,
+ * An ``!!!`` indicating high priority, ``!!`` indicating medium priority,
    ``!`` indicating low priority tasks.
- * The due date
- * The task summary
- * The completed percentage
+ * The due date.
+ * The task summary.
+ * The list the todo is from; it will be hidden when filtering by one list, or
+   if the database only contains a single list.
+ * The completed percentage.
 
 The id is retained by ``todoman`` until the next time you run the ``flush``
 command.
@@ -46,7 +48,7 @@ done via the command line yet.
 Synchronization
 ---------------
 
-If you want to synchronize your tasks, you'll needs something that syncs via
+If you want to synchronize your tasks, you'll need something that syncs via
 CalDAV. `vdirsyncer`_ is the recommended tool for this.
 
 .. _vdirsyncer: https://vdirsyncer.readthedocs.org/en/stable/

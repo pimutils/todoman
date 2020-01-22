@@ -126,13 +126,32 @@ def test_filtering_lists(tmpdir, runner, create):
     runner.invoke(cli, ['new', '-l', 'list_two', 'todo two'])
     runner.invoke(cli, ['new', '-l', 'list_three', 'todo three'])
 
-    result = runner.invoke(cli, ['new', 'list'])
+    # No filter
+    result = runner.invoke(cli, ['list'])
+    assert not result.exception
     assert len(result.output.splitlines()) == 3
+    assert 'todo one' in result.output
+    assert '@list_one' in result.output
+    assert 'todo two' in result.output
+    assert '@list_two' in result.output
+    assert 'todo three' in result.output
+    assert '@list_three' in result.output
 
+    # One filter
     result = runner.invoke(cli, ['list', 'list_two'])
     assert not result.exception
     assert len(result.output.splitlines()) == 1
     assert 'todo two' in result.output
+    assert '@list_two' not in result.output
+
+    # Several filters
+    result = runner.invoke(cli, ['list', 'list_one', 'list_two'])
+    assert not result.exception
+    assert len(result.output.splitlines()) == 2
+    assert 'todo one' in result.output
+    assert 'todo two' in result.output
+    assert '@list_one' in result.output
+    assert '@list_two' in result.output
 
 
 def test_due_aware(tmpdir, runner, create, now_for_tz):

@@ -56,7 +56,7 @@ class DefaultFormatter:
     def compact(self, todo):
         return self.compact_multiple([todo])
 
-    def compact_multiple(self, todos):
+    def compact_multiple(self, todos, hide_list=False):
         table = []
         for todo in todos:
             completed = "X" if todo.is_completed else " "
@@ -74,16 +74,24 @@ class DefaultFormatter:
 
             recurring = '⟳' if todo.is_recurring else ''
 
+            if hide_list:
+                summary = "{} {}".format(
+                            todo.summary,
+                            percent,
+                        )
+            else:
+                summary = "{} {}{}".format(
+                            todo.summary,
+                            self.format_database(todo.list),
+                            percent,
+                        )
+
             table.append([
                 todo.id,
                 "[{}]".format(completed),
                 priority,
                 '{} {}'.format(due, recurring),
-                "{} {}{}".format(
-                    todo.summary,
-                    self.format_database(todo.list),
-                    percent,
-                ),
+                summary,
             ])
 
         return tabulate(table, tablefmt='plain')
@@ -239,7 +247,7 @@ class PorcelainFormatter(DefaultFormatter):
     def compact(self, todo):
         return json.dumps(self._todo_as_dict(todo), indent=4, sort_keys=True)
 
-    def compact_multiple(self, todos):
+    def compact_multiple(self, todos, hide_list=False):
         data = [self._todo_as_dict(todo) for todo in todos]
         return json.dumps(data, indent=4, sort_keys=True)
 

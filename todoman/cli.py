@@ -641,5 +641,8 @@ def list(ctx, *args, **kwargs):
     The following commands can further filter shown todos, or include those
     omited by default:
     """
+    hide_list = (len([_ for _ in ctx.db.lists()]) == 1) \
+        or (len(kwargs['lists']) == 1)
+
     todos = ctx.db.todos(**kwargs)
-    click.echo(ctx.formatter.compact_multiple(todos))
+    click.echo(ctx.formatter.compact_multiple(todos, hide_list))
