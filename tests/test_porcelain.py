@@ -34,6 +34,33 @@ def test_list_all(tmpdir, runner, create):
     )
 
 
+def test_list_due_date(tmpdir, runner, create):
+    create(
+        'test.ics', 'SUMMARY:Do stuff\n'
+        'STATUS:COMPLETED\n'
+        'DUE;VALUE=DATE:20160102\n'
+        'PERCENT-COMPLETE:26\n'
+        'LOCATION:Wherever\n'
+    )
+    result = runner.invoke(cli, ['--porcelain', 'list', '--status', 'ANY'])
+
+    expected = [{
+        'completed': True,
+        'due': 1451692800,
+        'id': 1,
+        'list': 'default',
+        'location': 'Wherever',
+        'percent': 26,
+        'priority': 0,
+        'summary': 'Do stuff',
+    }]
+
+    assert not result.exception
+    assert result.output.strip() == json.dumps(
+        expected, indent=4, sort_keys=True
+    )
+
+
 def test_list_nodue(tmpdir, runner, create):
     create(
         'test.ics', 'SUMMARY:Do stuff\n'
