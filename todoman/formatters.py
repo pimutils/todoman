@@ -270,6 +270,8 @@ class PorcelainFormatter(DefaultFormatter):
 
     def format_datetime(self, date):
         if date:
+            if isinstance(date, datetime.date):
+                date = datetime.datetime.fromisoformat(date.isoformat())
             return int(date.timestamp())
         else:
             return None
