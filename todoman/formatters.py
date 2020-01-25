@@ -270,6 +270,8 @@ class PorcelainFormatter(DefaultFormatter):
 
     def format_datetime(self, date):
         if date:
+            if not hasattr(date, 'timestamp'):
+                date = datetime.datetime.fromordinal(date.toordinal())
             return int(date.timestamp())
         else:
             return None
