@@ -25,8 +25,8 @@ todoman is packaged in homebrew_, and can be installed using::
 
 .. _homebrew: https://formulae.brew.sh/formula/todoman
 
-PyPI (installatoin via pip)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installation via PIP
+--------------------
 
 Since *todoman* is written in python, you can use python's package managers,
 *pip* by executing::
@@ -38,6 +38,11 @@ or the latest development version by executing::
      pip install git+git://github.com/pimutils/todoman.git
 
 This should also take care of installing all required dependencies.
+
+Others
+~~~~~~
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/python:todoman.svg)](https://repology.org/project/python:todoman/versions)
 
 Manual installation
 -------------------
