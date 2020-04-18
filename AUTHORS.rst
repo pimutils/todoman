@@ -10,6 +10,7 @@ when copying code from elsewhere).
 
 Authors are listed in alphabetical order.
 
+* Alex David <git@alexd.me>
 * Anubha Agrawal <anubhakannu@gmail.com>
 * Ben Boeckel <mathstuf@gmail.com>
 * Ben Moran <github@benmoran.net>
