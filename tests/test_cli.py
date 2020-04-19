@@ -34,8 +34,8 @@ def test_no_default_list(runner):
 
     assert result.exception
     assert (
-        'Error: Invalid value for "--list" / "-l": You must set '
-        '"default_list" or use -l.' in result.output
+        "Error: Invalid value for '--list' / '-l': You must set "
+        "`default_list` or use -l." in result.output
     )
 
 
@@ -116,14 +116,14 @@ def test_list_inexistant(tmpdir, runner, create):
     result = runner.invoke(cli, ['list', 'nonexistant'])
     assert result.exception
     assert (
-        'Error: Invalid value for "[LISTS]...": nonexistant'
+        "Error: Invalid value for '[LISTS]...': nonexistant"
         in result.output
     )
 
     result = runner.invoke(cli, ['list', 'NONexistant'])
     assert result.exception
     assert (
-        'Error: Invalid value for "[LISTS]...": NONexistant'
+        "Error: Invalid value for '[LISTS]...': NONexistant"
         in result.output
     )
 
@@ -401,7 +401,7 @@ def test_sort_invalid_fields(runner):
     result = runner.invoke(cli, ['list', '--sort', 'hats'])
 
     assert result.exception
-    assert 'Invalid value for "--sort": Unknown field "hats"' in result.output
+    assert "Invalid value for '--sort': Unknown field 'hats'" in result.output
 
 
 @pytest.mark.parametrize('hours', [72, -72])
@@ -597,7 +597,7 @@ def test_due_bad_date(runner):
 
     assert result.exception
     assert (
-        'Error: Invalid value for "--due" / "-d": Time description not '
+        "Error: Invalid value for '--due' / '-d': Time description not "
         'recognized: Not a date' == result.output.strip().splitlines()[-1]
     )
 
@@ -713,7 +713,7 @@ def test_bad_start_date(runner):
     result = runner.invoke(cli, ['list', '--start', 'before', 'not_a_date'])
     assert result.exception
     assert (
-        'Invalid value for "--start": Time description not recognized: '
+        "Invalid value for '--start': Time description not recognized: "
         'not_a_date' in result.output
     )
 
