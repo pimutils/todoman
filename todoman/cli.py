@@ -50,9 +50,7 @@ def _validate_list_param(ctx, param=None, name=None):
         if ctx.config['main']['default_list']:
             name = ctx.config['main']['default_list']
         else:
-            raise click.BadParameter(
-                'You must set "default_list" or use -l.'.format(name)
-            )
+            raise click.BadParameter("You must set `default_list` or use -l.")
     lists = {
         list_.name: list_
         for list_ in ctx.db.lists()
@@ -127,7 +125,7 @@ def _sort_callback(ctx, param, val):
             field = field[1:]
 
         if field not in Todo.ALL_SUPPORTED_FIELDS and field != 'id':
-            raise click.BadParameter('Unknown field "{}"'.format(field))
+            raise click.BadParameter("Unknown field '{}'".format(field))
 
     return fields
 
