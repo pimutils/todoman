@@ -394,11 +394,18 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
         "Only use this if you REALLY know what you're doing!"
     )
 )
+@click.option(
+    '--description',
+    is_flag=True,
+    help=(
+        'Edit the description in an external editor.'
+    )
+)
 @_todo_property_options
 @_interactive_option
 @with_id_arg
 @catch_errors
-def edit(ctx, id, todo_properties, interactive, raw):
+def edit(ctx, id, todo_properties, interactive, raw, description):
     '''
     Edit the task with id ID.
     '''
@@ -413,6 +420,15 @@ def edit(ctx, id, todo_properties, interactive, raw):
         if value:
             changes = True
             setattr(todo, key, value)
+
+    if description:
+        if interactive is None:
+            interactive = False
+        old_description = todo.description
+        new_description = click.edit(todo.description)
+        if new_description is not None and old_description != new_description:
+            todo.description = new_description.strip()
+            changes = True
 
     if interactive or (not changes and interactive is None):
         ui = TodoEditor(todo, ctx.db.lists(), ctx.ui_formatter)
