@@ -224,9 +224,12 @@ class HumanizedFormatter(DefaultFormatter):
         if not dt:
             return ''
 
-        rv = humanize.naturaltime(self.now - dt)
-        if ' from now' in rv:
-            rv = 'in {}'.format(rv[:-9])
+        if isinstance(dt, datetime.datetime):
+            rv = humanize.naturaltime(self.now - dt)
+            if ' from now' in rv:
+                rv = 'in {}'.format(rv[:-9])
+        elif isinstance(dt, datetime.date):
+            rv = humanize.naturaldate(dt)
 
         return rv
 
