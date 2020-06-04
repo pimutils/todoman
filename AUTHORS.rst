@@ -11,6 +11,7 @@ when copying code from elsewhere).
 Authors are listed in alphabetical order.
 
 * Anubha Agrawal <anubhakannu@gmail.com>
+* Ben Boeckel <mathstuf@gmail.com>
 * Ben Moran <github@benmoran.net>
 * Benjamin Frank <ben+gitlab@pipsfrank.de>
 * Christian Geier <geier@lostpackets.de>
