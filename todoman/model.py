@@ -722,7 +722,10 @@ class Cache:
             params.extend(s.upper() for s in status)
 
         if lists:
-            lists = [l.name if isinstance(l, List) else l for l in lists]
+            lists = [
+                list_.name if isinstance(list_, List) else list_
+                for list_ in lists
+            ]
             q = ', '.join(['?'] * len(lists))
             extra_where.append('AND files.list_name IN ({})'.format(q))
             params.extend(lists)
@@ -850,7 +853,7 @@ class Cache:
 
     @cached_property
     def lists_map(self):
-        return {l.name: l for l in self.lists()}
+        return {list_.name: list_ for list_ in self.lists()}
 
     def expire_lists(self, paths):
         results = self._conn.execute("SELECT path, name, mtime from lists")

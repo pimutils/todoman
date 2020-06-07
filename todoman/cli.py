@@ -41,7 +41,7 @@ with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
 
 
 def _validate_lists_param(ctx, param=None, lists=()):
-    return [_validate_list_param(ctx, name=l) for l in lists]
+    return [_validate_list_param(ctx, name=list_) for list_ in lists]
 
 
 def _validate_list_param(ctx, param=None, name=None):
