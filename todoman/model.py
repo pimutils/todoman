@@ -2,7 +2,7 @@ import logging
 import os
 import socket
 import sqlite3
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from os.path import normpath, split
 from uuid import uuid4
 
@@ -215,6 +215,9 @@ class Todo:
             return None
 
         recurrence = rrulestr(self.rrule, dtstart=dt)
+
+        if isinstance(dt, date) and not isinstance(dt, datetime):
+            dt = datetime.combine(dt, time.min)
 
         return recurrence.after(dt)
 
