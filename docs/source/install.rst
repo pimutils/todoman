@@ -19,7 +19,7 @@ todoman is packaged in the community_ repository, and can be installed using::
 macOS
 ~~~~~
 
-todoman is packaged in homebrew_, an can be installed using::
+todoman is packaged in homebrew_, and can be installed using::
 
     brew install todoman
 
