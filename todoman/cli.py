@@ -37,7 +37,7 @@ def catch_errors(f):
 
 
 TODO_ID_MIN = 1
-with_id_arg = click.argument('id', type=click.IntRange(min=TODO_ID_MIN))
+with_id_arg = click.argument("id", type=click.IntRange(min=TODO_ID_MIN))
 
 
 def _validate_lists_param(ctx, param=None, lists=()):
@@ -47,18 +47,13 @@ def _validate_lists_param(ctx, param=None, lists=()):
 def _validate_list_param(ctx, param=None, name=None):
     ctx = ctx.find_object(AppContext)
     if name is None:
-        if ctx.config['main']['default_list']:
-            name = ctx.config['main']['default_list']
+        if ctx.config["main"]["default_list"]:
+            name = ctx.config["main"]["default_list"]
         else:
             raise click.BadParameter("You must set `default_list` or use -l.")
-    lists = {
-        list_.name: list_
-        for list_ in ctx.db.lists()
-    }
+    lists = {list_.name: list_ for list_ in ctx.db.lists()}
     fuzzy_matches = [
-        list_
-        for list_ in lists.values()
-        if list_.name.lower() == name.lower()
+        list_ for list_ in lists.values() if list_.name.lower() == name.lower()
     ]
 
     if len(fuzzy_matches) == 1:
@@ -70,7 +65,8 @@ def _validate_list_param(ctx, param=None, name=None):
         return lists[name]
     raise click.BadParameter(
         "{}. Available lists are: {}".format(
-            name, ', '.join(list_.name for list_ in lists.values()))
+            name, ", ".join(list_.name for list_ in lists.values())
+        )
     )
 
 
@@ -95,10 +91,10 @@ def _validate_start_date_param(ctx, param, val):
     if not val:
         return val
 
-    if len(val) != 2 or val[0] not in ['before', 'after']:
+    if len(val) != 2 or val[0] not in ["before", "after"]:
         raise click.BadParameter("Format should be '[before|after] [DATE]'")
 
-    is_before = val[0] == 'before'
+    is_before = val[0] == "before"
 
     try:
         dt = ctx.formatter.parse_datetime(val[1])
@@ -109,7 +105,7 @@ def _validate_start_date_param(ctx, param, val):
 
 def _validate_startable_param(ctx, param, val):
     ctx = ctx.find_object(AppContext)
-    return val or ctx.config['main']['startable']
+    return val or ctx.config["main"]["startable"]
 
 
 def _validate_todos(ctx, param, val):
@@ -119,12 +115,12 @@ def _validate_todos(ctx, param, val):
 
 
 def _sort_callback(ctx, param, val):
-    fields = val.split(',') if val else []
+    fields = val.split(",") if val else []
     for field in fields:
-        if field.startswith('-'):
+        if field.startswith("-"):
             field = field[1:]
 
-        if field not in Todo.ALL_SUPPORTED_FIELDS and field != 'id':
+        if field not in Todo.ALL_SUPPORTED_FIELDS and field != "id":
             raise click.BadParameter("Unknown field '{}'".format(field))
 
     return fields
@@ -137,16 +133,17 @@ def validate_status(ctx=None, param=None, val=None):
     if not isinstance(val, str):
         return val
 
-    statuses = val.upper().split(',')
+    statuses = val.upper().split(",")
 
-    if 'ANY' in statuses:
+    if "ANY" in statuses:
         return Todo.VALID_STATUSES
 
     for status in statuses:
         if status not in Todo.VALID_STATUSES:
             raise click.BadParameter(
-                'Invalid status, "{}", statuses must be one of "{}", or "ANY"'
-                .format(status, ', '.join(Todo.VALID_STATUSES))
+                'Invalid status, "{}", statuses must be one of "{}", or "ANY"'.format(
+                    status, ", ".join(Todo.VALID_STATUSES)
+                )
             )
 
     return statuses
@@ -154,38 +151,36 @@ def validate_status(ctx=None, param=None, val=None):
 
 def _todo_property_options(command):
     click.option(
-        '--priority',
-        default='',
+        "--priority",
+        default="",
         callback=_validate_priority_param,
-        help=('The priority for this todo')
+        help=("The priority for this todo"),
     )(command)
+    click.option("--location", help=("The location where " "this todo takes place."))(
+        command
+    )
     click.option(
-        '--location', help=('The location where '
-                            'this todo takes place.')
-    )(command)
-    click.option(
-        '--due',
-        '-d',
-        default='',
+        "--due",
+        "-d",
+        default="",
         callback=_validate_date_param,
         help=(
-            'The due date of the task, in the format specified in the '
-            'configuration file.'
-        )
+            "The due date of the task, in the format specified in the "
+            "configuration file."
+        ),
     )(command)
     click.option(
-        '--start',
-        '-s',
-        default='',
+        "--start",
+        "-s",
+        default="",
         callback=_validate_date_param,
-        help='When the task starts.'
+        help="When the task starts.",
     )(command)
 
     @functools.wraps(command)
     def command_wrap(*a, **kw):
-        kw['todo_properties'] = {
-            key: kw.pop(key)
-            for key in ('due', 'start', 'location', 'priority')
+        kw["todo_properties"] = {
+            key: kw.pop(key) for key in ("due", "start", "location", "priority")
         }
         return command(*a, **kw)
 
@@ -201,69 +196,69 @@ class AppContext:
     @cached_property
     def ui_formatter(self):
         return formatters.DefaultFormatter(
-            self.config['main']['date_format'],
-            self.config['main']['time_format'],
-            self.config['main']['dt_separator']
+            self.config["main"]["date_format"],
+            self.config["main"]["time_format"],
+            self.config["main"]["dt_separator"],
         )
 
     @cached_property
     def formatter(self):
         return self.formatter_class(
-            self.config['main']['date_format'],
-            self.config['main']['time_format'],
-            self.config['main']['dt_separator']
+            self.config["main"]["date_format"],
+            self.config["main"]["time_format"],
+            self.config["main"]["dt_separator"],
         )
 
 
 pass_ctx = click.make_pass_decorator(AppContext)
 
 _interactive_option = click.option(
-    '--interactive',
-    '-i',
+    "--interactive",
+    "-i",
     is_flag=True,
     default=None,
-    help='Go into interactive mode before saving the task.'
+    help="Go into interactive mode before saving the task.",
 )
 
 
 @click.group(invoke_without_command=True)
 @click_log.simple_verbosity_option()
 @click.option(
-    '--colour',
-    '--color',
-    'colour',
+    "--colour",
+    "--color",
+    "colour",
     default=None,
-    type=click.Choice(['always', 'auto', 'never']),
+    type=click.Choice(["always", "auto", "never"]),
     help=(
-        'By default todoman will disable colored output if stdout '
-        'is not a TTY (value `auto`). Set to `never` to disable '
-        'colored output entirely, or `always` to enable it '
-        'regardless.'
-    )
+        "By default todoman will disable colored output if stdout "
+        "is not a TTY (value `auto`). Set to `never` to disable "
+        "colored output entirely, or `always` to enable it "
+        "regardless."
+    ),
 )
 @click.option(
-    '--porcelain',
+    "--porcelain",
     is_flag=True,
-    help='Use a JSON format that will '
-    'remain stable regardless of configuration or version.'
+    help="Use a JSON format that will "
+    "remain stable regardless of configuration or version.",
 )
 @click.option(
-    '--humanize',
-    '-h',
+    "--humanize",
+    "-h",
     default=None,
     is_flag=True,
-    help='Format all dates and times in a human friendly way'
+    help="Format all dates and times in a human friendly way",
 )
 @click.option(
-    '--config',
-    '-c',
+    "--config",
+    "-c",
     default=None,
-    help='The config file to use.',
-    envvar='TODOMAN_CONFIG',
-    metavar='PATH',
+    help="The config file to use.",
+    envvar="TODOMAN_CONFIG",
+    metavar="PATH",
 )
 @click.pass_context
-@click.version_option(prog_name='todoman')
+@click.version_option(prog_name="todoman")
 @catch_errors
 def cli(click_ctx, colour, porcelain, humanize, config):
     ctx = click_ctx.ensure_object(AppContext)
@@ -274,12 +269,11 @@ def cli(click_ctx, colour, porcelain, humanize, config):
 
     if porcelain and humanize:
         raise click.ClickException(
-            '--porcelain and --humanize cannot be used'
-            ' at the same time.'
+            "--porcelain and --humanize cannot be used" " at the same time."
         )
 
     if humanize is None:  # False means explicitly disabled
-        humanize = ctx.config['main']['humanize']
+        humanize = ctx.config["main"]["humanize"]
 
     if porcelain:
         ctx.formatter_class = formatters.PorcelainFormatter
@@ -288,42 +282,41 @@ def cli(click_ctx, colour, porcelain, humanize, config):
     else:
         ctx.formatter_class = formatters.DefaultFormatter
 
-    colour = colour or ctx.config['main']['color']
-    if colour == 'always':
+    colour = colour or ctx.config["main"]["color"]
+    if colour == "always":
         click_ctx.color = True
-    elif colour == 'never':
+    elif colour == "never":
         click_ctx.color = False
 
     paths = [
-        path for path in glob.iglob(expanduser(ctx.config["main"]["path"]))
+        path
+        for path in glob.iglob(expanduser(ctx.config["main"]["path"]))
         if isdir(path)
     ]
     if len(paths) == 0:
         raise exceptions.NoListsFound(ctx.config["main"]["path"])
 
-    ctx.db = Database(paths, ctx.config['main']['cache_path'])
+    ctx.db = Database(paths, ctx.config["main"]["cache_path"])
 
     # Make python actually use LC_TIME, or the user's locale settings
     locale.setlocale(locale.LC_TIME, "")
 
     if not click_ctx.invoked_subcommand:
         invoke_command(
-            click_ctx,
-            ctx.config['main']['default_command'],
+            click_ctx, ctx.config["main"]["default_command"],
         )
 
 
 def invoke_command(click_ctx, command):
-    name, *args = command.split(' ')
+    name, *args = command.split(" ")
     if name not in cli.commands:
-        raise click.ClickException(
-            'Invalid setting for [main][default_command]'
-        )
+        raise click.ClickException("Invalid setting for [main][default_command]")
     click_ctx.invoke(cli.commands[command], args)
 
 
 try:  # pragma: no cover
     import click_repl
+
     click_repl.register_repl(cli)
     click_repl.register_repl(cli, name="shell")
 except ImportError:
@@ -331,46 +324,46 @@ except ImportError:
 
 
 @cli.command()
-@click.argument('summary', nargs=-1)
+@click.argument("summary", nargs=-1)
 @click.option(
-    '--list',
-    '-l',
+    "--list",
+    "-l",
     callback=_validate_list_param,
-    help='The list to create the task in.'
+    help="The list to create the task in.",
 )
 @click.option(
-    '--read-description',
-    '-r',
+    "--read-description",
+    "-r",
     is_flag=True,
     default=False,
-    help='Read task description from stdin.'
+    help="Read task description from stdin.",
 )
 @_todo_property_options
 @_interactive_option
 @pass_ctx
 @catch_errors
 def new(ctx, summary, list, todo_properties, read_description, interactive):
-    '''
+    """
     Create a new task with SUMMARY.
-    '''
+    """
 
     todo = Todo(new=True, list=list)
 
-    default_due = ctx.config['main']['default_due']
+    default_due = ctx.config["main"]["default_due"]
     if default_due:
         todo.due = todo.created_at + timedelta(hours=default_due)
 
-    default_priority = ctx.config['main']['default_priority']
+    default_priority = ctx.config["main"]["default_priority"]
     if default_priority is not None:
         todo.priority = default_priority
 
     for key, value in todo_properties.items():
         if value:
             setattr(todo, key, value)
-    todo.summary = ' '.join(summary)
+    todo.summary = " ".join(summary)
 
     if read_description:
-        todo.description = '\n'.join(sys.stdin)
+        todo.description = "\n".join(sys.stdin)
 
     if interactive or (not summary and interactive is None):
         ui = TodoEditor(todo, ctx.db.lists(), ctx.ui_formatter)
@@ -378,7 +371,7 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
         click.echo()  # work around lines going missing after urwid
 
     if not todo.summary:
-        raise click.UsageError('No SUMMARY specified')
+        raise click.UsageError("No SUMMARY specified")
 
     ctx.db.save(todo)
     click.echo(ctx.formatter.detailed(todo))
@@ -387,21 +380,21 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
 @cli.command()
 @pass_ctx
 @click.option(
-    '--raw',
+    "--raw",
     is_flag=True,
     help=(
-        'Open the raw file for editing in $EDITOR.\n'
+        "Open the raw file for editing in $EDITOR.\n"
         "Only use this if you REALLY know what you're doing!"
-    )
+    ),
 )
 @_todo_property_options
 @_interactive_option
 @with_id_arg
 @catch_errors
 def edit(ctx, id, todo_properties, interactive, raw):
-    '''
+    """
     Edit the task with id ID.
-    '''
+    """
     todo = ctx.db.todo(id)
     if raw:
         click.edit(filename=todo.path)
@@ -432,9 +425,9 @@ def edit(ctx, id, todo_properties, interactive, raw):
 @with_id_arg
 @catch_errors
 def show(ctx, id):
-    '''
+    """
     Show details about a task.
-    '''
+    """
     todo = ctx.db.todo(id, read_only=True)
     click.echo(ctx.formatter.detailed(todo))
 
@@ -442,11 +435,7 @@ def show(ctx, id):
 @cli.command()
 @pass_ctx
 @click.argument(
-    'todos',
-    nargs=-1,
-    required=True,
-    type=click.IntRange(0),
-    callback=_validate_todos,
+    "todos", nargs=-1, required=True, type=click.IntRange(0), callback=_validate_todos,
 )
 @catch_errors
 def done(ctx, todos):
@@ -460,11 +449,7 @@ def done(ctx, todos):
 @cli.command()
 @pass_ctx
 @click.argument(
-    'todos',
-    nargs=-1,
-    required=True,
-    type=click.IntRange(0),
-    callback=_validate_todos,
+    "todos", nargs=-1, required=True, type=click.IntRange(0), callback=_validate_todos,
 )
 @catch_errors
 def cancel(ctx, todos):
@@ -477,32 +462,30 @@ def cancel(ctx, todos):
 
 @cli.command()
 @pass_ctx
-@click.confirmation_option(
-    prompt='Are you sure you want to delete all done tasks?'
-)
+@click.confirmation_option(prompt="Are you sure you want to delete all done tasks?")
 @catch_errors
 def flush(ctx):
-    '''
+    """
     Delete done tasks. This will also clear the cache to reset task IDs.
-    '''
+    """
     database = ctx.db
     for todo in database.flush():
-        click.echo(ctx.formatter.simple_action('Flushing', todo))
+        click.echo(ctx.formatter.simple_action("Flushing", todo))
 
 
 @cli.command()
 @pass_ctx
-@click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
-@click.option('--yes', is_flag=True, default=False)
+@click.argument("ids", nargs=-1, required=True, type=click.IntRange(0))
+@click.option("--yes", is_flag=True, default=False)
 @catch_errors
 def delete(ctx, ids, yes):
-    '''
+    """
     Delete tasks.
 
     Permanently deletes one or more task. It is recommended that you use the
     `cancel` command if you wish to remove this from the pending list, but keep
     the actual task around.
-    '''
+    """
 
     todos = []
     for i in ids:
@@ -511,25 +494,22 @@ def delete(ctx, ids, yes):
         todos.append(todo)
 
     if not yes:
-        click.confirm('Do you want to delete those tasks?', abort=True)
+        click.confirm("Do you want to delete those tasks?", abort=True)
 
     for todo in todos:
-        click.echo(ctx.formatter.simple_action('Deleting', todo))
+        click.echo(ctx.formatter.simple_action("Deleting", todo))
         ctx.db.delete(todo)
 
 
 @cli.command()
 @pass_ctx
 @click.option(
-    '--list',
-    '-l',
-    callback=_validate_list_param,
-    help='The list to copy the tasks to.'
+    "--list", "-l", callback=_validate_list_param, help="The list to copy the tasks to."
 )
-@click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
+@click.argument("ids", nargs=-1, required=True, type=click.IntRange(0))
 @catch_errors
 def copy(ctx, list, ids):
-    '''Copy tasks to another list.'''
+    """Copy tasks to another list."""
 
     for id in ids:
         original = ctx.db.todo(id)
@@ -542,15 +522,12 @@ def copy(ctx, list, ids):
 @cli.command()
 @pass_ctx
 @click.option(
-    '--list',
-    '-l',
-    callback=_validate_list_param,
-    help='The list to move the tasks to.'
+    "--list", "-l", callback=_validate_list_param, help="The list to move the tasks to."
 )
-@click.argument('ids', nargs=-1, required=True, type=click.IntRange(0))
+@click.argument("ids", nargs=-1, required=True, type=click.IntRange(0))
 @catch_errors
 def move(ctx, list, ids):
-    '''Move tasks to another list.'''
+    """Move tasks to another list."""
 
     for id in ids:
         todo = ctx.db.todo(id)
@@ -560,65 +537,60 @@ def move(ctx, list, ids):
 
 @cli.command()
 @pass_ctx
-@click.argument('lists', nargs=-1, callback=_validate_lists_param)
-@click.option('--location', help='Only show tasks with location containg TEXT')
-@click.option('--category', help='Only show tasks with category containg TEXT')
-@click.option('--grep', help='Only show tasks with message containg TEXT')
+@click.argument("lists", nargs=-1, callback=_validate_lists_param)
+@click.option("--location", help="Only show tasks with location containg TEXT")
+@click.option("--category", help="Only show tasks with category containg TEXT")
+@click.option("--grep", help="Only show tasks with message containg TEXT")
 @click.option(
-    '--sort',
+    "--sort",
     help=(
-          'Sort tasks using fields like : '
-          '"start", "due", "priority", "created_at", "percent_complete" etc.'
-          '\nFor all fields please refer to: '
-          '<https://todoman.readthedocs.io/en/stable/usage.html> '
-          ),
+        "Sort tasks using fields like : "
+        '"start", "due", "priority", "created_at", "percent_complete" etc.'
+        "\nFor all fields please refer to: "
+        "<https://todoman.readthedocs.io/en/stable/usage.html> "
+    ),
     callback=_sort_callback,
 )
 @click.option(
-    '--reverse/--no-reverse',
+    "--reverse/--no-reverse",
     default=True,
-    help='Sort tasks in reverse order (see --sort). '
-    'Defaults to true.'
+    help="Sort tasks in reverse order (see --sort). " "Defaults to true.",
 )
 @click.option(
-    '--due',
-    default=None,
-    help='Only show tasks due in INTEGER '
-    'hours',
-    type=int
+    "--due", default=None, help="Only show tasks due in INTEGER " "hours", type=int
 )
 @click.option(
-    '--priority',
+    "--priority",
     default=None,
-    help='Only show tasks with'
-    ' priority at least as high as TEXT (low, medium or high).',
+    help="Only show tasks with"
+    " priority at least as high as TEXT (low, medium or high).",
     type=str,
-    callback=_validate_priority_param
+    callback=_validate_priority_param,
 )
 @click.option(
-    '--start',
+    "--start",
     default=None,
     callback=_validate_start_date_param,
     nargs=2,
-    help='Only shows tasks before/after given DATE'
+    help="Only shows tasks before/after given DATE",
 )
 @click.option(
-    '--startable',
+    "--startable",
     default=None,
     is_flag=True,
     callback=_validate_startable_param,
-    help='Show only todos which '
-    'should can be started today (i.e.: start time is not in the '
-    'future).'
+    help="Show only todos which "
+    "should can be started today (i.e.: start time is not in the "
+    "future).",
 )
 @click.option(
-    '--status',
-    '-s',
-    default=['NEEDS-ACTION', 'IN-PROCESS'],
+    "--status",
+    "-s",
+    default=["NEEDS-ACTION", "IN-PROCESS"],
     callback=validate_status,
-    help='Show only todos with the '
-    'provided comma-separated statuses. Valid statuses are '
-    '"NEEDS-ACTION", "CANCELLED", "COMPLETED", "IN-PROCESS" or "ANY"'
+    help="Show only todos with the "
+    "provided comma-separated statuses. Valid statuses are "
+    '"NEEDS-ACTION", "CANCELLED", "COMPLETED", "IN-PROCESS" or "ANY"',
 )
 @catch_errors
 def list(ctx, *args, **kwargs):
@@ -639,8 +611,7 @@ def list(ctx, *args, **kwargs):
     The following commands can further filter shown todos, or include those
     omited by default:
     """
-    hide_list = (len([_ for _ in ctx.db.lists()]) == 1) \
-        or (len(kwargs['lists']) == 1)
+    hide_list = (len([_ for _ in ctx.db.lists()]) == 1) or (len(kwargs["lists"]) == 1)
 
     todos = ctx.db.todos(**kwargs)
     click.echo(ctx.formatter.compact_multiple(todos, hide_list))

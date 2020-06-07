@@ -2,7 +2,7 @@ import urwid
 
 from todoman import widgets
 
-_palette = [('error', 'light red', '')]
+_palette = [("error", "light red", "")]
 
 
 class TodoEditor:
@@ -20,13 +20,13 @@ class TodoEditor:
         self.formatter = formatter
         self._loop = None
 
-        self._status = urwid.Text('')
+        self._status = urwid.Text("")
         self._init_basic_fields()
         self._init_list_selector()
         self._init_help_text()
 
-        save_btn = urwid.Button('Save', on_press=self._save)
-        cancel_text = urwid.Text('Hit Ctrl-C to cancel, F1 for help.')
+        save_btn = urwid.Button("Save", on_press=self._save)
+        cancel_text = urwid.Text("Hit Ctrl-C to cancel, F1 for help.")
         buttons = urwid.Columns([(8, save_btn), cancel_text], dividechars=2)
 
         pile_items = []
@@ -39,49 +39,35 @@ class TodoEditor:
             ("Completed", self._completed),
             ("Priority", self._priority),
         ]:
-            label = urwid.Text(label + ":", align='right')
+            label = urwid.Text(label + ":", align="right")
             column = urwid.Columns([(13, label), field], dividechars=1)
-            pile_items.append(('pack', column))
+            pile_items.append(("pack", column))
 
         grid = urwid.Pile(pile_items)
         spacer = urwid.Divider()
 
         self.left_column = urwid.ListBox(
-            urwid.SimpleListWalker([
-                grid,
-                spacer,
-                self._status,
-                buttons,
-            ])
+            urwid.SimpleListWalker([grid, spacer, self._status, buttons])
         )
         right_column = urwid.ListBox(
-            urwid.SimpleListWalker([urwid.Text('List:\n')] + self.list_selector
-                                   )
+            urwid.SimpleListWalker([urwid.Text("List:\n")] + self.list_selector)
         )
 
         self._ui = urwid.Columns([self.left_column, right_column])
 
     def _init_basic_fields(self):
-        self._summary = widgets.ExtendedEdit(
-            parent=self,
-            edit_text=self.todo.summary,
-        )
+        self._summary = widgets.ExtendedEdit(parent=self, edit_text=self.todo.summary,)
         self._description = widgets.ExtendedEdit(
-            parent=self,
-            edit_text=self.todo.description,
-            multiline=True,
+            parent=self, edit_text=self.todo.description, multiline=True,
         )
         self._location = widgets.ExtendedEdit(
-            parent=self,
-            edit_text=self.todo.location,
+            parent=self, edit_text=self.todo.location,
         )
         self._due = widgets.ExtendedEdit(
-            parent=self,
-            edit_text=self.formatter.format_datetime(self.todo.due),
+            parent=self, edit_text=self.formatter.format_datetime(self.todo.due),
         )
         self._dtstart = widgets.ExtendedEdit(
-            parent=self,
-            edit_text=self.formatter.format_datetime(self.todo.start),
+            parent=self, edit_text=self.formatter.format_datetime(self.todo.start),
         )
         self._completed = urwid.CheckBox("", state=self.todo.is_completed)
         self._priority = widgets.PrioritySelector(
@@ -103,18 +89,18 @@ class TodoEditor:
 
     def _init_help_text(self):
         self._help_text = urwid.Text(
-            '\n\n'
-            'Global:\n'
-            ' F1: Toggle help\n'
-            ' Ctrl-C: Cancel\n'
-            ' Ctrl-S: Save (only works if not a shell shortcut already)\n'
-            '\n'
-            'In Textfields:\n' + '\n'.join(
-                ' {}: {}'.format(k, v) for k, v in widgets.ExtendedEdit.HELP
-            ) + '\n\n'
-            'In Priority Selector:\n' + '\n'.join(
-                ' {}: {}'.format(k, v)
-                for k, v in widgets.PrioritySelector.HELP
+            "\n\n"
+            "Global:\n"
+            " F1: Toggle help\n"
+            " Ctrl-C: Cancel\n"
+            " Ctrl-S: Save (only works if not a shell shortcut already)\n"
+            "\n"
+            "In Textfields:\n"
+            + "\n".join(" {}: {}".format(k, v) for k, v in widgets.ExtendedEdit.HELP)
+            + "\n\n"
+            "In Priority Selector:\n"
+            + "\n".join(
+                " {}: {}".format(k, v) for k, v in widgets.PrioritySelector.HELP
             )
         )
 
@@ -150,7 +136,7 @@ class TodoEditor:
         try:
             self._save_inner()
         except Exception as e:
-            self.set_status(('error', str(e)))
+            self.set_status(("error", str(e)))
         else:
             raise urwid.ExitMainLoop()
 
@@ -164,7 +150,7 @@ class TodoEditor:
         if not self.todo.is_completed and self._completed.get_state():
             self.todo.complete()
         elif self.todo.is_completed and not self._completed.get_state():
-            self.todo.status = 'NEEDS-ACTION'
+            self.todo.status = "NEEDS-ACTION"
             self.todo.completed_at = None
         self.todo.priority = self.priority
 
@@ -176,9 +162,9 @@ class TodoEditor:
         # RESOURCE: the main room
 
     def _keypress(self, key):
-        if key.lower() == 'f1':
+        if key.lower() == "f1":
             self._toggle_help()
-        elif key == 'ctrl s':
+        elif key == "ctrl s":
             self._save()
 
     @property
