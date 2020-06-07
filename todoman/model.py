@@ -2,8 +2,12 @@ import logging
 import os
 import socket
 import sqlite3
-from datetime import date, datetime, time, timedelta
-from os.path import normpath, split
+from datetime import date
+from datetime import datetime
+from datetime import time
+from datetime import timedelta
+from os.path import normpath
+from os.path import split
 from uuid import uuid4
 
 import icalendar
@@ -788,8 +792,7 @@ class Cache:
 
             if path in seen_paths and path not in warned_paths:
                 logger.warning(
-                    "Todo is in read-only mode because there are "
-                    "multiple todos in %s",
+                    "Todo is in read-only mode because there are multiple todos in %s",
                     path,
                 )
                 warned_paths.add(path)

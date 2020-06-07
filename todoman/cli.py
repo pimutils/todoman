@@ -4,15 +4,20 @@ import locale
 import sys
 from contextlib import contextmanager
 from datetime import timedelta
-from os.path import expanduser, isdir
+from os.path import expanduser
+from os.path import isdir
 
 import click
 import click_log
 
-from todoman import exceptions, formatters
-from todoman.configuration import ConfigurationException, load_config
+from todoman import exceptions
+from todoman import formatters
+from todoman.configuration import ConfigurationException
+from todoman.configuration import load_config
 from todoman.interactive import TodoEditor
-from todoman.model import cached_property, Database, Todo
+from todoman.model import cached_property
+from todoman.model import Database
+from todoman.model import Todo
 
 
 click_log.basic_config()
@@ -154,9 +159,9 @@ def _todo_property_options(command):
         "--priority",
         default="",
         callback=_validate_priority_param,
-        help=("The priority for this todo"),
+        help="The priority for this todo",
     )(command)
-    click.option("--location", help=("The location where " "this todo takes place."))(
+    click.option("--location", help="The location where this todo takes place.")(
         command
     )
     click.option(
@@ -239,8 +244,10 @@ _interactive_option = click.option(
 @click.option(
     "--porcelain",
     is_flag=True,
-    help="Use a JSON format that will "
-    "remain stable regardless of configuration or version.",
+    help=(
+        "Use a JSON format that will "
+        "remain stable regardless of configuration or version."
+    ),
 )
 @click.option(
     "--humanize",
@@ -269,7 +276,7 @@ def cli(click_ctx, colour, porcelain, humanize, config):
 
     if porcelain and humanize:
         raise click.ClickException(
-            "--porcelain and --humanize cannot be used" " at the same time."
+            "--porcelain and --humanize cannot be used at the same time."
         )
 
     if humanize is None:  # False means explicitly disabled
@@ -554,16 +561,17 @@ def move(ctx, list, ids):
 @click.option(
     "--reverse/--no-reverse",
     default=True,
-    help="Sort tasks in reverse order (see --sort). " "Defaults to true.",
+    help="Sort tasks in reverse order (see --sort). Defaults to true.",
 )
 @click.option(
-    "--due", default=None, help="Only show tasks due in INTEGER " "hours", type=int
+    "--due", default=None, help="Only show tasks due in INTEGER hours", type=int
 )
 @click.option(
     "--priority",
     default=None,
-    help="Only show tasks with"
-    " priority at least as high as TEXT (low, medium or high).",
+    help=(
+        "Only show tasks with priority at least as high as TEXT (low, medium or high)."
+    ),
     type=str,
     callback=_validate_priority_param,
 )
@@ -579,18 +587,22 @@ def move(ctx, list, ids):
     default=None,
     is_flag=True,
     callback=_validate_startable_param,
-    help="Show only todos which "
-    "should can be started today (i.e.: start time is not in the "
-    "future).",
+    help=(
+        "Show only todos which "
+        "should can be started today (i.e.: start time is not in the "
+        "future)."
+    ),
 )
 @click.option(
     "--status",
     "-s",
     default=["NEEDS-ACTION", "IN-PROCESS"],
     callback=validate_status,
-    help="Show only todos with the "
-    "provided comma-separated statuses. Valid statuses are "
-    '"NEEDS-ACTION", "CANCELLED", "COMPLETED", "IN-PROCESS" or "ANY"',
+    help=(
+        "Show only todos with the "
+        "provided comma-separated statuses. Valid statuses are "
+        '"NEEDS-ACTION", "CANCELLED", "COMPLETED", "IN-PROCESS" or "ANY"'
+    ),
 )
 @catch_errors
 def list(ctx, *args, **kwargs):

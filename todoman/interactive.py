@@ -97,8 +97,7 @@ class TodoEditor:
             "\n"
             "In Textfields:\n"
             + "\n".join(" {}: {}".format(k, v) for k, v in widgets.ExtendedEdit.HELP)
-            + "\n\n"
-            "In Priority Selector:\n"
+            + "\n\nIn Priority Selector:\n"
             + "\n".join(
                 " {}: {}".format(k, v) for k, v in widgets.PrioritySelector.HELP
             )

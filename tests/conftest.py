@@ -7,10 +7,13 @@ import pytest
 import pytz
 from click.testing import CliRunner
 from dateutil.tz import tzlocal
-from hypothesis import HealthCheck, settings, Verbosity
+from hypothesis import HealthCheck
+from hypothesis import settings
+from hypothesis import Verbosity
 
 from todoman import model
-from todoman.formatters import DefaultFormatter, HumanizedFormatter
+from todoman.formatters import DefaultFormatter
+from todoman.formatters import HumanizedFormatter
 
 
 @pytest.fixture
@@ -52,9 +55,7 @@ def create(tmpdir):
     def inner(name, content, list_name="default"):
         path = tmpdir.ensure_dir(list_name).join(name)
         path.write(
-            "BEGIN:VCALENDAR\n"
-            "BEGIN:VTODO\n" + content + "END:VTODO\n"
-            "END:VCALENDAR"
+            "BEGIN:VCALENDAR\nBEGIN:VTODO\n" + content + "END:VTODO\nEND:VCALENDAR"
         )
         return path
 

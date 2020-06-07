@@ -1,6 +1,7 @@
 import os
 import sys
-from subprocess import PIPE, Popen
+from subprocess import PIPE
+from subprocess import Popen
 
 from todoman.cli import cli
 

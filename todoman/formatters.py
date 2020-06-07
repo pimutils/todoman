@@ -146,7 +146,7 @@ class DefaultFormatter:
         elif priority == "none":
             return 0
         else:
-            raise ValueError("Priority has to be one of low, medium," " high or none")
+            raise ValueError("Priority has to be one of low, medium, high or none")
 
     def format_priority(self, priority):
         if not priority:

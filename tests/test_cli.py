@@ -1,6 +1,7 @@
 import datetime
 import sys
-from os.path import exists, isdir
+from os.path import exists
+from os.path import isdir
 from unittest import mock
 from unittest.mock import patch
 
@@ -11,9 +12,12 @@ from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
 
-from tests.helpers import fs_case_sensitive, pyicu_sensitive
-from todoman.cli import cli, exceptions
-from todoman.model import Database, Todo
+from tests.helpers import fs_case_sensitive
+from tests.helpers import pyicu_sensitive
+from todoman.cli import cli
+from todoman.cli import exceptions
+from todoman.model import Database
+from todoman.model import Todo
 
 # TODO: test --grep
 
@@ -35,7 +39,8 @@ def test_no_default_list(runner):
     assert result.exception
     assert (
         "Error: Invalid value for '--list' / '-l': You must set "
-        "`default_list` or use -l." in result.output
+        "`default_list` or use -l."
+        in result.output
     )
 
 
@@ -60,7 +65,7 @@ def test_no_extra_whitespace(tmpdir, runner, create):
 
 
 def test_percent(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:harhar\n" "PERCENT-COMPLETE:78\n")
+    create("test.ics", "SUMMARY:harhar\nPERCENT-COMPLETE:78\n")
     result = runner.invoke(cli, ["list"])
     assert not result.exception
     assert "78%" in result.output
@@ -118,7 +123,7 @@ def test_list_inexistant(tmpdir, runner, create):
 
 
 def test_show_existing(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:harhar\n" "DESCRIPTION:Lots of text. Yum!\n")
+    create("test.ics", "SUMMARY:harhar\nDESCRIPTION:Lots of text. Yum!\n")
     result = runner.invoke(cli, ["list"])
     result = runner.invoke(cli, ["show", "1"])
     assert not result.exception
@@ -343,10 +348,8 @@ def test_sorting_fields(tmpdir, runner, default_database):
 
 
 def test_sorting_output(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:aaa\n" "DUE;VALUE=DATE-TIME;TZID=ART:20160102T000000\n")
-    create(
-        "test2.ics", "SUMMARY:bbb\n" "DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n"
-    )
+    create("test.ics", "SUMMARY:aaa\nDUE;VALUE=DATE-TIME;TZID=ART:20160102T000000\n")
+    create("test2.ics", "SUMMARY:bbb\nDUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n")
 
     examples = [("-summary", ["aaa", "bbb"]), ("due", ["aaa", "bbb"])]
 
@@ -372,10 +375,8 @@ def test_sorting_output(tmpdir, runner, create):
 
 
 def test_sorting_null_values(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:aaa\n" "PRIORITY:9\n")
-    create(
-        "test2.ics", "SUMMARY:bbb\n" "DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n"
-    )
+    create("test.ics", "SUMMARY:aaa\nPRIORITY:9\n")
+    create("test2.ics", "SUMMARY:bbb\nDUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n")
 
     result = runner.invoke(cli)
     assert not result.exception
@@ -395,9 +396,9 @@ def test_color_due_dates(tmpdir, runner, create, hours):
     due = datetime.datetime.now() + datetime.timedelta(hours=hours)
     create(
         "test.ics",
-        "SUMMARY:aaa\n"
-        "STATUS:IN-PROCESS\n"
-        "DUE;VALUE=DATE-TIME;TZID=ART:{}\n".format(due.strftime("%Y%m%dT%H%M%S")),
+        "SUMMARY:aaa\nSTATUS:IN-PROCESS\nDUE;VALUE=DATE-TIME;TZID=ART:{}\n".format(
+            due.strftime("%Y%m%dT%H%M%S")
+        ),
     )
 
     result = runner.invoke(cli, ["--color", "always"])
@@ -522,14 +523,14 @@ def test_empty_list(tmpdir, runner, create):
 
     result = runner.invoke(cli)
     expected = (
-        "No lists found matching {}/*, create" " a directory for a new list"
+        "No lists found matching {}/*, create a directory for a new list"
     ).format(tmpdir)
 
     assert expected in result.output
 
 
 def test_show_location(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:harhar\n" "LOCATION:Boston\n")
+    create("test.ics", "SUMMARY:harhar\nLOCATION:Boston\n")
 
     result = runner.invoke(cli, ["show", "1"])
     assert "Boston" in result.output
@@ -552,11 +553,11 @@ def test_sort_mixed_timezones(runner, create):
     """
     create(
         "test.ics",
-        "SUMMARY:first\n" "DUE;VALUE=DATE-TIME;TZID=CET:20170304T180000\n",  # 1700 UTC
+        "SUMMARY:first\nDUE;VALUE=DATE-TIME;TZID=CET:20170304T180000\n",  # 1700 UTC
     )
     create(
         "test2.ics",
-        "SUMMARY:second\n" "DUE;VALUE=DATE-TIME;TZID=HST:20170304T080000\n",  # 1800 UTC
+        "SUMMARY:second\nDUE;VALUE=DATE-TIME;TZID=HST:20170304T080000\n",  # 1800 UTC
     )
 
     result = runner.invoke(cli, ["list", "--status", "ANY"])
@@ -583,12 +584,13 @@ def test_due_bad_date(runner):
     assert result.exception
     assert (
         "Error: Invalid value for '--due' / '-d': Time description not "
-        "recognized: Not a date" == result.output.strip().splitlines()[-1]
+        "recognized: Not a date"
+        == result.output.strip().splitlines()[-1]
     )
 
 
 def test_multiple_todos_in_file(runner, create):
-    path = create("test.ics", "SUMMARY:a\n" "END:VTODO\n" "BEGIN:VTODO\n" "SUMMARY:b\n")
+    path = create("test.ics", "SUMMARY:a\nEND:VTODO\nBEGIN:VTODO\nSUMMARY:b\n")
 
     for _ in range(2):
         with patch("todoman.model.logger", spec=True) as mocked_logger:
@@ -679,8 +681,8 @@ def test_bad_start_date(runner):
     result = runner.invoke(cli, ["list", "--start", "before", "not_a_date"])
     assert result.exception
     assert (
-        "Invalid value for '--start': Time description not recognized: "
-        "not_a_date" in result.output
+        "Invalid value for '--start': Time description not recognized: not_a_date"
+        in result.output
     )
 
     result = runner.invoke(cli, ["list", "--start", "godzilla", "2017-03-22"])

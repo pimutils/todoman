@@ -20,8 +20,9 @@ class ReadOnlyTodo(TodomanException):
 
     def __str__(self):
         return (
-            "Todo is in read-only mode because there are multiple todos"
-            "in {}.".format(self.args[0])
+            "Todo is in read-only mode because there are multiple todosin {}.".format(
+                self.args[0]
+            )
         )
 
 

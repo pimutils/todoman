@@ -1,4 +1,5 @@
-from datetime import date, datetime
+from datetime import date
+from datetime import datetime
 
 import icalendar
 import pytest
@@ -6,7 +7,8 @@ import pytz
 from dateutil.tz import tzlocal
 from freezegun import freeze_time
 
-from todoman.model import Todo, VtodoWriter
+from todoman.model import Todo
+from todoman.model import VtodoWriter
 
 
 def test_datetime_serialization(todo_factory, tmpdir):

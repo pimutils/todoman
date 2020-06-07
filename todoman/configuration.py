@@ -1,9 +1,12 @@
 import os
-from os.path import exists, join
+from os.path import exists
+from os.path import join
 
 import xdg.BaseDirectory
-from configobj import ConfigObj, flatten_errors
-from validate import Validator, VdtValueError
+from configobj import ConfigObj
+from configobj import flatten_errors
+from validate import Validator
+from validate import VdtValueError
 
 from todoman import __documentation__
 
@@ -33,8 +36,7 @@ def validate_cache_path(path):
 def validate_date_format(fmt):
     if any(x in fmt for x in ("%H", "%M", "%S", "%X")):
         raise ConfigurationException(
-            "Found time component in `date_format`, please use `time_format` "
-            "for that."
+            "Found time component in `date_format`, please use `time_format` for that."
         )
     return fmt
 
@@ -42,8 +44,7 @@ def validate_date_format(fmt):
 def validate_time_format(fmt):
     if any(x in fmt for x in ("%Y", "%y", "%m", "%d", "%x")):
         raise ConfigurationException(
-            "Found date component in `time_format`, please use `date_format` "
-            "for that."
+            "Found date component in `time_format`, please use `date_format` for that."
         )
     return fmt
 

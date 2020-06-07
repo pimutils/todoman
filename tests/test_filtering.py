@@ -1,7 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from todoman.cli import cli
-from todoman.model import Database, Todo
+from todoman.model import Database
+from todoman.model import Todo
 
 
 def test_priority(tmpdir, runner, create):
@@ -9,9 +11,9 @@ def test_priority(tmpdir, runner, create):
     assert not result.exception
     assert not result.output.strip()
 
-    create("one.ics", "SUMMARY:haha\n" "PRIORITY:4\n")
-    create("two.ics", "SUMMARY:hoho\n" "PRIORITY:9\n")
-    create("three.ics", "SUMMARY:hehe\n" "PRIORITY:5\n")
+    create("one.ics", "SUMMARY:haha\nPRIORITY:4\n")
+    create("two.ics", "SUMMARY:hoho\nPRIORITY:9\n")
+    create("three.ics", "SUMMARY:hehe\nPRIORITY:5\n")
     create("four.ics", "SUMMARY:huhu\n")
 
     result_high = runner.invoke(cli, ["list", "--priority=high"])
@@ -51,8 +53,8 @@ def test_location(tmpdir, runner, create):
     assert not result.exception
     assert not result.output.strip()
 
-    create("one.ics", "SUMMARY:haha\n" "LOCATION: The Pool\n")
-    create("two.ics", "SUMMARY:hoho\n" "LOCATION: The Dungeon\n")
+    create("one.ics", "SUMMARY:haha\nLOCATION: The Pool\n")
+    create("two.ics", "SUMMARY:hoho\nLOCATION: The Dungeon\n")
     create("two.ics", "SUMMARY:harhar\n")
     result = runner.invoke(cli, ["list", "--location", "Pool"])
     assert not result.exception
@@ -66,8 +68,8 @@ def test_category(tmpdir, runner, create):
     assert not result.exception
     assert not result.output.strip()
 
-    create("one.ics", "SUMMARY:haha\n" "CATEGORIES:work,trip\n")
-    create("two.ics", "CATEGORIES:trip\n" "SUMMARY:hoho\n")
+    create("one.ics", "SUMMARY:haha\nCATEGORIES:work,trip\n")
+    create("two.ics", "CATEGORIES:trip\nSUMMARY:hoho\n")
     create("three.ics", "SUMMARY:harhar\n")
     result = runner.invoke(cli, ["list", "--category", "work"])
     assert not result.exception
@@ -82,19 +84,19 @@ def test_grep(tmpdir, runner, create):
     assert not result.output.strip()
 
     create(
-        "one.ics", "SUMMARY:fun\n" "DESCRIPTION: Have fun!\n",
+        "one.ics", "SUMMARY:fun\nDESCRIPTION: Have fun!\n",
     )
     create(
-        "two.ics", "SUMMARY:work\n" "DESCRIPTION: The stuff for work\n",
+        "two.ics", "SUMMARY:work\nDESCRIPTION: The stuff for work\n",
     )
     create(
-        "three.ics", "SUMMARY:buy sandwiches\n" "DESCRIPTION: This is for the Duke\n",
+        "three.ics", "SUMMARY:buy sandwiches\nDESCRIPTION: This is for the Duke\n",
     )
     create(
-        "four.ics", "SUMMARY:puppies\n" "DESCRIPTION: Feed the puppies\n",
+        "four.ics", "SUMMARY:puppies\nDESCRIPTION: Feed the puppies\n",
     )
     create(
-        "five.ics", "SUMMARY:research\n" "DESCRIPTION: Cure cancer\n",
+        "five.ics", "SUMMARY:research\nDESCRIPTION: Cure cancer\n",
     )
     create("six.ics", "SUMMARY:hoho\n")
     result = runner.invoke(cli, ["list", "--grep", "fun"])
@@ -173,8 +175,9 @@ def test_due_naive(tmpdir, runner, create):
         due = now + timedelta(hours=i)
         create(
             "test_{}.ics".format(i),
-            "SUMMARY:{}\n"
-            "DUE;VALUE=DATE-TIME:{}\n".format(i, due.strftime("%Y%m%dT%H%M%S"),),
+            "SUMMARY:{}\nDUE;VALUE=DATE-TIME:{}\n".format(
+                i, due.strftime("%Y%m%dT%H%M%S"),
+            ),
         )
 
     db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))

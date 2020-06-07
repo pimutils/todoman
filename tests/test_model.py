@@ -1,4 +1,6 @@
-from datetime import date, datetime, timedelta
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
 from unittest.mock import patch
 
 import pytest
@@ -8,7 +10,10 @@ from dateutil.tz.tz import tzoffset
 from freezegun import freeze_time
 
 from todoman.exceptions import AlreadyExists
-from todoman.model import cached_property, Database, List, Todo
+from todoman.model import cached_property
+from todoman.model import Database
+from todoman.model import List
+from todoman.model import Todo
 
 
 def test_querying(create, tmpdir):
@@ -16,7 +21,7 @@ def test_querying(create, tmpdir):
         for i, location in enumerate("abc"):
             create(
                 "test{}.ics".format(i),
-                ("SUMMARY:test_querying\r\n" "LOCATION:{}\r\n").format(location),
+                ("SUMMARY:test_querying\r\nLOCATION:{}\r\n").format(location),
                 list_name=list,
             )
 
@@ -30,12 +35,8 @@ def test_querying(create, tmpdir):
 
 
 def test_retain_tz(tmpdir, create, todos):
-    create(
-        "ar.ics", "SUMMARY:blah.ar\n" "DUE;VALUE=DATE-TIME;TZID=HST:20160102T000000\n"
-    )
-    create(
-        "de.ics", "SUMMARY:blah.de\n" "DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n"
-    )
+    create("ar.ics", "SUMMARY:blah.ar\nDUE;VALUE=DATE-TIME;TZID=HST:20160102T000000\n")
+    create("de.ics", "SUMMARY:blah.de\nDUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n")
 
     todos = list(todos())
 
@@ -45,7 +46,7 @@ def test_retain_tz(tmpdir, create, todos):
 
 
 def test_due_date(tmpdir, create, todos):
-    create("ar.ics", "SUMMARY:blah.ar\n" "DUE;VALUE=DATE:20170617\n")
+    create("ar.ics", "SUMMARY:blah.ar\nDUE;VALUE=DATE:20170617\n")
 
     todos = list(todos())
 
@@ -142,7 +143,7 @@ def test_retain_unknown_fields(tmpdir, create, default_database):
     """
     Test that we retain unknown fields after a load/save cycle.
     """
-    create("test.ics", "UID:AVERYUNIQUEID\n" "SUMMARY:RAWR\n" "X-RAWR-TYPE:Reptar\n")
+    create("test.ics", "UID:AVERYUNIQUEID\nSUMMARY:RAWR\nX-RAWR-TYPE:Reptar\n")
 
     db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
     todo = db.todo(1, read_only=False)
@@ -321,7 +322,7 @@ def test_todos_startable(tmpdir, runner, todo_factory, todos):
 
 
 def test_filename_uid_colision(create, default_database, runner, todos):
-    create("ABC.ics", "SUMMARY:My UID is not ABC\n" "UID:NOTABC\n")
+    create("ABC.ics", "SUMMARY:My UID is not ABC\nUID:NOTABC\n")
     len(list(todos())) == 1
 
     todo = Todo(new=False)

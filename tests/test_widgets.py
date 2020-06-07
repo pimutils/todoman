@@ -1,6 +1,7 @@
 from unittest import mock
 
-from todoman.widgets import ExtendedEdit, PrioritySelector
+from todoman.widgets import ExtendedEdit
+from todoman.widgets import PrioritySelector
 
 # We ignore `size` when testing keypresses, because it's not used anywhere.
 # Just pass any number when writing tests, unless we start using the value.

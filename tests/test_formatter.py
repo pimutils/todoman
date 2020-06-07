@@ -1,4 +1,7 @@
-from datetime import date, datetime, time, timedelta
+from datetime import date
+from datetime import datetime
+from datetime import time
+from datetime import timedelta
 
 import pytest
 import pytz
@@ -18,8 +21,9 @@ def test_humanized_date(runner, create, interval, now_for_tz, tz):
     due = now_for_tz(tz) + timedelta(seconds=seconds)
     create(
         "test.ics",
-        "SUMMARY:Hi human!\n"
-        "DUE;VALUE=DATE-TIME;TZID={}:{}\n".format(tz, due.strftime("%Y%m%dT%H%M%S")),
+        "SUMMARY:Hi human!\nDUE;VALUE=DATE-TIME;TZID={}:{}\n".format(
+            tz, due.strftime("%Y%m%dT%H%M%S")
+        ),
     )
 
     result = runner.invoke(cli, ["--humanize", "list", "--status", "ANY"])
@@ -60,9 +64,9 @@ def test_format_datetime(default_formatter):
 
 def test_detailed_format(runner, todo_factory):
     todo_factory(
-        description="Test detailed formatting\n"
-        "This includes multiline descriptions\n"
-        "Blah!",
+        description=(
+            "Test detailed formatting\nThis includes multiline descriptions\nBlah!"
+        ),
         location="Over the hills, and far away",
     )
 
