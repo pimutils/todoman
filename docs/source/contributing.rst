@@ -22,9 +22,10 @@ them being properly documented.
 Run ``pip install -e .`` to install todoman and its dependencies into a
 virtualenv.
 
-We strictly follow the `Style Guide for Python Code`_, which I strongly
-recommend you read, though you may simply run ``flake8`` to verify that your
-code is compliant.
+We use ``pre-commit`` to run style and convention checks. Run ``pre-commit
+install``` to install our git-hooks. These will check code style and inform you
+of any issues when attempting to commit. This will also run ``black`` to
+reformat code that may have any inconsistencies.
 
 Commits should follow `Git Commit Guidelines`_ whenever possible, including
 rewriting branch histories to remove any noise, and using a 50-message
@@ -32,7 +33,6 @@ imperative present tense for commit summary messages.
 
 All commits should pass all tests to facilitate bisecting in future.
 
-.. _Style Guide for Python Code: http://python.org/dev/peps/pep-0008/
 .. _Git Commit Guidelines: https://www.git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project#_commit_guidelines
 
 An overview of the Todo lifecycle

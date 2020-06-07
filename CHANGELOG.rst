@@ -181,4 +181,3 @@ Packaging changes
 * New runtime dependency: configobj
 * New runtime dependency: python-dateutil
 * New test dependency: flake8-import-order.
-

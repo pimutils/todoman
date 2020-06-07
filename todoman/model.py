@@ -2,8 +2,12 @@ import logging
 import os
 import socket
 import sqlite3
-from datetime import date, datetime, time, timedelta
-from os.path import normpath, split
+from datetime import date
+from datetime import datetime
+from datetime import time
+from datetime import timedelta
+from os.path import normpath
+from os.path import split
 from uuid import uuid4
 
 import icalendar
@@ -23,9 +27,9 @@ LOCAL_TIMEZONE = tzlocal()
 
 
 class cached_property:  # noqa
-    '''A read-only @property that is only evaluated once. Only usable on class
+    """A read-only @property that is only evaluated once. Only usable on class
     instances' methods.
-    '''
+    """
 
     def __init__(self, fget, doc=None):
         self.__name__ = fget.__name__
@@ -66,7 +70,7 @@ class Todo:
         """
         self.list = list
         now = datetime.now(LOCAL_TIMEZONE)
-        self.uid = '{}@{}'.format(uuid4().hex, socket.gethostname())
+        self.uid = "{}@{}".format(uuid4().hex, socket.gethostname())
         self.list = list
 
         if new:
@@ -77,27 +81,25 @@ class Todo:
         # Default values for supported fields
         self.categories = []
         self.completed_at = None
-        self.description = ''
+        self.description = ""
         self.dtstamp = now
         self.due = None
         self.id = None
         self.last_modified = None
-        self.location = ''
+        self.location = ""
         self.percent_complete = 0
         self.priority = 0
-        self.rrule = ''
+        self.rrule = ""
         self.sequence = 0
         self.start = None
-        self.status = 'NEEDS-ACTION'
-        self.summary = ''
+        self.status = "NEEDS-ACTION"
+        self.summary = ""
 
         self.filename = filename or "{}.ics".format(self.uid)
         self.related = []
 
         if os.path.basename(self.filename) != self.filename:
-            raise ValueError(
-                'Must not be an absolute path: {}'.format(self.filename)
-            )
+            raise ValueError("Must not be an absolute path: {}".format(self.filename))
         self.mtime = mtime or datetime.now()
 
     def clone(self):
@@ -110,10 +112,12 @@ class Todo:
         todo = Todo(new=True, list=self.list)
 
         fields = (
-            Todo.STRING_FIELDS + Todo.INT_FIELDS + Todo.LIST_FIELDS +
-            Todo.DATETIME_FIELDS
+            Todo.STRING_FIELDS
+            + Todo.INT_FIELDS
+            + Todo.LIST_FIELDS
+            + Todo.DATETIME_FIELDS
         )
-        fields.remove('uid')
+        fields.remove("uid")
 
         for field in fields:
             setattr(todo, field, getattr(self, field))
@@ -121,35 +125,34 @@ class Todo:
         return todo
 
     STRING_FIELDS = [
-        'description',
-        'location',
-        'status',
-        'summary',
-        'uid',
-        'rrule',
+        "description",
+        "location",
+        "status",
+        "summary",
+        "uid",
+        "rrule",
     ]
     INT_FIELDS = [
-        'percent_complete',
-        'priority',
-        'sequence',
+        "percent_complete",
+        "priority",
+        "sequence",
     ]
     LIST_FIELDS = [
-        'categories',
+        "categories",
     ]
     DATETIME_FIELDS = [
-        'completed_at',
-        'created_at',
-        'dtstamp',
-        'start',
-        'due',
-        'last_modified',
+        "completed_at",
+        "created_at",
+        "dtstamp",
+        "start",
+        "due",
+        "last_modified",
     ]
     RRULE_FIELDS = [
-        'rrule',
+        "rrule",
     ]
     ALL_SUPPORTED_FIELDS = (
-        DATETIME_FIELDS + INT_FIELDS + LIST_FIELDS + RRULE_FIELDS +
-        STRING_FIELDS
+        DATETIME_FIELDS + INT_FIELDS + LIST_FIELDS + RRULE_FIELDS + STRING_FIELDS
     )
 
     VALID_STATUSES = (
@@ -167,44 +170,41 @@ class Todo:
 
         if name in Todo.RRULE_FIELDS:
             if value is None:
-                v = ''
+                v = ""
             else:
-                assert isinstance(value, str), (
-                       "Got {0} for {1} where str was expected"
-                       .format(type(value), name))
+                assert isinstance(
+                    value, str
+                ), "Got {0} for {1} where str was expected".format(type(value), name)
 
         if name in Todo.STRING_FIELDS:
             if value is None:
-                v = ''
+                v = ""
             else:
-                assert isinstance(value, str), (
-                       "Got {0} for {1} where str was expected"
-                       .format(type(value), name))
+                assert isinstance(
+                    value, str
+                ), "Got {0} for {1} where str was expected".format(type(value), name)
 
         if name in Todo.INT_FIELDS:
             if value is None:
                 v = 0
             else:
-                assert isinstance(value, int), (
-                       "Got {0} for {1} where int was expected"
-                       .format(type(value), name))
+                assert isinstance(
+                    value, int
+                ), "Got {0} for {1} where int was expected".format(type(value), name)
 
         if name in Todo.LIST_FIELDS:
             if value is None:
                 v = []
             else:
-                assert isinstance(value, list), (
-                       "Got {0} for {1} where list was expected"
-                       .format(type(value), name))
+                assert isinstance(
+                    value, list
+                ), "Got {0} for {1} where list was expected".format(type(value), name)
 
         return object.__setattr__(self, name, v)
 
     @property
     def is_completed(self):
-        return (
-            bool(self.completed_at)
-            or self.status in ('CANCELLED', 'COMPLETED')
-        )
+        return bool(self.completed_at) or self.status in ("CANCELLED", "COMPLETED")
 
     @property
     def is_recurring(self):
@@ -249,44 +249,45 @@ class Todo:
 
         self.completed_at = datetime.now(tz=LOCAL_TIMEZONE)
         self.percent_complete = 100
-        self.status = 'COMPLETED'
+        self.status = "COMPLETED"
 
     @cached_property
     def path(self):
         return os.path.join(self.list.path, self.filename)
 
     def cancel(self):
-        self.status = 'CANCELLED'
+        self.status = "CANCELLED"
 
 
 class VtodoWriter:
     """Writes a Todo as a VTODO file."""
+
     """Maps Todo field names to VTODO field names"""
     FIELD_MAP = {
-        'summary': 'summary',
-        'priority': 'priority',
-        'sequence': 'sequence',
-        'uid': 'uid',
-        'categories': 'categories',
-        'completed_at': 'completed',
-        'description': 'description',
-        'dtstamp': 'dtstamp',
-        'start': 'dtstart',
-        'due': 'due',
-        'location': 'location',
-        'percent_complete': 'percent-complete',
-        'priority': 'priority',
-        'status': 'status',
-        'created_at': 'created',
-        'last_modified': 'last-modified',
-        'rrule': 'rrule',
+        "summary": "summary",
+        "priority": "priority",
+        "sequence": "sequence",
+        "uid": "uid",
+        "categories": "categories",
+        "completed_at": "completed",
+        "description": "description",
+        "dtstamp": "dtstamp",
+        "start": "dtstart",
+        "due": "due",
+        "location": "location",
+        "percent_complete": "percent-complete",
+        "priority": "priority",
+        "status": "status",
+        "created_at": "created",
+        "last_modified": "last-modified",
+        "rrule": "rrule",
     }
 
     def __init__(self, todo):
         self.todo = todo
 
     def normalize_datetime(self, dt):
-        '''
+        """
         Eliminate several differences between dates, times and datetimes which
         are hindering comparison:
 
@@ -297,7 +298,7 @@ class VtodoWriter:
         Datetimes are cast to UTC because icalendar doesn't include the
         VTIMEZONE information upon serialization, and some clients have issues
         dealing with that.
-        '''
+        """
         if isinstance(dt, date) and not isinstance(dt, datetime):
             return dt
 
@@ -318,7 +319,7 @@ class VtodoWriter:
         if name in Todo.STRING_FIELDS:
             return value
 
-        raise Exception('Unknown field {} serialized.'.format(name))
+        raise Exception("Unknown field {} serialized.".format(name))
 
     def set_field(self, name, value):
         # If serialized value is None:
@@ -337,17 +338,16 @@ class VtodoWriter:
             self.vtodo.pop(target)
             if getattr(self.todo, source):
                 self.set_field(
-                    target,
-                    self.serialize_field(source, getattr(self.todo, source)),
+                    target, self.serialize_field(source, getattr(self.todo, source)),
                 )
 
         return self.vtodo
 
     def _read(self, path):
-        with open(path, 'rb') as f:
+        with open(path, "rb") as f:
             cal = f.read()
             cal = icalendar.Calendar.from_ical(cal)
-            for component in cal.walk('VTODO'):
+            for component in cal.walk("VTODO"):
                 return component
 
     def write(self):
@@ -362,10 +362,10 @@ class VtodoWriter:
         original = self._read(path)
         vtodo = self.serialize(original)
 
-        with open(path, 'rb') as f:
+        with open(path, "rb") as f:
             cal = icalendar.Calendar.from_ical(f.read())
             for index, component in enumerate(cal.subcomponents):
-                if component.get('uid', None) == self.todo.uid:
+                if component.get("uid", None) == self.todo.uid:
                     cal.subcomponents[index] = vtodo
 
         with AtomicWriter(path, overwrite=True).open() as f:
@@ -378,8 +378,8 @@ class VtodoWriter:
         c.add_component(vtodo)
 
         with AtomicWriter(path).open() as f:
-            c.add('prodid', 'io.barrera.todoman')
-            c.add('version', '2.0')
+            c.add("prodid", "io.barrera.todoman")
+            c.add("version", "2.0")
             f.write(c.to_ical().decode("UTF-8"))
 
         return vtodo
@@ -417,8 +417,7 @@ class Cache:
         """Checks if the cache DB schema is the latest version."""
         try:
             return self._conn.execute(
-                'SELECT version FROM meta WHERE version = ?',
-                (Cache.SCHEMA_VERSION,),
+                "SELECT version FROM meta WHERE version = ?", (Cache.SCHEMA_VERSION,),
             ).fetchone()
         except sqlite3.OperationalError:
             return False
@@ -428,22 +427,21 @@ class Cache:
             return
 
         self._conn.executescript(
-            '''
+            """
             DROP TABLE IF EXISTS lists;
             DROP TABLE IF EXISTS files;
             DROP TABLE IF EXISTS todos;
-        '''
+        """
         )
 
         self._conn.execute('CREATE TABLE IF NOT EXISTS meta ("version" INT)')
 
         self._conn.execute(
-            'INSERT INTO meta (version) VALUES (?)',
-            (Cache.SCHEMA_VERSION,),
+            "INSERT INTO meta (version) VALUES (?)", (Cache.SCHEMA_VERSION,),
         )
 
         self._conn.execute(
-            '''
+            """
             CREATE TABLE IF NOT EXISTS lists (
                 "name" TEXT PRIMARY KEY,
                 "path" TEXT,
@@ -452,11 +450,11 @@ class Cache:
 
                 CONSTRAINT path_unique UNIQUE (path)
             );
-        '''
+        """
         )
 
         self._conn.execute(
-            '''
+            """
             CREATE TABLE IF NOT EXISTS files (
                 "path" TEXT PRIMARY KEY,
                 "list_name" TEXT,
@@ -465,11 +463,11 @@ class Cache:
                 CONSTRAINT path_unique UNIQUE (path),
                 FOREIGN KEY(list_name) REFERENCES lists(name) ON DELETE CASCADE
             );
-        '''
+        """
         )
 
         self._conn.execute(
-            '''
+            """
             CREATE TABLE IF NOT EXISTS todos (
                 "file_path" TEXT,
 
@@ -495,7 +493,7 @@ class Cache:
 
                 FOREIGN KEY(file_path) REFERENCES files(path) ON DELETE CASCADE
             );
-        '''
+        """
         )
 
     def clear(self):
@@ -511,52 +509,43 @@ class Cache:
         """
 
         result = self._conn.execute(
-            'SELECT name FROM lists WHERE path = ?',
-            (path,),
+            "SELECT name FROM lists WHERE path = ?", (path,),
         ).fetchone()
 
         if result:
-            return result['name']
+            return result["name"]
 
         try:
             self._conn.execute(
-                '''
+                """
                 INSERT INTO lists (
                     name,
                     path,
                     colour,
                     mtime
                 ) VALUES (?, ?, ?, ?)
-                ''',
-                (
-                    name,
-                    path,
-                    colour,
-                    mtime,
-                ),
+                """,
+                (name, path, colour, mtime,),
             )
         except sqlite3.IntegrityError as e:
-            raise exceptions.AlreadyExists('list', name) from e
+            raise exceptions.AlreadyExists("list", name) from e
 
         return self.add_list(name, path, colour, mtime)
 
     def add_file(self, list_name, path, mtime):
         try:
             self._conn.execute(
-                '''
+                """
                 INSERT INTO files (
                     list_name,
                     path,
                     mtime
                 ) VALUES (?, ?, ?);
-                ''', (
-                    list_name,
-                    path,
-                    mtime,
-                )
+                """,
+                (list_name, path, mtime,),
             )
         except sqlite3.IntegrityError as e:
-            raise exceptions.AlreadyExists('file', list_name) from e
+            raise exceptions.AlreadyExists("file", list_name) from e
 
     def _serialize_datetime(self, todo, field):
         """
@@ -589,9 +578,9 @@ class Cache:
     def _serialize_categories(self, todo, field):
         categories = todo.get(field, [])
         if not categories:
-            return ''
+            return ""
 
-        return ','.join([str(category) for category in categories.cats])
+        return ",".join([str(category) for category in categories.cats])
 
     def add_vtodo(self, todo, file_path, id=None):
         """
@@ -600,7 +589,7 @@ class Cache:
         :param icalendar.Todo todo: The icalendar component object on which
         """
 
-        sql = '''
+        sql = """
             INSERT INTO todos (
                 {}
                 file_path,
@@ -624,41 +613,41 @@ class Cache:
                 rrule
             ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                 ?)
-            '''
+            """
 
-        due, due_dt = self._serialize_datetime(todo, 'due')
-        start, start_dt = self._serialize_datetime(todo, 'dtstart')
+        due, due_dt = self._serialize_datetime(todo, "due")
+        start, start_dt = self._serialize_datetime(todo, "dtstart")
 
         if start and due:
             start = None if start >= due else start
 
         params = (
             file_path,
-            todo.get('uid'),
-            todo.get('summary'),
+            todo.get("uid"),
+            todo.get("summary"),
             due,
             due_dt,
             start,
             start_dt,
-            todo.get('priority', 0) or None,
-            self._serialize_datetime(todo, 'created')[0],
-            self._serialize_datetime(todo, 'completed')[0],
-            todo.get('percent-complete', None),
-            self._serialize_datetime(todo, 'dtstamp')[0],
-            todo.get('status', 'NEEDS-ACTION'),
-            todo.get('description', None),
-            todo.get('location', None),
-            self._serialize_categories(todo, 'categories'),
-            todo.get('sequence', 1),
-            self._serialize_datetime(todo, 'last-modified')[0],
-            self._serialize_rrule(todo, 'rrule'),
+            todo.get("priority", 0) or None,
+            self._serialize_datetime(todo, "created")[0],
+            self._serialize_datetime(todo, "completed")[0],
+            todo.get("percent-complete", None),
+            self._serialize_datetime(todo, "dtstamp")[0],
+            todo.get("status", "NEEDS-ACTION"),
+            todo.get("description", None),
+            todo.get("location", None),
+            self._serialize_categories(todo, "categories"),
+            todo.get("sequence", 1),
+            self._serialize_datetime(todo, "last-modified")[0],
+            self._serialize_rrule(todo, "rrule"),
         )
 
         if id:
             params = (id,) + params
-            sql = sql.format('id,\n', '?, ')
+            sql = sql.format("id,\n", "?, ")
         else:
-            sql = sql.format('', '')
+            sql = sql.format("", "")
 
         cursor = self._conn.cursor()
         try:
@@ -673,18 +662,15 @@ class Cache:
         self,
         lists=(),
         priority=None,
-        location='',
-        category='',
-        grep='',
+        location="",
+        category="",
+        grep="",
         sort=(),
         reverse=True,
         due=None,
         start=None,
         startable=False,
-        status=(
-            'NEEDS-ACTION',
-            'IN-PROCESS',
-        )
+        status=("NEEDS-ACTION", "IN-PROCESS",),
     ):
         """
         Returns filtered cached todos, in a specified order.
@@ -718,80 +704,78 @@ class Cache:
         extra_where = []
         params = []
 
-        if 'ANY' not in status:
+        if "ANY" not in status:
             extra_where.append(
-                'AND status IN ({})'.format(', '.join(['?'] * len(status)))
+                "AND status IN ({})".format(", ".join(["?"] * len(status)))
             )
             params.extend(s.upper() for s in status)
 
         if lists:
             lists = [
-                list_.name if isinstance(list_, List) else list_
-                for list_ in lists
+                list_.name if isinstance(list_, List) else list_ for list_ in lists
             ]
-            q = ', '.join(['?'] * len(lists))
-            extra_where.append('AND files.list_name IN ({})'.format(q))
+            q = ", ".join(["?"] * len(lists))
+            extra_where.append("AND files.list_name IN ({})".format(q))
             params.extend(lists)
         if priority:
-            extra_where.append('AND PRIORITY > 0 AND PRIORITY <= ?')
-            params.append('{}'.format(priority))
+            extra_where.append("AND PRIORITY > 0 AND PRIORITY <= ?")
+            params.append("{}".format(priority))
         if location:
-            extra_where.append('AND location LIKE ?')
-            params.append('%{}%'.format(location))
+            extra_where.append("AND location LIKE ?")
+            params.append("%{}%".format(location))
         if category:
-            extra_where.append('AND categories LIKE ?')
-            params.append('%{}%'.format(category))
+            extra_where.append("AND categories LIKE ?")
+            params.append("%{}%".format(category))
         if grep:
             # # requires sqlite with pcre, which won't be available everywhere:
             # extra_where.append('AND summary REGEXP ?')
             # params.append(grep)
-            extra_where.append('AND summary LIKE ?')
-            params.append('%{}%'.format(grep))
+            extra_where.append("AND summary LIKE ?")
+            params.append("%{}%".format(grep))
         if due:
             max_due = (datetime.now() + timedelta(hours=due)).timestamp()
-            extra_where.append('AND due IS NOT NULL AND due < ?')
+            extra_where.append("AND due IS NOT NULL AND due < ?")
             params.append(max_due)
         if start:
             is_before, dt = start
             dt = dt.timestamp()
             if is_before:
-                extra_where.append('AND start <= ?')
+                extra_where.append("AND start <= ?")
                 params.append(dt)
             else:
-                extra_where.append('AND start >= ?')
+                extra_where.append("AND start >= ?")
                 params.append(dt)
         if startable:
-            extra_where.append('AND (start IS NULL OR start <= ?)')
+            extra_where.append("AND (start IS NULL OR start <= ?)")
             params.append(datetime.now().timestamp())
         if sort:
             order = []
             for s in sort:
-                if s.startswith('-'):
-                    order.append(' {} ASC'.format(s[1:]))
+                if s.startswith("-"):
+                    order.append(" {} ASC".format(s[1:]))
                 else:
-                    order.append(' {} DESC'.format(s))
-            order = ','.join(order)
+                    order.append(" {} DESC".format(s))
+            order = ",".join(order)
         else:
-            order = '''
+            order = """
                 completed_at DESC,
                 priority IS NOT NULL, priority DESC,
                 due IS NOT NULL, due DESC,
                 created_at ASC
-            '''
+            """
 
         if not reverse:
             # Note the change in case to avoid swapping all of them. sqlite
             # doesn't care about casing anyway.
-            order = order.replace(' DESC', ' asc').replace(' ASC', ' desc')
+            order = order.replace(" DESC", " asc").replace(" ASC", " desc")
 
-        query = '''
+        query = """
               SELECT todos.*, files.list_name, files.path
                 FROM todos, files
                WHERE todos.file_path = files.path {}
             ORDER BY {}
-        '''.format(
-            ' '.join(extra_where),
-            order,
+        """.format(
+            " ".join(extra_where), order,
         )
 
         logger.debug(query)
@@ -804,12 +788,12 @@ class Cache:
 
         for row in result:
             todo = self._todo_from_db(row)
-            path = row['path']
+            path = row["path"]
 
             if path in seen_paths and path not in warned_paths:
                 logger.warning(
-                    'Todo is in read-only mode because there are '
-                    'multiple todos in %s', path
+                    "Todo is in read-only mode because there are multiple todos in %s",
+                    path,
                 )
                 warned_paths.add(path)
             seen_paths.add(path)
@@ -825,33 +809,31 @@ class Cache:
 
     def _todo_from_db(self, row):
         todo = Todo()
-        todo.id = row['id']
-        todo.uid = row['uid']
-        todo.summary = row['summary']
-        todo.due = self._dt_from_db(row['due'], row['due_dt'])
-        todo.start = self._dt_from_db(row['start'], row['start_dt'])
-        todo.priority = row['priority']
-        todo.created_at = self._dt_from_db(row['created_at'])
-        todo.completed_at = self._dt_from_db(row['completed_at'])
-        todo.dtstamp = self._dt_from_db(row['dtstamp'])
-        todo.percent_complete = row['percent_complete']
-        todo.status = row['status']
-        todo.description = row['description']
-        todo.location = row['location']
-        todo.sequence = row['sequence']
-        todo.last_modified = row['last_modified']
-        todo.list = self.lists_map[row['list_name']]
-        todo.filename = os.path.basename(row['path'])
-        todo.rrule = row['rrule']
+        todo.id = row["id"]
+        todo.uid = row["uid"]
+        todo.summary = row["summary"]
+        todo.due = self._dt_from_db(row["due"], row["due_dt"])
+        todo.start = self._dt_from_db(row["start"], row["start_dt"])
+        todo.priority = row["priority"]
+        todo.created_at = self._dt_from_db(row["created_at"])
+        todo.completed_at = self._dt_from_db(row["completed_at"])
+        todo.dtstamp = self._dt_from_db(row["dtstamp"])
+        todo.percent_complete = row["percent_complete"]
+        todo.status = row["status"]
+        todo.description = row["description"]
+        todo.location = row["location"]
+        todo.sequence = row["sequence"]
+        todo.last_modified = row["last_modified"]
+        todo.list = self.lists_map[row["list_name"]]
+        todo.filename = os.path.basename(row["path"])
+        todo.rrule = row["rrule"]
         return todo
 
     def lists(self):
         result = self._conn.execute("SELECT * FROM lists")
         for row in result:
             yield List(
-                name=row['name'],
-                path=row['path'],
-                colour=row['colour'],
+                name=row["name"], path=row["path"], colour=row["colour"],
             )
 
     @cached_property
@@ -861,12 +843,12 @@ class Cache:
     def expire_lists(self, paths):
         results = self._conn.execute("SELECT path, name, mtime from lists")
         for result in results:
-            if result['path'] not in paths:
-                self.delete_list(result['name'])
+            if result["path"] not in paths:
+                self.delete_list(result["name"])
             else:
-                mtime = paths.get(result['path'])
-                if mtime and mtime > result['mtime']:
-                    self.delete_list(result['name'])
+                mtime = paths.get(result["path"])
+                if mtime and mtime > result["mtime"]:
+                    self.delete_list(result["name"])
 
     def delete_list(self, name):
         self._conn.execute("DELETE FROM lists WHERE lists.name = ?", (name,))
@@ -874,12 +856,13 @@ class Cache:
     def todo(self, id, read_only=False):
         # XXX: DON'T USE READ_ONLY
         result = self._conn.execute(
-            '''
+            """
             SELECT todos.*, files.list_name, files.path
               FROM todos, files
             WHERE files.path = todos.file_path
               AND todos.id = ?
-        ''', (id,)
+        """,
+            (id,),
         ).fetchone()
 
         if not result:
@@ -887,15 +870,16 @@ class Cache:
 
         if not read_only:
             count = self._conn.execute(
-                '''
+                """
                 SELECT count(id) AS c
                   FROM files, todos
                  WHERE todos.file_path = files.path
                    AND path=?
-            ''', (result['path'],)
+            """,
+                (result["path"],),
             ).fetchone()
-            if count['c'] > 1:
-                raise exceptions.ReadOnlyTodo(result['path'])
+            if count["c"] > 1:
+                raise exceptions.ReadOnlyTodo(result["path"])
 
         return self._todo_from_db(result)
 
@@ -903,7 +887,7 @@ class Cache:
         """Remove stale cache entries based on the given fresh data."""
         result = self._conn.execute("SELECT path, mtime FROM files")
         for row in result:
-            path, mtime = row['path'], row['mtime']
+            path, mtime = row["path"], row["mtime"]
             if paths_to_mtime.get(path, None) != mtime:
                 self.expire_file(path)
 
@@ -920,23 +904,23 @@ class List:
     @staticmethod
     def colour_for_path(path):
         try:
-            with open(os.path.join(path, 'color')) as f:
+            with open(os.path.join(path, "color")) as f:
                 return f.read().strip()
         except OSError:
-            logger.debug('No colour for list %s', path)
+            logger.debug("No colour for list %s", path)
 
     @staticmethod
     def name_for_path(path):
         try:
-            with open(os.path.join(path, 'displayname')) as f:
+            with open(os.path.join(path, "displayname")) as f:
                 return f.read().strip()
         except OSError:
             return split(normpath(path))[1]
 
     @staticmethod
     def mtime_for_path(path):
-        colour_file = os.path.join(path, 'color')
-        display_file = os.path.join(path, 'displayname')
+        colour_file = os.path.join(path, "color")
+        display_file = os.path.join(path, "displayname")
 
         mtimes = []
         if os.path.exists(colour_file):
@@ -981,13 +965,10 @@ class Database:
 
         for path in self.paths:
             list_name = self.cache.add_list(
-                List.name_for_path(path),
-                path,
-                List.colour_for_path(path),
-                paths[path],
+                List.name_for_path(path), path, List.colour_for_path(path), paths[path],
             )
             for entry in os.listdir(path):
-                if not entry.endswith('.ics'):
+                if not entry.endswith(".ics"):
                     continue
                 entry_path = os.path.join(path, entry)
                 mtime = _getmtime(entry_path)
@@ -1002,14 +983,14 @@ class Database:
             try:
                 self.cache.add_file(list_name, entry_path, mtime)
             except exceptions.AlreadyExists:
-                logger.debug('File already in cache: %s', entry_path)
+                logger.debug("File already in cache: %s", entry_path)
                 continue
 
             try:
-                with open(entry_path, 'rb') as f:
+                with open(entry_path, "rb") as f:
                     cal = f.read()
                     cal = icalendar.Calendar.from_ical(cal)
-                    for component in cal.walk('VTODO'):
+                    for component in cal.walk("VTODO"):
                         self.cache.add_vtodo(component, entry_path)
             except Exception:
                 logger.exception("Failed to read entry %s.", entry_path)
@@ -1037,7 +1018,7 @@ class Database:
         os.remove(path)
 
     def flush(self):
-        for todo in self.todos(status=['ANY']):
+        for todo in self.todos(status=["ANY"]):
             if todo.is_completed:
                 yield todo
                 self.delete(todo)
@@ -1064,4 +1045,4 @@ class Database:
 
 def _getmtime(path):
     stat = os.stat(path)
-    return getattr(stat, 'st_mtime_ns', stat.st_mtime)
+    return getattr(stat, "st_mtime_ns", stat.st_mtime)

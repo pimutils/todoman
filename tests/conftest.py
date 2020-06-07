@@ -7,30 +7,31 @@ import pytest
 import pytz
 from click.testing import CliRunner
 from dateutil.tz import tzlocal
-from hypothesis import HealthCheck, settings, Verbosity
+from hypothesis import HealthCheck
+from hypothesis import settings
+from hypothesis import Verbosity
 
 from todoman import model
-from todoman.formatters import DefaultFormatter, HumanizedFormatter
+from todoman.formatters import DefaultFormatter
+from todoman.formatters import HumanizedFormatter
 
 
 @pytest.fixture
 def default_database(tmpdir):
     return model.Database(
-        [tmpdir.mkdir('default')],
-        tmpdir.mkdir(uuid4().hex).join('cache.sqlite3'),
+        [tmpdir.mkdir("default")], tmpdir.mkdir(uuid4().hex).join("cache.sqlite3"),
     )
 
 
 @pytest.fixture
 def config(tmpdir, default_database):
-    path = tmpdir.join('config')
+    path = tmpdir.join("config")
     path.write(
-        '[main]\n'
-        'path = {}/*\n'
-        'date_format = %Y-%m-%d\n'
-        'time_format = \n'
-        'cache_path = {}\n'
-        .format(str(tmpdir), str(tmpdir.join('cache.sqlite3')))
+        "[main]\n"
+        "path = {}/*\n"
+        "date_format = %Y-%m-%d\n"
+        "time_format = \n"
+        "cache_path = {}\n".format(str(tmpdir), str(tmpdir.join("cache.sqlite3")))
     )
     return path
 
@@ -46,17 +47,15 @@ def runner(config, sleep):
             sleep()
             return super().invoke(*args, **kwargs)
 
-    return SleepyCliRunner(env={'TODOMAN_CONFIG': str(config)})
+    return SleepyCliRunner(env={"TODOMAN_CONFIG": str(config)})
 
 
 @pytest.fixture
 def create(tmpdir):
-    def inner(name, content, list_name='default'):
+    def inner(name, content, list_name="default"):
         path = tmpdir.ensure_dir(list_name).join(name)
         path.write(
-            'BEGIN:VCALENDAR\n'
-            'BEGIN:VTODO\n' + content + 'END:VTODO\n'
-            'END:VCALENDAR'
+            "BEGIN:VCALENDAR\nBEGIN:VTODO\n" + content + "END:VTODO\nEND:VCALENDAR"
         )
         return path
 
@@ -65,7 +64,7 @@ def create(tmpdir):
 
 @pytest.fixture
 def now_for_tz():
-    def inner(tz='CET'):
+    def inner(tz="CET"):
         """
         Provides the current time cast to a given timezone.
 
@@ -73,8 +72,7 @@ def now_for_tz():
         will be compared to some pre-computed value that assumes a determined
         timezone.
         """
-        return datetime.now().replace(tzinfo=tzlocal()) \
-            .astimezone(pytz.timezone(tz))
+        return datetime.now().replace(tzinfo=tzlocal()).astimezone(pytz.timezone(tz))
 
     return inner
 
@@ -85,7 +83,7 @@ def todo_factory(default_database):
         todo = model.Todo(new=True)
         todo.list = list(default_database.lists())[0]
 
-        attributes.setdefault('summary', 'YARR!')
+        attributes.setdefault("summary", "YARR!")
         for name, value in attributes.items():
             setattr(todo, name, value)
 
@@ -98,17 +96,17 @@ def todo_factory(default_database):
 
 @pytest.fixture
 def default_formatter():
-    formatter = DefaultFormatter(tz_override=pytz.timezone('CET'))
+    formatter = DefaultFormatter(tz_override=pytz.timezone("CET"))
     return formatter
 
 
 @pytest.fixture
 def humanized_formatter():
-    formatter = HumanizedFormatter(tz_override=pytz.timezone('CET'))
+    formatter = HumanizedFormatter(tz_override=pytz.timezone("CET"))
     return formatter
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def sleep(tmpdir_factory):
     """
     Sleeps as long as needed for the filesystem's mtime to pick up differences
@@ -119,12 +117,12 @@ def sleep(tmpdir_factory):
     This keeps test fast on systems with high precisions, but makes them pass
     on those that don't (I'm looking at you, macOS).
     """
-    tmpfile = tmpdir_factory.mktemp('sleep').join('touch_me')
+    tmpfile = tmpdir_factory.mktemp("sleep").join("touch_me")
 
     def touch_and_mtime():
-        tmpfile.open('w').close()
+        tmpfile.open("w").close()
         stat = os.stat(str(tmpfile))
-        return getattr(stat, 'st_mtime_ns', stat.st_mtime)
+        return getattr(stat, "st_mtime_ns", stat.st_mtime)
 
     def inner():
         time.sleep(i)
@@ -145,8 +143,8 @@ def sleep(tmpdir_factory):
 
     # This should never happen, but oh, well:
     raise Exception(
-        'Filesystem does not seem to save modified times of files. \n'
-        'Cannot run tests that depend on this.'
+        "Filesystem does not seem to save modified times of files. \n"
+        "Cannot run tests that depend on this."
     )
 
 
@@ -165,12 +163,12 @@ settings.register_profile(
     settings(
         max_examples=1000,
         verbosity=Verbosity.verbose,
-        suppress_health_check=[HealthCheck.too_slow]
-    )
+        suppress_health_check=[HealthCheck.too_slow],
+    ),
 )
 settings.register_profile("deterministic", settings(derandomize=True,))
 
-if os.getenv('DETERMINISTIC_TESTS', 'false').lower() == 'true':
+if os.getenv("DETERMINISTIC_TESTS", "false").lower() == "true":
     settings.load_profile("deterministic")
-elif os.getenv('CI', 'false').lower() == 'true':
+elif os.getenv("CI", "false").lower() == "true":
     settings.load_profile("ci")
