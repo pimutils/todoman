@@ -21,7 +21,7 @@ def test_querying(create, tmpdir):
                 list_name=list
             )
 
-    db = Database([str(tmpdir.ensure_dir(l)) for l in 'abc'],
+    db = Database([str(tmpdir.ensure_dir(list_)) for list_ in 'abc'],
                   str(tmpdir.join('cache')))
 
     assert len(set(db.todos())) == 9
@@ -134,7 +134,7 @@ def test_list_no_colour(tmpdir):
 def test_database_priority_sorting(create, todos):
     for i in [1, 5, 9, 0]:
         create('test{}.ics'.format(i), 'PRIORITY:{}\n'.format(i))
-    create('test_none.ics'.format(i), 'SUMMARY:No priority (eg: None)\n')
+    create('test_none.ics', 'SUMMARY:No priority (eg: None)\n')
 
     todos = list(todos())
 
