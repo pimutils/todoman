@@ -21,9 +21,9 @@ Todoman
   :target: https://github.com/pimutils/todoman/blob/master/LICENCE
   :alt: licence
 
-.. image:: https://img.shields.io/badge/Say%20Thanks!-%F0%9F%A6%89-1EAEDB.svg
-  :target: https://saythanks.io/to/hobarrera
-  :alt: Say Thanks!
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+  :target: https://github.com/WhyNotHugo/django-afip/
+  :alt: code style: black
 
 Todoman is a simple, standards-based, cli todo (aka: task) manager. Todos
 are stored into `icalendar <https://tools.ietf.org/html/rfc5545>`_ files, which
