@@ -4,10 +4,11 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
-unreleased
+v3.8.0
 ----------
-* Fix issue 301: hide the origin list of todo if only one list is available in
-  the database, or if filtered using only one list.
+* Don't display list if there's only one list (of one list has been specified).
+* Fixed several issues when using dates with no times.
+* Dropped support for Python 3.4.
 
 v3.7.0
 ------
