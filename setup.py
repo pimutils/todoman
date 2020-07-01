@@ -13,7 +13,7 @@ setup(
     entry_points={"console_scripts": ["todo = todoman.cli:cli"]},
     install_requires=[
         "atomicwrites",
-        "click>=7.0,<8.0",
+        "click>=7.1,<8.0",
         "click-log>=0.2.1",
         "configobj",
         "humanize",
