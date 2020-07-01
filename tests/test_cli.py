@@ -816,27 +816,24 @@ def test_status_filtering(runner, todo_factory):
     assert "two" in result.output
 
 
-def test_invoke_command(runner, tmpdir):
+def test_default_command_string(runner, tmpdir):
     path = tmpdir.join("config")
     path.write("default_command = flush\n", "a")
 
-    flush = mock.MagicMock()
-    with patch.dict(cli.commands, values=dict(flush=flush)):
-        result = runner.invoke(cli, catch_exceptions=False)
-
-    assert not result.exception
-    assert not result.output.strip()
-    assert flush.call_count == 1
+    result = runner.invoke(cli, catch_exceptions=False)
+    assert (
+        "Are you sure you want to delete all done tasks?" in result.output
+    )
 
 
-def test_invoke_invalid_command(runner, tmpdir):
+def test_default_command_list(runner, tmpdir):
     path = tmpdir.join("config")
-    path.write("default_command = DoTheRobot\n", "a")
+    path.write("default_command = show, 1234\n", "a")
 
     result = runner.invoke(cli, catch_exceptions=False)
-
-    assert result.exception
-    assert "Error: Invalid setting for [main][default_command]" in result.output
+    assert (
+        "No todo with id 1234." in result.output
+    )
 
 
 def test_show_priority(runner, todo_factory, todos):

@@ -309,16 +309,13 @@ def cli(click_ctx, colour, porcelain, humanize, config):
     locale.setlocale(locale.LC_TIME, "")
 
     if not click_ctx.invoked_subcommand:
-        invoke_command(
-            click_ctx, ctx.config["main"]["default_command"],
-        )
+        invoke_command(click_ctx, ctx.config["main"]["default_command"])
 
 
-def invoke_command(click_ctx, command):
-    name, *args = command.split(" ")
-    if name not in cli.commands:
-        raise click.ClickException("Invalid setting for [main][default_command]")
-    click_ctx.invoke(cli.commands[command], args)
+def invoke_command(click_ctx, argv):
+    if not isinstance(argv, type([])):
+        argv = [argv]
+    cli.invoke(cli.make_context("default_command", argv, click_ctx))
 
 
 try:  # pragma: no cover
