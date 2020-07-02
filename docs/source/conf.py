@@ -109,6 +109,7 @@ with open("confspec.tmp", "w") as file_:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx_click.ext",
     "sphinx.ext.autodoc",
     "sphinx_autorun",
     "sphinx.ext.todo",
@@ -132,7 +133,7 @@ master_doc = "index"
 # General information about the project.
 project = "Todoman"
 copyright = "2015-2020, Hugo Osvaldo Barrera"
-author = "Hugo Osvaldo Barrera"
+author = "Hugo Osvaldo Barrera <hugo@barrera.io>, et al"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -351,9 +352,9 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (
-        master_doc,
+        "man",
         "todoman",
-        "Todoman Documentation",
+        "a simple, standards-based, cli todo manager",
         [author],
         1,
     )

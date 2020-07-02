@@ -18,8 +18,8 @@ Sample configuration
 --------------------
 
 The below example should serve as a reference. It will read ics files from any
-directory inside ``~/.local/share/calendars/``, use the ISO-8601 date
-format, and set the due date for new todos in 48hs.
+directory inside ``~/.local/share/calendars/``, uses the ISO-8601 date format,
+and set the due date for new todos in 48hs.
 
 .. literalinclude:: ../../todoman.conf.sample
   :language: ini
