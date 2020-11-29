@@ -353,7 +353,7 @@ latex_documents = [
 man_pages = [
     (
         "man",
-        "todoman",
+        "todo",
         "a simple, standards-based, cli todo manager",
         [author],
         1,
