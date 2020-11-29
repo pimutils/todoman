@@ -34,5 +34,6 @@ fs_case_sensitive = pytest.mark.skipif(
 
 
 pyicu_sensitive = pytest.mark.skipif(
-    is_pyicu_installed(), reason="This test cannot be run with pyicu installed.",
+    is_pyicu_installed(),
+    reason="This test cannot be run with pyicu installed.",
 )

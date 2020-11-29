@@ -323,14 +323,14 @@ def test_todos_startable(tmpdir, runner, todo_factory, todos):
 
 def test_filename_uid_colision(create, default_database, runner, todos):
     create("ABC.ics", "SUMMARY:My UID is not ABC\nUID:NOTABC\n")
-    len(list(todos())) == 1
+    assert len(list(todos())) == 1
 
     todo = Todo(new=False)
     todo.uid = "ABC"
     todo.list = next(default_database.lists())
     default_database.save(todo)
 
-    len(list(todos())) == 2
+    assert len(list(todos())) == 2
 
 
 def test_hide_cancelled(todos, todo_factory):

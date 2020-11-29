@@ -338,7 +338,8 @@ class VtodoWriter:
             self.vtodo.pop(target)
             if getattr(self.todo, source):
                 self.set_field(
-                    target, self.serialize_field(source, getattr(self.todo, source)),
+                    target,
+                    self.serialize_field(source, getattr(self.todo, source)),
                 )
 
         return self.vtodo
@@ -417,7 +418,8 @@ class Cache:
         """Checks if the cache DB schema is the latest version."""
         try:
             return self._conn.execute(
-                "SELECT version FROM meta WHERE version = ?", (Cache.SCHEMA_VERSION,),
+                "SELECT version FROM meta WHERE version = ?",
+                (Cache.SCHEMA_VERSION,),
             ).fetchone()
         except sqlite3.OperationalError:
             return False
@@ -437,7 +439,8 @@ class Cache:
         self._conn.execute('CREATE TABLE IF NOT EXISTS meta ("version" INT)')
 
         self._conn.execute(
-            "INSERT INTO meta (version) VALUES (?)", (Cache.SCHEMA_VERSION,),
+            "INSERT INTO meta (version) VALUES (?)",
+            (Cache.SCHEMA_VERSION,),
         )
 
         self._conn.execute(
@@ -509,7 +512,8 @@ class Cache:
         """
 
         result = self._conn.execute(
-            "SELECT name FROM lists WHERE path = ?", (path,),
+            "SELECT name FROM lists WHERE path = ?",
+            (path,),
         ).fetchone()
 
         if result:
@@ -525,7 +529,12 @@ class Cache:
                     mtime
                 ) VALUES (?, ?, ?, ?)
                 """,
-                (name, path, colour, mtime,),
+                (
+                    name,
+                    path,
+                    colour,
+                    mtime,
+                ),
             )
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExists("list", name) from e
@@ -542,7 +551,11 @@ class Cache:
                     mtime
                 ) VALUES (?, ?, ?);
                 """,
-                (list_name, path, mtime,),
+                (
+                    list_name,
+                    path,
+                    mtime,
+                ),
             )
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExists("file", list_name) from e
@@ -670,7 +683,10 @@ class Cache:
         due=None,
         start=None,
         startable=False,
-        status=("NEEDS-ACTION", "IN-PROCESS",),
+        status=(
+            "NEEDS-ACTION",
+            "IN-PROCESS",
+        ),
     ):
         """
         Returns filtered cached todos, in a specified order.
@@ -775,7 +791,8 @@ class Cache:
                WHERE todos.file_path = files.path {}
             ORDER BY {}
         """.format(
-            " ".join(extra_where), order,
+            " ".join(extra_where),
+            order,
         )
 
         logger.debug(query)
@@ -833,7 +850,9 @@ class Cache:
         result = self._conn.execute("SELECT * FROM lists")
         for row in result:
             yield List(
-                name=row["name"], path=row["path"], colour=row["colour"],
+                name=row["name"],
+                path=row["path"],
+                colour=row["colour"],
             )
 
     @cached_property
@@ -965,7 +984,10 @@ class Database:
 
         for path in self.paths:
             list_name = self.cache.add_list(
-                List.name_for_path(path), path, List.colour_for_path(path), paths[path],
+                List.name_for_path(path),
+                path,
+                List.colour_for_path(path),
+                paths[path],
             )
             for entry in os.listdir(path):
                 if not entry.endswith(".ics"):

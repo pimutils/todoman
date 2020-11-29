@@ -310,7 +310,8 @@ def cli(click_ctx, colour, porcelain, humanize, config):
 
     if not click_ctx.invoked_subcommand:
         invoke_command(
-            click_ctx, ctx.config["main"]["default_command"],
+            click_ctx,
+            ctx.config["main"]["default_command"],
         )
 
 
@@ -442,7 +443,11 @@ def show(ctx, id):
 @cli.command()
 @pass_ctx
 @click.argument(
-    "todos", nargs=-1, required=True, type=click.IntRange(0), callback=_validate_todos,
+    "todos",
+    nargs=-1,
+    required=True,
+    type=click.IntRange(0),
+    callback=_validate_todos,
 )
 @catch_errors
 def done(ctx, todos):
@@ -456,7 +461,11 @@ def done(ctx, todos):
 @cli.command()
 @pass_ctx
 @click.argument(
-    "todos", nargs=-1, required=True, type=click.IntRange(0), callback=_validate_todos,
+    "todos",
+    nargs=-1,
+    required=True,
+    type=click.IntRange(0),
+    callback=_validate_todos,
 )
 @catch_errors
 def cancel(ctx, todos):

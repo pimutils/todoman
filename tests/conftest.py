@@ -19,7 +19,8 @@ from todoman.formatters import HumanizedFormatter
 @pytest.fixture
 def default_database(tmpdir):
     return model.Database(
-        [tmpdir.mkdir("default")], tmpdir.mkdir(uuid4().hex).join("cache.sqlite3"),
+        [tmpdir.mkdir("default")],
+        tmpdir.mkdir(uuid4().hex).join("cache.sqlite3"),
     )
 
 
@@ -166,7 +167,12 @@ settings.register_profile(
         suppress_health_check=[HealthCheck.too_slow],
     ),
 )
-settings.register_profile("deterministic", settings(derandomize=True,))
+settings.register_profile(
+    "deterministic",
+    settings(
+        derandomize=True,
+    ),
+)
 
 if os.getenv("DETERMINISTIC_TESTS", "false").lower() == "true":
     settings.load_profile("deterministic")

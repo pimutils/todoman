@@ -25,7 +25,12 @@ import todoman
 # -- Generate configspec.rst ----------------------------------------------
 
 specpath = "../../todoman/confspec.ini"
-config = ConfigObj(None, configspec=specpath, stringify=False, list_values=False,)
+config = ConfigObj(
+    None,
+    configspec=specpath,
+    stringify=False,
+    list_values=False,
+)
 validator = validate.Validator()
 config.validate(validator)
 spec = config.configspec
@@ -46,7 +51,8 @@ def write_section(section, secname, key, comment, file_):
         fun_args = []
     if fun_name == "integer" and len(fun_args) == 2:
         fun_name += ", allowed values are between {} and {}".format(
-            fun_args[0], fun_args[1],
+            fun_args[0],
+            fun_args[1],
         )
         fun_args = []
     file_.write("\n")
@@ -85,7 +91,11 @@ with open("confspec.tmp", "w") as file_:
                 comments = spec[secname]["__many__"].comments
                 for key, comment in sorted(comments.items()):
                     write_section(
-                        spec[secname]["__many__"][key], secname, key, comment, file_,
+                        spec[secname]["__many__"][key],
+                        secname,
+                        key,
+                        comment,
+                        file_,
                     )
             else:
                 write_section(spec[secname][key], secname, key, comment, file_)
@@ -339,7 +349,15 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "todoman", "Todoman Documentation", [author], 1,)]
+man_pages = [
+    (
+        master_doc,
+        "todoman",
+        "Todoman Documentation",
+        [author],
+        1,
+    )
+]
 
 # If true, show URL addresses after external links.
 #  man_show_urls = False

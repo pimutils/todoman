@@ -13,7 +13,11 @@ def test_main(tmpdir, runner):
 
     cli_result = runner.invoke(cli, ["--version"])
 
-    pipe = Popen([sys.executable, "-m", "todoman", "--version"], stdout=PIPE, env=env,)
+    pipe = Popen(
+        [sys.executable, "-m", "todoman", "--version"],
+        stdout=PIPE,
+        env=env,
+    )
     main_output = pipe.communicate()[0]
 
     assert cli_result.output == main_output.decode()

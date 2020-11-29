@@ -39,8 +39,7 @@ def test_no_default_list(runner):
     assert result.exception
     assert (
         "Error: Invalid value for '--list' / '-l': You must set "
-        "`default_list` or use -l."
-        in result.output
+        "`default_list` or use -l." in result.output
     )
 
 
@@ -584,8 +583,7 @@ def test_due_bad_date(runner):
     assert result.exception
     assert (
         "Error: Invalid value for '--due' / '-d': Time description not "
-        "recognized: Not a date"
-        == result.output.strip().splitlines()[-1]
+        "recognized: Not a date" == result.output.strip().splitlines()[-1]
     )
 
 
@@ -599,7 +597,8 @@ def test_multiple_todos_in_file(runner, create):
             assert " b " in result.output
         assert mocked_logger.warning.call_count == 1
         assert mocked_logger.warning.call_args == mock.call(
-            "Todo is in read-only mode because there are multiple todos in %s", path,
+            "Todo is in read-only mode because there are multiple todos in %s",
+            path,
         )
 
     result = runner.invoke(cli, ["done", "1"])
@@ -644,14 +643,22 @@ def test_list_startable(tmpdir, runner, todo_factory):
     todo_factory(summary="nostart")
     todo_factory(summary="unstarted", start=datetime.datetime(2017, 3, 24))
 
-    result = runner.invoke(cli, ["list", "--startable"], catch_exceptions=False,)
+    result = runner.invoke(
+        cli,
+        ["list", "--startable"],
+        catch_exceptions=False,
+    )
 
     assert not result.exception
     assert "started" in result.output
     assert "nostart" in result.output
     assert "unstarted" not in result.output
 
-    result = runner.invoke(cli, ["list"], catch_exceptions=False,)
+    result = runner.invoke(
+        cli,
+        ["list"],
+        catch_exceptions=False,
+    )
 
     assert not result.exception
     assert "started" in result.output

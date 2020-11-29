@@ -56,18 +56,26 @@ class TodoEditor:
         self._ui = urwid.Columns([self.left_column, right_column])
 
     def _init_basic_fields(self):
-        self._summary = widgets.ExtendedEdit(parent=self, edit_text=self.todo.summary,)
+        self._summary = widgets.ExtendedEdit(
+            parent=self,
+            edit_text=self.todo.summary,
+        )
         self._description = widgets.ExtendedEdit(
-            parent=self, edit_text=self.todo.description, multiline=True,
+            parent=self,
+            edit_text=self.todo.description,
+            multiline=True,
         )
         self._location = widgets.ExtendedEdit(
-            parent=self, edit_text=self.todo.location,
+            parent=self,
+            edit_text=self.todo.location,
         )
         self._due = widgets.ExtendedEdit(
-            parent=self, edit_text=self.formatter.format_datetime(self.todo.due),
+            parent=self,
+            edit_text=self.formatter.format_datetime(self.todo.due),
         )
         self._dtstart = widgets.ExtendedEdit(
-            parent=self, edit_text=self.formatter.format_datetime(self.todo.start),
+            parent=self,
+            edit_text=self.formatter.format_datetime(self.todo.start),
         )
         self._completed = urwid.CheckBox("", state=self.todo.is_completed)
         self._priority = widgets.PrioritySelector(

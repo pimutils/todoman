@@ -86,9 +86,10 @@ def test_detailed_format(runner, todo_factory):
 def test_parse_time(default_formatter):
     tz = pytz.timezone("CET")
     parsed = default_formatter.parse_datetime("12:00")
-    expected = datetime.combine(date.today(), time(hour=12, minute=0),).replace(
-        tzinfo=tz
-    )
+    expected = datetime.combine(
+        date.today(),
+        time(hour=12, minute=0),
+    ).replace(tzinfo=tz)
     assert parsed == expected
 
 
