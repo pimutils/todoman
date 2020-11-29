@@ -30,7 +30,10 @@ def validate_cache_path(path):
     if path:
         return expand_path(path)
     else:
-        return os.path.join(xdg.BaseDirectory.xdg_cache_home, "todoman/cache.sqlite3",)
+        return os.path.join(
+            xdg.BaseDirectory.xdg_cache_home,
+            "todoman/cache.sqlite3",
+        )
 
 
 def validate_date_format(fmt):

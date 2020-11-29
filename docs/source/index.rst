@@ -11,7 +11,6 @@ Todoman is now part of the ``pimutils`` project, and is hosted at GitHub_.
 .. _CalDav: http://en.wikipedia.org/wiki/CalDAV
 .. _vdirsyncer: https://vdirsyncer.readthedocs.org/
 .. _GitHub: https://github.com/pimutils/todoman
-.. _GitLab.com: https://gitlab.com/hobarrera/todoman/
 
 Features
 --------
@@ -46,6 +45,7 @@ Table of Contents
    install
    configure
    usage
+   man page
    contributing
    changelog
    licence

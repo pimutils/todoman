@@ -80,9 +80,6 @@ Requirements
 Todoman requires python 3.5 or later. Installation of required libraries can be
 done via pip, or your OS's package manager.
 
-Todoman will not work with python 2. However, keep in mind that python 2 and
-python 3 can coexist (and most distributions actually ship both).
-
 Recent versions also have experimental support for pypy3.
 
 .. _notes-for-packagers:

@@ -4,12 +4,6 @@ Usage
 Todoman usage is `CLI`_ based (thought there are some TUI bits, and the
 intentions is to also provide a fully `TUI`_-based interface).
 
-First of all, the classic usage output:
-
-.. runblock:: console
-
-    $ todo --help
-
 The default action is ``list``, which outputs all tasks for all calendars, each
 with a semi-permanent unique id::
 
@@ -78,6 +72,7 @@ Sorting
 -------
 
 The tasks can be sorted with the ``--sort`` argument. Sorting may be done according to the following fields:
+
     - ``description``
     - ``location``
     - ``status``

@@ -72,10 +72,15 @@ class DefaultFormatter:
             recurring = "⟳" if todo.is_recurring else ""
 
             if hide_list:
-                summary = "{} {}".format(todo.summary, percent,)
+                summary = "{} {}".format(
+                    todo.summary,
+                    percent,
+                )
             else:
                 summary = "{} {}{}".format(
-                    todo.summary, self.format_database(todo.list), percent,
+                    todo.summary,
+                    self.format_database(todo.list),
+                    percent,
                 )
 
             table.append(

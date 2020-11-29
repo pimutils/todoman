@@ -84,19 +84,24 @@ def test_grep(tmpdir, runner, create):
     assert not result.output.strip()
 
     create(
-        "one.ics", "SUMMARY:fun\nDESCRIPTION: Have fun!\n",
+        "one.ics",
+        "SUMMARY:fun\nDESCRIPTION: Have fun!\n",
     )
     create(
-        "two.ics", "SUMMARY:work\nDESCRIPTION: The stuff for work\n",
+        "two.ics",
+        "SUMMARY:work\nDESCRIPTION: The stuff for work\n",
     )
     create(
-        "three.ics", "SUMMARY:buy sandwiches\nDESCRIPTION: This is for the Duke\n",
+        "three.ics",
+        "SUMMARY:buy sandwiches\nDESCRIPTION: This is for the Duke\n",
     )
     create(
-        "four.ics", "SUMMARY:puppies\nDESCRIPTION: Feed the puppies\n",
+        "four.ics",
+        "SUMMARY:puppies\nDESCRIPTION: Feed the puppies\n",
     )
     create(
-        "five.ics", "SUMMARY:research\nDESCRIPTION: Cure cancer\n",
+        "five.ics",
+        "SUMMARY:research\nDESCRIPTION: Cure cancer\n",
     )
     create("six.ics", "SUMMARY:hoho\n")
     result = runner.invoke(cli, ["list", "--grep", "fun"])
@@ -176,7 +181,8 @@ def test_due_naive(tmpdir, runner, create):
         create(
             "test_{}.ics".format(i),
             "SUMMARY:{}\nDUE;VALUE=DATE-TIME:{}\n".format(
-                i, due.strftime("%Y%m%dT%H%M%S"),
+                i,
+                due.strftime("%Y%m%dT%H%M%S"),
             ),
         )
 

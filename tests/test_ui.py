@@ -146,7 +146,9 @@ def test_ctrl_c_clears(default_formatter, todo_factory):
     # trivially inside unit tests.
     with mock.patch(
         "urwid.main_loop.MainLoop.run", side_effect=KeyboardInterrupt
-    ), mock.patch("urwid.main_loop.MainLoop.stop",) as mocked_stop:
+    ), mock.patch(
+        "urwid.main_loop.MainLoop.stop",
+    ) as mocked_stop:
         editor.edit()
 
     assert mocked_stop.call_count == 1

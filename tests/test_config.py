@@ -10,7 +10,9 @@ from todoman.configuration import load_config
 
 def test_explicit_nonexistant(runner):
     result = CliRunner().invoke(
-        cli, env={"TODOMAN_CONFIG": "/nonexistant"}, catch_exceptions=True,
+        cli,
+        env={"TODOMAN_CONFIG": "/nonexistant"},
+        catch_exceptions=True,
     )
     assert result.exception
     assert "Configuration file /nonexistant does not exist" in result.output
@@ -18,7 +20,10 @@ def test_explicit_nonexistant(runner):
 
 def test_xdg_nonexistant(runner):
     with patch("xdg.BaseDirectory.xdg_config_dirs", []):
-        result = CliRunner().invoke(cli, catch_exceptions=True,)
+        result = CliRunner().invoke(
+            cli,
+            catch_exceptions=True,
+        )
         assert result.exception
         assert "No configuration file found" in result.output
 
@@ -29,7 +34,10 @@ def test_xdg_existant(runner, tmpdir, config):
             f.write(c.read())
 
     with patch("xdg.BaseDirectory.xdg_config_dirs", [str(tmpdir)]):
-        result = CliRunner().invoke(cli, catch_exceptions=True,)
+        result = CliRunner().invoke(
+            cli,
+            catch_exceptions=True,
+        )
         assert not result.exception
         assert not result.output.strip()
 
@@ -124,7 +132,8 @@ def test_date_field_in_time(config, runner, tmpdir):
 
 def test_colour_validation_auto(config):
     with patch(
-        "todoman.configuration.find_config", return_value=(str(config)),
+        "todoman.configuration.find_config",
+        return_value=(str(config)),
     ):
         cfg = load_config()
 
@@ -134,7 +143,8 @@ def test_colour_validation_auto(config):
 def test_colour_validation_always(config):
     config.write("color = 'always'\n", "a")
     with patch(
-        "todoman.configuration.find_config", return_value=(str(config)),
+        "todoman.configuration.find_config",
+        return_value=(str(config)),
     ):
         cfg = load_config()
 
@@ -144,6 +154,7 @@ def test_colour_validation_always(config):
 def test_colour_validation_invalid(config):
     config.write("color = 'on_weekends_only'\n", "a")
     with patch(
-        "todoman.configuration.find_config", return_value=(str(config)),
+        "todoman.configuration.find_config",
+        return_value=(str(config)),
     ), pytest.raises(ConfigurationException):
         load_config()
