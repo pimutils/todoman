@@ -5,8 +5,12 @@ from os.path import join
 import xdg.BaseDirectory
 from configobj import ConfigObj
 from configobj import flatten_errors
-from configobj.validate import Validator
-from configobj.validate import VdtValueError
+try:
+    from configobj.validate import Validator
+    from configobj.validate import VdtValueError
+except ImportError:
+    from configobj import Validator
+    from configobj import VdtValueError
 
 from todoman import __documentation__
 
