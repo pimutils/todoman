@@ -270,7 +270,7 @@ def test_default_due(tmpdir, runner, create, default_due, expected_due_hours):
     """Test setting the due date using the default_due config parameter"""
     if default_due is not None:
         path = tmpdir.join("config")
-        path.write("default_due = {}\n".format(default_due), "a")
+        path.write(f"default_due = {default_due}\n", "a")
 
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
     db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
@@ -311,7 +311,7 @@ def test_sorting_fields(tmpdir, runner, default_database):
         todo.list = next(default_database.lists())
         todo.due = datetime.datetime.now() + days
         todo.created_at = datetime.datetime.now() - days
-        todo.summary = "harhar{}".format(i)
+        todo.summary = f"harhar{i}"
         tasks.append(todo)
 
         default_database.save(todo)
@@ -404,11 +404,11 @@ def test_color_due_dates(tmpdir, runner, create, hours):
     assert not result.exception
     due_str = due.strftime("%Y-%m-%d")
     if hours == 72:
-        assert result.output == "1  [ ]    {}  aaa @default\x1b[0m\n".format(due_str)
+        assert result.output == f"1  [ ]    {due_str}  aaa @default\x1b[0m\n"
     else:
         assert (
             result.output
-            == "1  [ ]    \x1b[31m{}\x1b[0m  aaa @default\x1b[0m\n".format(due_str)
+            == f"1  [ ]    \x1b[31m{due_str}\x1b[0m  aaa @default\x1b[0m\n"
         )
 
 

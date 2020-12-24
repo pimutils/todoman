@@ -101,7 +101,7 @@ def test_missing_cache_dir(config, runner, tmpdir):
     cache_file = cache_dir.join("cache.sqlite")
 
     path = tmpdir.join("config")
-    path.write("cache_path = {}\n".format(cache_file), "a")
+    path.write(f"cache_path = {cache_file}\n", "a")
     path.write("[main]\npath = {}/*\ncache_path = {}\n".format(str(tmpdir), cache_file))
 
     result = runner.invoke(cli)

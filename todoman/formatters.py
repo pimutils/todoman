@@ -48,7 +48,7 @@ class DefaultFormatter:
         )
 
     def simple_action(self, action, todo):
-        return '{} "{}"'.format(action, todo.summary)
+        return f'{action} "{todo.summary}"'
 
     def compact(self, todo):
         return self.compact_multiple([todo])
@@ -59,7 +59,7 @@ class DefaultFormatter:
             completed = "X" if todo.is_completed else " "
             percent = todo.percent_complete or ""
             if percent:
-                percent = " ({}%)".format(percent)
+                percent = f" ({percent}%)"
             priority = self.format_priority_compact(todo.priority)
 
             due = self.format_datetime(todo.due)
@@ -86,9 +86,9 @@ class DefaultFormatter:
             table.append(
                 [
                     todo.id,
-                    "[{}]".format(completed),
+                    f"[{completed}]",
                     priority,
-                    "{} {}".format(due, recurring),
+                    f"{due} {recurring}",
                     summary,
                 ]
             )
@@ -201,7 +201,7 @@ class DefaultFormatter:
 
         rv, pd_ctx = self._parsedatetime_calendar.parse(dt)
         if not pd_ctx.hasDateOrTime:
-            raise ValueError("Time description not recognized: {}".format(dt))
+            raise ValueError(f"Time description not recognized: {dt}")
         return datetime.datetime.fromtimestamp(mktime(rv))
 
     def format_database(self, database):

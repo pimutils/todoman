@@ -56,7 +56,7 @@ def find_config(custom_path=None):
     if custom_path:
         if not exists(custom_path):
             raise ConfigurationException(
-                "Configuration file {} does not exist".format(custom_path)
+                f"Configuration file {custom_path} does not exist"
             )
         return custom_path
 
