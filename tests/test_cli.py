@@ -828,7 +828,7 @@ def test_invoke_command(runner, tmpdir):
     path.write("default_command = flush\n", "a")
 
     flush = mock.MagicMock()
-    with patch.dict(cli.commands, values=dict(flush=flush)):
+    with patch.dict(cli.commands, values={"flush": flush}):
         result = runner.invoke(cli, catch_exceptions=False)
 
     assert not result.exception
