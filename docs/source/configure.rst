@@ -28,13 +28,13 @@ Color and displayname
 ---------------------
 
 - You can set a color for each task list by creating a ``color`` file containing
-  a colorcode in the format ``#RRGGBB``.
-- A file named ``displayname`` decides how the task list should be named and
-  is needed when there are mutliple directories shareing a name, eg when using
+  a color code in the hex format: ``#RRGGBB``.
+- A file named ``displayname`` indicates how the task list should be named and
+  is needed when there are multiple directories sharing a name, e.g.: when using
   multiple $CloudInstances. The default is the directory name.
 
-See also `this discussion about metadata for collections in
-vdirsyncer <https://github.com/untitaker/vdirsyncer/issues/125>`_.
+See also `relevant documentation for the vdir format
+<https://vdirsyncer.pimutils.org/en/stable/vdir.html#metadata>`_.
 
 Timezone
 --------
