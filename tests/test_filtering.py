@@ -159,7 +159,7 @@ def test_due_aware(tmpdir, runner, create, now_for_tz):
         for i in [1, 23, 25, 48]:
             todo = Todo(new=True)
             todo.due = now_for_tz(tz) + timedelta(hours=i)
-            todo.summary = "{}".format(i)
+            todo.summary = f"{i}"
 
             todo.list = list_
             db.save(todo)
@@ -179,7 +179,7 @@ def test_due_naive(tmpdir, runner, create):
     for i in [1, 23, 25, 48]:
         due = now + timedelta(hours=i)
         create(
-            "test_{}.ics".format(i),
+            f"test_{i}.ics",
             "SUMMARY:{}\nDUE;VALUE=DATE-TIME:{}\n".format(
                 i,
                 due.strftime("%Y%m%dT%H%M%S"),

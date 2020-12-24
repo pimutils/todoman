@@ -104,11 +104,9 @@ class TodoEditor:
             " Ctrl-S: Save (only works if not a shell shortcut already)\n"
             "\n"
             "In Textfields:\n"
-            + "\n".join(" {}: {}".format(k, v) for k, v in widgets.ExtendedEdit.HELP)
+            + "\n".join(f" {k}: {v}" for k, v in widgets.ExtendedEdit.HELP)
             + "\n\nIn Priority Selector:\n"
-            + "\n".join(
-                " {}: {}".format(k, v) for k, v in widgets.PrioritySelector.HELP
-            )
+            + "\n".join(f" {k}: {v}" for k, v in widgets.PrioritySelector.HELP)
         )
 
     def _change_current_list(self, radio_button, new_state, new_list):

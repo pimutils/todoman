@@ -126,7 +126,7 @@ def _sort_callback(ctx, param, val):
             field = field[1:]
 
         if field not in Todo.ALL_SUPPORTED_FIELDS and field != "id":
-            raise click.BadParameter("Unknown field '{}'".format(field))
+            raise click.BadParameter(f"Unknown field '{field}'")
 
     return fields
 

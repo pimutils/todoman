@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # Todoman documentation build configuration file, created by
 # sphinx-quickstart on Tue Dec 15 22:10:30 2015.
@@ -38,14 +37,14 @@ spec = config.configspec
 
 def write_section(section, secname, key, comment, file_):
     fun_name, fun_args, fun_kwargs, default = validator._parse_check(section)
-    file_.write("\n.. _{}-{}:".format(secname, key))
+    file_.write(f"\n.. _{secname}-{key}:")
     file_.write("\n")
-    file_.write("\n.. object:: {}\n".format(key))
+    file_.write(f"\n.. object:: {key}\n")
     file_.write("\n")
     file_.write("    " + "\n    ".join([line.strip("# ") for line in comment]))
     file_.write("\n")
     if fun_name == "option":
-        fun_args = ["*{}*".format(arg) for arg in fun_args]
+        fun_args = [f"*{arg}*" for arg in fun_args]
         fun_args = fun_args[:-2] + [fun_args[-2] + " and " + fun_args[-1]]
         fun_name += ", allowed values are {}".format(", ".join(fun_args))
         fun_args = []
@@ -64,19 +63,19 @@ def write_section(section, secname, key, comment, file_):
             default = ["space" if one == " " else one for one in default]
             default = ", ".join(default)
 
-    file_.write("      :type: {}".format(fun_name))
+    file_.write(f"      :type: {fun_name}")
     file_.write("\n")
     if fun_args != []:
-        file_.write("      :args: {}".format(fun_args))
+        file_.write(f"      :args: {fun_args}")
         file_.write("\n")
-    file_.write("      :default: {}".format(default))
+    file_.write(f"      :default: {default}")
     file_.write("\n")
 
 
 with open("confspec.tmp", "w") as file_:
     for secname in sorted(spec):
         file_.write("\n")
-        heading = "The [{}] section".format(secname)
+        heading = f"The [{secname}] section"
         file_.write("{}\n{}".format(heading, len(heading) * "~"))
         file_.write("\n")
         comment = spec.comments[secname]

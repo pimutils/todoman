@@ -70,7 +70,7 @@ class Todo:
         """
         self.list = list
         now = datetime.now(LOCAL_TIMEZONE)
-        self.uid = "{}@{}".format(uuid4().hex, socket.gethostname())
+        self.uid = f"{uuid4().hex}@{socket.gethostname()}"
         self.list = list
 
         if new:
@@ -95,11 +95,11 @@ class Todo:
         self.status = "NEEDS-ACTION"
         self.summary = ""
 
-        self.filename = filename or "{}.ics".format(self.uid)
+        self.filename = filename or f"{self.uid}.ics"
         self.related = []
 
         if os.path.basename(self.filename) != self.filename:
-            raise ValueError("Must not be an absolute path: {}".format(self.filename))
+            raise ValueError(f"Must not be an absolute path: {self.filename}")
         self.mtime = mtime or datetime.now()
 
     def clone(self):
@@ -174,7 +174,7 @@ class Todo:
             else:
                 assert isinstance(
                     value, str
-                ), "Got {0} for {1} where str was expected".format(type(value), name)
+                ), "Got {} for {} where str was expected".format(type(value), name)
 
         if name in Todo.STRING_FIELDS:
             if value is None:
@@ -182,7 +182,7 @@ class Todo:
             else:
                 assert isinstance(
                     value, str
-                ), "Got {0} for {1} where str was expected".format(type(value), name)
+                ), "Got {} for {} where str was expected".format(type(value), name)
 
         if name in Todo.INT_FIELDS:
             if value is None:
@@ -190,7 +190,7 @@ class Todo:
             else:
                 assert isinstance(
                     value, int
-                ), "Got {0} for {1} where int was expected".format(type(value), name)
+                ), "Got {} for {} where int was expected".format(type(value), name)
 
         if name in Todo.LIST_FIELDS:
             if value is None:
@@ -198,7 +198,7 @@ class Todo:
             else:
                 assert isinstance(
                     value, list
-                ), "Got {0} for {1} where list was expected".format(type(value), name)
+                ), "Got {} for {} where list was expected".format(type(value), name)
 
         return object.__setattr__(self, name, v)
 
@@ -319,7 +319,7 @@ class VtodoWriter:
         if name in Todo.STRING_FIELDS:
             return value
 
-        raise Exception("Unknown field {} serialized.".format(name))
+        raise Exception(f"Unknown field {name} serialized.")
 
     def set_field(self, name, value):
         # If serialized value is None:
@@ -731,23 +731,23 @@ class Cache:
                 list_.name if isinstance(list_, List) else list_ for list_ in lists
             ]
             q = ", ".join(["?"] * len(lists))
-            extra_where.append("AND files.list_name IN ({})".format(q))
+            extra_where.append(f"AND files.list_name IN ({q})")
             params.extend(lists)
         if priority:
             extra_where.append("AND PRIORITY > 0 AND PRIORITY <= ?")
-            params.append("{}".format(priority))
+            params.append(f"{priority}")
         if location:
             extra_where.append("AND location LIKE ?")
-            params.append("%{}%".format(location))
+            params.append(f"%{location}%")
         if category:
             extra_where.append("AND categories LIKE ?")
-            params.append("%{}%".format(category))
+            params.append(f"%{category}%")
         if grep:
             # # requires sqlite with pcre, which won't be available everywhere:
             # extra_where.append('AND summary REGEXP ?')
             # params.append(grep)
             extra_where.append("AND summary LIKE ?")
-            params.append("%{}%".format(grep))
+            params.append(f"%{grep}%")
         if due:
             max_due = (datetime.now() + timedelta(hours=due)).timestamp()
             extra_where.append("AND due IS NOT NULL AND due < ?")
@@ -770,7 +770,7 @@ class Cache:
                 if s.startswith("-"):
                     order.append(" {} ASC".format(s[1:]))
                 else:
-                    order.append(" {} DESC".format(s))
+                    order.append(f" {s} DESC")
             order = ",".join(order)
         else:
             order = """

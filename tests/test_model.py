@@ -20,7 +20,7 @@ def test_querying(create, tmpdir):
     for list in "abc":
         for i, location in enumerate("abc"):
             create(
-                "test{}.ics".format(i),
+                f"test{i}.ics",
                 ("SUMMARY:test_querying\r\nLOCATION:{}\r\n").format(location),
                 list_name=list,
             )
@@ -57,7 +57,7 @@ def test_due_date(tmpdir, create, todos):
 def test_change_paths(tmpdir, create):
     old_todos = set("abcdefghijk")
     for x in old_todos:
-        create("{}.ics".format(x), "SUMMARY:{}\n".format(x), x)
+        create(f"{x}.ics", f"SUMMARY:{x}\n", x)
 
     tmpdir.mkdir("3")
 
@@ -127,7 +127,7 @@ def test_list_no_colour(tmpdir):
 
 def test_database_priority_sorting(create, todos):
     for i in [1, 5, 9, 0]:
-        create("test{}.ics".format(i), "PRIORITY:{}\n".format(i))
+        create(f"test{i}.ics", f"PRIORITY:{i}\n")
     create("test_none.ics", "SUMMARY:No priority (eg: None)\n")
 
     todos = list(todos())
@@ -224,7 +224,7 @@ def test_complete_recurring(default_database, due, todo_factory, tz, until):
     else:
         due = original_due = None
 
-    rrule = "FREQ=DAILY;UNTIL={}".format(until)
+    rrule = f"FREQ=DAILY;UNTIL={until}"
     todo = todo_factory(rrule=rrule, due=original_due, start=original_start)
 
     todo.complete()
