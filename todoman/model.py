@@ -26,7 +26,7 @@ logger = logging.getLogger(name=__name__)
 LOCAL_TIMEZONE = tzlocal()
 
 
-class cached_property:  # noqa
+class cached_property:
     """A read-only @property that is only evaluated once. Only usable on class
     instances' methods.
     """
