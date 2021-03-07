@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import socket
@@ -8,6 +10,10 @@ from datetime import time
 from datetime import timedelta
 from os.path import normpath
 from os.path import split
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Tuple
 from uuid import uuid4
 
 import icalendar
@@ -56,22 +62,34 @@ class Todo:
     the local system's one.
     """
 
-    def __init__(self, filename=None, mtime=None, new=False, list=None):
+    categories: List[str]
+    completed_at: Optional[datetime]
+    created_at: Optional[datetime]
+    last_modified: Optional[datetime]
+    related: List[Todo]
+    rrule: Optional[str]
+
+    def __init__(
+        self,
+        filename: str = None,
+        mtime: int = None,
+        new: bool = False,
+        list: TodoList = None,
+    ):
         """
         Creates a new todo using `todo` as a source.
 
         :param str filename: The name of the file for this todo. Defaults to
-        the <uid>.ics
+            the <uid>.ics
         :param mtime int: The last modified time for the file backing this
-        Todo.
+            Todo.
         :param bool new: Indicate that a new Todo is being created and should
-        be populated with default values.
-        :param List list: The list to which this Todo belongs.
+            be populated with default values.
+        :param TodoList list: The list to which this Todo belongs.
         """
         self.list = list
         now = datetime.now(LOCAL_TIMEZONE)
         self.uid = f"{uuid4().hex}@{socket.gethostname()}"
-        self.list = list
 
         if new:
             self.created_at = now
@@ -102,7 +120,7 @@ class Todo:
             raise ValueError(f"Must not be an absolute path: {self.filename}")
         self.mtime = mtime or datetime.now()
 
-    def clone(self):
+    def clone(self) -> Todo:
         """
         Returns a clone of this todo
 
@@ -162,7 +180,7 @@ class Todo:
         "NEEDS-ACTION",
     )
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value):
         """Check type and avoid setting fields to None"""
         """when that is not a valid attribue."""
 
@@ -203,14 +221,14 @@ class Todo:
         return object.__setattr__(self, name, v)
 
     @property
-    def is_completed(self):
+    def is_completed(self) -> bool:
         return bool(self.completed_at) or self.status in ("CANCELLED", "COMPLETED")
 
     @property
-    def is_recurring(self):
+    def is_recurring(self) -> bool:
         return bool(self.rrule)
 
-    def _apply_recurrence_to_dt(self, dt):
+    def _apply_recurrence_to_dt(self, dt) -> Optional[datetime]:
         if not dt:
             return None
 
@@ -231,7 +249,7 @@ class Todo:
         # TODO: Push copy's alarms.
         return copy
 
-    def complete(self):
+    def complete(self) -> None:
         """
         Immediately completes this todo
 
@@ -252,10 +270,13 @@ class Todo:
         self.status = "COMPLETED"
 
     @cached_property
-    def path(self):
+    def path(self) -> str:
+        if not self.list:
+            raise ValueError("A todo without a list does not have a path.")
+
         return os.path.join(self.list.path, self.filename)
 
-    def cancel(self):
+    def cancel(self) -> None:
         self.status = "CANCELLED"
 
 
@@ -283,10 +304,10 @@ class VtodoWriter:
         "rrule": "rrule",
     }
 
-    def __init__(self, todo):
+    def __init__(self, todo: Todo):
         self.todo = todo
 
-    def normalize_datetime(self, dt):
+    def normalize_datetime(self, dt: date) -> date:
         """
         Eliminate several differences between dates, times and datetimes which
         are hindering comparison:
@@ -307,7 +328,7 @@ class VtodoWriter:
 
         return dt.astimezone(pytz.UTC)
 
-    def serialize_field(self, name, value):
+    def serialize_field(self, name: str, value):
         if name in Todo.RRULE_FIELDS:
             return icalendar.vRecur.from_ical(value)
         if name in Todo.DATETIME_FIELDS:
@@ -321,7 +342,7 @@ class VtodoWriter:
 
         raise Exception(f"Unknown field {name} serialized.")
 
-    def set_field(self, name, value):
+    def set_field(self, name: str, value):
         # If serialized value is None:
         self.vtodo.pop(name)
         if value:
@@ -401,7 +422,7 @@ class Cache:
 
     SCHEMA_VERSION = 7
 
-    def __init__(self, path):
+    def __init__(self, path: str):
         self.cache_path = str(path)
         os.makedirs(os.path.dirname(self.cache_path), exist_ok=True)
 
@@ -411,7 +432,7 @@ class Cache:
 
         self.create_tables()
 
-    def save_to_disk(self):
+    def save_to_disk(self) -> None:
         self._conn.commit()
 
     def is_latest_version(self):
@@ -504,7 +525,7 @@ class Cache:
         os.remove(self.cache_path)
         self._conn = None
 
-    def add_list(self, name, path, colour, mtime):
+    def add_list(self, name: str, path: str, colour: str, mtime: int):
         """
         Inserts a new list into the cache.
 
@@ -541,7 +562,7 @@ class Cache:
 
         return self.add_list(name, path, colour, mtime)
 
-    def add_file(self, list_name, path, mtime):
+    def add_file(self, list_name: str, path: str, mtime: int):
         try:
             self._conn.execute(
                 """
@@ -560,7 +581,11 @@ class Cache:
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExists("file", list_name) from e
 
-    def _serialize_datetime(self, todo, field):
+    def _serialize_datetime(
+        self,
+        todo: icalendar.Todo,
+        field: str,
+    ) -> Tuple[Optional[int], Optional[bool]]:
         """
         Serialize a todo field in two value, the first one is the corresponding
         timestamp, the second one is a boolean indicating if the serialized
@@ -581,21 +606,21 @@ class Cache:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
         return dt.timestamp(), is_date
 
-    def _serialize_rrule(self, todo, field):
+    def _serialize_rrule(self, todo, field) -> Optional[str]:
         rrule = todo.get(field)
         if not rrule:
             return None
 
         return rrule.to_ical().decode()
 
-    def _serialize_categories(self, todo, field):
+    def _serialize_categories(self, todo, field) -> str:
         categories = todo.get(field, [])
         if not categories:
             return ""
 
         return ",".join([str(category) for category in categories.cats])
 
-    def add_vtodo(self, todo, file_path, id=None):
+    def add_vtodo(self, todo: icalendar.Todo, file_path: str, id=None) -> int:
         """
         Adds a todo into the cache.
 
@@ -634,7 +659,7 @@ class Cache:
         if start and due:
             start = None if start >= due else start
 
-        params = (
+        params = [
             file_path,
             todo.get("uid"),
             todo.get("summary"),
@@ -654,10 +679,10 @@ class Cache:
             todo.get("sequence", 1),
             self._serialize_datetime(todo, "last-modified")[0],
             self._serialize_rrule(todo, "rrule"),
-        )
+        ]
 
         if id:
-            params = (id,) + params
+            params = [id] + params
             sql = sql.format("id,\n", "?, ")
         else:
             sql = sql.format("", "")
@@ -687,7 +712,7 @@ class Cache:
             "NEEDS-ACTION",
             "IN-PROCESS",
         ),
-    ):
+    ) -> Iterable[Todo]:
         """
         Returns filtered cached todos, in a specified order.
 
@@ -718,7 +743,7 @@ class Cache:
         :rtype: generator
         """
         extra_where = []
-        params = []
+        params: list = []
 
         if "ANY" not in status:
             extra_where.append(
@@ -728,7 +753,7 @@ class Cache:
 
         if lists:
             lists = [
-                list_.name if isinstance(list_, List) else list_ for list_ in lists
+                list_.name if isinstance(list_, TodoList) else list_ for list_ in lists
             ]
             q = ", ".join(["?"] * len(lists))
             extra_where.append(f"AND files.list_name IN ({q})")
@@ -765,13 +790,13 @@ class Cache:
             extra_where.append("AND (start IS NULL OR start <= ?)")
             params.append(datetime.now().timestamp())
         if sort:
-            order = []
+            order_items = []
             for s in sort:
                 if s.startswith("-"):
-                    order.append(" {} ASC".format(s[1:]))
+                    order_items.append(" {} ASC".format(s[1:]))
                 else:
-                    order.append(f" {s} DESC")
-            order = ",".join(order)
+                    order_items.append(f" {s} DESC")
+            order = ",".join(order_items)
         else:
             order = """
                 completed_at DESC,
@@ -849,7 +874,7 @@ class Cache:
     def lists(self):
         result = self._conn.execute("SELECT * FROM lists")
         for row in result:
-            yield List(
+            yield TodoList(
                 name=row["name"],
                 path=row["path"],
                 colour=row["colour"],
@@ -910,18 +935,18 @@ class Cache:
             if paths_to_mtime.get(path, None) != mtime:
                 self.expire_file(path)
 
-    def expire_file(self, path):
+    def expire_file(self, path: str) -> None:
         self._conn.execute("DELETE FROM files WHERE path = ?", (path,))
 
 
-class List:
-    def __init__(self, name, path, colour=None):
+class TodoList:
+    def __init__(self, name: str, path: str, colour: str = None):
         self.path = path
         self.name = name
         self.colour = colour
 
     @staticmethod
-    def colour_for_path(path):
+    def colour_for_path(path: str) -> Optional[str]:
         try:
             with open(os.path.join(path, "color")) as f:
                 return f.read().strip()
@@ -929,7 +954,7 @@ class List:
             logger.debug("No colour for list %s", path)
 
     @staticmethod
-    def name_for_path(path):
+    def name_for_path(path: str) -> str:
         try:
             with open(os.path.join(path, "displayname")) as f:
                 return f.read().strip()
@@ -937,7 +962,7 @@ class List:
             return split(normpath(path))[1]
 
     @staticmethod
-    def mtime_for_path(path):
+    def mtime_for_path(path: str) -> int:
         colour_file = os.path.join(path, "color")
         display_file = os.path.join(path, "displayname")
 
@@ -953,7 +978,7 @@ class List:
             return 0
 
     def __eq__(self, other):
-        if isinstance(other, List):
+        if isinstance(other, TodoList):
             return self.name == other.name
         return object.__eq__(self, other)
 
@@ -976,7 +1001,7 @@ class Database:
         self.update_cache()
 
     def update_cache(self):
-        paths = {path: List.mtime_for_path(path) for path in self.paths}
+        paths = {path: TodoList.mtime_for_path(path) for path in self.paths}
         self.cache.expire_lists(paths)
 
         paths_to_mtime = {}
@@ -984,9 +1009,9 @@ class Database:
 
         for path in self.paths:
             list_name = self.cache.add_list(
-                List.name_for_path(path),
+                TodoList.name_for_path(path),
                 path,
-                List.colour_for_path(path),
+                TodoList.colour_for_path(path),
                 paths[path],
             )
             for entry in os.listdir(path):
@@ -1019,23 +1044,25 @@ class Database:
 
         self.cache.save_to_disk()
 
-    def todos(self, **kwargs):
+    def todos(self, **kwargs) -> Iterable[Todo]:
         return self.cache.todos(**kwargs)
 
-    def todo(self, id, **kwargs):
+    def todo(self, id, **kwargs) -> Todo:
         return self.cache.todo(id, **kwargs)
 
-    def lists(self):
+    def lists(self) -> Iterable[TodoList]:
         return self.cache.lists()
 
-    def move(self, todo, new_list, from_list=None):
-        from_list = from_list or todo.list
+    def move(self, todo: Todo, new_list: TodoList, from_list: TodoList) -> None:
         orig_path = os.path.join(from_list.path, todo.filename)
         dest_path = os.path.join(new_list.path, todo.filename)
 
         os.rename(orig_path, dest_path)
 
-    def delete(self, todo):
+    def delete(self, todo: Todo) -> None:
+        if not todo.list:
+            raise ValueError("Cannot delete Todo without a list.")
+
         path = os.path.join(todo.list.path, todo.filename)
         os.remove(path)
 
@@ -1048,7 +1075,10 @@ class Database:
         self.cache.clear()
         self.cache = None
 
-    def save(self, todo):
+    def save(self, todo: Todo) -> None:
+        if not todo.list:
+            raise ValueError("Cannot save Todo without a list.")
+
         for related in todo.related:
             self.save(related)
 
@@ -1065,6 +1095,6 @@ class Database:
         self.cache.save_to_disk()
 
 
-def _getmtime(path):
+def _getmtime(path: str) -> int:
     stat = os.stat(path)
     return getattr(stat, "st_mtime_ns", stat.st_mtime)

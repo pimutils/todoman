@@ -548,7 +548,7 @@ def move(ctx, list, ids):
     for id in ids:
         todo = ctx.db.todo(id)
         click.echo(ctx.formatter.compact(todo))
-        ctx.db.move(todo, list)
+        ctx.db.move(todo, new_list=list, from_list=todo.list)
 
 
 @cli.command()
