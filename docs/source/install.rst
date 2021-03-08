@@ -77,7 +77,7 @@ installations.
 Requirements
 ------------
 
-Todoman requires python 3.6 or later. Installation of required libraries can be
+Todoman requires python 3.8 or later. Installation of required libraries can be
 done via pip, or your OS's package manager.
 
 Recent versions also have experimental support for pypy3.

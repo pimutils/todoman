@@ -4,11 +4,11 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
-v3.10.0
+v4.0.0
 ------
 
-* Dropped support for python 3.5.
 * Added support for python 3.9.
+* Dropped support older Python versions. Only 3.8 and 3.9 are now supported.
 * Fix crash when ``default_command`` has arguments.
 
 v3.9.0
