@@ -822,6 +822,9 @@ def test_invoke_command(runner, tmpdir, config):
     config.write('default_command = "flush"\n', "a")
 
     flush = mock.MagicMock()
+    parser = mock.MagicMock()
+    flush.make_parser.return_value = parser
+    parser.parse_args.return_value = {}, [], []
     with patch.dict(cli.commands, values={"flush": flush}):
         result = runner.invoke(cli, catch_exceptions=False)
 
