@@ -269,6 +269,27 @@ def test_save_recurring_related(default_database, todo_factory, todos):
     assert todo.rrule == rrule
 
 
+def test_save_recurring_related_with_date(default_database, todo_factory, todos):
+    now = date.today()
+    original_due = now + timedelta(days=1)
+    rrule = "FREQ=DAILY;UNTIL=20990315"
+    todo = todo_factory(rrule=rrule, due=original_due)
+    todo.complete()
+
+    default_database.save(todo)
+
+    todos = todos(status="ANY")
+    todo = next(todos)
+    assert todo.percent_complete == 100
+    assert todo.is_completed is True
+    assert not todo.rrule
+
+    todo = next(todos)
+    assert todo.percent_complete == 0
+    assert todo.is_completed is False
+    assert todo.rrule == rrule
+
+
 def test_todo_filename_absolute_path():
     Todo(filename="test.ics")
     with pytest.raises(ValueError):
