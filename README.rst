@@ -5,7 +5,7 @@ Todoman
   :target: https://github.com/pimutils/todoman/actions
   :alt: CI status
 
-.. image:: https://codecov.io/gh/pimutils/todoman/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/pimutils/todoman/branch/main/graph/badge.svg
   :target: https://codecov.io/gh/pimutils/todoman
   :alt: Codecov coverage report
 
@@ -18,7 +18,7 @@ Todoman
   :alt: version on pypi
 
 .. image:: https://img.shields.io/pypi/l/todoman.svg
-  :target: https://github.com/pimutils/todoman/blob/master/LICENCE
+  :target: https://github.com/pimutils/todoman/blob/main/LICENCE
   :alt: licence
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
