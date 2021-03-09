@@ -12,8 +12,8 @@ from freezegun import freeze_time
 from todoman.exceptions import AlreadyExists
 from todoman.model import cached_property
 from todoman.model import Database
-from todoman.model import List
 from todoman.model import Todo
+from todoman.model import TodoList
 
 
 def test_querying(create, tmpdir):
@@ -269,6 +269,27 @@ def test_save_recurring_related(default_database, todo_factory, todos):
     assert todo.rrule == rrule
 
 
+def test_save_recurring_related_with_date(default_database, todo_factory, todos):
+    now = date.today()
+    original_due = now + timedelta(days=1)
+    rrule = "FREQ=DAILY;UNTIL=20990315"
+    todo = todo_factory(rrule=rrule, due=original_due)
+    todo.complete()
+
+    default_database.save(todo)
+
+    todos = todos(status="ANY")
+    todo = next(todos)
+    assert todo.percent_complete == 100
+    assert todo.is_completed is True
+    assert not todo.rrule
+
+    todo = next(todos)
+    assert todo.percent_complete == 0
+    assert todo.is_completed is False
+    assert todo.rrule == rrule
+
+
 def test_todo_filename_absolute_path():
     Todo(filename="test.ics")
     with pytest.raises(ValueError):
@@ -276,9 +297,9 @@ def test_todo_filename_absolute_path():
 
 
 def test_list_equality(tmpdir):
-    list1 = List(path=str(tmpdir), name="test list")
-    list2 = List(path=str(tmpdir), name="test list")
-    list3 = List(path=str(tmpdir), name="yet another test list")
+    list1 = TodoList(path=str(tmpdir), name="test list")
+    list2 = TodoList(path=str(tmpdir), name="test list")
+    list3 = TodoList(path=str(tmpdir), name="yet another test list")
 
     assert list1 == list2
     assert list1 != list3
@@ -447,3 +468,26 @@ def test_cached_property_property():
             return 0
 
     assert TestClass.a.__class__ == cached_property
+
+
+def test_deleting_todo_without_list_fails(tmpdir, default_database):
+    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
+    todo = Todo()
+
+    with pytest.raises(ValueError, match="Cannot delete Todo without a list."):
+        db.delete(todo)
+
+
+def test_saving_todo_without_list_fails(tmpdir, default_database):
+    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
+    todo = Todo()
+
+    with pytest.raises(ValueError, match="Cannot save Todo without a list."):
+        db.save(todo)
+
+
+def test_todo_path_without_list(tmpdir):
+    todo = Todo()
+
+    with pytest.raises(ValueError, match="A todo without a list does not have a path."):
+        todo.path

@@ -227,16 +227,16 @@ class HumanizedFormatter(DefaultFormatter):
 
 class PorcelainFormatter(DefaultFormatter):
     def _todo_as_dict(self, todo):
-        return dict(
-            completed=todo.is_completed,
-            due=self.format_datetime(todo.due),
-            id=todo.id,
-            list=todo.list.name,
-            percent=todo.percent_complete,
-            summary=todo.summary,
-            priority=todo.priority,
-            location=todo.location,
-        )
+        return {
+            "completed": todo.is_completed,
+            "due": self.format_datetime(todo.due),
+            "id": todo.id,
+            "list": todo.list.name,
+            "percent": todo.percent_complete,
+            "summary": todo.summary,
+            "priority": todo.priority,
+            "location": todo.location,
+        }
 
     def compact(self, todo):
         return json.dumps(self._todo_as_dict(todo), indent=4, sort_keys=True)
