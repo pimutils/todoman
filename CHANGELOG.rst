@@ -9,6 +9,7 @@ v3.10.0
 
 * Dropped support for python 3.5.
 * Added support for python 3.9.
+* Fix crash when ``default_command`` has arguments.
 
 v3.9.0
 ------
