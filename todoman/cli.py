@@ -316,10 +316,14 @@ def cli(click_ctx, colour, porcelain, humanize, config):
 
 
 def invoke_command(click_ctx, command):
-    name, *args = command.split(" ")
+    name, *raw_args = command.split(" ")
     if name not in cli.commands:
         raise click.ClickException("Invalid setting for [main][default_command]")
-    click_ctx.invoke(cli.commands[name], args)
+    parser = cli.commands[name].make_parser(click_ctx)
+    opts, args, param_order = parser.parse_args(raw_args)
+    for param in param_order:
+        opts[param.name] = param.handle_parse_result(click_ctx, opts, args)[0]
+    click_ctx.invoke(cli.commands[name], *args, **opts)
 
 
 try:  # pragma: no cover
