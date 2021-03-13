@@ -12,8 +12,10 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.8
           architecture: x64
+      - run: pip install wheel
+      - run: python setup.py build
       - run: pip install pre-commit
       - run: pre-commit run --all
   docs:
@@ -25,7 +27,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.8
           architecture: x64
       - name: Install test dependencies
         run: pip install tox

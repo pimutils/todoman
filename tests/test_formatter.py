@@ -16,13 +16,32 @@ from todoman.formatters import rgb_to_ansi
 @pytest.mark.parametrize("interval", [(65, "in a minute"), (-10800, "3 hours ago")])
 @pytest.mark.parametrize("tz", ["CET", "HST"])
 @freeze_time("2017-03-25")
-def test_humanized_date(runner, create, interval, now_for_tz, tz):
+def test_humanized_datetime(runner, create, interval, now_for_tz, tz):
     seconds, expected = interval
     due = now_for_tz(tz) + timedelta(seconds=seconds)
     create(
         "test.ics",
         "SUMMARY:Hi human!\nDUE;VALUE=DATE-TIME;TZID={}:{}\n".format(
             tz, due.strftime("%Y%m%dT%H%M%S")
+        ),
+    )
+
+    result = runner.invoke(cli, ["--humanize", "list", "--status", "ANY"])
+    assert not result.exception
+    assert expected in result.output
+
+
+@pyicu_sensitive
+@pytest.mark.parametrize("interval", [(65, "today"), (-10800, "today")])
+@pytest.mark.parametrize("tz", ["CET", "HST"])
+@freeze_time("2017-03-25 18:00:00")
+def test_humanized_date(runner, create, interval, now_for_tz, tz):
+    seconds, expected = interval
+    due = now_for_tz(tz) + timedelta(seconds=seconds)
+    create(
+        "test.ics",
+        "SUMMARY:Hi human!\nDUE;VALUE=DATE;TZID={}:{}\n".format(
+            tz, due.strftime("%Y%m%d")
         ),
     )
 

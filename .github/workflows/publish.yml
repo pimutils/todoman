@@ -15,7 +15,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.8
           architecture: x64
       - name: Install build dependencies
         run: pip install wheel
@@ -36,7 +36,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.8
           architecture: x64
       - name: Install build dependencies
         run: pip install wheel
