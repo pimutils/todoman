@@ -8,9 +8,9 @@ Configuration File
 ------------------
 
 The configuration file should be placed in
-``$XDG_CONFIG_DIR/todoman/todoman.conf``. ``$XDG_CONFIG_DIR`` defaults to
+``$XDG_CONFIG_DIR/todoman/config.py``. ``$XDG_CONFIG_DIR`` defaults to
 ``~/.config`` is most situations, so this will generally be
-``~/.config/todoman/todoman.conf``.
+``~/.config/todoman/config.py``.
 
 .. include:: confspec.tmp
 
@@ -21,8 +21,8 @@ The below example should serve as a reference. It will read ics files from any
 directory inside ``~/.local/share/calendars/``, uses the ISO-8601 date format,
 and set the due date for new todos in 48hs.
 
-.. literalinclude:: ../../todoman.conf.sample
-  :language: ini
+.. literalinclude:: ../../config.py.sample
+  :language: python
 
 Color and displayname
 ---------------------

@@ -4,7 +4,6 @@ import locale
 import sys
 from contextlib import contextmanager
 from datetime import timedelta
-from os.path import expanduser
 from os.path import isdir
 
 import click
@@ -52,8 +51,8 @@ def _validate_lists_param(ctx, param=None, lists=()):
 def _validate_list_param(ctx, param=None, name=None):
     ctx = ctx.find_object(AppContext)
     if name is None:
-        if ctx.config["main"]["default_list"]:
-            name = ctx.config["main"]["default_list"]
+        if ctx.config["default_list"]:
+            name = ctx.config["default_list"]
         else:
             raise click.BadParameter("You must set `default_list` or use -l.")
     lists = {list_.name: list_ for list_ in ctx.db.lists()}
@@ -110,7 +109,7 @@ def _validate_start_date_param(ctx, param, val):
 
 def _validate_startable_param(ctx, param, val):
     ctx = ctx.find_object(AppContext)
-    return val or ctx.config["main"]["startable"]
+    return val or ctx.config["startable"]
 
 
 def _validate_todos(ctx, param, val):
@@ -201,17 +200,17 @@ class AppContext:
     @cached_property
     def ui_formatter(self):
         return formatters.DefaultFormatter(
-            self.config["main"]["date_format"],
-            self.config["main"]["time_format"],
-            self.config["main"]["dt_separator"],
+            self.config["date_format"],
+            self.config["time_format"],
+            self.config["dt_separator"],
         )
 
     @cached_property
     def formatter(self):
         return self.formatter_class(
-            self.config["main"]["date_format"],
-            self.config["main"]["time_format"],
-            self.config["main"]["dt_separator"],
+            self.config["date_format"],
+            self.config["time_format"],
+            self.config["dt_separator"],
         )
 
 
@@ -280,7 +279,7 @@ def cli(click_ctx, colour, porcelain, humanize, config):
         )
 
     if humanize is None:  # False means explicitly disabled
-        humanize = ctx.config["main"]["humanize"]
+        humanize = ctx.config["humanize"]
 
     if porcelain:
         ctx.formatter_class = formatters.PorcelainFormatter
@@ -289,7 +288,7 @@ def cli(click_ctx, colour, porcelain, humanize, config):
     else:
         ctx.formatter_class = formatters.DefaultFormatter
 
-    colour = colour or ctx.config["main"]["color"]
+    colour = colour or ctx.config["color"]
     if colour == "always":
         click_ctx.color = True
     elif colour == "never":
@@ -297,13 +296,13 @@ def cli(click_ctx, colour, porcelain, humanize, config):
 
     paths = [
         path
-        for path in glob.iglob(expanduser(ctx.config["main"]["path"]))
-        if isdir(path)
+        for path in glob.iglob(ctx.config["path"])
+        if isdir(path) and not path.endswith("__pycache__")
     ]
     if len(paths) == 0:
-        raise exceptions.NoListsFound(ctx.config["main"]["path"])
+        raise exceptions.NoListsFound(ctx.config["path"])
 
-    ctx.db = Database(paths, ctx.config["main"]["cache_path"])
+    ctx.db = Database(paths, ctx.config["cache_path"])
 
     # Make python actually use LC_TIME, or the user's locale settings
     locale.setlocale(locale.LC_TIME, "")
@@ -311,7 +310,7 @@ def cli(click_ctx, colour, porcelain, humanize, config):
     if not click_ctx.invoked_subcommand:
         invoke_command(
             click_ctx,
-            ctx.config["main"]["default_command"],
+            ctx.config["default_command"],
         )
 
 
@@ -357,11 +356,11 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
 
     todo = Todo(new=True, list=list)
 
-    default_due = ctx.config["main"]["default_due"]
+    default_due = ctx.config["default_due"]
     if default_due:
         todo.due = todo.created_at + timedelta(hours=default_due)
 
-    default_priority = ctx.config["main"]["default_priority"]
+    default_priority = ctx.config["default_priority"]
     if default_priority is not None:
         todo.priority = default_priority
 
