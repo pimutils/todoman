@@ -72,9 +72,10 @@ Minor changes
 *************
 
 * Added support for python 3.9.
-* The dependency `configobj` is no longer required.
+* The dependency ``configobj`` is no longer required.
 * Click 8.0 is now supported.
 * Fix crash when ``default_command`` has arguments.
+* ``--porcelain`` not includes the fields ``completed_at`` and ``description``.
 
 v3.9.0
 ------
