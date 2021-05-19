@@ -674,11 +674,11 @@ def test_list_startable(tmpdir, runner, todo_factory, config):
 def test_bad_start_date(runner):
     result = runner.invoke(cli, ["list", "--start"])
     assert result.exception
-    assert result.output.strip() == "Error: --start option requires 2 arguments"
+    assert result.output.strip() == "Error: Option '--start' requires 2 arguments."
 
     result = runner.invoke(cli, ["list", "--start", "before"])
     assert result.exception
-    assert result.output.strip() == "Error: --start option requires 2 arguments"
+    assert result.output.strip() == "Error: Option '--start' requires 2 arguments."
 
     result = runner.invoke(cli, ["list", "--start", "before", "not_a_date"])
     assert result.exception
@@ -780,7 +780,7 @@ def test_status_validation():
         )
     )
     def run_test(statuses):
-        validated = cli.validate_status(val=",".join(statuses))
+        validated = cli.validate_status(val=",".join(statuses)).split(",")
 
         if "ANY" in statuses:
             assert len(validated) == 4
@@ -836,7 +836,7 @@ def test_invoke_invalid_command(runner, tmpdir, config):
     result = runner.invoke(cli, catch_exceptions=False)
 
     assert result.exception
-    assert "Error: Invalid setting for [main][default_command]" in result.output
+    assert "Error: Invalid setting for [default_command]" in result.output
 
 
 def test_show_priority(runner, todo_factory, todos):

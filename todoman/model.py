@@ -708,10 +708,7 @@ class Cache:
         due=None,
         start=None,
         startable=False,
-        status=(
-            "NEEDS-ACTION",
-            "IN-PROCESS",
-        ),
+        status="NEEDS-ACTION,IN-PROCESS",
     ) -> Iterable[Todo]:
         """
         Returns filtered cached todos, in a specified order.
@@ -746,10 +743,13 @@ class Cache:
         params: list = []
 
         if "ANY" not in status:
+            statuses = status.split(",")
             extra_where.append(
-                "AND status IN ({})".format(", ".join(["?"] * len(status)))
+                "AND (status IN ({}) OR status IS NULL)".format(
+                    ", ".join(["?"] * len(statuses))
+                )
             )
-            params.extend(s.upper() for s in status)
+            params.extend(s.upper() for s in statuses)
 
         if lists:
             lists = [
