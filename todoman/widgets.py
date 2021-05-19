@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Hugo Osvaldo Barrera
+# Copyright (c) 2016-2020 Hugo Osvaldo Barrera
 # Copyright (c) 2013-2016 Christian Geier et al.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -19,7 +19,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 import re
 
 import click
@@ -30,13 +29,13 @@ class ExtendedEdit(urwid.Edit):
     """A text editing widget supporting some more editing commands"""
 
     HELP = [
-        ('Ctrl-W', 'Delete word'),
-        ('Ctrl-U', 'Delete until beginning of line'),
-        ('Ctrl-K', 'Delete until end of line'),
-        ('Ctrl-A', 'Go to beginning of line'),
-        ('Ctrl-E', 'Go to end of line'),
-        ('Ctrl-D', 'Delete forward letter'),
-        ('Ctrl-O', 'Edit in $EDITOR'),
+        ("Ctrl-W", "Delete word"),
+        ("Ctrl-U", "Delete until beginning of line"),
+        ("Ctrl-K", "Delete until end of line"),
+        ("Ctrl-A", "Go to beginning of line"),
+        ("Ctrl-E", "Go to end of line"),
+        ("Ctrl-D", "Delete forward letter"),
+        ("Ctrl-O", "Edit in $EDITOR"),
     ]
 
     def __init__(self, parent, *a, **kw):
@@ -44,19 +43,19 @@ class ExtendedEdit(urwid.Edit):
         super().__init__(*a, **kw)
 
     def keypress(self, size, key):
-        if key == 'ctrl w':
+        if key == "ctrl w":
             self._delete_word()
-        elif key == 'ctrl u':
+        elif key == "ctrl u":
             self._delete_till_beginning_of_line()
-        elif key == 'ctrl k':
+        elif key == "ctrl k":
             self._delete_till_end_of_line()
-        elif key == 'ctrl a':
+        elif key == "ctrl a":
             self._goto_beginning_of_line()
-        elif key == 'ctrl e':
+        elif key == "ctrl e":
             self._goto_end_of_line()
-        elif key == 'ctrl d':
+        elif key == "ctrl d":
             self._delete_forward_letter()
-        elif key == 'ctrl o':
+        elif key == "ctrl o":
             # Allow editing in $EDITOR
             self._editor()
         # TODO: alt b, alt f
@@ -66,53 +65,53 @@ class ExtendedEdit(urwid.Edit):
     def _delete_forward_letter(self):
         text = self.get_edit_text()
         pos = self.edit_pos
-        text = text[:pos] + text[pos + 1:]
+        text = text[:pos] + text[pos + 1 :]
         self.set_edit_text(text)
 
     def _delete_word(self):
         """delete word before cursor"""
         text = self.get_edit_text()
-        t = text[:self.edit_pos].rstrip()
+        t = text[: self.edit_pos].rstrip()
 
-        words = re.findall(r'[\w]+|[^\w\s]', t, re.UNICODE)
-        if t == '':
+        words = re.findall(r"[\w]+|[^\w\s]", t, re.UNICODE)
+        if t == "":
             f_text = t
         else:
-            f_text = t[:len(t) - len(words[-1])]
+            f_text = t[: len(t) - len(words[-1])]
 
-        self.set_edit_text(f_text + text[self.edit_pos:])
+        self.set_edit_text(f_text + text[self.edit_pos :])
         self.set_edit_pos(len(f_text))
 
     def _delete_till_beginning_of_line(self):
         """delete till start of line before cursor"""
         text = self.get_edit_text()
-        sol = text.rfind('\n', 0, self.edit_pos) + 1
+        sol = text.rfind("\n", 0, self.edit_pos) + 1
 
         before_line = text[:sol]
 
-        self.set_edit_text(before_line + text[self.edit_pos:])
+        self.set_edit_text(before_line + text[self.edit_pos :])
         self.set_edit_pos(sol)
 
     def _delete_till_end_of_line(self):
         """delete till end of line before cursor"""
         text = self.get_edit_text()
-        eol = text.find('\n', self.edit_pos)
+        eol = text.find("\n", self.edit_pos)
 
         if eol == -1:
-            after_eol = ''
+            after_eol = ""
         else:
             after_eol = text[eol:]
 
-        self.set_edit_text(text[:self.edit_pos] + after_eol)
+        self.set_edit_text(text[: self.edit_pos] + after_eol)
 
     def _goto_beginning_of_line(self):
         text = self.get_edit_text()
-        sol = text.rfind('\n', 0, self.edit_pos) + 1
+        sol = text.rfind("\n", 0, self.edit_pos) + 1
         self.set_edit_pos(sol)
 
     def _goto_end_of_line(self):
         text = self.get_edit_text()
-        eol = text.find('\n', self.edit_pos)
+        eol = text.find("\n", self.edit_pos)
         if eol == -1:
             eol = len(text)
         self.set_edit_pos(eol)
@@ -127,8 +126,8 @@ class ExtendedEdit(urwid.Edit):
 class PrioritySelector(urwid.Button):
 
     HELP = [
-        ('left', 'Lower Priority'),
-        ('right', 'Higher Priority'),
+        ("left", "Lower Priority"),
+        ("right", "Higher Priority"),
     ]
 
     RANGES = [
@@ -153,17 +152,17 @@ class PrioritySelector(urwid.Button):
     def _update_label(self, delta=0):
         for i, r in enumerate(PrioritySelector.RANGES):
             if self._priority in r:
-                self._priority = PrioritySelector.RANGES[(
-                    i + delta
-                ) % len(PrioritySelector.RANGES)][0]
+                self._priority = PrioritySelector.RANGES[
+                    (i + delta) % len(PrioritySelector.RANGES)
+                ][0]
                 self._set_label()
                 return
 
     def keypress(self, size, key):
-        if key in ['right', 'enter']:
+        if key in ["right", "enter"]:
             self._update_label(1)
             return
-        if key == 'left':
+        if key == "left":
             self._update_label(-1)
             return
 

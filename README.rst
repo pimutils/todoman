@@ -1,11 +1,11 @@
 Todoman
 =======
 
-.. image:: https://travis-ci.org/pimutils/todoman.svg?branch=master
-  :target: https://travis-ci.org/pimutils/todoman
-  :alt: Travis CI build status
+.. image:: https://action-badges.now.sh/pimutils/todoman
+  :target: https://github.com/pimutils/todoman/actions
+  :alt: CI status
 
-.. image:: https://codecov.io/gh/pimutils/todoman/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/pimutils/todoman/branch/main/graph/badge.svg
   :target: https://codecov.io/gh/pimutils/todoman
   :alt: Codecov coverage report
 
@@ -18,12 +18,12 @@ Todoman
   :alt: version on pypi
 
 .. image:: https://img.shields.io/pypi/l/todoman.svg
-  :target: https://github.com/pimutils/todoman/blob/master/LICENCE
+  :target: https://github.com/pimutils/todoman/blob/main/LICENCE
   :alt: licence
 
-.. image:: https://img.shields.io/badge/Say%20Thanks!-%F0%9F%A6%89-1EAEDB.svg
-  :target: https://saythanks.io/to/hobarrera
-  :alt: Say Thanks!
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+  :target: https://pypi.org/project/black/
+  :alt: code style: black
 
 Todoman is a simple, standards-based, cli todo (aka: task) manager. Todos
 are stored into `icalendar <https://tools.ietf.org/html/rfc5545>`_ files, which
@@ -45,7 +45,7 @@ Features
   matches the `vdir <https://vdirsyncer.readthedocs.org/en/latest/vdir.html>`_
   specification.
 * There's support for the most common TODO features for now (summary,
-  description, location, due date and priority) for now.
+  description, location, due date and priority).
 * Todoman should run on any major operating system (except Windows).
 * Unsupported fields may not be shown but are *never* deleted or altered.
 

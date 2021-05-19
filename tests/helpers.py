@@ -1,5 +1,5 @@
 __all__ = [
-    'pyicu_sensitive',
+    "pyicu_sensitive",
 ]
 
 import os
@@ -10,15 +10,9 @@ import pytest
 
 def is_fs_case_sensitive():
     with TemporaryDirectory() as tmpdir:
-        os.mkdir(os.path.join(
-            tmpdir,
-            'casesensitivetest'
-        ))
+        os.mkdir(os.path.join(tmpdir, "casesensitivetest"))
         try:
-            os.mkdir(os.path.join(
-                tmpdir,
-                'casesensitiveTEST'
-            ))
+            os.mkdir(os.path.join(tmpdir, "casesensitiveTEST"))
             return True
         except FileExistsError:
             return False

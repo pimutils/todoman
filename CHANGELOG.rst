@@ -4,6 +4,94 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v4.0.0
+------
+
+Breaking changes in the configuration format
+********************************************
+
+The configuration format is changing with release 4.0.0. We currently depend on
+an unmaintained library for configuration. It's not currently in a working
+state, and while some distributions are patching it, setting up a clean
+environment is a bit non-trivial, and the situation will only degrade in future.
+
+The changes in format are be subtle, and also come with an intention to add
+further extensibility in future. Configuration files will be plain python. If
+you don't know Python don't worry, you don't _need_ to know Python.
+
+I'll take my own config as a reference. The pre-4.0.0 format is:
+
+```dosini
+[main]
+path = ~/.local/share/calendars/*
+time_format = '%H:%M'
+default_list = todo
+humanize = true
+startable = true
+```
+
+The 4.0.0 version would look like this:
+
+```python
+path = "~/.local/share/calendars/*"
+time_format = "%H:%M"
+default_list = "todo"
+humanize = True
+startable = True
+```
+
+Key differences:
+
+- The `[main]` header is no longer needed.
+- All strings must be quoted (this was previously optional).
+- True and False start with uppercase.
+- Using `yes` or `on` is no longer valid; only `True` and `False` are valid.
+
+That's basically it. This lets up drop the problematic dependency, and we don't
+actually need anything to read the config: it's just python code like the rest
+of `todoman`!
+
+For those users who _are_ python developers, you'll note this gives some
+interesting flexibility: you CAN add any custom python code into the config
+file. For example, you can defined the `path` programatically:
+
+```python
+def get_path() -> str:
+    ...
+
+
+path = get_path
+```
+
+Dropped support
+***************
+
+* Dropped support older Python versions. Only 3.8 and 3.9 are now supported.
+
+Minor changes
+*************
+
+* Added support for python 3.9.
+* The dependency `configobj` is no longer required.
+* Click 8.0 is now supported.
+* Fix crash when ``default_command`` has arguments.
+
+v3.9.0
+------
+
+* The man page has been improved. ``sphinx-click`` is now required to build the
+  documentation.
+
+v3.8.0
+------
+* Don't display list if there's only one list (of one list has been specified).
+* Fixed several issues when using dates with no times.
+* Dropped support for Python 3.4.
+
+v3.7.0
+------
+* Properly support iCal files with dates (instead of datetimes).
+
 v3.6.0
 ------
 * Allow passing a custom configuration file with the ``--config/-c`` option.
@@ -13,6 +101,8 @@ v3.6.0
   version.
 * ``click-repl`` is now listed as an optional dependency. It is required for
   the ``todo repl`` command.
+* Add the ``default_priority`` config setting.
+* Drop support for Python 3.4.
 
 v3.5.0
 ------
@@ -170,4 +260,3 @@ Packaging changes
 * New runtime dependency: configobj
 * New runtime dependency: python-dateutil
 * New test dependency: flake8-import-order.
-

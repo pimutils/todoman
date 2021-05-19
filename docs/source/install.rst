@@ -19,7 +19,7 @@ todoman is packaged in the community_ repository, and can be installed using::
 macOS
 ~~~~~
 
-todoman is packaged in homebrew_, an can be installed using::
+todoman is packaged in homebrew_, and can be installed using::
 
     brew install todoman
 
@@ -77,11 +77,8 @@ installations.
 Requirements
 ------------
 
-Todoman requires python 3.4 or later. Installation of required libraries can be
+Todoman requires python 3.8 or later. Installation of required libraries can be
 done via pip, or your OS's package manager.
-
-Todoman will not work with python 2. However, keep in mind that python 2 and
-python 3 can coexist (and most distributions actually ship both).
 
 Recent versions also have experimental support for pypy3.
 

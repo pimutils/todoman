@@ -11,7 +11,6 @@ Todoman is now part of the ``pimutils`` project, and is hosted at GitHub_.
 .. _CalDav: http://en.wikipedia.org/wiki/CalDAV
 .. _vdirsyncer: https://vdirsyncer.readthedocs.org/
 .. _GitHub: https://github.com/pimutils/todoman
-.. _GitLab.com: https://gitlab.com/hobarrera/todoman/
 
 Features
 --------
@@ -21,7 +20,7 @@ Features
   matches the `vdir <https://vdirsyncer.readthedocs.org/en/latest/vdir.html>`_
   specification.
 * There's support for the most common TODO features for now (summary,
-  description, location, due date and priority) for now.
+  description, location, due date and priority).
 * Runs on any Unix-like OS. It's been tested on GNU/Linux, BSD and macOS.
 * Unsupported fields may not be shown but are *never* deleted or altered.
 
@@ -34,7 +33,7 @@ Caveats
 -------
 
 Support for the ``percent-completed`` attribute is incomplete. Todoman can only
-mark todos as completed (100%), and will nor reflect nor allow editing for
+mark todos as completed (100%), and will not reflect nor allow editing for
 values for ``percent > 0 ^ percent < 100``.
 
 Table of Contents
@@ -46,6 +45,7 @@ Table of Contents
    install
    configure
    usage
+   man page
    contributing
    changelog
    licence
@@ -56,4 +56,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

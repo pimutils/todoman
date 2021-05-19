@@ -11,14 +11,18 @@ when copying code from elsewhere).
 Authors are listed in alphabetical order.
 
 * Anubha Agrawal <anubhakannu@gmail.com>
+* Ben Boeckel <mathstuf@gmail.com>
+* Ben Moran <github@benmoran.net>
 * Benjamin Frank <ben+gitlab@pipsfrank.de>
 * Christian Geier <geier@lostpackets.de>
 * Doron Behar <me@doronbehar.com>
 * Guilhem Saurel <guilhem.saurel@gmail.com>
 * Hugo Osvaldo Barrera <hugo@barrera.io>
+* Joachim Desroches <joachim.desroches@epfl.ch>
 * José Ribeiro <hello@jlbribeiro.com>
 * Mansimar Kaur <mansimarkaur.mks@gmail.com>
 * Markus Unterwaditzer <markus@unterwaditzer.net>
+* Nicolas Évrard <nicoe@openhex.org>
 * Pascal Wichmann <wichmannpas@gmail.com>
 * Paweł Fertyk <pfertyk@openmailbox.org>
 * Rimsha Khan <rimshakhan.rk03@gmail.com>

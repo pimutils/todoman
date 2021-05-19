@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # Todoman documentation build configuration file, created by
 # sphinx-quickstart on Tue Dec 15 22:10:30 2015.
@@ -12,94 +11,44 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-
-import validate
-from configobj import ConfigObj
-
 import todoman
+from todoman.configuration import CONFIG_SPEC
+from todoman.configuration import NO_DEFAULT
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #  sys.path.insert(0, os.path.abspath('.'))
 
-# -- Generate configspec.rst ----------------------------------------------
-
-specpath = '../../todoman/confspec.ini'
-config = ConfigObj(
-    None,
-    configspec=specpath,
-    stringify=False,
-    list_values=False,
-)
-validator = validate.Validator()
-config.validate(validator)
-spec = config.configspec
+# -- Generate confspec.rst ----------------------------------------------
 
 
-def write_section(section, secname, key, comment, file_):
-    fun_name, fun_args, fun_kwargs, default = validator._parse_check(section)
-    file_.write('\n.. _{}-{}:'.format(secname, key))
-    file_.write('\n')
-    file_.write('\n.. object:: {}\n'.format(key))
-    file_.write('\n')
-    file_.write('    ' + '\n    '.join([line.strip('# ') for line in comment]))
-    file_.write('\n')
-    if fun_name == 'option':
-        fun_args = ['*{}*'.format(arg) for arg in fun_args]
-        fun_args = fun_args[:-2] + [fun_args[-2] + ' and ' + fun_args[-1]]
-        fun_name += ', allowed values are {}'.format(', '.join(fun_args))
-        fun_args = []
-    if fun_name == 'integer' and len(fun_args) == 2:
-        fun_name += ', allowed values are between {} and {}'.format(
-            fun_args[0],
-            fun_args[1],
-        )
-        fun_args = []
-    file_.write('\n')
-    if fun_name in ['expand_db_path', 'expand_path']:
-        fun_name = 'string'
-    elif fun_name in ['force_list']:
-        fun_name = 'list'
-        if isinstance(default, list):
-            default = ['space' if one == ' ' else one for one in default]
-            default = ', '.join(default)
+def confspec_rst():
+    """Generator that returns lines for the confspec doc page."""
 
-    file_.write('      :type: {}'.format(fun_name))
-    file_.write('\n')
-    if fun_args != []:
-        file_.write('      :args: {}'.format(fun_args))
-        file_.write('\n')
-    file_.write('      :default: {}'.format(default))
-    file_.write('\n')
+    for name, type_, default, description, _validation in sorted(CONFIG_SPEC):
+        if default == NO_DEFAULT:
+            formatted_default = "None, this field is mandatory."
+        elif isinstance(default, str):
+            formatted_default = f'``"{default}"``'
+        else:
+            formatted_default = f"``{default}``"
+
+        yield f"\n.. _main-{name}:"
+        yield f"\n\n.. object:: {name}\n"
+        yield "    " + "\n    ".join(line for line in description.splitlines())
+        yield "\n\n"
+
+        if isinstance(type_, tuple):
+            yield f"      :type: {type_[0].__name__}"
+        else:
+            yield f"      :type: {type_.__name__}"
+
+        yield f"\n      :default: {formatted_default}\n"
 
 
-with open('confspec.tmp', 'w') as file_:
-    for secname in sorted(spec):
-        file_.write('\n')
-        heading = 'The [{}] section'.format(secname)
-        file_.write('{}\n{}'.format(heading, len(heading) * '~'))
-        file_.write('\n')
-        comment = spec.comments[secname]
-        file_.write('\n'.join([line[2:] for line in comment]))
-        file_.write('\n')
-
-        for key, comment in sorted(spec[secname].comments.items()):
-            if key == '__many__':
-                comment = spec[secname].comments[key]
-                file_.write('\n'.join([line[2:] for line in comment]))
-                file_.write('\n')
-                comments = spec[secname]['__many__'].comments
-                for key, comment in sorted(comments.items()):
-                    write_section(
-                        spec[secname]['__many__'][key],
-                        secname,
-                        key,
-                        comment,
-                        file_,
-                    )
-            else:
-                write_section(spec[secname][key], secname, key, comment, file_)
+with open("confspec.tmp", "w") as file_:
+    file_.writelines(confspec_rst())
 
 # -- General configuration ------------------------------------------------
 
@@ -110,30 +59,31 @@ with open('confspec.tmp', 'w') as file_:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx_autorun',
-    'sphinx.ext.todo',
-    'sphinx.ext.viewcode',
+    "sphinx_click.ext",
+    "sphinx.ext.autodoc",
+    "sphinx_autorun",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The encoding of source files.
 #  source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'Todoman'
-copyright = '2015-2017, Hugo Osvaldo Barrera'
-author = 'Hugo Osvaldo Barrera'
+project = "Todoman"
+copyright = "2015-2020, Hugo Osvaldo Barrera"
+author = "Hugo Osvaldo Barrera <hugo@barrera.io>, et al"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -159,7 +109,7 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['build']
+exclude_patterns = ["build"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -177,7 +127,7 @@ exclude_patterns = ['build']
 #  show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # A list of ignored prefixes for module index sorting.
 #  modindex_common_prefix = []
@@ -192,17 +142,17 @@ todo_include_todos = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = "alabaster"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'github_user': 'pimutils',
-    'github_repo': 'todoman',
-    'travis_button': 'true',
-    'github_banner': 'true',
-    'github_button': 'false',
+    "github_user": "pimutils",
+    "github_repo": "todoman",
+    "travis_button": "true",
+    "github_banner": "true",
+    "github_button": "false",
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -227,7 +177,7 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -244,12 +194,12 @@ html_static_path = ['_static']
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
-    '**': [
-        'about.html',
-        'navigation.html',
-        'relations.html',
-        'searchbox.html',
-        'donate.html',
+    "**": [
+        "about.html",
+        "navigation.html",
+        "relations.html",
+        "searchbox.html",
+        "donate.html",
     ]
 }
 
@@ -298,20 +248,17 @@ html_sidebars = {
 #  html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Todomandoc'
+htmlhelp_basename = "Todomandoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+latex_elements: dict = {
     # The paper size ('letterpaper' or 'a4paper').
     #  'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #  'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #  'preamble': '',
-
     # Latex figure (float) alignment
     #  'figure_align': 'htbp',
 }
@@ -322,10 +269,10 @@ latex_elements = {
 latex_documents = [
     (
         master_doc,
-        'Todoman.tex',
-        'Todoman Documentation',
-        'Hugo Osvaldo Barrera',
-        'manual',
+        "Todoman.tex",
+        "Todoman Documentation",
+        "Hugo Osvaldo Barrera",
+        "manual",
     ),
 ]
 
@@ -353,13 +300,15 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(
-    master_doc,
-    'todoman',
-    'Todoman Documentation',
-    [author],
-    1,
-)]
+man_pages = [
+    (
+        "man",
+        "todo",
+        "a simple, standards-based, cli todo manager",
+        [author],
+        1,
+    )
+]
 
 # If true, show URL addresses after external links.
 #  man_show_urls = False
@@ -372,12 +321,12 @@ man_pages = [(
 texinfo_documents = [
     (
         master_doc,
-        'Todoman',
-        'Todoman Documentation',
+        "Todoman",
+        "Todoman Documentation",
         author,
-        'Todoman',
-        'One line description of project.',
-        'Miscellaneous',
+        "Todoman",
+        "One line description of project.",
+        "Miscellaneous",
     ),
 ]
 
