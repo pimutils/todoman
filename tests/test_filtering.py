@@ -243,11 +243,11 @@ def test_statuses(todo_factory, todos):
     needs_action = todo_factory(status="NEEDS-ACTION").uid
     no_status = todo_factory(status="NEEDS-ACTION").uid
 
-    all_todos = set(todos(status=["ANY"]))
-    cancelled_todos = set(todos(status=["CANCELLED"]))
-    completed_todos = set(todos(status=["COMPLETED"]))
-    in_process_todos = set(todos(status=["IN-PROCESS"]))
-    needs_action_todos = set(todos(status=["NEEDS-ACTION"]))
+    all_todos = set(todos(status="ANY"))
+    cancelled_todos = set(todos(status="CANCELLED"))
+    completed_todos = set(todos(status="COMPLETED"))
+    in_process_todos = set(todos(status="IN-PROCESS"))
+    needs_action_todos = set(todos(status="NEEDS-ACTION"))
 
     assert {t.uid for t in all_todos} == {
         cancelled,

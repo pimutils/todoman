@@ -130,17 +130,11 @@ def _sort_callback(ctx, param, val):
     return fields
 
 
-def validate_status(ctx=None, param=None, val=None):
-    # The default command doesn't run callbacks as expected, so it needs to
-    # specify the callback'd type. When `list` is called explicitly, this
-    # callback *IS* run, so we need to handle that edge case:
-    if not isinstance(val, str):
-        return val
-
+def validate_status(ctx=None, param=None, val=None) -> str:
     statuses = val.upper().split(",")
 
     if "ANY" in statuses:
-        return Todo.VALID_STATUSES
+        return ",".join(Todo.VALID_STATUSES)
 
     for status in statuses:
         if status not in Todo.VALID_STATUSES:
@@ -150,7 +144,7 @@ def validate_status(ctx=None, param=None, val=None):
                 )
             )
 
-    return statuses
+    return val
 
 
 def _todo_property_options(command):
@@ -604,7 +598,7 @@ def move(ctx, list, ids):
 @click.option(
     "--status",
     "-s",
-    default=["NEEDS-ACTION", "IN-PROCESS"],
+    default="NEEDS-ACTION,IN-PROCESS",
     callback=validate_status,
     help=(
         "Show only todos with the "

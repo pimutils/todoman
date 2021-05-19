@@ -780,7 +780,7 @@ def test_status_validation():
         )
     )
     def run_test(statuses):
-        validated = cli.validate_status(val=",".join(statuses))
+        validated = cli.validate_status(val=",".join(statuses)).split(",")
 
         if "ANY" in statuses:
             assert len(validated) == 4
