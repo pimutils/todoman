@@ -63,18 +63,18 @@ def get_path() -> str:
 path = get_path
 ```
 
-Dependency changes
-******************
+Dropped support
+***************
+
+* Dropped support older Python versions. Only 3.8 and 3.9 are now supported.
+
+Minor changes
+*************
 
 * Added support for python 3.9.
-* Dropped support older Python versions. Only 3.8 and 3.9 are now supported.
 * The dependency `configobj` is no longer required.
-
-Fixes
-*****
-
-* Fix crash when ``default_command`` has arguments.
 * Click 8.0 is now supported.
+* Fix crash when ``default_command`` has arguments.
 
 v3.9.0
 ------
