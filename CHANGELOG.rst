@@ -74,6 +74,7 @@ Fixes
 *****
 
 * Fix crash when ``default_command`` has arguments.
+* Click 8.0 is now supported.
 
 v3.9.0
 ------
