@@ -311,7 +311,7 @@ def cli(click_ctx, colour, porcelain, humanize, config):
 def invoke_command(click_ctx, command):
     name, *args = command.split(" ")
     if name not in cli.commands:
-        raise click.ClickException("Invalid setting for [main][default_command]")
+        raise click.ClickException("Invalid setting for [default_command]")
     click_ctx.invoke(cli.commands[name], args)
 
 
