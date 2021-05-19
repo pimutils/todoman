@@ -26,15 +26,14 @@ def default_database(tmpdir):
 
 @pytest.fixture
 def config(tmpdir, default_database):
-    path = tmpdir.join("config")
-    path.write(
-        "[main]\n"
-        "path = {}/*\n"
-        "date_format = %Y-%m-%d\n"
-        "time_format = \n"
-        "cache_path = {}\n".format(str(tmpdir), str(tmpdir.join("cache.sqlite3")))
+    config_path = tmpdir.join("config.py")
+    config_path.write(
+        f'path = "{tmpdir}/*"\n'
+        'date_format = "%Y-%m-%d"\n'
+        'time_format = ""\n'
+        f'cache_path = "{str(tmpdir.join("cache.sqlite3"))}"\n'
     )
-    return path
+    return config_path
 
 
 @pytest.fixture

@@ -1,7 +1,6 @@
 import datetime
 import sys
 from os.path import exists
-from os.path import isdir
 from unittest import mock
 from unittest.mock import patch
 
@@ -245,13 +244,12 @@ def test_dtstamp(tmpdir, runner, create):
     assert todo.dtstamp == datetime.datetime.now(tz=tzlocal())
 
 
-def test_default_list(tmpdir, runner, create):
+def test_default_list(tmpdir, runner, create, config):
     """Test the default_list config parameter"""
     result = runner.invoke(cli, ["new", "test default list"])
     assert result.exception
 
-    path = tmpdir.join("config")
-    path.write("default_list = default\n", "a")
+    config.write('default_list = "default"\n', "a")
 
     result = runner.invoke(cli, ["new", "test default list"])
     assert not result.exception
@@ -266,11 +264,10 @@ def test_default_list(tmpdir, runner, create):
     [(None, 24), (1, 1), (0, None)],
     ids=["not specified", "greater than 0", "0"],
 )
-def test_default_due(tmpdir, runner, create, default_due, expected_due_hours):
+def test_default_due(tmpdir, runner, create, default_due, expected_due_hours, config):
     """Test setting the due date using the default_due config parameter"""
     if default_due is not None:
-        path = tmpdir.join("config")
-        path.write(f"default_due = {default_due}\n", "a")
+        config.write(f"default_due = {default_due}\n", "a")
 
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
     db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
@@ -286,9 +283,8 @@ def test_default_due(tmpdir, runner, create, default_due, expected_due_hours):
 
 @pyicu_sensitive
 @freeze_time(datetime.datetime.now())
-def test_default_due2(tmpdir, runner, create, todos):
-    cfg = tmpdir.join("config")
-    cfg.write("default_due = 24\n", "a")
+def test_default_due2(tmpdir, runner, create, todos, config):
+    config.write("default_due = 24\n", "a")
 
     r = runner.invoke(cli, ["new", "-ldefault", "-dtomorrow", "aaa"])
     assert not r.exception
@@ -517,7 +513,7 @@ def test_edit_inexistant(runner):
 
 def test_empty_list(tmpdir, runner, create):
     for item in tmpdir.listdir():
-        if isdir(str(item)):
+        if item.isdir():
             item.remove()
 
     result = runner.invoke(cli)
@@ -638,7 +634,7 @@ def test_todo_edit(runner, default_database, todo_factory):
 
 @pyicu_sensitive
 @freeze_time("2017, 3, 20")
-def test_list_startable(tmpdir, runner, todo_factory):
+def test_list_startable(tmpdir, runner, todo_factory, config):
     todo_factory(summary="started", start=datetime.datetime(2017, 3, 15))
     todo_factory(summary="nostart")
     todo_factory(summary="unstarted", start=datetime.datetime(2017, 3, 24))
@@ -665,8 +661,7 @@ def test_list_startable(tmpdir, runner, todo_factory):
     assert "nostart" in result.output
     assert "unstarted" in result.output
 
-    path = tmpdir.join("config")
-    path.write("startable = yes\n", "a")
+    config.write("startable = True\n", "a")
 
     result = runner.invoke(cli, ["list"], catch_exceptions=False)
 
@@ -823,9 +818,8 @@ def test_status_filtering(runner, todo_factory):
     assert "two" in result.output
 
 
-def test_invoke_command(runner, tmpdir):
-    path = tmpdir.join("config")
-    path.write("default_command = flush\n", "a")
+def test_invoke_command(runner, tmpdir, config):
+    config.write('default_command = "flush"\n', "a")
 
     flush = mock.MagicMock()
     with patch.dict(cli.commands, values={"flush": flush}):
@@ -836,9 +830,8 @@ def test_invoke_command(runner, tmpdir):
     assert flush.call_count == 1
 
 
-def test_invoke_invalid_command(runner, tmpdir):
-    path = tmpdir.join("config")
-    path.write("default_command = DoTheRobot\n", "a")
+def test_invoke_invalid_command(runner, tmpdir, config):
+    config.write('default_command = "DoTheRobot"\n', "a")
 
     result = runner.invoke(cli, catch_exceptions=False)
 
@@ -914,10 +907,9 @@ def test_new_description_from_stdin(runner, todos):
     assert "hello" in todo.summary
 
 
-def test_default_priority(tmpdir, runner, create):
+def test_default_priority(tmpdir, runner, create, config):
     """Test setting the due date using the default_due config parameter"""
-    path = tmpdir.join("config")
-    path.write("default_priority = 3\n", "a")
+    config.write("default_priority = 3\n", "a")
 
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
     db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
@@ -940,11 +932,10 @@ def test_no_default_priority(tmpdir, runner, create):
     assert "PRIORITY" not in todo_ics
 
 
-def test_invalid_default_priority(tmpdir, runner, create):
+def test_invalid_default_priority(config, runner, create):
     """Test setting the due date using the default_due config parameter"""
-    path = tmpdir.join("config")
-    path.write("default_priority = 13\n", "a")
+    config.write("default_priority = 13\n", "a")
 
     result = runner.invoke(cli, ["new", "-l", "default", "aaa"])
     assert result.exception
-    assert "Bad default_priority setting" in result.output
+    assert "Error: Invalid `default_priority` settings." in result.output

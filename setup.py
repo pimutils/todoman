@@ -15,7 +15,6 @@ setup(
         "atomicwrites",
         "click>=7.1,<8.0",
         "click-log>=0.2.1",
-        "configobj",
         "humanize",
         "icalendar>=4.0.3",
         "parsedatetime",

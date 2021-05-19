@@ -7,8 +7,72 @@ releases, in reverse chronological order.
 v4.0.0
 ------
 
+Breaking changes in the configuration format
+********************************************
+
+The configuration format is changing with release 4.0.0. We currently depend on
+an unmaintained library for configuration. It's not currently in a working
+state, and while some distributions are patching it, setting up a clean
+environment is a bit non-trivial, and the situation will only degrade in future.
+
+The changes in format are be subtle, and also come with an intention to add
+further extensibility in future. Configuration files will be plain python. If
+you don't know Python don't worry, you don't _need_ to know Python.
+
+I'll take my own config as a reference. The pre-4.0.0 format is:
+
+```dosini
+[main]
+path = ~/.local/share/calendars/*
+time_format = '%H:%M'
+default_list = todo
+humanize = true
+startable = true
+```
+
+The 4.0.0 version would look like this:
+
+```python
+path = "~/.local/share/calendars/*"
+time_format = "%H:%M"
+default_list = "todo"
+humanize = True
+startable = True
+```
+
+Key differences:
+
+- The `[main]` header is no longer needed.
+- All strings must be quoted (this was previously optional).
+- True and False start with uppercase.
+- Using `yes` or `on` is no longer valid; only `True` and `False` are valid.
+
+That's basically it. This lets up drop the problematic dependency, and we don't
+actually need anything to read the config: it's just python code like the rest
+of `todoman`!
+
+For those users who _are_ python developers, you'll note this gives some
+interesting flexibility: you CAN add any custom python code into the config
+file. For example, you can defined the `path` programatically:
+
+```python
+def get_path() -> str:
+    ...
+
+
+path = get_path
+```
+
+Dependency changes
+******************
+
 * Added support for python 3.9.
 * Dropped support older Python versions. Only 3.8 and 3.9 are now supported.
+* The dependency `configobj` is no longer required.
+
+Fixes
+*****
+
 * Fix crash when ``default_command`` has arguments.
 
 v3.9.0

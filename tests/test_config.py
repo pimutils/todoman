@@ -29,7 +29,7 @@ def test_xdg_nonexistant(runner):
 
 
 def test_xdg_existant(runner, tmpdir, config):
-    with tmpdir.mkdir("todoman").join("todoman.conf").open("w") as f:
+    with tmpdir.mkdir("todoman").join("config.py").open("w") as f:
         with config.open() as c:
             f.write(c.read())
 
@@ -44,53 +44,54 @@ def test_xdg_existant(runner, tmpdir, config):
 
 def test_sane_config(config, runner, tmpdir):
     config.write(
-        "[main]\n"
-        "color = auto\n"
-        "date_format = %Y-%m-%d\n"
-        "path = /\n"
-        "cache_path = {}\n".format(tmpdir.join("cache.sqlite"))
+        'color = "auto"\n'
+        'date_format = "%Y-%m-%d"\n'
+        f'path = "{tmpdir}"\n'
+        f'cache_path = "{tmpdir.join("cache.sqlite")}"\n'
     )
     result = runner.invoke(cli)
+    # This is handy for debugging breakage:
+    if result.exception:
+        print(result.output)
+        raise result.exception
     assert not result.exception
 
 
 def test_invalid_color(config, runner):
-    config.write('[main]\ncolor = 12\npath = "/"\n')
+    config.write('color = 12\npath = "/"\n')
     result = runner.invoke(cli, ["list"])
     assert result.exception
-    assert 'Error: Bad color setting, the value "12" is unacceptable.' in result.output
+    assert (
+        "Error: Bad color setting. Invalid type (expected str, got int)."
+        in result.output
+    )
 
 
 def test_invalid_color_arg(config, runner):
-    config.write('[main]\npath = "/"\n')
+    config.write('path = "/"\n')
     result = runner.invoke(cli, ["--color", "12", "list"])
     assert result.exception
     assert "Usage:" in result.output
 
 
 def test_missing_path(config, runner):
-    config.write("[main]\ncolor = auto\n")
+    config.write('color = "auto"\n')
     result = runner.invoke(cli, ["list"])
     assert result.exception
-    assert (
-        "Error: path is missing from the ['main'] section of the configuration file"
-        in result.output
-    )
+    assert "Error: Missing 'path' setting." in result.output
 
 
 @pytest.mark.xfail(reason="Not implemented")
 def test_extra_entry(config, runner):
-    config.write(
-        "[main]\ncolor = auto\ndate_format = %Y-%m-%d\npath = /\nblah = false\n"
-    )
+    config.write("color = auto\ndate_format = %Y-%m-%d\npath = /\nblah = false\n")
     result = runner.invoke(cli, ["list"])
     assert result.exception
-    assert "Invalid configuration entry" in result.output
+    assert "Error: Invalid configuration entry" in result.output
 
 
 @pytest.mark.xfail(reason="Not implemented")
 def test_extra_section(config, runner):
-    config.write("[main]\ndate_format = %Y-%m-%d\npath = /\n[extra]\ncolor = auto\n")
+    config.write("date_format = %Y-%m-%d\npath = /\n[extra]\ncolor = auto\n")
     result = runner.invoke(cli, ["list"])
     assert result.exception
     assert "Invalid configuration section" in result.output
@@ -100,9 +101,7 @@ def test_missing_cache_dir(config, runner, tmpdir):
     cache_dir = tmpdir.join("does").join("not").join("exist")
     cache_file = cache_dir.join("cache.sqlite")
 
-    path = tmpdir.join("config")
-    path.write(f"cache_path = {cache_file}\n", "a")
-    path.write("[main]\npath = {}/*\ncache_path = {}\n".format(str(tmpdir), cache_file))
+    config.write(f'path = "{tmpdir}/*"\ncache_path = "{cache_file}"\n')
 
     result = runner.invoke(cli)
     assert not result.exception
@@ -111,7 +110,7 @@ def test_missing_cache_dir(config, runner, tmpdir):
 
 
 def test_date_field_in_time_format(config, runner, tmpdir):
-    config.write('[main]\npath = "/"\ntime_format = %Y-%m-%d\n')
+    config.write('path = "/"\ntime_format = "%Y-%m-%d"\n')
     result = runner.invoke(cli)
     assert result.exception
     assert (
@@ -121,7 +120,7 @@ def test_date_field_in_time_format(config, runner, tmpdir):
 
 
 def test_date_field_in_time(config, runner, tmpdir):
-    config.write('[main]\npath = "/"\ndate_format = %Y-%d-:%M\n')
+    config.write('path = "/"\ndate_format = "%Y-%d-:%M"\n')
     result = runner.invoke(cli)
     assert result.exception
     assert (
@@ -137,7 +136,7 @@ def test_colour_validation_auto(config):
     ):
         cfg = load_config()
 
-    assert cfg["main"]["color"] == "auto"
+    assert cfg["color"] == "auto"
 
 
 def test_colour_validation_always(config):
@@ -148,7 +147,7 @@ def test_colour_validation_always(config):
     ):
         cfg = load_config()
 
-    assert cfg["main"]["color"] == "always"
+    assert cfg["color"] == "always"
 
 
 def test_colour_validation_invalid(config):

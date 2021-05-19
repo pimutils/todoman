@@ -11,93 +11,44 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-import validate
-from configobj import ConfigObj
-
 import todoman
+from todoman.configuration import CONFIG_SPEC
+from todoman.configuration import NO_DEFAULT
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #  sys.path.insert(0, os.path.abspath('.'))
 
-# -- Generate configspec.rst ----------------------------------------------
-
-specpath = "../../todoman/confspec.ini"
-config = ConfigObj(
-    None,
-    configspec=specpath,
-    stringify=False,
-    list_values=False,
-)
-validator = validate.Validator()
-config.validate(validator)
-spec = config.configspec
+# -- Generate confspec.rst ----------------------------------------------
 
 
-def write_section(section, secname, key, comment, file_):
-    fun_name, fun_args, fun_kwargs, default = validator._parse_check(section)
-    file_.write(f"\n.. _{secname}-{key}:")
-    file_.write("\n")
-    file_.write(f"\n.. object:: {key}\n")
-    file_.write("\n")
-    file_.write("    " + "\n    ".join([line.strip("# ") for line in comment]))
-    file_.write("\n")
-    if fun_name == "option":
-        fun_args = [f"*{arg}*" for arg in fun_args]
-        fun_args = fun_args[:-2] + [fun_args[-2] + " and " + fun_args[-1]]
-        fun_name += ", allowed values are {}".format(", ".join(fun_args))
-        fun_args = []
-    if fun_name == "integer" and len(fun_args) == 2:
-        fun_name += ", allowed values are between {} and {}".format(
-            fun_args[0],
-            fun_args[1],
-        )
-        fun_args = []
-    file_.write("\n")
-    if fun_name in ["expand_db_path", "expand_path"]:
-        fun_name = "string"
-    elif fun_name in ["force_list"]:
-        fun_name = "list"
-        if isinstance(default, list):
-            default = ["space" if one == " " else one for one in default]
-            default = ", ".join(default)
+def confspec_rst():
+    """Generator that returns lines for the confspec doc page."""
 
-    file_.write(f"      :type: {fun_name}")
-    file_.write("\n")
-    if fun_args != []:
-        file_.write(f"      :args: {fun_args}")
-        file_.write("\n")
-    file_.write(f"      :default: {default}")
-    file_.write("\n")
+    for name, type_, default, description, _validation in sorted(CONFIG_SPEC):
+        if default == NO_DEFAULT:
+            formatted_default = "None, this field is mandatory."
+        elif isinstance(default, str):
+            formatted_default = f'``"{default}"``'
+        else:
+            formatted_default = f"``{default}``"
+
+        yield f"\n.. _main-{name}:"
+        yield f"\n\n.. object:: {name}\n"
+        yield "    " + "\n    ".join(line for line in description.splitlines())
+        yield "\n\n"
+
+        if isinstance(type_, tuple):
+            yield f"      :type: {type_[0].__name__}"
+        else:
+            yield f"      :type: {type_.__name__}"
+
+        yield f"\n      :default: {formatted_default}\n"
 
 
 with open("confspec.tmp", "w") as file_:
-    for secname in sorted(spec):
-        file_.write("\n")
-        heading = f"The [{secname}] section"
-        file_.write("{}\n{}".format(heading, len(heading) * "~"))
-        file_.write("\n")
-        comment = spec.comments[secname]
-        file_.write("\n".join([line[2:] for line in comment]))
-        file_.write("\n")
-
-        for key, comment in sorted(spec[secname].comments.items()):
-            if key == "__many__":
-                comment = spec[secname].comments[key]
-                file_.write("\n".join([line[2:] for line in comment]))
-                file_.write("\n")
-                comments = spec[secname]["__many__"].comments
-                for key, comment in sorted(comments.items()):
-                    write_section(
-                        spec[secname]["__many__"][key],
-                        secname,
-                        key,
-                        comment,
-                        file_,
-                    )
-            else:
-                write_section(spec[secname][key], secname, key, comment, file_)
+    file_.writelines(confspec_rst())
 
 # -- General configuration ------------------------------------------------
 
