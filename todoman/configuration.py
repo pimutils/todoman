@@ -4,8 +4,10 @@ from os.path import exists
 from os.path import join
 from typing import Any
 from typing import Callable
+from typing import List
 from typing import NamedTuple
 from typing import Optional
+from typing import Tuple
 from typing import Type
 from typing import Union
 
@@ -54,7 +56,7 @@ def validate_default_priority(value: int):
 
 class ConfigEntry(NamedTuple):
     name: str
-    type: Union[Type, tuple[Type]]
+    type: Union[Type, Tuple[Type]]
     default: Any
     description: str
     validation: Optional[Callable]
@@ -63,7 +65,7 @@ class ConfigEntry(NamedTuple):
 NO_DEFAULT = object()
 
 # A list of tuples (name, type, default, description, validation)
-CONFIG_SPEC: list[ConfigEntry] = [
+CONFIG_SPEC: List[ConfigEntry] = [
     ConfigEntry(
         "path",
         str,
