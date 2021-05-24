@@ -1,0 +1,40 @@
+image: archlinux
+packages:
+  - python-pip
+  - python-tox
+  - python-wheel
+  - twine
+sources:
+  - https://github.com/pimutils/todoman
+secrets:
+  - 9a8d4d44-96f9-4365-beaa-aaa759c4f1c4
+environment:
+  CODECOV_TOKEN: a4471483-7f55-411a-bf2f-f65a91013dc4
+  CI: true
+tasks:
+  - setup: |
+      sudo pip install codecov
+  - test: |
+      # Test without pyicu installed:
+      cd todoman
+      tox -e py
+      codecov
+  - test-pyicu: |
+      # Test with pyicu installed:
+      cd todoman
+      TOXENV=pyicu tox
+      codecov
+  - test-repl: |
+      # Test repl repl:
+      cd todoman
+      TOXENV=repl tox
+      codecov
+  - check-style: |
+      cd todoman
+      sudo pip install pre-commit
+      pre-commit run --all
+  - publish: |
+      cd todoman
+      python setup.py sdist bdist_wheel
+      git describe --exact-match --tags || exit 0
+      twine upload dist/*

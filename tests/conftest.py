@@ -161,6 +161,7 @@ def todos(default_database, sleep):
 settings.register_profile(
     "ci",
     settings(
+        deadline=None,
         max_examples=1000,
         verbosity=Verbosity.verbose,
         suppress_health_check=[HealthCheck.too_slow],
