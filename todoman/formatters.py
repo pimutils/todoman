@@ -1,5 +1,6 @@
-import datetime
 import json
+from datetime import date
+from datetime import datetime
 from time import mktime
 
 import click
@@ -41,7 +42,7 @@ class DefaultFormatter:
         )
 
         self.tz = tz_override or tzlocal()
-        self.now = datetime.datetime.now().replace(tzinfo=self.tz)
+        self.now = datetime.now().replace(tzinfo=self.tz)
 
         self._parsedatetime_calendar = parsedatetime.Calendar(
             version=parsedatetime.VERSION_CONTEXT_STYLE,
@@ -63,9 +64,7 @@ class DefaultFormatter:
             priority = self.format_priority_compact(todo.priority)
 
             due = self.format_datetime(todo.due)
-            now = (
-                self.now if isinstance(todo.due, datetime.datetime) else self.now.date()
-            )
+            now = self.now if isinstance(todo.due, datetime) else self.now.date()
             if todo.due and todo.due <= now and not todo.is_completed:
                 due = click.style(due, fg="red")
 
@@ -134,9 +133,9 @@ class DefaultFormatter:
     def format_datetime(self, dt):
         if not dt:
             return ""
-        elif isinstance(dt, datetime.datetime):
+        elif isinstance(dt, datetime):
             return dt.strftime(self.datetime_format)
-        elif isinstance(dt, datetime.date):
+        elif isinstance(dt, date):
             return dt.strftime(self.date_format)
 
     def parse_priority(self, priority):
@@ -178,23 +177,23 @@ class DefaultFormatter:
             return None
 
         rv = self._parse_datetime_naive(dt)
-        return rv.replace(tzinfo=self.tz) if isinstance(rv, datetime.datetime) else rv
+        return rv.replace(tzinfo=self.tz) if isinstance(rv, datetime) else rv
 
     def _parse_datetime_naive(self, dt):
         """Parse dt and returns a naive datetime or a date"""
         try:
-            return datetime.datetime.strptime(dt, self.datetime_format)
+            return datetime.strptime(dt, self.datetime_format)
         except ValueError:
             pass
 
         try:
-            return datetime.datetime.strptime(dt, self.date_format).date()
+            return datetime.strptime(dt, self.date_format).date()
         except ValueError:
             pass
 
         try:
-            return datetime.datetime.combine(
-                self.now.date(), datetime.datetime.strptime(dt, self.time_format).time()
+            return datetime.combine(
+                self.now.date(), datetime.strptime(dt, self.time_format).time()
             )
         except ValueError:
             pass
@@ -202,7 +201,7 @@ class DefaultFormatter:
         rv, pd_ctx = self._parsedatetime_calendar.parse(dt)
         if not pd_ctx.hasDateOrTime:
             raise ValueError(f"Time description not recognized: {dt}")
-        return datetime.datetime.fromtimestamp(mktime(rv))
+        return datetime.fromtimestamp(mktime(rv))
 
     def format_database(self, database):
         return "{}@{}".format(
@@ -215,11 +214,11 @@ class HumanizedFormatter(DefaultFormatter):
         if not dt:
             return ""
 
-        if isinstance(dt, datetime.datetime):
+        if isinstance(dt, datetime):
             rv = humanize.naturaltime(self.now - dt)
             if " from now" in rv:
                 rv = "in {}".format(rv[:-9])
-        elif isinstance(dt, datetime.date):
+        elif isinstance(dt, date):
             rv = humanize.naturaldate(dt)
 
         return rv
@@ -267,13 +266,13 @@ class PorcelainFormatter(DefaultFormatter):
     def format_datetime(self, date):
         if date:
             if not hasattr(date, "timestamp"):
-                date = datetime.datetime.fromordinal(date.toordinal())
+                date = datetime.fromordinal(date.toordinal())
             return int(date.timestamp())
         else:
             return None
 
     def parse_datetime(self, value):
         if value:
-            return datetime.datetime.fromtimestamp(value, tz=pytz.UTC)
+            return datetime.fromtimestamp(value, tz=pytz.UTC)
         else:
             return None
