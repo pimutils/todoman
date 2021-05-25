@@ -85,7 +85,7 @@ class DefaultFormatter:
                 )
             else:
                 if not todo.list:
-                    raise ValueError("Canot format todo without a list")
+                    raise ValueError("Cannot format todo without a list")
 
                 summary = "{} {}{}".format(
                     todo.summary,

@@ -161,3 +161,20 @@ def test_rgb_to_ansi():
     assert rgb_to_ansi("#8ab6d2f") == "\x1b[38;2;138;182;210m"
     assert rgb_to_ansi("red") is None
     assert rgb_to_ansi("#8ab6d2") == "\x1b[38;2;138;182;210m"
+
+
+def test_format_multiple_with_list(default_formatter, todo_factory):
+    todo = todo_factory()
+    assert todo.list
+    assert (
+        default_formatter.compact_multiple([todo])
+        == "1  [ ]      YARR! @default\x1b[0m"
+    )
+
+
+def test_format_multiple_without_list(default_formatter, todo_factory):
+    todo = todo_factory()
+    todo.list = None
+    assert not todo.list
+    with pytest.raises(ValueError):
+        default_formatter.compact_multiple([todo])
