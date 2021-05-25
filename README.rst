@@ -37,6 +37,8 @@ Todoman should run fine on any Unix-like OS. It's been tested on GNU/Linux,
 BSD, and macOS.  We do not support windows, and very basic testing seems to
 indicate it does not work.
 
+Feel free to join the IRC channel: #pimutils on irc.libera.chat.
+
 Features
 --------
 
