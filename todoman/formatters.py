@@ -174,7 +174,7 @@ class DefaultFormatter:
         else:
             raise ValueError("Priority has to be one of low, medium, high or none")
 
-    def format_priority(self, priority):
+    def format_priority(self, priority: Optional[int]) -> str:
         if not priority:
             return "none"
         elif 1 <= priority <= 4:
@@ -184,7 +184,7 @@ class DefaultFormatter:
         elif 6 <= priority <= 9:
             return "low"
 
-    def format_priority_compact(self, priority):
+    def format_priority_compact(self, priority: Optional[int]) -> str:
         if not priority:
             return ""
         elif 1 <= priority <= 4:
@@ -194,14 +194,14 @@ class DefaultFormatter:
         elif 6 <= priority <= 9:
             return "!"
 
-    def parse_datetime(self, dt):
+    def parse_datetime(self, dt: str) -> Optional[date]:
         if not dt:
             return None
 
         rv = self._parse_datetime_naive(dt)
         return rv.replace(tzinfo=self.tz) if isinstance(rv, datetime) else rv
 
-    def _parse_datetime_naive(self, dt):
+    def _parse_datetime_naive(self, dt: str) -> date:
         """Parse dt and returns a naive datetime or a date"""
         try:
             return datetime.strptime(dt, self.datetime_format)
@@ -225,14 +225,14 @@ class DefaultFormatter:
             raise ValueError(f"Time description not recognized: {dt}")
         return datetime.fromtimestamp(mktime(rv))
 
-    def format_database(self, database):
+    def format_database(self, database: TodoList):
         return "{}@{}".format(
             rgb_to_ansi(database.colour) or "", click.style(database.name)
         )
 
 
 class HumanizedFormatter(DefaultFormatter):
-    def format_datetime(self, dt):
+    def format_datetime(self, dt: Optional[date]) -> str:
         if not dt:
             return ""
 
@@ -261,10 +261,10 @@ class PorcelainFormatter(DefaultFormatter):
             "completed_at": self.format_datetime(todo.completed_at),
         }
 
-    def compact(self, todo):
+    def compact(self, todo: Todo) -> str:
         return json.dumps(self._todo_as_dict(todo), indent=4, sort_keys=True)
 
-    def compact_multiple(self, todos, hide_list=False):
+    def compact_multiple(self, todos: Iterable[Todo], hide_list=False) -> str:
         data = [self._todo_as_dict(todo) for todo in todos]
         return json.dumps(data, indent=4, sort_keys=True)
 
