@@ -1,0 +1,34 @@
+image: alpine/3.13
+packages:
+  - py-pip
+  - py-tox
+  - icu-dev
+  - alpine-sdk
+  - python3-dev
+sources:
+  - https://github.com/pimutils/todoman
+environment:
+  CODECOV_TOKEN: a4471483-7f55-411a-bf2f-f65a91013dc4
+  CI: true
+tasks:
+  - setup: |
+      sudo pip install codecov
+  - test: |
+      # Test without pyicu installed:
+      cd todoman
+      tox -e py
+      codecov
+  - test-pyicu: |
+      # Test with pyicu installed:
+      cd todoman
+      TOXENV=pyicu tox
+      codecov
+  - test-repl: |
+      # Test repl repl:
+      cd todoman
+      TOXENV=repl tox
+      codecov
+  - check-style: |
+      cd todoman
+      sudo pip install pre-commit
+      pre-commit run --all
