@@ -2,6 +2,11 @@ import json
 from datetime import date
 from datetime import datetime
 from time import mktime
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 import click
 import humanize
@@ -10,18 +15,21 @@ import pytz
 from dateutil.tz import tzlocal
 from tabulate import tabulate
 
+from todoman.model import Todo
+from todoman.model import TodoList
 
-def rgb_to_ansi(colour):
+
+def rgb_to_ansi(colour: Optional[str]) -> Optional[str]:
     """
     Convert a string containing an RGB colour to ANSI escapes
     """
     if not colour or not colour.startswith("#"):
-        return
+        return None
 
     r, g, b = colour[1:3], colour[3:5], colour[5:7]
 
     if not len(r) == len(g) == len(b) == 2:
-        return
+        return None
 
     return "\33[38;2;{!s};{!s};{!s}m".format(int(r, 16), int(g, 16), int(b, 16))
 
@@ -48,13 +56,13 @@ class DefaultFormatter:
             version=parsedatetime.VERSION_CONTEXT_STYLE,
         )
 
-    def simple_action(self, action, todo):
+    def simple_action(self, action: str, todo: Todo) -> str:
         return f'{action} "{todo.summary}"'
 
-    def compact(self, todo):
+    def compact(self, todo: Todo) -> str:
         return self.compact_multiple([todo])
 
-    def compact_multiple(self, todos, hide_list=False):
+    def compact_multiple(self, todos: Iterable[Todo], hide_list=False) -> str:
         table = []
         for todo in todos:
             completed = "X" if todo.is_completed else " "
@@ -76,6 +84,9 @@ class DefaultFormatter:
                     percent,
                 )
             else:
+                if not todo.list:
+                    raise ValueError("Canot format todo without a list")
+
                 summary = "{} {}{}".format(
                     todo.summary,
                     self.format_database(todo.list),
@@ -94,31 +105,42 @@ class DefaultFormatter:
 
         return tabulate(table, tablefmt="plain")
 
-    def _columnize_text(self, label, text):
-        """Display text, split text by line-endings, on multiple colums,"""
-        """do nothing if text is empty or None"""
+    def _columnize_text(
+        self,
+        label: str,
+        text: Optional[str],
+    ) -> List[Tuple[Optional[str], str]]:
+        """Display text, split text by line-endings, on multiple colums.
+
+        Do nothing if text is empty or None.
+        """
         lines = text.splitlines() if text else None
 
         return self._columnize_list(label, lines)
 
-    def _columnize_list(self, label, lst):
-        """Display list on multiple columns,"""
-        """do nothing if list is empty or None"""
+    def _columnize_list(
+        self,
+        label: str,
+        lst: Optional[List[str]],
+    ) -> List[Tuple[Optional[str], str]]:
+        """Display list on multiple columns.
 
-        rows = []
+        Do nothing if list is empty or None.
+        """
+
+        rows: List[Tuple[Optional[str], str]] = []
 
         if lst:
-            rows.append([label, lst[0]])
+            rows.append((label, lst[0]))
             for line in lst[1:]:
-                rows.append([None, line])
+                rows.append((None, line))
 
         return rows
 
-    def detailed(self, todo):
-        """
-        Returns a detailed representation of a task.
+    def detailed(self, todo: Todo) -> str:
+        """Returns a detailed representation of a task.
 
-        :param Todo todo: The todo component.
+        :param todo: The todo component.
         """
         extra_rows = []
         extra_rows += self._columnize_text("Description", todo.description)
@@ -130,7 +152,7 @@ class DefaultFormatter:
             )
         return self.compact(todo)
 
-    def format_datetime(self, dt):
+    def format_datetime(self, dt: Optional[date]) -> Union[str, int, None]:
         if not dt:
             return ""
         elif isinstance(dt, datetime):
@@ -138,7 +160,7 @@ class DefaultFormatter:
         elif isinstance(dt, date):
             return dt.strftime(self.date_format)
 
-    def parse_priority(self, priority):
+    def parse_priority(self, priority: Optional[str]) -> Optional[int]:
         if priority is None or priority == "":
             return None
         if priority == "low":
