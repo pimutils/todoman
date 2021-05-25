@@ -285,11 +285,13 @@ class PorcelainFormatter(DefaultFormatter):
     def detailed(self, todo):
         return self.compact(todo)
 
-    def format_datetime(self, date):
-        if date:
-            if not hasattr(date, "timestamp"):
-                date = datetime.fromordinal(date.toordinal())
-            return int(date.timestamp())
+    def format_datetime(self, value: Optional[date]) -> Optional[int]:
+        if value:
+            if not isinstance(value, datetime):
+                dt = datetime.fromordinal(value.toordinal())
+            else:
+                dt = value
+            return int(dt.timestamp())
         else:
             return None
 
