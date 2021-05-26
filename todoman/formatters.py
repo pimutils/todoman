@@ -74,7 +74,7 @@ class DefaultFormatter:
             due = self.format_datetime(todo.due)
             now = self.now if isinstance(todo.due, datetime) else self.now.date()
             if todo.due and todo.due <= now and not todo.is_completed:
-                due = click.style(due, fg="red")
+                due = click.style(str(due), fg="red")
 
             recurring = "⟳" if todo.is_recurring else ""
 
