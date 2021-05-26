@@ -186,9 +186,10 @@ def _todo_property_options(command):
 
 
 class AppContext:
+
     def __init__(self):
         self.config = None
-        self.db = None
+        self.db: Database = None
         self.formatter_class = None
 
     @cached_property
@@ -635,3 +636,13 @@ def list(ctx, *args, **kwargs):
 
     todos = ctx.db.todos(**kwargs)
     click.echo(ctx.formatter.compact_multiple(todos, hide_list))
+
+
+@cli.command()
+@pass_ctx
+@catch_errors
+def collections(ctx: AppContext):
+    """List all collections."""
+
+    formatted = ctx.formatter.format_databases(ctx.db.lists(), ctx.db)
+    click.echo(formatted)
