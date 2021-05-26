@@ -2,6 +2,7 @@ import datetime
 import sys
 from os.path import exists
 from unittest import mock
+from unittest.mock import call
 from unittest.mock import patch
 
 import click
@@ -822,6 +823,9 @@ def test_invoke_command(runner, tmpdir, config):
     config.write('default_command = "flush"\n', "a")
 
     flush = mock.MagicMock()
+    parser = mock.MagicMock()
+    flush.make_parser.return_value = parser
+    parser.parse_args.return_value = {}, [], []
     with patch.dict(cli.commands, values={"flush": flush}):
         result = runner.invoke(cli, catch_exceptions=False)
 
@@ -939,3 +943,28 @@ def test_invalid_default_priority(config, runner, create):
     result = runner.invoke(cli, ["new", "-l", "default", "aaa"])
     assert result.exception
     assert "Error: Invalid `default_priority` settings." in result.output
+
+
+def test_default_command_args(config, runner):
+    config.write(
+        'default_command = "list --sort=due --due 168 ' '--priority low --no-reverse"',
+        "a",
+    )
+
+    with patch("todoman.model.Database.todos", spec=True) as todos:
+        result = runner.invoke(cli)
+
+    assert not result.exception
+    assert todos.call_args == call(
+        sort=["due"],
+        due=168,
+        priority=9,
+        reverse=False,
+        lists=[],
+        location=None,
+        category=None,
+        grep=None,
+        start=None,
+        startable=None,
+        status="NEEDS-ACTION,IN-PROCESS",
+    )
