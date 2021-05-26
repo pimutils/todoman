@@ -49,6 +49,11 @@ def _validate_lists_param(ctx, param=None, lists=()):
 
 
 def _validate_list_param(ctx, param=None, name=None):
+    # TODO: this logic should be moved over onto the database.
+    # 1. We create the database in the Group
+    # 2. Put it in context
+    # 3. Use its method to get fuzzy_find_lists()
+    # 4. Raises if no match, in which case we re-raise a not-found.
     ctx = ctx.find_object(AppContext)
     if name is None:
         if ctx.config["default_list"]:
@@ -56,7 +61,8 @@ def _validate_list_param(ctx, param=None, name=None):
         else:
             raise click.BadParameter("You must set `default_list` or use -l.")
     lists = {list_.name: list_ for list_ in ctx.db.lists()}
-    fuzzy_matches = [
+    # TODO: If there's an exact match, return that immediately.
+    fuzzy_matches = [  # TODO: rename to insensitive_matches
         list_ for list_ in lists.values() if list_.name.lower() == name.lower()
     ]
 

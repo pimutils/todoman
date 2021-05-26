@@ -209,6 +209,23 @@ class DefaultFormatter:
             rgb_to_ansi(database.colour) or "", click.style(database.name)
         )
 
+<<<<<<< Updated upstream
+=======
+    def format_databases(self, databases, db) -> str:
+        # XXX: rename databases to collections
+        # databases is several collections
+        # db is the model Databases
+
+        table = []
+        for database in databases:
+            name = self.format_database(database)
+            entries = db.todos(lists=[database.name])
+            total_entries = sum(1 for _ in entries)
+            table.append((name, total_entries))
+
+        return tabulate(table, tablefmt="plain")
+
+>>>>>>> Stashed changes
 
 class HumanizedFormatter(DefaultFormatter):
     def format_datetime(self, dt):
