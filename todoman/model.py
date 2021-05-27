@@ -10,6 +10,7 @@ from datetime import time
 from datetime import timedelta
 from os.path import normpath
 from os.path import split
+from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import Optional
@@ -65,9 +66,12 @@ class Todo:
     categories: List[str]
     completed_at: Optional[datetime]
     created_at: Optional[datetime]
+    due: Optional[date]
+    dtstamp: Optional[datetime]
     last_modified: Optional[datetime]
     related: List[Todo]
     rrule: Optional[str]
+    start: Optional[date]
 
     def __init__(
         self,
@@ -841,25 +845,32 @@ class Cache:
             seen_paths.add(path)
             yield todo
 
-    def _dt_from_db(self, dt, is_date=False):
+    def _datetime_from_db(self, dt) -> Optional[datetime]:
         if dt:
-            val = datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
-            if is_date:
-                val = val.date()
-            return val
+            return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
         return None
 
-    def _todo_from_db(self, row):
+    def _date_from_db(self, dt, is_date=False) -> Optional[date]:
+        """Deserialise a date (possible datetime)."""
+        if not dt:
+            return dt
+
+        if is_date:
+            return datetime.fromtimestamp(dt, LOCAL_TIMEZONE).date()
+        else:
+            return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
+
+    def _todo_from_db(self, row: dict) -> Todo:
         todo = Todo()
         todo.id = row["id"]
         todo.uid = row["uid"]
         todo.summary = row["summary"]
-        todo.due = self._dt_from_db(row["due"], row["due_dt"])
-        todo.start = self._dt_from_db(row["start"], row["start_dt"])
+        todo.due = self._date_from_db(row["due"], row["due_dt"])
+        todo.start = self._date_from_db(row["start"], row["start_dt"])
         todo.priority = row["priority"]
-        todo.created_at = self._dt_from_db(row["created_at"])
-        todo.completed_at = self._dt_from_db(row["completed_at"])
-        todo.dtstamp = self._dt_from_db(row["dtstamp"])
+        todo.created_at = self._datetime_from_db(row["created_at"])
+        todo.completed_at = self._datetime_from_db(row["completed_at"])
+        todo.dtstamp = self._datetime_from_db(row["dtstamp"])
         todo.percent_complete = row["percent_complete"]
         todo.status = row["status"]
         todo.description = row["description"]
@@ -871,7 +882,7 @@ class Cache:
         todo.rrule = row["rrule"]
         return todo
 
-    def lists(self):
+    def lists(self) -> Iterable[TodoList]:
         result = self._conn.execute("SELECT * FROM lists")
         for row in result:
             yield TodoList(
@@ -881,10 +892,10 @@ class Cache:
             )
 
     @cached_property
-    def lists_map(self):
+    def lists_map(self) -> Dict[str, TodoList]:
         return {list_.name: list_ for list_ in self.lists()}
 
-    def expire_lists(self, paths):
+    def expire_lists(self, paths: Dict[str, int]) -> None:
         results = self._conn.execute("SELECT path, name, mtime from lists")
         for result in results:
             if result["path"] not in paths:
@@ -894,10 +905,10 @@ class Cache:
                 if mtime and mtime > result["mtime"]:
                     self.delete_list(result["name"])
 
-    def delete_list(self, name):
+    def delete_list(self, name: str) -> None:
         self._conn.execute("DELETE FROM lists WHERE lists.name = ?", (name,))
 
-    def todo(self, id, read_only=False):
+    def todo(self, id: int, read_only=False) -> Todo:
         # XXX: DON'T USE READ_ONLY
         result = self._conn.execute(
             """
@@ -927,7 +938,7 @@ class Cache:
 
         return self._todo_from_db(result)
 
-    def expire_files(self, paths_to_mtime):
+    def expire_files(self, paths_to_mtime: Dict[str, int]) -> None:
         """Remove stale cache entries based on the given fresh data."""
         result = self._conn.execute("SELECT path, mtime FROM files")
         for row in result:
@@ -977,12 +988,12 @@ class TodoList:
         else:
             return 0
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if isinstance(other, TodoList):
             return self.name == other.name
         return object.__eq__(self, other)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -1000,7 +1011,7 @@ class Database:
         self.paths = [str(path) for path in paths]
         self.update_cache()
 
-    def update_cache(self):
+    def update_cache(self) -> None:
         paths = {path: TodoList.mtime_for_path(path) for path in self.paths}
         self.cache.expire_lists(paths)
 
@@ -1035,8 +1046,7 @@ class Database:
 
             try:
                 with open(entry_path, "rb") as f:
-                    cal = f.read()
-                    cal = icalendar.Calendar.from_ical(cal)
+                    cal = icalendar.Calendar.from_ical(f.read())
                     for component in cal.walk("VTODO"):
                         self.cache.add_vtodo(component, entry_path)
             except Exception:
@@ -1047,7 +1057,7 @@ class Database:
     def todos(self, **kwargs) -> Iterable[Todo]:
         return self.cache.todos(**kwargs)
 
-    def todo(self, id, **kwargs) -> Todo:
+    def todo(self, id: int, **kwargs) -> Todo:
         return self.cache.todo(id, **kwargs)
 
     def lists(self) -> Iterable[TodoList]:
@@ -1066,7 +1076,7 @@ class Database:
         path = os.path.join(todo.list.path, todo.filename)
         os.remove(path)
 
-    def flush(self):
+    def flush(self) -> Iterable[Todo]:
         for todo in self.todos(status=["ANY"]):
             if todo.is_completed:
                 yield todo
