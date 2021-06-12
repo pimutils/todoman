@@ -1,8 +1,8 @@
 Todoman
 =======
 
-.. image:: https://action-badges.now.sh/pimutils/todoman
-  :target: https://github.com/pimutils/todoman/actions
+.. image:: https://builds.sr.ht/~whynothugo/todoman.svg
+  :target: https://builds.sr.ht/~whynothugo/todoman
   :alt: CI status
 
 .. image:: https://codecov.io/gh/pimutils/todoman/branch/main/graph/badge.svg
