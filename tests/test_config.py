@@ -19,7 +19,7 @@ def test_explicit_nonexistant(runner):
 
 
 def test_xdg_nonexistant(runner):
-    with patch("xdg.BaseDirectory.xdg_config_dirs", []):
+    with patch("xdg.BaseDirectory.xdg_config_dirs", ["/does-not-exist"]):
         result = CliRunner().invoke(
             cli,
             catch_exceptions=True,
