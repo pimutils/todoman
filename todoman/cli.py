@@ -152,7 +152,7 @@ def _todo_property_options(command):
         "--priority",
         default="",
         callback=_validate_priority_param,
-        help="The priority for this todo",
+        help="Priority for this task",
     )(command)
     click.option("--location", help="The location where this todo takes place.")(
         command
@@ -162,10 +162,7 @@ def _todo_property_options(command):
         "-d",
         default="",
         callback=_validate_date_param,
-        help=(
-            "The due date of the task, in the format specified in the "
-            "configuration file."
-        ),
+        help=("Due date of the task, in the format specified in the configuration."),
     )(command)
     click.option(
         "--start",
@@ -334,7 +331,7 @@ except ImportError:
     "--list",
     "-l",
     callback=_validate_list_param,
-    help="The list to create the task in.",
+    help="List in which the task will be saved.",
 )
 @click.option(
     "--read-description",
@@ -613,7 +610,7 @@ def move(ctx, list, ids):
 @catch_errors
 def list(ctx, *args, **kwargs):
     """
-    List tasks. Filters any completed or cancelled tasks by default.
+    List tasks (default). Filters any completed or cancelled tasks by default.
 
     If no arguments are provided, all lists will be displayed, and only
     incomplete tasks are show. Otherwise, only todos for the specified list
