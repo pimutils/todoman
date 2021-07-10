@@ -3,6 +3,7 @@ packages:
   - python-pip
   - python-tox
   - python-wheel
+  - python-pre-commit
   - twine
 sources:
   - https://github.com/pimutils/todoman
@@ -31,7 +32,6 @@ tasks:
       codecov
   - check-style: |
       cd todoman
-      sudo pip install pre-commit
       pre-commit run --all
       git describe --exact-match --tags || complete-build
   - publish: |

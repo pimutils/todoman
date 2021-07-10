@@ -206,20 +206,22 @@ class ConfigurationException(Exception):
         )
 
 
-def find_config(custom_path=None):
-    if custom_path:
-        if not exists(custom_path):
-            raise ConfigurationException(
-                f"Configuration file {custom_path} does not exist"
-            )
-        return custom_path
+def find_config(config_path=None):
+    if not config_path:
+        for d in xdg.BaseDirectory.xdg_config_dirs:
+            path = join(d, "todoman", "config.py")
+            if exists(path):
+                config_path = path
+                break
 
-    for d in xdg.BaseDirectory.xdg_config_dirs:
-        path = join(d, "todoman", "config.py")
-        if exists(path):
-            return path
-
-    raise ConfigurationException("No configuration file found.\n\n")
+    if not config_path:
+        raise ConfigurationException("No configuration file found.\n\n")
+    elif not exists(config_path):
+        raise ConfigurationException(
+            f"Configuration file {config_path} does not exist.\n"
+        )
+    else:
+        return config_path
 
 
 def load_config(custom_path=None):
