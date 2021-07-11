@@ -405,7 +405,7 @@ def edit(ctx, id, todo_properties, interactive, raw):
 
     changes = False
     for key, value in todo_properties.items():
-        if value:
+        if value is not None:
             changes = True
             setattr(todo, key, value)
 
