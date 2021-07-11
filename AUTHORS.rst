@@ -30,3 +30,4 @@ Authors are listed in alphabetical order.
 * Stephan Weller <stephan.weller@web.de>
 * Swati Garg <swati4star@gmail.com>
 * Thomas Glanzmann <thomas@glanzmann.de>
+* https://github.com/Pikrass
