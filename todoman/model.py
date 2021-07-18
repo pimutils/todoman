@@ -424,7 +424,7 @@ class Cache:
     may be used for filtering/sorting.
     """
 
-    SCHEMA_VERSION = 7
+    SCHEMA_VERSION = 8
 
     def __init__(self, path: str):
         self.cache_path = str(path)
@@ -486,7 +486,7 @@ class Cache:
                 "list_name" TEXT,
                 "mtime" INTEGER,
 
-                CONSTRAINT path_unique UNIQUE (path),
+                CONSTRAINT path_unique UNIQUE (path) ON CONFLICT REPLACE,
                 FOREIGN KEY(list_name) REFERENCES lists(name) ON DELETE CASCADE
             );
         """
@@ -936,13 +936,29 @@ class Cache:
 
         return self._todo_from_db(result)
 
-    def expire_files(self, paths_to_mtime: Dict[str, int]) -> None:
-        """Remove stale cache entries based on the given fresh data."""
-        result = self._conn.execute("SELECT path, mtime FROM files")
-        for row in result:
+    def expire_files(self, paths_to_mtime: Dict[str, int]) -> List[str]:
+        """Remove stale cache entries based on the given fresh data.
+
+        This removes files that have been removed, but does not touch files that have
+        been updated.
+        """
+        existing = self._conn.execute("SELECT path, mtime FROM files")
+
+        to_expire = []
+        to_refresh = list(paths_to_mtime.keys())
+
+        for row in existing:
             path, mtime = row["path"], row["mtime"]
-            if paths_to_mtime.get(path, None) != mtime:
-                self.expire_file(path)
+            new_mtime = paths_to_mtime.get(path, None)
+
+            if new_mtime is None:
+                to_expire.append((path,))
+            elif new_mtime == mtime:
+                to_refresh.remove(path)
+
+        self._conn.executemany("DELETE FROM files WHERE path = ?", to_expire)
+
+        return to_refresh
 
     def expire_file(self, path: str) -> None:
         self._conn.execute("DELETE FROM files WHERE path = ?", (path,))
@@ -1031,16 +1047,13 @@ class Database:
                 paths_to_mtime[entry_path] = mtime
                 paths_to_list_name[entry_path] = list_name
 
-        self.cache.expire_files(paths_to_mtime)
+        to_refresh = self.cache.expire_files(paths_to_mtime)
 
-        for entry_path, mtime in paths_to_mtime.items():
+        for entry_path in to_refresh:
+            mtime = paths_to_mtime[entry_path]
             list_name = paths_to_list_name[entry_path]
 
-            try:
-                self.cache.add_file(list_name, entry_path, mtime)
-            except exceptions.AlreadyExists:
-                logger.debug("File already in cache: %s", entry_path)
-                continue
+            self.cache.add_file(list_name, entry_path, mtime)
 
             try:
                 with open(entry_path, "rb") as f:
