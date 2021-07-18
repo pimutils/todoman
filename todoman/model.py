@@ -434,13 +434,14 @@ class Cache:
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA foreign_keys = ON")
 
-        self.create_tables()
+        if not self.is_latest_version():
+            self.create_tables()
 
     def save_to_disk(self) -> None:
         self._conn.commit()
 
     def is_latest_version(self):
-        """Checks if the cache DB schema is the latest version."""
+        """Check if the cache DB schema is the latest version."""
         try:
             return self._conn.execute(
                 "SELECT version FROM meta WHERE version = ?",
@@ -450,9 +451,6 @@ class Cache:
             return False
 
     def create_tables(self):
-        if self.is_latest_version():
-            return
-
         self._conn.executescript(
             """
             DROP TABLE IF EXISTS lists;
