@@ -968,3 +968,21 @@ def test_default_command_args(config, runner):
         startable=None,
         status="NEEDS-ACTION,IN-PROCESS",
     )
+
+
+def test_lists_command(tmpdir, runner, create):
+    result = runner.invoke(cli, ["lists"], catch_exceptions=False)
+    assert not result.exception
+    assert not result.output.strip()
+
+    create("test.ics", "SUMMARY:harhar\n")
+
+    result = runner.invoke(cli, ["lists"])
+    assert not result.exception
+    assert result.output.strip() == "1  @default"
+
+    create("test2.ics", "SUMMARY:harhar\n")
+
+    result = runner.invoke(cli, ["lists"])
+    assert not result.exception
+    assert result.output.strip() == "2  @default"

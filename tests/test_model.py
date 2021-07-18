@@ -296,10 +296,10 @@ def test_todo_filename_absolute_path():
         Todo(filename="/test.ics")
 
 
-def test_list_equality(tmpdir):
-    list1 = TodoList(path=str(tmpdir), name="test list")
-    list2 = TodoList(path=str(tmpdir), name="test list")
-    list3 = TodoList(path=str(tmpdir), name="yet another test list")
+def test_list_equality(tmpdir, default_database):
+    list1 = TodoList(path=str(tmpdir), name="test list", db=default_database)
+    list2 = TodoList(path=str(tmpdir), name="test list", db=default_database)
+    list3 = TodoList(path=str(tmpdir), name="yet another list", db=default_database)
 
     assert list1 == list2
     assert list1 != list3

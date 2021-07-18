@@ -640,8 +640,16 @@ def list(ctx, *args, **kwargs):
 @cli.command()
 @pass_ctx
 @catch_errors
-def collections(ctx: AppContext):
-    """List all collections."""
+@click.option(
+    "--all",
+    "-a",
+    is_flag=True,
+    help="Print all lists, including empty ones.",
+)
+def lists(ctx: AppContext, all: bool):
+    """Print out all lists."""
 
-    formatted = ctx.formatter.format_databases(ctx.db.lists(), ctx.db)
+    formatted = ctx.formatter.format_lists(
+        list_ for list_ in ctx.db.lists() if all or list_.todo_count
+    )
     click.echo(formatted)

@@ -89,7 +89,7 @@ class DefaultFormatter:
 
                 summary = "{} {}{}".format(
                     todo.summary,
-                    self.format_database(todo.list),
+                    self.format_list(todo.list),
                     percent,
                 )
 
@@ -225,23 +225,15 @@ class DefaultFormatter:
             raise ValueError(f"Time description not recognized: {dt}")
         return datetime.fromtimestamp(mktime(rv))
 
-    def format_database(self, database: TodoList):
+    def format_list(self, database: TodoList):
         return "{}@{}".format(
             rgb_to_ansi(database.colour) or "", click.style(database.name)
         )
 
-    def format_databases(self, databases, db) -> str:
-        # XXX: rename databases to collections
-        # databases is what we use to read sqlite
-        # collections are the logical (and filesystem) grouping
-        # db here is the model Databases
-
+    def format_lists(self, lists) -> str:
         table = []
-        for database in databases:
-            name = self.format_database(database)
-            entries = db.todos(lists=[database.name])
-            total_entries = sum(1 for _ in entries)
-            table.append((name, total_entries))
+        for list_ in lists:
+            table.append((list_.todo_count, self.format_list(list_)))
 
         return tabulate(table, tablefmt="plain")
 
@@ -315,3 +307,16 @@ class PorcelainFormatter(DefaultFormatter):
             return datetime.fromtimestamp(value, tz=pytz.UTC)
         else:
             return None
+
+    def format_lists(self, lists: Iterable[TodoList]) -> str:
+        return json.dumps(
+            [
+                {
+                    "color": list_.colour,
+                    "name": list_.name,
+                    "todo_count": list_.todo_count,
+                }
+                for list_ in lists
+            ],
+            indent=2,
+        )

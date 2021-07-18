@@ -200,3 +200,39 @@ def test_formatting_parsing_consitency():
 
     formatter = PorcelainFormatter(tz_override=tz)
     assert formatter.parse_datetime(formatter.format_datetime(dt)) == dt
+
+
+def test_lists_command(tmpdir, runner, create):
+    result = runner.invoke(cli, ["--porcelain", "lists"], catch_exceptions=False)
+    assert not result.exception
+    assert json.loads(result.output) == []
+
+    create("test.ics", "SUMMARY:harhar\n")
+
+    result = runner.invoke(cli, ["--porcelain", "lists"])
+    assert not result.exception
+    assert json.loads(result.output) == [
+        {
+            "color": None,
+            "name": "default",
+            "todo_count": 1,
+        }
+    ]
+
+    create("test2.ics", "SUMMARY:harhar\n")
+    create("test3.ics", "SUMMARY:harhar\n", list_name="another")
+
+    result = runner.invoke(cli, ["--porcelain", "lists"])
+    assert not result.exception
+    assert json.loads(result.output) == [
+        {
+            "color": None,
+            "name": "default",
+            "todo_count": 2,
+        },
+        {
+            "color": None,
+            "name": "another",
+            "todo_count": 1,
+        },
+    ]

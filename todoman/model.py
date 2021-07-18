@@ -395,8 +395,7 @@ class VtodoWriter:
 
 
 class Cache:
-    """
-    Caches Todos for faster read and simpler querying interface
+    """Caches Todos for faster read and simpler querying interface
 
     The Cache class persists relevant[1] fields into an SQL database, which is
     only updated if the actual file has been modified. This greatly increases
@@ -409,9 +408,11 @@ class Cache:
 
     SCHEMA_VERSION = 8
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, *, db: Database):
         self.cache_path = str(path)
         os.makedirs(os.path.dirname(self.cache_path), exist_ok=True)
+
+        self.db = db
 
         self._conn = sqlite3.connect(self.cache_path)
         self._conn.row_factory = sqlite3.Row
@@ -870,6 +871,7 @@ class Cache:
                 name=row["name"],
                 path=row["path"],
                 colour=row["colour"],
+                db=self.db,
             )
 
     @cached_property
@@ -946,12 +948,26 @@ class Cache:
     def expire_file(self, path: str) -> None:
         self._conn.execute("DELETE FROM files WHERE path = ?", (path,))
 
+    def todo_count(self, list_: TodoList) -> int:
+        result = self._conn.execute(
+            """
+               SELECT COUNT(file_path) AS total FROM lists
+            LEFT JOIN files ON files.list_name = lists.name
+            LEFT JOIN todos ON todos.file_path == files.path
+                WHERE lists.path = ?
+            """,
+            (list_.path,),
+        ).fetchone()
+
+        return result["total"]
+
 
 class TodoList:
-    def __init__(self, name: str, path: str, colour: str = None):
+    def __init__(self, name: str, path: str, colour: str = None, *, db: Database):
         self.path = path
         self.name = name
         self.colour = colour
+        self.db = db
 
     @staticmethod
     def colour_for_path(path: str) -> Optional[str]:
@@ -985,6 +1001,10 @@ class TodoList:
         else:
             return 0
 
+    @cached_property
+    def todo_count(self):
+        return self.db.todo_count(self)
+
     def __eq__(self, other) -> bool:
         if isinstance(other, TodoList):
             return self.name == other.name
@@ -1004,7 +1024,7 @@ class Database:
     """
 
     def __init__(self, paths, cache_path):
-        self.cache = Cache(cache_path)
+        self.cache = Cache(cache_path, db=self)
         self.paths = [str(path) for path in paths]
         self.update_cache()
 
@@ -1097,6 +1117,9 @@ class Database:
         self.cache.add_file(todo.list.name, todo.path, mtime)
         todo.id = self.cache.add_vtodo(vtodo, todo.path, todo.id)
         self.cache.save_to_disk()
+
+    def todo_count(self, list_: TodoList) -> int:
+        return self.cache.todo_count(list_)
 
 
 def _getmtime(path: str) -> int:
