@@ -4,6 +4,7 @@ import locale
 import sys
 from contextlib import contextmanager
 from datetime import timedelta
+from functools import cached_property
 from os.path import isdir
 
 import click
@@ -14,7 +15,6 @@ from todoman import formatters
 from todoman.configuration import ConfigurationException
 from todoman.configuration import load_config
 from todoman.interactive import TodoEditor
-from todoman.model import cached_property
 from todoman.model import Database
 from todoman.model import Todo
 
@@ -186,7 +186,6 @@ def _todo_property_options(command):
 
 
 class AppContext:
-
     def __init__(self):
         self.config = None
         self.db: Database = None

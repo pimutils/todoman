@@ -1,6 +1,7 @@
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
+from functools import cached_property
 from unittest.mock import patch
 
 import pytest
@@ -10,7 +11,6 @@ from dateutil.tz.tz import tzoffset
 from freezegun import freeze_time
 
 from todoman.exceptions import AlreadyExists
-from todoman.model import cached_property
 from todoman.model import Database
 from todoman.model import Todo
 from todoman.model import TodoList
