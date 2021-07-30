@@ -268,10 +268,10 @@ class PorcelainFormatter(DefaultFormatter):
         data = [self._todo_as_dict(todo) for todo in todos]
         return json.dumps(data, indent=4, sort_keys=True)
 
-    def simple_action(self, action, todo):
+    def simple_action(self, action: str, todo: Todo) -> str:
         return self.compact(todo)
 
-    def parse_priority(self, priority):
+    def parse_priority(self, priority: Optional[str]) -> Optional[int]:
         if priority is None:
             return None
         try:
@@ -280,9 +280,9 @@ class PorcelainFormatter(DefaultFormatter):
             else:
                 raise ValueError("Priority has to be in the range 0-9")
         except ValueError as e:
-            raise click.BadParameter(e)
+            raise click.BadParameter(str(e))
 
-    def detailed(self, todo):
+    def detailed(self, todo: Todo) -> str:
         return self.compact(todo)
 
     def format_datetime(self, value: Optional[date]) -> Optional[int]:
