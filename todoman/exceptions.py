@@ -12,7 +12,7 @@ class NoSuchTodo(TodomanException):
     EXIT_CODE = 20
 
     def __str__(self):
-        return "No todo with id {}.".format(self.args[0])
+        return f"No todo with id {self.args[0]}."
 
 
 class ReadOnlyTodo(TodomanException):
