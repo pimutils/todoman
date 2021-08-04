@@ -14,10 +14,9 @@ from todoman import formatters
 from todoman.configuration import ConfigurationException
 from todoman.configuration import load_config
 from todoman.interactive import TodoEditor
-from todoman.model import cached_property
 from todoman.model import Database
 from todoman.model import Todo
-
+from todoman.model import cached_property
 
 click_log.basic_config()
 
