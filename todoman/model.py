@@ -713,6 +713,7 @@ class Cache:
         start=None,
         startable=False,
         status="NEEDS-ACTION,IN-PROCESS",
+        description=False,
     ) -> Iterable[Todo]:
         """
         Returns filtered cached todos, in a specified order.

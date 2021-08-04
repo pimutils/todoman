@@ -607,6 +607,14 @@ def move(ctx, list, ids):
         '"NEEDS-ACTION", "CANCELLED", "COMPLETED", "IN-PROCESS" or "ANY"'
     ),
 )
+@click.option(
+    "--description/--no-description",
+    "-v",
+    default=False,
+    help=(
+        "Show description. Defaults to false."
+    ),
+)
 @catch_errors
 def list(ctx, *args, **kwargs):
     """
@@ -631,4 +639,4 @@ def list(ctx, *args, **kwargs):
     )
 
     todos = ctx.db.todos(**kwargs)
-    click.echo(ctx.formatter.compact_multiple(todos, hide_list))
+    click.echo(ctx.formatter.compact_multiple(todos, hide_list, kwargs["description"]))
