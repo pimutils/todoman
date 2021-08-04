@@ -31,7 +31,7 @@ def rgb_to_ansi(colour: Optional[str]) -> Optional[str]:
     if not len(r) == len(g) == len(b) == 2:
         return None
 
-    return "\33[38;2;{!s};{!s};{!s}m".format(int(r, 16), int(g, 16), int(b, 16))
+    return f"\33[38;2;{int(r, 16)!s};{int(g, 16)!s};{int(b, 16)!s}m"
 
 
 class DefaultFormatter:
@@ -239,7 +239,7 @@ class HumanizedFormatter(DefaultFormatter):
         if isinstance(dt, datetime):
             rv = humanize.naturaltime(self.now - dt)
             if " from now" in rv:
-                rv = "in {}".format(rv[:-9])
+                rv = f"in {rv[:-9]}"
         elif isinstance(dt, date):
             rv = humanize.naturaldate(dt)
 

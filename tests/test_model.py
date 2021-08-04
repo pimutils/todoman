@@ -10,10 +10,10 @@ from dateutil.tz.tz import tzoffset
 from freezegun import freeze_time
 
 from todoman.exceptions import AlreadyExists
-from todoman.model import cached_property
 from todoman.model import Database
 from todoman.model import Todo
 from todoman.model import TodoList
+from todoman.model import cached_property
 
 
 def test_querying(create, tmpdir):

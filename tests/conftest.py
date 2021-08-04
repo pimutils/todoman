@@ -8,8 +8,8 @@ import pytz
 from click.testing import CliRunner
 from dateutil.tz import tzlocal
 from hypothesis import HealthCheck
-from hypothesis import settings
 from hypothesis import Verbosity
+from hypothesis import settings
 
 from todoman import model
 from todoman.formatters import DefaultFormatter

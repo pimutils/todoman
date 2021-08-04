@@ -10,11 +10,7 @@ from datetime import time
 from datetime import timedelta
 from os.path import normpath
 from os.path import split
-from typing import Dict
 from typing import Iterable
-from typing import List
-from typing import Optional
-from typing import Tuple
 from uuid import uuid4
 
 import icalendar
@@ -63,15 +59,15 @@ class Todo:
     the local system's one.
     """
 
-    categories: List[str]
-    completed_at: Optional[datetime]
-    created_at: Optional[datetime]
-    due: Optional[date]
-    dtstamp: Optional[datetime]
-    last_modified: Optional[datetime]
-    related: List[Todo]
-    rrule: Optional[str]
-    start: Optional[date]
+    categories: list[str]
+    completed_at: datetime | None
+    created_at: datetime | None
+    due: date | None
+    dtstamp: datetime | None
+    last_modified: datetime | None
+    related: list[Todo]
+    rrule: str | None
+    start: date | None
 
     def __init__(
         self,
@@ -196,7 +192,7 @@ class Todo:
             else:
                 assert isinstance(
                     value, str
-                ), "Got {} for {} where str was expected".format(type(value), name)
+                ), f"Got {type(value)} for {name} where str was expected"
 
         if name in Todo.STRING_FIELDS:
             if value is None:
@@ -204,7 +200,7 @@ class Todo:
             else:
                 assert isinstance(
                     value, str
-                ), "Got {} for {} where str was expected".format(type(value), name)
+                ), f"Got {type(value)} for {name} where str was expected"
 
         if name in Todo.INT_FIELDS:
             if value is None:
@@ -212,7 +208,7 @@ class Todo:
             else:
                 assert isinstance(
                     value, int
-                ), "Got {} for {} where int was expected".format(type(value), name)
+                ), f"Got {type(value)} for {name} where int was expected"
 
         if name in Todo.LIST_FIELDS:
             if value is None:
@@ -220,7 +216,7 @@ class Todo:
             else:
                 assert isinstance(
                     value, list
-                ), "Got {} for {} where list was expected".format(type(value), name)
+                ), f"Got {type(value)} for {name} where list was expected"
 
         return object.__setattr__(self, name, v)
 
@@ -232,7 +228,7 @@ class Todo:
     def is_recurring(self) -> bool:
         return bool(self.rrule)
 
-    def _apply_recurrence_to_dt(self, dt) -> Optional[datetime]:
+    def _apply_recurrence_to_dt(self, dt) -> datetime | None:
         if not dt:
             return None
 
@@ -589,7 +585,7 @@ class Cache:
         self,
         todo: icalendar.Todo,
         field: str,
-    ) -> Tuple[Optional[int], Optional[bool]]:
+    ) -> tuple[int | None, bool | None]:
         """
         Serialize a todo field in two value, the first one is the corresponding
         timestamp, the second one is a boolean indicating if the serialized
@@ -610,7 +606,7 @@ class Cache:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
         return dt.timestamp(), is_date
 
-    def _serialize_rrule(self, todo, field) -> Optional[str]:
+    def _serialize_rrule(self, todo, field) -> str | None:
         rrule = todo.get(field)
         if not rrule:
             return None
@@ -797,7 +793,7 @@ class Cache:
             order_items = []
             for s in sort:
                 if s.startswith("-"):
-                    order_items.append(" {} ASC".format(s[1:]))
+                    order_items.append(f" {s[1:]} ASC")
                 else:
                     order_items.append(f" {s} DESC")
             order = ",".join(order_items)
@@ -845,12 +841,12 @@ class Cache:
             seen_paths.add(path)
             yield todo
 
-    def _datetime_from_db(self, dt) -> Optional[datetime]:
+    def _datetime_from_db(self, dt) -> datetime | None:
         if dt:
             return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
         return None
 
-    def _date_from_db(self, dt, is_date=False) -> Optional[date]:
+    def _date_from_db(self, dt, is_date=False) -> date | None:
         """Deserialise a date (possible datetime)."""
         if not dt:
             return dt
@@ -892,10 +888,10 @@ class Cache:
             )
 
     @cached_property
-    def lists_map(self) -> Dict[str, TodoList]:
+    def lists_map(self) -> dict[str, TodoList]:
         return {list_.name: list_ for list_ in self.lists()}
 
-    def expire_lists(self, paths: Dict[str, int]) -> None:
+    def expire_lists(self, paths: dict[str, int]) -> None:
         results = self._conn.execute("SELECT path, name, mtime from lists")
         for result in results:
             if result["path"] not in paths:
@@ -938,7 +934,7 @@ class Cache:
 
         return self._todo_from_db(result)
 
-    def expire_files(self, paths_to_mtime: Dict[str, int]) -> None:
+    def expire_files(self, paths_to_mtime: dict[str, int]) -> None:
         """Remove stale cache entries based on the given fresh data."""
         result = self._conn.execute("SELECT path, mtime FROM files")
         for row in result:
@@ -957,7 +953,7 @@ class TodoList:
         self.colour = colour
 
     @staticmethod
-    def colour_for_path(path: str) -> Optional[str]:
+    def colour_for_path(path: str) -> str | None:
         try:
             with open(os.path.join(path, "color")) as f:
                 return f.read().strip()
