@@ -611,9 +611,7 @@ def move(ctx, list, ids):
     "--description/--no-description",
     "-v",
     default=False,
-    help=(
-        "Show description. Defaults to false."
-    ),
+    help=("Show description. Defaults to false."),
 )
 @catch_errors
 def list(ctx, *args, **kwargs):

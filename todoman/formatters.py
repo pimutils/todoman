@@ -62,7 +62,9 @@ class DefaultFormatter:
     def compact(self, todo: Todo) -> str:
         return self.compact_multiple([todo])
 
-    def compact_multiple(self, todos: Iterable[Todo], hide_list=False, description=False) -> str:
+    def compact_multiple(
+        self, todos: Iterable[Todo], hide_list=False, description=False
+    ) -> str:
         table = []
         for todo in todos:
             completed = "X" if todo.is_completed else " "
