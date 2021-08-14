@@ -11,7 +11,7 @@ from typing import Union
 import click
 import humanize
 import parsedatetime
-import pytz
+from zoneinfo import ZoneInfo
 from dateutil.tz import tzlocal
 from tabulate import tabulate
 
@@ -297,6 +297,6 @@ class PorcelainFormatter(DefaultFormatter):
 
     def parse_datetime(self, value):
         if value:
-            return datetime.fromtimestamp(value, tz=pytz.UTC)
+            return datetime.fromtimestamp(value, tz=ZoneInfo("UTC"))
         else:
             return None

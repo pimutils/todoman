@@ -4,7 +4,7 @@ from datetime import datetime
 from uuid import uuid4
 
 import pytest
-import pytz
+from zoneinfo import ZoneInfo
 from click.testing import CliRunner
 from dateutil.tz import tzlocal
 from hypothesis import HealthCheck
@@ -72,7 +72,7 @@ def now_for_tz():
         will be compared to some pre-computed value that assumes a determined
         timezone.
         """
-        return datetime.now().replace(tzinfo=tzlocal()).astimezone(pytz.timezone(tz))
+        return datetime.now().replace(tzinfo=tzlocal()).astimezone(ZoneInfo(tz))
 
     return inner
 
@@ -96,13 +96,13 @@ def todo_factory(default_database):
 
 @pytest.fixture
 def default_formatter():
-    formatter = DefaultFormatter(tz_override=pytz.timezone("CET"))
+    formatter = DefaultFormatter(tz_override=ZoneInfo("CET"))
     return formatter
 
 
 @pytest.fixture
 def humanized_formatter():
-    formatter = HumanizedFormatter(tz_override=pytz.timezone("CET"))
+    formatter = HumanizedFormatter(tz_override=ZoneInfo("CET"))
     return formatter
 
 

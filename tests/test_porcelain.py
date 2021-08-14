@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-import pytz
+from zoneinfo import ZoneInfo
 
 from todoman.cli import cli
 from todoman.formatters import PorcelainFormatter
@@ -178,7 +178,7 @@ def test_simple_action(todo_factory):
 def test_format_datetime():
     formatter = PorcelainFormatter()
 
-    dt = datetime(2017, 3, 8, 0, 0, 17, 457955, tzinfo=pytz.UTC)
+    dt = datetime(2017, 3, 8, 0, 0, 17, 457955, tzinfo=ZoneInfo("UTC"))
     t = 1488931217
 
     assert formatter.format_datetime(dt) == t
@@ -187,7 +187,7 @@ def test_format_datetime():
 def test_parse_datetime():
     formatter = PorcelainFormatter()
 
-    expected = datetime(2017, 3, 6, 23, 22, 21, 610429, tzinfo=pytz.UTC)
+    expected = datetime(2017, 3, 6, 23, 22, 21, 610429, tzinfo=ZoneInfo("UTC"))
     assert formatter.parse_datetime(1488842541.610429) == expected
 
     assert formatter.parse_datetime(None) is None
@@ -195,7 +195,7 @@ def test_parse_datetime():
 
 
 def test_formatting_parsing_consitency():
-    tz = pytz.timezone("CET")
+    tz = ZoneInfo("CET")
     dt = datetime(2017, 3, 8, 21, 6, 19).replace(tzinfo=tz)
 
     formatter = PorcelainFormatter(tz_override=tz)

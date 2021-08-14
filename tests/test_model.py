@@ -4,7 +4,7 @@ from datetime import timedelta
 from unittest.mock import patch
 
 import pytest
-import pytz
+from zoneinfo import ZoneInfo
 from dateutil.tz import tzlocal
 from dateutil.tz.tz import tzoffset
 from freezegun import freeze_time
@@ -189,7 +189,7 @@ def test_todo_setters(todo_factory):
 
 @freeze_time("2017-03-19-15")
 def test_is_completed():
-    completed_at = datetime(2017, 3, 19, 14, tzinfo=pytz.UTC)
+    completed_at = datetime(2017, 3, 19, 14, tzinfo=ZoneInfo("UTC"))
 
     todo = Todo()
     assert todo.is_completed is False
@@ -200,7 +200,7 @@ def test_is_completed():
     todo.percent_complete = 20
     todo.complete()
     assert todo.is_completed is True
-    assert todo.completed_at == datetime.now(pytz.UTC)
+    assert todo.completed_at == datetime.now(ZoneInfo("UTC"))
     assert todo.percent_complete == 100
     assert todo.status == "COMPLETED"
 
@@ -209,7 +209,7 @@ def test_is_completed():
     "until",
     ["20990315T020000Z", "20990315T020000"],  # TZ-aware UNTIL  # TZ-naive UNTIL
 )
-@pytest.mark.parametrize("tz", [pytz.UTC, None])  # TZ-aware todos  # TZ-naive todos
+@pytest.mark.parametrize("tz", [ZoneInfo("UTC"), None])  # TZ-aware todos  # TZ-naive todos
 @pytest.mark.parametrize("due", [True, False])
 def test_complete_recurring(default_database, due, todo_factory, tz, until):
     # We'll lose the milis when casting, so:
@@ -249,7 +249,7 @@ def test_complete_recurring(default_database, due, todo_factory, tz, until):
 
 
 def test_save_recurring_related(default_database, todo_factory, todos):
-    now = datetime.now(pytz.UTC)
+    now = datetime.now(ZoneInfo("UTC"))
     original_due = now + timedelta(hours=12)
     rrule = "FREQ=DAILY;UNTIL=20990315T020000Z"
     todo = todo_factory(rrule=rrule, due=original_due)

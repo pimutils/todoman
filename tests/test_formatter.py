@@ -4,7 +4,7 @@ from datetime import time
 from datetime import timedelta
 
 import pytest
-import pytz
+from zoneinfo import ZoneInfo
 from freezegun import freeze_time
 
 from tests.helpers import pyicu_sensitive
@@ -103,7 +103,7 @@ def test_detailed_format(runner, todo_factory):
 
 
 def test_parse_time(default_formatter):
-    tz = pytz.timezone("CET")
+    tz = ZoneInfo("CET")
     parsed = default_formatter.parse_datetime("12:00")
     expected = datetime.combine(
         date.today(),
@@ -113,7 +113,7 @@ def test_parse_time(default_formatter):
 
 
 def test_parse_datetime(default_formatter):
-    tz = pytz.timezone("CET")
+    tz = ZoneInfo("CET")
 
     parsed = default_formatter.parse_datetime("2017-03-05")
     assert parsed == date(2017, 3, 5)
@@ -133,7 +133,7 @@ def test_parse_datetime(default_formatter):
 
 
 def test_humanized_parse_datetime(humanized_formatter):
-    tz = pytz.timezone("CET")
+    tz = ZoneInfo("CET")
 
     humanized_formatter.now = datetime(2017, 3, 6, 22, 17).replace(tzinfo=tz)
     dt = datetime(2017, 3, 6, 20, 17).replace(tzinfo=tz)
@@ -148,7 +148,7 @@ def test_simple_action(default_formatter, todo_factory):
 
 
 def test_formatting_parsing_consitency(default_formatter):
-    tz = pytz.timezone("CET")
+    tz = ZoneInfo("CET")
     dt = datetime(2017, 3, 8, 21, 6).replace(tzinfo=tz)
 
     formatted = default_formatter.format_datetime(dt)

@@ -22,6 +22,7 @@ setup(
         "pyxdg",
         "tabulate",
         "urwid",
+        "backports.zoneinfo; python_version < '3.9'",
     ],
     long_description=open("README.rst").read(),
     use_scm_version={

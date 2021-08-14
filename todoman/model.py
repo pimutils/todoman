@@ -14,7 +14,7 @@ from typing import Iterable
 from uuid import uuid4
 
 import icalendar
-import pytz
+from zoneinfo import ZoneInfo
 from atomicwrites import AtomicWriter
 from dateutil.rrule import rrulestr
 from dateutil.tz import tzlocal
@@ -326,7 +326,7 @@ class VtodoWriter:
         if not dt.tzinfo:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
 
-        return dt.astimezone(pytz.UTC)
+        return dt.astimezone(ZoneInfo("UTC"))
 
     def serialize_field(self, name: str, value):
         if name in Todo.RRULE_FIELDS:

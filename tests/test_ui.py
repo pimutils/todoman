@@ -2,7 +2,7 @@ from datetime import datetime
 from unittest import mock
 
 import pytest
-import pytz
+from zoneinfo import ZoneInfo
 from freezegun import freeze_time
 from urwid import ExitMainLoop
 
@@ -67,7 +67,7 @@ def test_todo_editor_summary(default_database, todo_factory, default_formatter):
 
 @freeze_time("2017-03-04 14:00:00", tz_offset=4)
 def test_todo_editor_due(default_database, todo_factory, default_formatter):
-    tz = pytz.timezone("CET")
+    tz = ZoneInfo("CET")
 
     todo = todo_factory(due=datetime(2017, 3, 4, 14))
     lists = list(default_database.lists())

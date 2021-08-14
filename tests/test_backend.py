@@ -3,7 +3,7 @@ from datetime import datetime
 
 import icalendar
 import pytest
-import pytz
+from zoneinfo import ZoneInfo
 from dateutil.tz import tzlocal
 from freezegun import freeze_time
 
@@ -12,7 +12,7 @@ from todoman.model import VtodoWriter
 
 
 def test_datetime_serialization(todo_factory, tmpdir):
-    now = datetime(2017, 8, 31, 23, 49, 53, tzinfo=pytz.UTC)
+    now = datetime(2017, 8, 31, 23, 49, 53, tzinfo=ZoneInfo("UTC"))
     todo = todo_factory(created_at=now)
     filename = tmpdir.join("default").join(todo.filename)
     with open(str(filename)) as f:
@@ -20,7 +20,7 @@ def test_datetime_serialization(todo_factory, tmpdir):
 
 
 def test_serialize_created_at(todo_factory):
-    now = datetime.now(tz=pytz.UTC)
+    now = datetime.now(tz=ZoneInfo("UTC"))
     todo = todo_factory(created_at=now)
     vtodo = VtodoWriter(todo).serialize()
 
@@ -28,7 +28,7 @@ def test_serialize_created_at(todo_factory):
 
 
 def test_serialize_dtstart(todo_factory):
-    now = datetime.now(tz=pytz.UTC)
+    now = datetime.now(tz=ZoneInfo("UTC"))
     todo = todo_factory(start=now)
     vtodo = VtodoWriter(todo).serialize()
 
