@@ -1,2 +1,3 @@
 sphinx_autorun
 sphinx-click
+sphinx_rtd_theme
