@@ -28,7 +28,3 @@ tasks:
       cd todoman
       TOXENV=repl tox
       codecov
-  - check-style: |
-      cd todoman
-      sudo pip install pre-commit
-      pre-commit run --all
