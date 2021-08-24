@@ -95,5 +95,30 @@ others):
 Authorship
 ----------
 
-While authors must add themselves to ``AUTHORS.rst``, all copyright is retained
-by them. Contributions are accepted under the :doc:`ISC licence <licence>`.
+Authors may add themselves to ``AUTHORS.rst``, and all copyright is retained by
+them. Contributions are accepted under the :doc:`ISC licence <licence>`.
+
+Packaging
+---------
+
+We appreciate distributions packaging todoman. Packaging should be relatively
+straightforward following usual Python package guidelines. We recommend that
+you git-clone tags, and build from source, since these tags are GPG signed.
+
+Dependencies are listed in ``setup.py``. Please also try to include the
+extras dependencies as optional dependencies (or what maps best for your
+distribution).
+
+You'll need to run ``python setup.py build`` to generate the
+``todoman/version.py`` file which is necessary at runtime.
+
+We recommend that you include the :doc:`man` in distribution packages. You can
+build this by running::
+
+    sphinx-build -b man docs/source docs/build/man
+
+The man page will be saved as `docs/build/man/todo.1`.
+
+Generating the man pages requires that todoman and its doc dependencies (see
+``requirements-docs.txt``) are either installed, or in the current
+``PYTHONPATH``.
