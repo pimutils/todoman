@@ -84,14 +84,18 @@ Patch review checklist
 Please follow this checklist when submitting new PRs (or reviewing PRs by
 others):
 
+CI will automatically check these for us:
+
 #. Do all tests pass?
 #. Does the documentation build?
-#. Does the coding style conform to our guidelines? Are there any flake8 errors?
-#. Are user-facing changes documented?
-#. Is there an entry for new features or dependencies in ``CHANGELOG.rst``?
-#. Are you the patch author? Are you listed in ``AUTHORS.rst``?
+#. Do all linting and style checks pass?
 
-*Hint: To quickly verify the first three items run* ``tox``.
+Please keep an eye open for these other items:
+
+#. If any features have changed, make sure the docs reflect this.
+#. If there are any user-facing changes, make sure the :doc:`changelog` reflects this.
+#. If there are any dependency changes, make sure the :doc:`changelog` reflects this.
+#. If not already present, please add yourself to ``AUTHORS.rst``.
 
 Authorship
 ----------
