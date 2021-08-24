@@ -43,7 +43,8 @@ view) as they are read from disk, displayed, and or saved again.
 
 When the app starts, it will read all todos from disk, and initialize from the
 cache any further display (either ``list``, ``show``, ``edit``, etc) is then
-done reading from the cache, which only contains the fields we operate with.
+done reading from the cache, which only contains the fields with which we
+operate. This stage also assigns the id numbers to each todo.
 
 When a Todo is edited, the entire cycle is:
 
@@ -52,9 +53,9 @@ When a Todo is edited, the entire cycle is:
 * If edition is interactive, show the UI now.
 * No matter how the edition occurs, apply changes to the Todo object.
 * Start saving process:
-  * Read file from disk (as a VTodo object).
-  * Apply changes from fields to the VTodo object.
-  * Write to disk.
+   * Read file from disk (as a VTodo object).
+   * Apply changes from fields to the VTodo object.
+   * Write to disk.
 
 The main goal of this is to simplify how many conversions we have. If we read
 from disk to the editor, we'd need an extra VTodo->Todo conversion code that
