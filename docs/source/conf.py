@@ -150,7 +150,6 @@ html_theme = "alabaster"
 html_theme_options = {
     "github_user": "pimutils",
     "github_repo": "todoman",
-    "travis_button": "true",
     "github_banner": "true",
     "github_button": "false",
 }
