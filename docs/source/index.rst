@@ -45,7 +45,7 @@ Table of Contents
    install
    configure
    usage
-   man page
+   man
    contributing
    changelog
    licence
