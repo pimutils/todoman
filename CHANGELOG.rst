@@ -187,7 +187,7 @@ v3.0.0
 ------
 
 New features
-~~~~~~~~~~~~
+************
 
 * Add a ``today`` setting and flag to exclude todos that start in the future.
 * Add the ``--humanize`` to show friendlier date times (eg: ``in 3 hours``).
@@ -206,7 +206,7 @@ New features
 * Add full support for locations.
 
 Packaging changes
-~~~~~~~~~~~~~~~~~
+*****************
 
 * New runtime dependency: ``tabulate``.
 * New runtime dependency: ``humanize``.
