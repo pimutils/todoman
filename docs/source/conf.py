@@ -50,7 +50,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 project = "Todoman"
-copyright = "2015-2020, Hugo Osvaldo Barrera"
+copyright = "2015-2021, Hugo Osvaldo Barrera"
 author = "Hugo Osvaldo Barrera <hugo@barrera.io>, et al"
 
 # The short X.Y version.
