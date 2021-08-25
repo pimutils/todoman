@@ -117,12 +117,15 @@ distribution).
 You'll need to run ``python setup.py build`` to generate the
 ``todoman/version.py`` file which is necessary at runtime.
 
+Man pages
+---------
+
 We recommend that you include the :doc:`man` in distribution packages. You can
 build this by running::
 
     sphinx-build -b man docs/source docs/build/man
 
-The man page will be saved as `docs/build/man/todo.1`.
+The man page will be saved as ``docs/build/man/todo.1``.
 
 Generating the man pages requires that todoman and its doc dependencies (see
 ``requirements-docs.txt``) are either installed, or in the current
