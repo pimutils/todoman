@@ -78,6 +78,12 @@ the virtualenv is active).
 
 .. _tox: http://tox.readthedocs.io/en/latest/
 
+Authorship
+----------
+
+Authors may add themselves to ``AUTHORS.rst``, and all copyright is retained by
+them. Contributions are accepted under the :doc:`ISC licence <licence>`.
+
 Patch review checklist
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -97,14 +103,8 @@ Please keep an eye open for these other items:
 #. If there are any dependency changes, make sure the :doc:`changelog` reflects this.
 #. If not already present, please add yourself to ``AUTHORS.rst``.
 
-Authorship
-----------
-
-Authors may add themselves to ``AUTHORS.rst``, and all copyright is retained by
-them. Contributions are accepted under the :doc:`ISC licence <licence>`.
-
 Packaging
----------
+~~~~~~~~~
 
 We appreciate distributions packaging todoman. Packaging should be relatively
 straightforward following usual Python package guidelines. We recommend that
