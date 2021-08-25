@@ -30,9 +30,6 @@ tasks:
       cd todoman
       TOXENV=repl tox
       codecov
-  - check-style: |
-      cd todoman
-      pre-commit run --all
       git describe --exact-match --tags || complete-build
   - publish: |
       cd todoman
