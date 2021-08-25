@@ -123,7 +123,7 @@ The string used to separate date and time when displaying and parsing.
 If set to true, datetimes will be printed in human friendly formats like
 "tomorrow", "in one hour", "3 weeks ago", etc.
 
-If false, datetimes fill be formatted using ``date_format`` and
+If false, datetimes will be formatted using ``date_format`` and
 ``time_format``.
 """,
         None,

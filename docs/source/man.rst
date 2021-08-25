@@ -14,6 +14,7 @@ using, for example, *vdirsyncer*.
 
 Usage
 -----
+
 .. include:: usage.rst
 
 Configuring

@@ -7,11 +7,8 @@ Items to keep in mind:
   this for your.
 - Make sure you're using `pre-commit` locally to run any fixes/checks.
 
+See the relevant documentation for more details:
+
+https://todoman.readthedocs.io/en/stable/contributing.html#patch-review-checklist
+
 -->
-
-**PR Checklist**
-
-* [ ] Does the coding style conform to our guidelines? Are there any flake8 errors?
-* [ ] Are user-facing changes documented?
-* [ ] Is there an entry for new features or dependencies in CHANGELOG.rst?
-* [ ] Are you the patch author? Are you listed in AUTHORS.rst?

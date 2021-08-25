@@ -43,7 +43,8 @@ view) as they are read from disk, displayed, and or saved again.
 
 When the app starts, it will read all todos from disk, and initialize from the
 cache any further display (either ``list``, ``show``, ``edit``, etc) is then
-done reading from the cache, which only contains the fields we operate with.
+done reading from the cache, which only contains the fields with which we
+operate. This stage also assigns the id numbers to each todo.
 
 When a Todo is edited, the entire cycle is:
 
@@ -52,9 +53,9 @@ When a Todo is edited, the entire cycle is:
 * If edition is interactive, show the UI now.
 * No matter how the edition occurs, apply changes to the Todo object.
 * Start saving process:
-  * Read file from disk (as a VTodo object).
-  * Apply changes from fields to the VTodo object.
-  * Write to disk.
+   * Read file from disk (as a VTodo object).
+   * Apply changes from fields to the VTodo object.
+   * Write to disk.
 
 The main goal of this is to simplify how many conversions we have. If we read
 from disk to the editor, we'd need an extra VTodo->Todo conversion code that
@@ -83,17 +84,46 @@ Patch review checklist
 Please follow this checklist when submitting new PRs (or reviewing PRs by
 others):
 
+CI will automatically check these for us:
+
 #. Do all tests pass?
 #. Does the documentation build?
-#. Does the coding style conform to our guidelines? Are there any flake8 errors?
-#. Are user-facing changes documented?
-#. Is there an entry for new features or dependencies in ``CHANGELOG.rst``?
-#. Are you the patch author? Are you listed in ``AUTHORS.rst``?
+#. Do all linting and style checks pass?
 
-*Hint: To quickly verify the first three items run* ``tox``.
+Please keep an eye open for these other items:
+
+#. If any features have changed, make sure the docs reflect this.
+#. If there are any user-facing changes, make sure the :doc:`changelog` reflects this.
+#. If there are any dependency changes, make sure the :doc:`changelog` reflects this.
+#. If not already present, please add yourself to ``AUTHORS.rst``.
 
 Authorship
 ----------
 
-While authors must add themselves to ``AUTHORS.rst``, all copyright is retained
-by them. Contributions are accepted under the :doc:`ISC licence <licence>`.
+Authors may add themselves to ``AUTHORS.rst``, and all copyright is retained by
+them. Contributions are accepted under the :doc:`ISC licence <licence>`.
+
+Packaging
+---------
+
+We appreciate distributions packaging todoman. Packaging should be relatively
+straightforward following usual Python package guidelines. We recommend that
+you git-clone tags, and build from source, since these tags are GPG signed.
+
+Dependencies are listed in ``setup.py``. Please also try to include the
+extras dependencies as optional dependencies (or what maps best for your
+distribution).
+
+You'll need to run ``python setup.py build`` to generate the
+``todoman/version.py`` file which is necessary at runtime.
+
+We recommend that you include the :doc:`man` in distribution packages. You can
+build this by running::
+
+    sphinx-build -b man docs/source docs/build/man
+
+The man page will be saved as `docs/build/man/todo.1`.
+
+Generating the man pages requires that todoman and its doc dependencies (see
+``requirements-docs.txt``) are either installed, or in the current
+``PYTHONPATH``.
