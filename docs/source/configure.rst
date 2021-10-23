@@ -28,7 +28,8 @@ Color and displayname
 ---------------------
 
 - You can set a color for each task list by creating a ``color`` file containing
-  a color code in the hex format: ``#RRGGBB``.
+  either a named ANSI color (such as ``red``, ``bright blue``, etc) or a color
+  code in hex format: ``#RRGGBB`` (the latter requires 24-bit color support).
 - A file named ``displayname`` indicates how the task list should be named and
   is needed when there are multiple directories sharing a name, e.g.: when using
   multiple $CloudInstances. The default is the directory name.

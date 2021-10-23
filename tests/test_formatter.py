@@ -9,7 +9,7 @@ from freezegun import freeze_time
 
 from tests.helpers import pyicu_sensitive
 from todoman.cli import cli
-from todoman.formatters import rgb_to_ansi
+from todoman.formatters import colour_to_ansi
 
 
 @pyicu_sensitive
@@ -155,12 +155,14 @@ def test_formatting_parsing_consitency(default_formatter):
     assert default_formatter.parse_datetime(formatted) == dt
 
 
-def test_rgb_to_ansi():
-    assert rgb_to_ansi(None) is None
-    assert rgb_to_ansi("#8ab6d") is None
-    assert rgb_to_ansi("#8ab6d2f") == "\x1b[38;2;138;182;210m"
-    assert rgb_to_ansi("red") is None
-    assert rgb_to_ansi("#8ab6d2") == "\x1b[38;2;138;182;210m"
+def test_colour_to_ansi():
+    assert colour_to_ansi(None) is None
+    assert colour_to_ansi("#8ab6d") is None
+    assert colour_to_ansi("#8ab6d2f") == "\x1b[38;2;138;182;210m"
+    assert colour_to_ansi("#8ab6d2") == "\x1b[38;2;138;182;210m"
+    assert colour_to_ansi("red") == "\x1b[31m"
+    assert colour_to_ansi("bright cyan") == "\x1b[36;1m"
+    assert colour_to_ansi("salmon") is None
 
 
 def test_format_multiple_with_list(default_formatter, todo_factory):
