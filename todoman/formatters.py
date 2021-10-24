@@ -19,7 +19,7 @@ from todoman.model import Todo
 from todoman.model import TodoList
 
 
-def rgb_to_ansi(colour: str) -> Optional[str]:
+def rgb_to_ansi(colour: str) -> str:
     """
     Convert a string containing an RGB colour to ANSI escapes
     """
