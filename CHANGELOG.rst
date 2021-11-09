@@ -4,6 +4,12 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v4.0.1
+------
+
+* Fix issue passing arguments to ``default_command``.
+* Various documentation improvements.
+
 v4.0.0
 ------
 
