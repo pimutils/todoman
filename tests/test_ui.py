@@ -5,8 +5,9 @@ from unittest import mock
 import pytest
 import pytz
 from freezegun import freeze_time
-from todoman.interactive import TodoEditor
 from urwid import ExitMainLoop
+
+from todoman.interactive import TodoEditor
 
 
 def test_todo_editor_priority(default_database, todo_factory, default_formatter):
