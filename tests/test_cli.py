@@ -5,7 +5,6 @@ from unittest import mock
 from unittest.mock import call
 from unittest.mock import patch
 
-import click
 import hypothesis.strategies as st
 import pytest
 from dateutil.tz import tzlocal
@@ -683,14 +682,11 @@ def test_bad_start_date(runner):
 
     result = runner.invoke(cli, ["list", "--start", "before", "not_a_date"])
     assert result.exception
-    assert (
-        "Invalid value for '--start': Time description not recognized: not_a_date"
-        in result.output
-    )
+    assert "Time description not recognized: not_a_date" in result.output
 
     result = runner.invoke(cli, ["list", "--start", "godzilla", "2017-03-22"])
     assert result.exception
-    assert "Format should be '[before|after] [DATE]'" in result.output
+    assert "Invalid value for '--start': should be '[before|after]" in result.output
 
 
 def test_done(runner, todo_factory, todos):
@@ -767,41 +763,6 @@ def test_no_repl(runner):
     assert "repl" not in result.output
     assert "shell" not in result.output
     assert "Start an interactive shell." not in result.output
-
-
-def test_status_validation():
-    from todoman import cli
-
-    @given(
-        statuses=st.lists(
-            st.sampled_from(Todo.VALID_STATUSES + ("ANY",)),
-            min_size=1,
-            max_size=5,
-            unique=True,
-        )
-    )
-    def run_test(statuses):
-        validated = cli.validate_status(val=",".join(statuses)).split(",")
-
-        if "ANY" in statuses:
-            assert len(validated) == 4
-        else:
-            assert len(validated) == len(statuses)
-
-        for status in validated:
-            assert status in Todo.VALID_STATUSES
-
-    run_test()
-
-
-def test_bad_status_validation():
-    from todoman import cli
-
-    with pytest.raises(click.BadParameter):
-        cli.validate_status(val="INVALID")
-
-    with pytest.raises(click.BadParameter):
-        cli.validate_status(val="IN-PROGRESS")
 
 
 def test_status_filtering(runner, todo_factory):
@@ -966,5 +927,5 @@ def test_default_command_args(config, runner):
         grep=None,
         start=None,
         startable=None,
-        status="NEEDS-ACTION,IN-PROCESS",
+        status=["NEEDS-ACTION", "IN-PROCESS"],
     )

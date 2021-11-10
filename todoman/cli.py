@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 import functools
 import glob
 import locale
 import sys
+from abc import abstractmethod
 from contextlib import contextmanager
+from datetime import date
 from datetime import timedelta
 from os.path import isdir
 
@@ -73,37 +77,79 @@ def _validate_list_param(ctx, param=None, name=None):
     )
 
 
-def _validate_date_param(ctx, param, val):
-    ctx = ctx.find_object(AppContext)
-    try:
-        return ctx.formatter.parse_datetime(val)
-    except ValueError as e:
-        raise click.BadParameter(e)
+class ContextAwareParamType(click.ParamType):
+    """Wrapper around ParamType that handles ctx.
+
+    The Context object is passed by click only for cli options, but not for
+    ``prompt``. This wrapper handles this for us, as well as some common error
+    handling.
+
+    Subclasses must implement ``convert_with_ctx``.
+    """
+
+    app_ctx: AppContext | None
+
+    def __init__(self, ctx: AppContext = None):
+        self.app_ctx = ctx
+
+    def convert(self, value, param: str | None, ctx: click.Context | None):
+        if self.app_ctx:
+            app_ctx = self.app_ctx
+        elif ctx:
+            app_ctx = ctx.find_object(AppContext)
+        else:
+            raise Exception(f"Did you forget to pass 'ctx' to {self.name}?")
+
+        try:
+            return self.convert_with_ctx(value, param, app_ctx)
+        except ValueError as e:
+            self.fail(str(e), param, ctx)
+
+    @abstractmethod
+    def convert_with_ctx(self, value, param: str | None, ctx: AppContext):
+        pass
 
 
-def _validate_priority_param(ctx, param, val):
-    ctx = ctx.find_object(AppContext)
-    try:
-        return ctx.formatter.parse_priority(val)
-    except ValueError as e:
-        raise click.BadParameter(e)
+class Date(ContextAwareParamType):
+    name = "date"
+
+    def convert_with_ctx(
+        self,
+        value: str | date,
+        param: str | None,
+        app_ctx: AppContext,
+    ) -> date | None:
+        return app_ctx.formatter.parse_datetime(value)
 
 
-def _validate_start_date_param(ctx, param, val):
-    ctx = ctx.find_object(AppContext)
-    if not val:
-        return val
+class Priority(ContextAwareParamType):
+    name = "priority"
 
-    if len(val) != 2 or val[0] not in ["before", "after"]:
-        raise click.BadParameter("Format should be '[before|after] [DATE]'")
+    def convert_with_ctx(
+        self,
+        value: str | int,
+        param: str | None,
+        app_ctx: AppContext,
+    ) -> int:
+        return app_ctx.formatter.parse_priority(value)
 
-    is_before = val[0] == "before"
 
-    try:
-        dt = ctx.formatter.parse_datetime(val[1])
-        return is_before, dt
-    except ValueError as e:
-        raise click.BadParameter(e)
+class Before(ContextAwareParamType):
+    name = "start-date"
+
+    def convert_with_ctx(
+        self,
+        value: str,
+        param: str | None,
+        app_ctx: AppContext,
+    ) -> tuple[bool, date]:
+        if value not in ["before", "after"]:
+            raise ValueError("should be '[before|after]'")
+
+        return value == "before"
+
+    # TODO: use get_missing_message and others for better errors
+    # maybe a start-before param would be simpler
 
 
 def _validate_startable_param(ctx, param, val):
@@ -129,45 +175,60 @@ def _sort_callback(ctx, param, val):
     return fields
 
 
-def validate_status(ctx=None, param=None, val=None) -> str:
-    statuses = val.upper().split(",")
+class Status(ContextAwareParamType):
+    name = "status"
 
-    if "ANY" in statuses:
-        return ",".join(Todo.VALID_STATUSES)
+    def convert_with_ctx(
+        self,
+        value: str | list[str],
+        param: str | None,
+        app_ctx: AppContext,
+    ) -> list[str]:
+        if isinstance(value, str):
+            value = value.split(",")
 
-    for status in statuses:
-        if status not in Todo.VALID_STATUSES:
-            raise click.BadParameter(
-                'Invalid status, "{}", statuses must be one of "{}", or "ANY"'.format(
-                    status, ", ".join(Todo.VALID_STATUSES)
+        if "ANY" in value:
+            return Todo.VALID_STATUSES
+
+        value = [status.upper() for status in value]
+
+        for status in value:
+            if status not in Todo.VALID_STATUSES:
+                all_statuses = ", ".join(Todo.VALID_STATUSES)
+                raise ValueError(
+                    f'Invalid status, "{status}", statuses must be one of '
+                    f'"{all_statuses}", or "ANY"'
                 )
-            )
 
-    return val
+        return value
+
+    def get_metavar(self, param) -> str:
+        options = "|".join(Todo.VALID_STATUSES)
+        return f"{options},..."
 
 
 def _todo_property_options(command):
     click.option(
         "--priority",
         default="",
-        callback=_validate_priority_param,
+        type=Priority(),
         help="Priority for this task",
     )(command)
-    click.option("--location", help="The location where this todo takes place.")(
+    click.option("--location", help="The location where this todo takes place.",)(
         command
     )
     click.option(
         "--due",
         "-d",
         default="",
-        callback=_validate_date_param,
+        type=Date(),
         help=("Due date of the task, in the format specified in the configuration."),
     )(command)
     click.option(
         "--start",
         "-s",
         default="",
-        callback=_validate_date_param,
+        type=Date(),
         help="When the task starts.",
     )(command)
 
@@ -182,10 +243,9 @@ def _todo_property_options(command):
 
 
 class AppContext:
-    def __init__(self):
-        self.config = None
-        self.db = None
-        self.formatter_class = None
+    config: dict
+    db: Database
+    formatter_class: formatters.DefaultFormatter
 
     @cached_property
     def ui_formatter(self):
@@ -574,14 +634,16 @@ def move(ctx, list, ids):
     help=(
         "Only show tasks with priority at least as high as TEXT (low, medium or high)."
     ),
-    type=str,
-    callback=_validate_priority_param,
+    type=Priority(),
 )
 @click.option(
     "--start",
     default=None,
-    callback=_validate_start_date_param,
-    nargs=2,
+    type=(
+        Before(),
+        Date(),
+    ),
+    metavar="[before|after] DATE",
     help="Only shows tasks before/after given DATE",
 )
 @click.option(
@@ -599,11 +661,10 @@ def move(ctx, list, ids):
     "--status",
     "-s",
     default="NEEDS-ACTION,IN-PROCESS",
-    callback=validate_status,
+    type=Status(),
     help=(
-        "Show only todos with the "
-        "provided comma-separated statuses. Valid statuses are "
-        '"NEEDS-ACTION", "CANCELLED", "COMPLETED", "IN-PROCESS" or "ANY"'
+        "Show only todos with the provided comma-separated statuses. "
+        "Multiple comma-separated statuses."
     ),
 )
 @catch_errors

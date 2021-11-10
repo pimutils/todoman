@@ -708,7 +708,7 @@ class Cache:
         due=None,
         start=None,
         startable=False,
-        status="NEEDS-ACTION,IN-PROCESS",
+        status=["NEEDS-ACTION", "IN-PROCESS"],  # XXX: immutable
     ) -> Iterable[Todo]:
         """
         Returns filtered cached todos, in a specified order.
@@ -734,7 +734,7 @@ class Cache:
             high as specified.
         :param tuple(bool, datetime) start: Return only todos before/after
             ``start`` date
-        :param list(str) status: Return only todos with any of the given
+        :param status: Return only todos with any of the given
             statuses.
         :return: A sorted, filtered list of todos.
         :rtype: generator
@@ -743,13 +743,12 @@ class Cache:
         params: list = []
 
         if "ANY" not in status:
-            statuses = status.split(",")
             extra_where.append(
                 "AND (status IN ({}) OR status IS NULL)".format(
-                    ", ".join(["?"] * len(statuses))
+                    ", ".join(["?"] * len(status))
                 )
             )
-            params.extend(s.upper() for s in statuses)
+            params.extend(s.upper() for s in status)
 
         if lists:
             lists = [
