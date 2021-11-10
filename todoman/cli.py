@@ -51,6 +51,7 @@ def _validate_lists_param(ctx, param=None, lists=()):
     return [_validate_list_param(ctx, name=list_) for list_ in lists]
 
 
+# TODO: use a callback to fall back to the default, and a param to parse values.
 def _validate_list_param(ctx, param=None, name=None):
     ctx = ctx.find_object(AppContext)
     if name is None:
