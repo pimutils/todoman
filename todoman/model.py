@@ -390,8 +390,8 @@ class VtodoWriter:
                 if component.get("uid", None) == self.todo.uid:
                     cal.subcomponents[index] = vtodo
 
-        with AtomicWriter(path, overwrite=True).open() as f:
-            f.write(cal.to_ical().decode("UTF-8"))
+        with AtomicWriter(path, "wb", overwrite=True).open() as f:
+            f.write(cal.to_ical())
 
     def _write_new(self, path):
         vtodo = self.serialize()
@@ -399,10 +399,10 @@ class VtodoWriter:
         c = icalendar.Calendar()
         c.add_component(vtodo)
 
-        with AtomicWriter(path).open() as f:
+        with AtomicWriter(path, "wb").open() as f:
             c.add("prodid", "io.barrera.todoman")
             c.add("version", "2.0")
-            f.write(c.to_ical().decode("UTF-8"))
+            f.write(c.to_ical())
 
         return vtodo
 
