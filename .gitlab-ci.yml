@@ -1,0 +1,6 @@
+python3.10:
+  image: python:3.10
+  before_script:
+    - pip install tox
+  script:
+    - tox -e py310
