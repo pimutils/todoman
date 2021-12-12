@@ -401,12 +401,14 @@ def test_color_due_dates(tmpdir, runner, create, hours):
     assert not result.exception
     due_str = due.strftime("%Y-%m-%d")
     if hours == 72:
-        assert result.output == f"1  [ ]    {due_str}  aaa @default\x1b[0m\n"
-    else:
-        assert (
-            result.output
-            == f"1  [ ]    \x1b[31m{due_str}\x1b[0m  aaa @default\x1b[0m\n"
+        expected = (
+            f"[ ] 1 \x1b[35m\x1b[0m \x1b[37m{due_str}\x1b[0m aaa @default\x1b[0m\n"
         )
+    else:
+        expected = (
+            f"[ ] 1 \x1b[35m\x1b[0m \x1b[31m{due_str}\x1b[0m aaa @default\x1b[0m\n"
+        )
+    assert result.output == expected
 
 
 def test_color_flag(runner, todo_factory):
@@ -415,16 +417,16 @@ def test_color_flag(runner, todo_factory):
     result = runner.invoke(cli, ["--color", "always"], color=True)
     assert (
         result.output.strip()
-        == "1  [ ]    \x1b[31m2007-03-22\x1b[0m  YARR! @default\x1b[0m"
+        == "[ ] 1 \x1b[35m\x1b[0m \x1b[31m2007-03-22\x1b[0m YARR! @default\x1b[0m"
     )
     result = runner.invoke(cli, color=True)
     assert (
         result.output.strip()
-        == "1  [ ]    \x1b[31m2007-03-22\x1b[0m  YARR! @default\x1b[0m"
+        == "[ ] 1 \x1b[35m\x1b[0m \x1b[31m2007-03-22\x1b[0m YARR! @default\x1b[0m"
     )
 
     result = runner.invoke(cli, ["--color", "never"], color=True)
-    assert result.output.strip() == "1  [ ]    2007-03-22  YARR! @default"
+    assert result.output.strip() == "[ ] 1  2007-03-22 YARR! @default"
 
 
 def test_flush(tmpdir, runner, create, todo_factory, todos):
@@ -740,7 +742,7 @@ def test_cancel(runner, todo_factory, todos):
 def test_id_printed_for_new(runner):
     result = runner.invoke(cli, ["new", "-l", "default", "show me an id"])
     assert not result.exception
-    assert result.output.strip().startswith("1")
+    assert result.output.strip().startswith("[ ] 1")
 
 
 def test_repl(runner):

@@ -91,15 +91,19 @@ def test_detailed_format(runner, todo_factory):
 
     # TODO:use formatter instead of runner?
     result = runner.invoke(cli, ["show", "1"])
-    expected = (
-        "1  [ ]      YARR! @default\n\n"
-        "Description  Test detailed formatting\n"
-        "             This includes multiline descriptions\n"
-        "             Blah!\n"
-        "Location     Over the hills, and far away"
-    )
+    expected = [
+        "[ ] 1  (no due date) YARR! @default",
+        "",
+        "Description:",
+        "Test detailed formatting",
+        "This includes multiline descriptions",
+        "Blah!",
+        "",
+        "Location: Over the hills, and far away",
+    ]
+
     assert not result.exception
-    assert result.output.strip() == expected
+    assert result.output.strip().splitlines() == expected
 
 
 def test_parse_time(default_formatter):
@@ -168,7 +172,7 @@ def test_format_multiple_with_list(default_formatter, todo_factory):
     assert todo.list
     assert (
         default_formatter.compact_multiple([todo])
-        == "1  [ ]      YARR! @default\x1b[0m"
+        == "[ ] 1 \x1b[35m\x1b[0m \x1b[37m(no due date)\x1b[0m YARR! @default\x1b[0m"
     )
 
 
