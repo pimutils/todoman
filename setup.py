@@ -20,7 +20,6 @@ setup(
         "parsedatetime",
         "python-dateutil",
         "pyxdg",
-        "tabulate",
         "urwid",
     ],
     long_description=open("README.rst").read(),

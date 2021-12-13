@@ -1,11 +1,10 @@
 import json
 from datetime import date
 from datetime import datetime
+from datetime import timedelta
 from time import mktime
 from typing import Iterable
-from typing import List
 from typing import Optional
-from typing import Tuple
 from typing import Union
 
 import click
@@ -13,7 +12,6 @@ import humanize
 import parsedatetime
 import pytz
 from dateutil.tz import tzlocal
-from tabulate import tabulate
 
 from todoman.model import Todo
 from todoman.model import TodoList
@@ -63,18 +61,36 @@ class DefaultFormatter:
         return self.compact_multiple([todo])
 
     def compact_multiple(self, todos: Iterable[Todo], hide_list=False) -> str:
+        # TODO: format lines fuidly and drop the table
+        # it can end up being more readable when too many columns are empty.
+        # show dates that are in the future in yellow (in 24hs) or grey (future)
         table = []
         for todo in todos:
             completed = "X" if todo.is_completed else " "
             percent = todo.percent_complete or ""
             if percent:
                 percent = f" ({percent}%)"
-            priority = self.format_priority_compact(todo.priority)
+            priority = click.style(
+                self.format_priority_compact(todo.priority),
+                fg="magenta",
+            )
 
-            due = self.format_datetime(todo.due)
+            due = self.format_datetime(todo.due) or "(no due date)"
             now = self.now if isinstance(todo.due, datetime) else self.now.date()
-            if todo.due and todo.due <= now and not todo.is_completed:
-                due = click.style(str(due), fg="red")
+
+            due_colour = None
+            if todo.due:
+                if todo.due <= now and not todo.is_completed:
+                    due_colour = "red"
+                elif todo.due >= now + timedelta(hours=24):
+                    due_colour = "white"
+                elif todo.due >= now:
+                    due_colour = "yellow"
+            else:
+                due_colour = "white"
+
+            if due_colour:
+                due = click.style(str(due), fg=due_colour)
 
             recurring = "⟳" if todo.is_recurring else ""
 
@@ -93,64 +109,36 @@ class DefaultFormatter:
                     percent,
                 )
 
+            # TODO: add spaces on the left based on max todos"
+
+            # FIXME: double space when no priority
             table.append(
-                [
-                    todo.id,
-                    f"[{completed}]",
-                    priority,
-                    f"{due} {recurring}",
-                    summary,
-                ]
+                f"[{completed}] {todo.id} {priority} {due} {recurring}{summary}"
             )
 
-        return tabulate(table, tablefmt="plain")
+        return "\n".join(table)
 
-    def _columnize_text(
-        self,
-        label: str,
-        text: Optional[str],
-    ) -> List[Tuple[Optional[str], str]]:
-        """Display text, split text by line-endings, on multiple colums.
+    def _format_multiline(self, title: str, value: str) -> str:
+        formatted_title = click.style(title, fg="white")
 
-        Do nothing if text is empty or None.
-        """
-        lines = text.splitlines() if text else None
-
-        return self._columnize_list(label, lines)
-
-    def _columnize_list(
-        self,
-        label: str,
-        lst: Optional[List[str]],
-    ) -> List[Tuple[Optional[str], str]]:
-        """Display list on multiple columns.
-
-        Do nothing if list is empty or None.
-        """
-
-        rows: List[Tuple[Optional[str], str]] = []
-
-        if lst:
-            rows.append((label, lst[0]))
-            for line in lst[1:]:
-                rows.append((None, line))
-
-        return rows
+        if value.strip().count("\n") == 0:
+            return f"\n\n{formatted_title}: {value}"
+        else:
+            return f"\n\n{formatted_title}:\n{value}"
 
     def detailed(self, todo: Todo) -> str:
         """Returns a detailed representation of a task.
 
         :param todo: The todo component.
         """
-        extra_rows = []
-        extra_rows += self._columnize_text("Description", todo.description)
-        extra_rows += self._columnize_text("Location", todo.location)
+        extra_lines = []
+        if todo.description:
+            extra_lines.append(self._format_multiline("Description", todo.description))
 
-        if extra_rows:
-            return "{}\n\n{}".format(
-                self.compact(todo), tabulate(extra_rows, tablefmt="plain")
-            )
-        return self.compact(todo)
+        if todo.location:
+            extra_lines.append(self._format_multiline("Location", todo.location))
+
+        return f"{self.compact(todo)}{''.join(extra_lines)}"
 
     def format_datetime(self, dt: Optional[date]) -> Union[str, int, None]:
         if not dt:
