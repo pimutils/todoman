@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -27,8 +28,8 @@ def test_todo_editor_list(default_database, todo_factory, default_formatter, tmp
     tmpdir.mkdir("another_list")
 
     default_database.paths = [
-        str(tmpdir.join("default")),
-        str(tmpdir.join("another_list")),
+        Path(tmpdir.join("default")),
+        Path(tmpdir.join("another_list")),
     ]
     default_database.update_cache()
 

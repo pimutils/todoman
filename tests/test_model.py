@@ -1,6 +1,7 @@
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -65,7 +66,7 @@ def test_change_paths(tmpdir, create):
 
     assert {t.summary for t in db.todos()} == old_todos
 
-    db.paths = [str(tmpdir.join("3"))]
+    db.paths = [Path(tmpdir.join("3"))]
     db.update_cache()
 
     assert len(list(db.lists())) == 1

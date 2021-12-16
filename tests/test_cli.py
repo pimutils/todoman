@@ -1,6 +1,8 @@
 import datetime
 import sys
 from os.path import exists
+from os.path import isdir
+from pathlib import Path
 from unittest import mock
 from unittest.mock import call
 from unittest.mock import patch
@@ -470,8 +472,8 @@ def test_edit_move(runner, todo_factory, default_database, tmpdir, todos):
     tmpdir.mkdir("another_list")
 
     default_database.paths = [
-        str(tmpdir.join("default")),
-        str(tmpdir.join("another_list")),
+        Path(tmpdir.join("default")),
+        Path(tmpdir.join("another_list")),
     ]
     default_database.update_cache()
 
