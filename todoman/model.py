@@ -1102,5 +1102,4 @@ class Database:
 
 
 def _getmtime(path: str) -> int:
-    stat = os.stat(path)
-    return getattr(stat, "st_mtime_ns", stat.st_mtime)
+    return os.stat(path).st_mtime_ns
