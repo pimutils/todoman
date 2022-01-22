@@ -37,6 +37,7 @@ class TodoEditor:
             ("Start", self._dtstart),
             ("Due", self._due),
             ("Completed", self._completed),
+            ("Categories", self._categories),
             ("Priority", self._priority),
         ]:
             label = urwid.Text(label + ":", align="right")
@@ -78,6 +79,10 @@ class TodoEditor:
             edit_text=self.formatter.format_datetime(self.todo.start),
         )
         self._completed = urwid.CheckBox("", state=self.todo.is_completed)
+        self._categories = widgets.ExtendedEdit(
+            parent=self,
+            edit_text=self.formatter.format_categories(self.todo.categories)
+        ),
         self._priority = widgets.PrioritySelector(
             parent=self,
             priority=self.todo.priority,
@@ -157,6 +162,7 @@ class TodoEditor:
         elif self.todo.is_completed and not self._completed.get_state():
             self.todo.status = "NEEDS-ACTION"
             self.todo.completed_at = None
+        self.todo.categories = [c.strip() for c in self.categories.split(",")]
         self.todo.priority = self.priority
 
         # TODO: categories
@@ -191,6 +197,10 @@ class TodoEditor:
     @property
     def dtstart(self):
         return self._dtstart.edit_text
+
+    @property
+    def categories(self):
+        return self._categories.edit_text
 
     @property
     def priority(self):

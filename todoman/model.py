@@ -420,7 +420,7 @@ class Cache:
     may be used for filtering/sorting.
     """
 
-    SCHEMA_VERSION = 7
+    SCHEMA_VERSION = 8
 
     def __init__(self, path: str):
         self.cache_path = str(path)
@@ -453,6 +453,7 @@ class Cache:
             """
             DROP TABLE IF EXISTS lists;
             DROP TABLE IF EXISTS files;
+            DROP TABLE IF EXISTS categories;
             DROP TABLE IF EXISTS todos;
         """
         )
@@ -492,6 +493,18 @@ class Cache:
 
         self._conn.execute(
             """
+            CREATE TABLE IF NOT EXISTS categories (
+                "uid" TEXT,
+                "category" TEXT
+
+                CONSTRAINT category_unique UNIQUE (uid, category),
+                FOREIGN KEY(uid) REFERENCES todos(uid) ON DELETE CASCADE
+            );
+        """
+        )
+
+        self._conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS todos (
                 "file_path" TEXT,
 
@@ -502,6 +515,7 @@ class Cache:
                 "due_dt" INTEGER,
                 "start" INTEGER,
                 "start_dt" INTEGER,
+                "categories" TEXT,
                 "priority" INTEGER,
                 "created_at" INTEGER,
                 "completed_at" INTEGER,
@@ -510,7 +524,6 @@ class Cache:
                 "status" TEXT,
                 "description" TEXT,
                 "location" TEXT,
-                "categories" TEXT,
                 "sequence" INTEGER,
                 "last_modified" INTEGER,
                 "rrule" TEXT,
@@ -580,6 +593,22 @@ class Cache:
             )
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExists("file", list_name) from e
+
+    def add_category(self, uid, category):
+        try:
+            self._conn.execute(
+               """
+               INSERT INTO categories (
+                   uid,
+                   category
+               ) VALUES ( ?, ?);
+               """, (
+                    uid,
+                    category
+                )
+            )
+        except sqlite3.IntegrityError as e:
+            raise exceptions.AlreadyExists("category", category) from e
 
     def _serialize_datetime(
         self,
@@ -694,14 +723,17 @@ class Cache:
         finally:
             cursor.close()
 
+        for category in todo.get("categories").cats:
+            self.add_category(todo.get("uid"), category)
+
         return rv
 
     def todos(
         self,
         lists=(),
+        categories=None,
         priority=None,
         location="",
-        category="",
         grep="",
         sort=(),
         reverse=True,
@@ -723,7 +755,7 @@ class Cache:
         :param list lists: Only return todos for these lists.
         :param str location: Only return todos with a location containing this
             string.
-        :param str category: Only return todos with a category containing this
+        :param str categories: Only return todos with a category containing this
             string.
         :param str grep: Filter common fields with this substring.
         :param list sort: Order returned todos by these fields. Field names
@@ -758,15 +790,16 @@ class Cache:
             q = ", ".join(["?"] * len(lists))
             extra_where.append(f"AND files.list_name IN ({q})")
             params.extend(lists)
+        if categories:
+            # TODO: allow to filter for more than one category.
+            extra_where.append('AND upper(categories.category) = upper(?)')
+            params.append('{}'.format(categories))
         if priority:
             extra_where.append("AND PRIORITY > 0 AND PRIORITY <= ?")
             params.append(f"{priority}")
         if location:
             extra_where.append("AND location LIKE ?")
             params.append(f"%{location}%")
-        if category:
-            extra_where.append("AND categories LIKE ?")
-            params.append(f"%{category}%")
         if grep:
             # # requires sqlite with pcre, which won't be available everywhere:
             # extra_where.append('AND summary REGEXP ?')
@@ -810,15 +843,25 @@ class Cache:
             # doesn't care about casing anyway.
             order = order.replace(" DESC", " asc").replace(" ASC", " desc")
 
-        query = """
-              SELECT todos.*, files.list_name, files.path
-                FROM todos, files
-               WHERE todos.file_path = files.path {}
+        # TODO: check if works
+        if categories:
+            query = '''
+            SELECT distinct todos.*, files.list_name, files.path
+            FROM todos, files, categories
+            WHERE categories.uid = todos.uid and todos.file_path = files.path {}
             ORDER BY {}
-        """.format(
-            " ".join(extra_where),
-            order,
-        )
+            '''.format(
+                ' '.join(extra_where), order,
+            )
+        else:
+            query = '''
+            SELECT todos.*, files.list_name, files.path
+            FROM todos, files
+            WHERE todos.file_path = files.path {}
+            ORDER BY {}
+            '''.format(
+                ' '.join(extra_where), order,
+            )
 
         logger.debug(query)
         logger.debug(params)
@@ -863,6 +906,18 @@ class Cache:
         todo.summary = row["summary"]
         todo.due = self._date_from_db(row["due"], row["due_dt"])
         todo.start = self._date_from_db(row["start"], row["start_dt"])
+
+        todo.categories = None
+        query = '''
+            SELECT distinct category
+            FROM categories
+            WHERE categories.uid = '{}'
+            '''.format(
+             todo.uid,
+            )
+        categories = self._conn.execute(query).fetchall()
+        todo.categories = [i['category'] for i in categories]
+
         todo.priority = row["priority"]
         todo.created_at = self._datetime_from_db(row["created_at"])
         todo.completed_at = self._datetime_from_db(row["completed_at"])
@@ -871,6 +926,8 @@ class Cache:
         todo.status = row["status"]
         todo.description = row["description"]
         todo.location = row["location"]
+
+        logger.debug("todo.categories: %s\n", todo.categories)
         todo.sequence = row["sequence"]
         todo.last_modified = row["last_modified"]
         todo.list = self.lists_map[row["list_name"]]

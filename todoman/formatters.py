@@ -70,6 +70,10 @@ class DefaultFormatter:
             percent = todo.percent_complete or ""
             if percent:
                 percent = f" ({percent}%)"
+
+            if todo.categories:
+                categories = "[" + ", ".join(todo.categories) + "]"
+
             priority = click.style(
                 self.format_priority_compact(todo.priority),
                 fg="magenta",
@@ -113,7 +117,7 @@ class DefaultFormatter:
 
             # FIXME: double space when no priority
             table.append(
-                f"[{completed}] {todo.id} {priority} {due} {recurring}{summary}"
+                f"[{completed}] {todo.id} {priority} {due} {recurring}{summary} {categories}"
             )
 
         return "\n".join(table)
@@ -138,6 +142,9 @@ class DefaultFormatter:
         if todo.location:
             extra_lines.append(self._format_multiline("Location", todo.location))
 
+        if todo.categories:
+            extra_lines.append(self._format_multiline("Categories", ", ".join(todo.categories)))
+
         return f"{self.compact(todo)}{''.join(extra_lines)}"
 
     def format_datetime(self, dt: Optional[date]) -> Union[str, int, None]:
@@ -147,6 +154,20 @@ class DefaultFormatter:
             return dt.strftime(self.datetime_format)
         elif isinstance(dt, date):
             return dt.strftime(self.date_format)
+
+    def format_categories(self, categories):
+        if not categories:
+            return ""
+        else:
+            return ",".join(categories)
+
+    def parse_categories(self, categories):
+        if categories is None or categories == '':
+            return None
+        else:
+            print('->', categories)
+            return categories.split(',')
+            # return (c for c in str(categories).split(','))
 
     def parse_priority(self, priority: Optional[str]) -> Optional[int]:
         if priority is None or priority == "":
@@ -243,6 +264,7 @@ class PorcelainFormatter(DefaultFormatter):
             "list": todo.list.name,
             "percent": todo.percent_complete,
             "summary": todo.summary,
+            "categories": todo.categories,
             "priority": todo.priority,
             "location": todo.location,
             "description": todo.description,

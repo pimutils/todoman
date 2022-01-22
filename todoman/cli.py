@@ -81,6 +81,14 @@ def _validate_date_param(ctx, param, val):
         raise click.BadParameter(e)
 
 
+def _validate_categories_param(ctx, param, val):
+    ctx = ctx.find_object(AppContext)
+    try:
+        return ctx.formatter.parse_categories(val)
+    except ValueError as e:
+        raise click.BadParameter(e)
+
+
 def _validate_priority_param(ctx, param, val):
     ctx = ctx.find_object(AppContext)
     try:
@@ -148,6 +156,13 @@ def validate_status(ctx=None, param=None, val=None) -> str:
 
 def _todo_property_options(command):
     click.option(
+        "--categories",
+        "-c",
+        default="",
+        callback=_validate_categories_param,
+        help="Task categories.",
+    )(command)
+    click.option(
         "--priority",
         default="",
         callback=_validate_priority_param,
@@ -174,7 +189,7 @@ def _todo_property_options(command):
     @functools.wraps(command)
     def command_wrap(*a, **kw):
         kw["todo_properties"] = {
-            key: kw.pop(key) for key in ("due", "start", "location", "priority")
+            key: kw.pop(key) for key in ("due", "start", "location", "categories", "priority")
         }
         return command(*a, **kw)
 
@@ -548,7 +563,6 @@ def move(ctx, list, ids):
 @pass_ctx
 @click.argument("lists", nargs=-1, callback=_validate_lists_param)
 @click.option("--location", help="Only show tasks with location containg TEXT")
-@click.option("--category", help="Only show tasks with category containg TEXT")
 @click.option("--grep", help="Only show tasks with message containg TEXT")
 @click.option(
     "--sort",
@@ -567,6 +581,13 @@ def move(ctx, list, ids):
 )
 @click.option(
     "--due", default=None, help="Only show tasks due in INTEGER hours", type=int
+)
+@click.option(
+    "--categories",
+    default=None,
+    help="Only show tasks with specified categories.",
+    type=str,
+    callback=_validate_categories_param
 )
 @click.option(
     "--priority",
