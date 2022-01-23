@@ -34,10 +34,10 @@ class TodoEditor:
             ("Summary", self._summary),
             ("Description", self._description),
             ("Location", self._location),
+            ("Categories", self._categories),
             ("Start", self._dtstart),
             ("Due", self._due),
             ("Completed", self._completed),
-            ("Categories", self._categories),
             ("Priority", self._priority),
         ]:
             label = urwid.Text(label + ":", align="right")
@@ -66,6 +66,10 @@ class TodoEditor:
             edit_text=self.todo.description,
             multiline=True,
         )
+        self._categories = widgets.ExtendedEdit(
+            parent=self,
+            edit_text=self.formatter.format_categories(self.todo.categories),
+        )
         self._location = widgets.ExtendedEdit(
             parent=self,
             edit_text=self.todo.location,
@@ -79,10 +83,6 @@ class TodoEditor:
             edit_text=self.formatter.format_datetime(self.todo.start),
         )
         self._completed = urwid.CheckBox("", state=self.todo.is_completed)
-        self._categories = widgets.ExtendedEdit(
-            parent=self,
-            edit_text=self.formatter.format_categories(self.todo.categories)
-        ),
         self._priority = widgets.PrioritySelector(
             parent=self,
             priority=self.todo.priority,

@@ -158,7 +158,8 @@ def _todo_property_options(command):
     click.option(
         "--categories",
         "-c",
-        default="",
+        multiple=True,
+        default=[],
         callback=_validate_categories_param,
         help="Task categories.",
     )(command)
@@ -584,9 +585,10 @@ def move(ctx, list, ids):
 )
 @click.option(
     "--categories",
-    default=None,
+    "-c",
+    multiple=True,
+    default=[],
     help="Only show tasks with specified categories.",
-    type=str,
     callback=_validate_categories_param
 )
 @click.option(

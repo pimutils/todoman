@@ -643,11 +643,11 @@ class Cache:
         return rrule.to_ical().decode()
 
     def _serialize_categories(self, todo, field) -> str:
-        categories = todo.get(field, [])
+        categories = todo.get(field, []).cats
         if not categories:
             return ""
 
-        return ",".join([str(category) for category in categories.cats])
+        return ",".join([str(category) for category in categories])
 
     def add_vtodo(self, todo: icalendar.Todo, file_path: str, id=None) -> int:
         """

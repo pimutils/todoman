@@ -159,15 +159,15 @@ class DefaultFormatter:
         if not categories:
             return ""
         else:
-            return ",".join(categories)
+            return "" #",".join(categories)
 
     def parse_categories(self, categories):
         if categories is None or categories == '':
             return None
         else:
-            print('->', categories)
-            return categories.split(',')
-            # return (c for c in str(categories).split(','))
+            # existing code assumes categories is list,
+            # but click passes tuple
+            return list(categories)
 
     def parse_priority(self, priority: Optional[str]) -> Optional[int]:
         if priority is None or priority == "":
