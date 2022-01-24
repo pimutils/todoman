@@ -10,6 +10,7 @@ v4.1.0
 * The "table" layout has been dropped in favour of a simpler, fluid layout. As
   such, ``tabulate`` is not longer a required dependency.
 * Added support for python 3.10.
+* Added full support for categories.
 
 v4.0.1
 ------
