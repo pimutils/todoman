@@ -420,7 +420,7 @@ class Cache:
     may be used for filtering/sorting.
     """
 
-    SCHEMA_VERSION = 8
+    SCHEMA_VERSION = 9
 
     def __init__(self, path: str):
         self.cache_path = str(path)
@@ -445,18 +445,20 @@ class Cache:
         except sqlite3.OperationalError:
             return False
 
-    def create_tables(self):
-        if self.is_latest_version():
-            return
+    def drop_tables(self):
 
         self._conn.executescript(
             """
+            DROP TABLE IF EXISTS todos;
             DROP TABLE IF EXISTS lists;
             DROP TABLE IF EXISTS files;
             DROP TABLE IF EXISTS categories;
-            DROP TABLE IF EXISTS todos;
         """
         )
+
+    def create_tables(self):
+        if self.is_latest_version():
+            return
 
         self._conn.execute('CREATE TABLE IF NOT EXISTS meta ("version" INT)')
 
@@ -494,11 +496,12 @@ class Cache:
         self._conn.execute(
             """
             CREATE TABLE IF NOT EXISTS categories (
-                "uid" TEXT,
-                "category" TEXT
+                "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                "todos_id" INTEGER NOT NULL,
+                "category" TEXT,
 
-                CONSTRAINT category_unique UNIQUE (uid, category),
-                FOREIGN KEY(uid) REFERENCES todos(uid) ON DELETE CASCADE
+                CONSTRAINT category_unique UNIQUE (todos_id,category),
+                FOREIGN KEY(todos_id) REFERENCES todos(id) ON DELETE CASCADE
             );
         """
         )
@@ -594,16 +597,16 @@ class Cache:
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExists("file", list_name) from e
 
-    def add_category(self, uid, category):
+    def add_category(self, todos_id, category):
         try:
             self._conn.execute(
                """
                INSERT INTO categories (
-                   uid,
+                   todos_id,
                    category
-               ) VALUES ( ?, ?);
+               ) VALUES (?, ?);
                """, (
-                    uid,
+                    todos_id,
                     category
                 )
             )
@@ -724,7 +727,7 @@ class Cache:
             cursor.close()
 
         for category in todo.get("categories").cats:
-            self.add_category(todo.get("uid"), category)
+            self.add_category(rv, category)
 
         return rv
 
@@ -787,13 +790,13 @@ class Cache:
             lists = [
                 list_.name if isinstance(list_, TodoList) else list_ for list_ in lists
             ]
-            q = ", ".join(["?"] * len(lists))
-            extra_where.append(f"AND files.list_name IN ({q})")
+            category_slots = ", ".join(["?"] * len(lists))
+            extra_where.append(f"AND files.list_name IN ({category_slots})")
             params.extend(lists)
         if categories:
-            # TODO: allow to filter for more than one category.
-            extra_where.append('AND upper(categories.category) = upper(?)')
-            params.append('{}'.format(categories))
+            category_slots = ", ".join(["?"] * len(categories))
+            extra_where.append("AND upper(categories.category) IN ({category_slots})".format(category_slots=category_slots))
+            params = params + [category.upper() for category in categories]
         if priority:
             extra_where.append("AND PRIORITY > 0 AND PRIORITY <= ?")
             params.append(f"{priority}")
@@ -848,7 +851,7 @@ class Cache:
             query = '''
             SELECT distinct todos.*, files.list_name, files.path
             FROM todos, files, categories
-            WHERE categories.uid = todos.uid and todos.file_path = files.path {}
+            WHERE categories.todos_id = todos.id and todos.file_path = files.path {}
             ORDER BY {}
             '''.format(
                 ' '.join(extra_where), order,
@@ -911,9 +914,9 @@ class Cache:
         query = '''
             SELECT distinct category
             FROM categories
-            WHERE categories.uid = '{}'
+            WHERE categories.todos_id = '{}'
             '''.format(
-             todo.uid,
+             todo.id,
             )
         categories = self._conn.execute(query).fetchall()
         todo.categories = [i['category'] for i in categories]

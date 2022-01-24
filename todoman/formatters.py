@@ -73,6 +73,8 @@ class DefaultFormatter:
 
             if todo.categories:
                 categories = "[" + ", ".join(todo.categories) + "]"
+            else:
+                categories = ""
 
             priority = click.style(
                 self.format_priority_compact(todo.priority),
