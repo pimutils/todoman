@@ -118,9 +118,10 @@ class DefaultFormatter:
             # TODO: add spaces on the left based on max todos"
 
             # FIXME: double space when no priority
-            table.append(
-                f"[{completed}] {todo.id} {priority} {due} {recurring}{summary}{categories}"
-            )
+            # split into parts to satisfy linter line too long
+            part1 = f"[{completed}] {todo.id} {priority} {due} "
+            part2 = f"{recurring}{summary}{categories}"
+            table.append(part1 + part2)
 
         return "\n".join(table)
 
