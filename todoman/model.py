@@ -646,7 +646,7 @@ class Cache:
         return rrule.to_ical().decode()
 
     def _serialize_categories(self, todo, field) -> str:
-        categories = todo.get(field, []).cats
+        categories = todo.get(field, [])
         if not categories:
             return ""
 
@@ -724,8 +724,9 @@ class Cache:
         finally:
             cursor.close()
 
-        for category in todo.get("categories").cats:
-            self.add_category(rv, category)
+        if todo.get("categories"):
+            for category in todo.get("categories").cats:
+                self.add_category(rv, category)
 
         return rv
 

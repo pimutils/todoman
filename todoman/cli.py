@@ -156,12 +156,12 @@ def validate_status(ctx=None, param=None, val=None) -> str:
 
 def _todo_property_options(command):
     click.option(
-        "--categories",
+        "--category",
         "-c",
         multiple=True,
-        default=[],
+        default=(),
         callback=_validate_categories_param,
-        help="Task categories.",
+        help="Task categories. Can be used multiple times.",
     )(command)
     click.option(
         "--priority",
@@ -190,8 +190,12 @@ def _todo_property_options(command):
     @functools.wraps(command)
     def command_wrap(*a, **kw):
         kw["todo_properties"] = {
-            key: kw.pop(key) for key in ("due", "start", "location", "categories", "priority")
+            key: kw.pop(key) for key in ("due", "start", "location", "priority")
         }
+        # longform is singular since user can pass it multiple times, but
+        # in actuality it's plural, so manually changing for #cache.todos.
+        kw["todo_properties"]["categories"] = kw.pop("category")
+
         return command(*a, **kw)
 
     return command_wrap
@@ -420,7 +424,7 @@ def edit(ctx, id, todo_properties, interactive, raw):
 
     changes = False
     for key, value in todo_properties.items():
-        if value is not None:
+        if value:
             changes = True
             setattr(todo, key, value)
 
@@ -584,10 +588,10 @@ def move(ctx, list, ids):
     "--due", default=None, help="Only show tasks due in INTEGER hours", type=int
 )
 @click.option(
-    "--categories",
+    "--category",
     "-c",
     multiple=True,
-    default=[],
+    default=(),
     help="Only show tasks with specified categories.",
     callback=_validate_categories_param
 )
@@ -651,6 +655,8 @@ def list(ctx, *args, **kwargs):
     hide_list = (len([_ for _ in ctx.db.lists()]) == 1) or (  # noqa: C416
         len(kwargs["lists"]) == 1
     )
+
+    kwargs["categories"] = kwargs.pop("category")
 
     todos = ctx.db.todos(**kwargs)
     click.echo(ctx.formatter.compact_multiple(todos, hide_list))

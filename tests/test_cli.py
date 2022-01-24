@@ -964,7 +964,7 @@ def test_default_command_args(config, runner):
         reverse=False,
         lists=[],
         location=None,
-        category=None,
+        categories=(),
         grep=None,
         start=None,
         startable=None,

@@ -72,7 +72,7 @@ class DefaultFormatter:
                 percent = f" ({percent}%)"
 
             if todo.categories:
-                categories = "[" + ", ".join(todo.categories) + "]"
+                categories = " [" + ", ".join(todo.categories) + "]"
             else:
                 categories = ""
 
@@ -119,7 +119,7 @@ class DefaultFormatter:
 
             # FIXME: double space when no priority
             table.append(
-                f"[{completed}] {todo.id} {priority} {due} {recurring}{summary} {categories}"
+                f"[{completed}] {todo.id} {priority} {due} {recurring}{summary}{categories}"
             )
 
         return "\n".join(table)
@@ -153,6 +153,12 @@ class DefaultFormatter:
             return dt.strftime(self.datetime_format)
         elif isinstance(dt, date):
             return dt.strftime(self.date_format)
+
+    def format_categories(self, categories):
+        if not categories:
+            return ""
+        else:
+            return ""
 
     def parse_categories(self, categories):
         if categories is None or categories == '':

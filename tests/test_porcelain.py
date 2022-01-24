@@ -21,6 +21,7 @@ def test_list_all(tmpdir, runner, create):
 
     expected = [
         {
+            "categories": [],
             "completed": True,
             "completed_at": 1545765154,
             "description": "",
@@ -51,6 +52,7 @@ def test_list_due_date(tmpdir, runner, create):
 
     expected = [
         {
+            "categories": [],
             "completed": True,
             "completed_at": None,
             "description": "",
@@ -74,6 +76,7 @@ def test_list_nodue(tmpdir, runner, create):
 
     expected = [
         {
+            "categories": [],
             "completed": False,
             "completed_at": None,
             "description": "",
@@ -137,6 +140,7 @@ def test_show(tmpdir, runner, create):
     result = runner.invoke(cli, ["--porcelain", "show", "1"])
 
     expected = {
+        "categories": [],
         "completed": False,
         "completed_at": None,
         "description": "Lots of text. Yum!",
@@ -158,6 +162,7 @@ def test_simple_action(todo_factory):
     todo = todo_factory(id=7, location="Downtown")
 
     expected = {
+        "categories": [],
         "completed": False,
         "completed_at": None,
         "description": "",
