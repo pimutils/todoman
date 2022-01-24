@@ -913,7 +913,7 @@ class Cache:
         todo.due = self._date_from_db(row["due"], row["due_dt"])
         todo.start = self._date_from_db(row["start"], row["start_dt"])
 
-        todo.categories = None
+        todo.categories = []
         query = """
             SELECT distinct category
             FROM categories
