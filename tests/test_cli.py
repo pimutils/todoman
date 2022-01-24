@@ -845,6 +845,40 @@ def test_invoke_invalid_command(runner, tmpdir, config):
     assert "Error: Invalid setting for [default_command]" in result.output
 
 
+def test_new_categories_single(runner):
+    result = runner.invoke(
+        cli, ["new", "-l", "default", "--category", "mine", "title"]
+    )
+
+    assert "[mine]" in result.output
+
+
+def test_new_categories_multiple(runner):
+    result = runner.invoke(
+        cli, ["new", "-l", "default", "-c", "first", "-c", "second", "title"]
+    )
+
+    assert "[first, second]" in result.output
+
+
+def test_list_categories_single(tmpdir, runner, create):
+    category = "fizzbuzz"
+    create("test.ics", f"SUMMARY:harhar\nCATEGORIES:{category}\n")
+    result = runner.invoke(cli, ["list", "--category", category])
+    assert not result.exception
+    assert category in result.output
+
+
+def test_list_categories_multiple(tmpdir, runner, create):
+    category = ["git", "gud"]
+    create("test.ics", f"SUMMARY:harhar\nCATEGORIES:{category[0]}\n")
+    create("test1.ics", f"SUMMARY:harhar1\nCATEGORIES:{category[1]}\n")
+    result = runner.invoke(cli, ["list", "--category", category[0], "--category", category[1]])
+    assert not result.exception
+    assert category[0] in result.output
+    assert category[1] in result.output
+
+
 def test_show_priority(runner, todo_factory, todos):
     todo_factory(summary="harhar\n", priority=1)
 
