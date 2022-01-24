@@ -600,15 +600,13 @@ class Cache:
     def add_category(self, todos_id, category):
         try:
             self._conn.execute(
-               """
+                """
                INSERT INTO categories (
                    todos_id,
                    category
                ) VALUES (?, ?);
-               """, (
-                    todos_id,
-                    category
-                )
+               """,
+                (todos_id, category),
             )
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExists("category", category) from e
@@ -794,7 +792,11 @@ class Cache:
             params.extend(lists)
         if categories:
             category_slots = ", ".join(["?"] * len(categories))
-            extra_where.append("AND upper(categories.category) IN ({category_slots})".format(category_slots=category_slots))
+            extra_where.append(
+                "AND upper(categories.category) IN ({category_slots})".format(
+                    category_slots=category_slots
+                )
+            )
             params = params + [category.upper() for category in categories]
         if priority:
             extra_where.append("AND PRIORITY > 0 AND PRIORITY <= ?")
@@ -847,22 +849,24 @@ class Cache:
 
         # TODO: check if works
         if categories:
-            query = '''
+            query = """
             SELECT distinct todos.*, files.list_name, files.path
             FROM todos, files, categories
             WHERE categories.todos_id = todos.id and todos.file_path = files.path {}
             ORDER BY {}
-            '''.format(
-                ' '.join(extra_where), order,
+            """.format(
+                " ".join(extra_where),
+                order,
             )
         else:
-            query = '''
+            query = """
             SELECT todos.*, files.list_name, files.path
             FROM todos, files
             WHERE todos.file_path = files.path {}
             ORDER BY {}
-            '''.format(
-                ' '.join(extra_where), order,
+            """.format(
+                " ".join(extra_where),
+                order,
             )
 
         logger.debug(query)
@@ -910,15 +914,15 @@ class Cache:
         todo.start = self._date_from_db(row["start"], row["start_dt"])
 
         todo.categories = None
-        query = '''
+        query = """
             SELECT distinct category
             FROM categories
             WHERE categories.todos_id = '{}'
-            '''.format(
-             todo.id,
-            )
+            """.format(
+            todo.id,
+        )
         categories = self._conn.execute(query).fetchall()
-        todo.categories = [i['category'] for i in categories]
+        todo.categories = [i["category"] for i in categories]
 
         todo.priority = row["priority"]
         todo.created_at = self._datetime_from_db(row["created_at"])

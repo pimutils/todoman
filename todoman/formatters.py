@@ -161,7 +161,7 @@ class DefaultFormatter:
             return ""
 
     def parse_categories(self, categories):
-        if categories is None or categories == '':
+        if categories is None or categories == "":
             return None
         else:
             # existing code assumes categories is list,

@@ -593,7 +593,7 @@ def move(ctx, list, ids):
     multiple=True,
     default=(),
     help="Only show tasks with specified categories.",
-    callback=_validate_categories_param
+    callback=_validate_categories_param,
 )
 @click.option(
     "--priority",
