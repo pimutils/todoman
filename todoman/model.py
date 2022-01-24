@@ -677,11 +677,10 @@ class Cache:
                 status,
                 description,
                 location,
-                categories,
                 sequence,
                 last_modified,
                 rrule
-            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                 ?)
             """
 
@@ -707,7 +706,6 @@ class Cache:
             todo.get("status", "NEEDS-ACTION"),
             todo.get("description", None),
             todo.get("location", None),
-            self._serialize_categories(todo, "categories"),
             todo.get("sequence", 1),
             self._serialize_datetime(todo, "last-modified")[0],
             self._serialize_rrule(todo, "rrule"),
