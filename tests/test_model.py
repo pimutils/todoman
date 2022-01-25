@@ -161,6 +161,17 @@ def test_retain_unknown_fields(tmpdir, create, default_database):
     assert "X-RAWR-TYPE:Reptar" in lines
 
 
+def test_category_integrity(tmpdir, create, default_database):
+    create("test.ics", "UID:AVERYUNIQUEID\nSUMMARY:RAWR\n")
+    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
+
+    todo = db.todo(1, read_only=False)
+    todo.categories = ['hi', 'hi']
+
+    with pytest.raises(AlreadyExists):
+        default_database.save(todo)
+
+
 def test_todo_setters(todo_factory):
     todo = todo_factory()
 
