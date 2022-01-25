@@ -156,18 +156,12 @@ class DefaultFormatter:
             return dt.strftime(self.date_format)
 
     def format_categories(self, categories):
-        if not categories:
-            return ""
-        else:
-            return ""
+        return ""
 
     def parse_categories(self, categories):
-        if categories is None or categories == "":
-            return None
-        else:
-            # existing code assumes categories is list,
-            # but click passes tuple
-            return list(categories)
+        # existing code assumes categories is list,
+        # but click passes tuple
+        return list(categories)
 
     def parse_priority(self, priority: Optional[str]) -> Optional[int]:
         if priority is None or priority == "":
