@@ -83,10 +83,7 @@ def _validate_date_param(ctx, param, val):
 
 def _validate_categories_param(ctx, param, val):
     ctx = ctx.find_object(AppContext)
-    try:
-        return ctx.formatter.parse_categories(val)
-    except ValueError as e:
-        raise click.BadParameter(e)
+    return ctx.formatter.parse_categories(val)
 
 
 def _validate_priority_param(ctx, param, val):
