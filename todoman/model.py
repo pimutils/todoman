@@ -460,6 +460,8 @@ class Cache:
         if self.is_latest_version():
             return
 
+        self.drop_tables()
+
         self._conn.execute('CREATE TABLE IF NOT EXISTS meta ("version" INT)')
 
         self._conn.execute(
@@ -642,13 +644,6 @@ class Cache:
             return None
 
         return rrule.to_ical().decode()
-
-    def _serialize_categories(self, todo, field) -> str:
-        categories = todo.get(field, [])
-        if not categories:
-            return ""
-
-        return ",".join([str(category) for category in categories])
 
     def add_vtodo(self, todo: icalendar.Todo, file_path: str, id=None) -> int:
         """
