@@ -156,7 +156,7 @@ class DefaultFormatter:
             return dt.strftime(self.date_format)
 
     def format_categories(self, categories):
-        return ""
+        return ", ".join(categories)
 
     def parse_categories(self, categories):
         # existing code assumes categories is list,
