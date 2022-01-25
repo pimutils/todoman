@@ -166,7 +166,7 @@ def test_category_integrity(tmpdir, create, default_database):
     db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
 
     todo = db.todo(1, read_only=False)
-    todo.categories = ['hi', 'hi']
+    todo.categories = ["hi", "hi"]
 
     with pytest.raises(AlreadyExists):
         default_database.save(todo)
