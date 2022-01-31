@@ -782,8 +782,8 @@ class Cache:
             lists = [
                 list_.name if isinstance(list_, TodoList) else list_ for list_ in lists
             ]
-            category_slots = ", ".join(["?"] * len(lists))
-            extra_where.append(f"AND files.list_name IN ({category_slots})")
+            q = ", ".join(["?"] * len(lists))
+            extra_where.append(f"AND files.list_name IN ({q})")
             params.extend(lists)
         if categories:
             category_slots = ", ".join(["?"] * len(categories))
