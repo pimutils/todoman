@@ -842,27 +842,17 @@ class Cache:
             # doesn't care about casing anyway.
             order = order.replace(" DESC", " asc").replace(" ASC", " desc")
 
-        # TODO: check if works
-        if categories:
-            query = """
-            SELECT distinct todos.*, files.list_name, files.path
-            FROM todos, files, categories
-            WHERE categories.todos_id = todos.id and todos.file_path = files.path {}
-            ORDER BY {}
-            """.format(
-                " ".join(extra_where),
-                order,
-            )
-        else:
-            query = """
-            SELECT todos.*, files.list_name, files.path
-            FROM todos, files
-            WHERE todos.file_path = files.path {}
-            ORDER BY {}
-            """.format(
-                " ".join(extra_where),
-                order,
-            )
+        query = """
+        SELECT DISTINCT todos.*, files.list_name, files.path
+        FROM todos, files
+        LEFT JOIN categories
+        ON categories.todos_id = todos.id
+        WHERE todos.file_path = files.path {}
+        ORDER BY {}
+        """.format(
+            " ".join(extra_where),
+            order,
+        )
 
         logger.debug(query)
         logger.debug(params)
