@@ -172,6 +172,32 @@ def test_category_integrity(tmpdir, create, default_database):
         default_database.save(todo)
 
 
+def test_category_deletes_on_todo_delete(tmpdir, create, default_database):
+    uid = 'my_id'
+    create("test.ics", f"UID:{uid}\nSUMMARY:RAWR\n")
+    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
+
+    todo = db.todo(1, read_only=False)
+    todo.categories = ["my_cat"]
+    default_database.save(todo)
+
+    assert default_database.todos().__next__().uid == uid
+
+    default_database.delete(todo)
+    default_database.update_cache()
+
+    query = """
+        SELECT distinct category
+        FROM categories
+        WHERE categories.todos_id = '{}'
+        """.format(
+        todo.id,
+    )
+
+    categories = default_database.cache._conn.execute(query).fetchall()
+    assert categories == []
+
+
 def test_todo_setters(todo_factory):
     todo = todo_factory()
 
