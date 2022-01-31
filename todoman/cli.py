@@ -376,7 +376,7 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
         todo.priority = default_priority
 
     for key, value in todo_properties.items():
-        if value:
+        if value is not None:
             setattr(todo, key, value)
     todo.summary = " ".join(summary)
 
