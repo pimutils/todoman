@@ -119,9 +119,10 @@ class DefaultFormatter:
 
             # FIXME: double space when no priority
             # split into parts to satisfy linter line too long
-            part1 = f"[{completed}] {todo.id} {priority} {due} "
-            part2 = f"{recurring}{summary}{categories}"
-            table.append(part1 + part2)
+            table.append(
+                f"[{completed}] {todo.id} {priority} {due} "
+                f"{recurring}{summary}{categories}"
+            )
 
         return "\n".join(table)
 
