@@ -173,7 +173,7 @@ def test_category_integrity(tmpdir, create, default_database):
 
 
 def test_category_deletes_on_todo_delete(tmpdir, create, default_database):
-    uid = 'my_id'
+    uid = "my_id"
     create("test.ics", f"UID:{uid}\nSUMMARY:RAWR\n")
     db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
 
