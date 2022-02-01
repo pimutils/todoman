@@ -842,7 +842,8 @@ class Cache:
             order = order.replace(" DESC", " asc").replace(" ASC", " desc")
 
         query = """
-        SELECT DISTINCT todos.*, files.list_name, files.path, group_concat(category) AS categories
+        SELECT DISTINCT todos.*, files.list_name, files.path,
+          group_concat(category) AS categories
         FROM todos, files
         LEFT JOIN categories
         ON categories.todos_id = todos.id
@@ -951,8 +952,9 @@ class Cache:
         # XXX: DON'T USE READ_ONLY
         result = self._conn.execute(
             """
-            SELECT todos.*, files.list_name, files.path, group_concat(category) AS categories
-              FROM todos, files
+            SELECT todos.*, files.list_name, files.path,
+              group_concat(category) AS categories
+            FROM todos, files
             LEFT JOIN categories
             ON categories.todos_id = todos.id
             WHERE files.path = todos.file_path
