@@ -520,7 +520,6 @@ class Cache:
                 "due_dt" INTEGER,
                 "start" INTEGER,
                 "start_dt" INTEGER,
-                "categories" TEXT,
                 "priority" INTEGER,
                 "created_at" INTEGER,
                 "completed_at" INTEGER,
@@ -843,11 +842,12 @@ class Cache:
             order = order.replace(" DESC", " asc").replace(" ASC", " desc")
 
         query = """
-        SELECT DISTINCT todos.*, files.list_name, files.path
+        SELECT DISTINCT todos.*, files.list_name, files.path, group_concat(category) AS categories
         FROM todos, files
         LEFT JOIN categories
         ON categories.todos_id = todos.id
         WHERE todos.file_path = files.path {}
+        GROUP BY uid
         ORDER BY {}
         """.format(
             " ".join(extra_where),
@@ -890,6 +890,12 @@ class Cache:
         else:
             return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
 
+    def _categories_from_db(self, categories):
+        if categories:
+            return categories.split(",")
+
+        return []
+
     def _todo_from_db(self, row: dict) -> Todo:
         todo = Todo()
         todo.id = row["id"]
@@ -897,18 +903,7 @@ class Cache:
         todo.summary = row["summary"]
         todo.due = self._date_from_db(row["due"], row["due_dt"])
         todo.start = self._date_from_db(row["start"], row["start_dt"])
-
-        todo.categories = []
-        query = """
-            SELECT distinct category
-            FROM categories
-            WHERE categories.todos_id = '{}'
-            """.format(
-            todo.id,
-        )
-        categories = self._conn.execute(query).fetchall()
-        todo.categories = [i["category"] for i in categories]
-
+        todo.categories = self._categories_from_db(row["categories"])
         todo.priority = row["priority"]
         todo.created_at = self._datetime_from_db(row["created_at"])
         todo.completed_at = self._datetime_from_db(row["completed_at"])
@@ -956,10 +951,13 @@ class Cache:
         # XXX: DON'T USE READ_ONLY
         result = self._conn.execute(
             """
-            SELECT todos.*, files.list_name, files.path
+            SELECT todos.*, files.list_name, files.path, group_concat(category) AS categories
               FROM todos, files
+            LEFT JOIN categories
+            ON categories.todos_id = todos.id
             WHERE files.path = todos.file_path
               AND todos.id = ?
+            GROUP BY uid
         """,
             (id,),
         ).fetchone()

@@ -1,5 +1,6 @@
 from datetime import datetime
 from datetime import timedelta
+from uuid import uuid4
 
 from todoman.cli import cli
 from todoman.model import Database
@@ -11,10 +12,10 @@ def test_priority(tmpdir, runner, create):
     assert not result.exception
     assert not result.output.strip()
 
-    create("one.ics", "SUMMARY:haha\nPRIORITY:4\n")
-    create("two.ics", "SUMMARY:hoho\nPRIORITY:9\n")
-    create("three.ics", "SUMMARY:hehe\nPRIORITY:5\n")
-    create("four.ics", "SUMMARY:huhu\n")
+    create("one.ics", f"UID:{uuid4()}\nSUMMARY:haha\nPRIORITY:4\n")
+    create("two.ics", f"UID:{uuid4()}\nSUMMARY:hoho\nPRIORITY:9\n")
+    create("three.ics", f"UID:{uuid4()}\nSUMMARY:hehe\nPRIORITY:5\n")
+    create("four.ics", f"UID:{uuid4()}\nSUMMARY:huhu\n")
 
     result_high = runner.invoke(cli, ["list", "--priority=high"])
     assert not result_high.exception
@@ -53,9 +54,9 @@ def test_location(tmpdir, runner, create):
     assert not result.exception
     assert not result.output.strip()
 
-    create("one.ics", "SUMMARY:haha\nLOCATION: The Pool\n")
-    create("two.ics", "SUMMARY:hoho\nLOCATION: The Dungeon\n")
-    create("two.ics", "SUMMARY:harhar\n")
+    create("one.ics", f"UID:{uuid4()}\nSUMMARY:haha\nLOCATION: The Pool\n")
+    create("two.ics", f"UID:{uuid4()}\nSUMMARY:hoho\nLOCATION: The Dungeon\n")
+    create("two.ics", f"UID:{uuid4()}\nSUMMARY:harhar\n")
     result = runner.invoke(cli, ["list", "--location", "Pool"])
     assert not result.exception
     assert "haha" in result.output
@@ -68,9 +69,9 @@ def test_category(tmpdir, runner, create):
     assert not result.exception
     assert not result.output.strip()
 
-    create("one.ics", "SUMMARY:haha\nCATEGORIES:work,trip\n")
+    create("one.ics", f"UID:{uuid4()}\nSUMMARY:haha\nCATEGORIES:work,trip\n")
     create("two.ics", "CATEGORIES:trip\nSUMMARY:hoho\n")
-    create("three.ics", "SUMMARY:harhar\n")
+    create("three.ics", f"UID:{uuid4()}\nSUMMARY:harhar\n")
     result = runner.invoke(cli, ["list", "--category", "work"])
     assert not result.exception
     assert "haha" in result.output
@@ -103,7 +104,7 @@ def test_grep(tmpdir, runner, create):
         "five.ics",
         "SUMMARY:research\nDESCRIPTION: Cure cancer\n",
     )
-    create("six.ics", "SUMMARY:hoho\n")
+    create("six.ics", f"UID:{uuid4()}\nSUMMARY:hoho\n")
     result = runner.invoke(cli, ["list", "--grep", "fun"])
     assert not result.exception
     assert "fun" in result.output
@@ -180,7 +181,8 @@ def test_due_naive(tmpdir, runner, create):
         due = now + timedelta(hours=i)
         create(
             f"test_{i}.ics",
-            "SUMMARY:{}\nDUE;VALUE=DATE-TIME:{}\n".format(
+            "UID:{}\nSUMMARY:{}\nDUE;VALUE=DATE-TIME:{}\n".format(
+                uuid4(),
                 i,
                 due.strftime("%Y%m%dT%H%M%S"),
             ),

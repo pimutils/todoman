@@ -8,6 +8,7 @@ import pytz
 from dateutil.tz import tzlocal
 from dateutil.tz.tz import tzoffset
 from freezegun import freeze_time
+from uuid import uuid4
 
 from todoman.exceptions import AlreadyExists
 from todoman.model import Database
@@ -21,7 +22,8 @@ def test_querying(create, tmpdir):
         for i, location in enumerate("abc"):
             create(
                 f"test{i}.ics",
-                ("SUMMARY:test_querying\r\nLOCATION:{}\r\n").format(location),
+                ("UID:{}\nSUMMARY:test_querying\r\nLOCATION:{}\r\n")
+                .format(uuid4(), location),
                 list_name=list,
             )
 
@@ -35,8 +37,16 @@ def test_querying(create, tmpdir):
 
 
 def test_retain_tz(tmpdir, create, todos):
-    create("ar.ics", "SUMMARY:blah.ar\nDUE;VALUE=DATE-TIME;TZID=HST:20160102T000000\n")
-    create("de.ics", "SUMMARY:blah.de\nDUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n")
+    create(
+        "ar.ics",
+        f"UID:{uuid4()}\nSUMMARY:blah.ar\n"
+        "DUE;VALUE=DATE-TIME;TZID=HST:20160102T000000\n"
+    )
+    create(
+        "de.ics",
+        f"UID:{uuid4()}\nSUMMARY:blah.de\n"
+        "DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n"
+    )
 
     todos = list(todos())
 
@@ -57,7 +67,7 @@ def test_due_date(tmpdir, create, todos):
 def test_change_paths(tmpdir, create):
     old_todos = set("abcdefghijk")
     for x in old_todos:
-        create(f"{x}.ics", f"SUMMARY:{x}\n", x)
+        create(f"{x}.ics", f"UID:{uuid4()}\nSUMMARY:{x}\n", x)
 
     tmpdir.mkdir("3")
 
@@ -127,8 +137,8 @@ def test_list_no_colour(tmpdir):
 
 def test_database_priority_sorting(create, todos):
     for i in [1, 5, 9, 0]:
-        create(f"test{i}.ics", f"PRIORITY:{i}\n")
-    create("test_none.ics", "SUMMARY:No priority (eg: None)\n")
+        create(f"test{i}.ics", f"UID:{uuid4()}\nPRIORITY:{i}\n")
+    create("test_none.ics", f"UID:{uuid4()}\nSUMMARY:No priority (eg: None)\n")
 
     todos = list(todos())
 
