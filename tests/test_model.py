@@ -2,13 +2,13 @@ from datetime import date
 from datetime import datetime
 from datetime import timedelta
 from unittest.mock import patch
+from uuid import uuid4
 
 import pytest
 import pytz
 from dateutil.tz import tzlocal
 from dateutil.tz.tz import tzoffset
 from freezegun import freeze_time
-from uuid import uuid4
 
 from todoman.exceptions import AlreadyExists
 from todoman.model import Database
@@ -22,8 +22,9 @@ def test_querying(create, tmpdir):
         for i, location in enumerate("abc"):
             create(
                 f"test{i}.ics",
-                ("UID:{}\nSUMMARY:test_querying\r\nLOCATION:{}\r\n")
-                .format(uuid4(), location),
+                ("UID:{}\nSUMMARY:test_querying\r\nLOCATION:{}\r\n").format(
+                    uuid4(), location
+                ),
                 list_name=list,
             )
 
@@ -40,12 +41,12 @@ def test_retain_tz(tmpdir, create, todos):
     create(
         "ar.ics",
         f"UID:{uuid4()}\nSUMMARY:blah.ar\n"
-        "DUE;VALUE=DATE-TIME;TZID=HST:20160102T000000\n"
+        "DUE;VALUE=DATE-TIME;TZID=HST:20160102T000000\n",
     )
     create(
         "de.ics",
         f"UID:{uuid4()}\nSUMMARY:blah.de\n"
-        "DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n"
+        "DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n",
     )
 
     todos = list(todos())

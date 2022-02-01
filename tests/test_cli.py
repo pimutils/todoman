@@ -4,6 +4,7 @@ from os.path import exists
 from unittest import mock
 from unittest.mock import call
 from unittest.mock import patch
+from uuid import uuid4
 
 import click
 import hypothesis.strategies as st
@@ -11,7 +12,6 @@ import pytest
 from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
-from uuid import uuid4
 
 from tests.helpers import fs_case_sensitive
 from tests.helpers import pyicu_sensitive
@@ -123,7 +123,9 @@ def test_list_inexistant(tmpdir, runner, create):
 
 
 def test_show_existing(tmpdir, runner, create):
-    create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\nDESCRIPTION:Lots of text. Yum!\n")
+    create(
+        "test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\nDESCRIPTION:Lots of text. Yum!\n"
+    )
     result = runner.invoke(cli, ["list"])
     result = runner.invoke(cli, ["show", "1"])
     assert not result.exception
@@ -348,12 +350,12 @@ def test_sorting_output(tmpdir, runner, create):
     create(
         "test.ics",
         f"UID:{uuid4()}\nSUMMARY:aaa\n"
-        "DUE;VALUE=DATE-TIME;TZID=ART:20160102T000000\n"
+        "DUE;VALUE=DATE-TIME;TZID=ART:20160102T000000\n",
     )
     create(
         "test2.ics",
         f"UID:{uuid4()}\nSUMMARY:bbb\n"
-        "DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n"
+        "DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n",
     )
 
     examples = [("-summary", ["aaa", "bbb"]), ("due", ["aaa", "bbb"])]
@@ -384,7 +386,7 @@ def test_sorting_null_values(tmpdir, runner, create):
     create(
         "test2.ics",
         f"UID:{uuid4()}\nSUMMARY:bbb\n"
-        "DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n"
+        "DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n",
     )
 
     result = runner.invoke(cli)
@@ -603,8 +605,7 @@ def test_due_bad_date(runner):
 
 def test_multiple_todos_in_file(runner, create):
     path = create(
-        "test.ics",
-        f"UID:{uuid4()}\nSUMMARY:a\nEND:VTODO\nBEGIN:VTODO\nSUMMARY:b\n"
+        "test.ics", f"UID:{uuid4()}\nSUMMARY:a\nEND:VTODO\nBEGIN:VTODO\nSUMMARY:b\n"
     )
 
     for _ in range(2):
@@ -879,9 +880,7 @@ def test_new_categories_multiple(runner):
 
 def test_list_categories_single(tmpdir, runner, create):
     category = "fizzbuzz"
-    create(
-        "test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\nCATEGORIES:{category}\n"
-    )
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\nCATEGORIES:{category}\n")
     result = runner.invoke(cli, ["list", "--category", category])
     assert not result.exception
     assert category in result.output

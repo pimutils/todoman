@@ -74,7 +74,7 @@ def test_list_due_date(tmpdir, runner, create):
 def test_list_nodue(tmpdir, runner, create):
     create(
         "test.ics",
-        f"UID:{uuid4()}\nSUMMARY:Do stuff\nPERCENT-COMPLETE:12\nPRIORITY:4\n"
+        f"UID:{uuid4()}\nSUMMARY:Do stuff\nPERCENT-COMPLETE:12\nPRIORITY:4\n",
     )
     result = runner.invoke(cli, ["--porcelain", "list"])
 
@@ -143,7 +143,7 @@ def test_show(tmpdir, runner, create):
     create(
         "test.ics",
         f"UID:{uuid4()}\nSUMMARY:harhar\n"
-        "DESCRIPTION:Lots of text. Yum!\nPRIORITY:5\n"
+        "DESCRIPTION:Lots of text. Yum!\nPRIORITY:5\n",
     )
     result = runner.invoke(cli, ["--porcelain", "show", "1"])
 
