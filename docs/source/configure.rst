@@ -8,7 +8,7 @@ Configuration File
 ------------------
 
 The configuration file should be placed in
-``$XDG_CONFIG_DIR/todoman/config.py``. ``$XDG_CONFIG_DIR`` defaults to
+``$XDG_CONFIG_HOME/todoman/config.py``. ``$XDG_CONFIG_HOME`` defaults to
 ``~/.config`` is most situations, so this will generally be
 ``~/.config/todoman/config.py``.
 
