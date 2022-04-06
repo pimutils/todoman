@@ -470,6 +470,13 @@ def new(
 @cli.command()
 @pass_ctx
 @click.option(
+    "--read-description",
+    "-r",
+    is_flag=True,
+    default=False,
+    help="Read task description from stdin.",
+)
+@click.option(
     "--raw",
     is_flag=True,
     help=(
@@ -486,6 +493,7 @@ def edit(
     id: int,
     todo_properties: dict,
     interactive: bool,
+    read_description: bool,
     raw: bool,
 ) -> None:
     """
@@ -502,6 +510,10 @@ def edit(
         if value is not None and value != []:
             changes = True
             setattr(todo, key, value)
+
+    if read_description:
+        changes = True
+        todo.description = sys.stdin.read()
 
     if interactive or (not changes and interactive is None):
         ui = TodoEditor(todo, ctx.db.lists(), ctx.ui_formatter)
