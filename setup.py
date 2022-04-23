@@ -23,10 +23,6 @@ setup(
         "urwid",
     ],
     long_description=open("README.rst").read(),
-    use_scm_version={
-        "version_scheme": "post-release",
-        "write_to": "todoman/version.py",
-    },
     setup_requires=["setuptools_scm"],
     tests_require=open("requirements-dev.txt").readlines(),
     extras_require={
