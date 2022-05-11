@@ -1,0 +1,37 @@
+image: debian/stable
+packages:
+  - pre-commit
+  - python3-build
+  - python3-dev # This is the stable python, not a dev package!
+  - python3-pip
+  - python3-wheel
+  - tox
+  - twine
+sources:
+  - https://github.com/pimutils/todoman
+secrets:
+  - 9a8d4d44-96f9-4365-beaa-aaa759c4f1c4
+environment:
+  CODECOV_TOKEN: a4471483-7f55-411a-bf2f-f65a91013dc4
+  CI: true
+tasks:
+  - setup: |
+      sudo pip install codecov
+  - test: |
+      # Test without pyicu installed:
+      cd todoman
+      tox -e py
+      codecov
+  - test-pyicu: |
+      # Test with pyicu installed:
+      cd todoman
+      TOXENV=pyicu tox
+      codecov
+  - test-repl: |
+      # Test repl repl:
+      cd todoman
+      TOXENV=repl tox
+      codecov
+  - package: |
+      cd todoman
+      python -m build --wheel --no-isolation
