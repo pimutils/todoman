@@ -4,6 +4,7 @@ from os.path import exists
 from unittest import mock
 from unittest.mock import call
 from unittest.mock import patch
+from uuid import uuid4
 
 import click
 import hypothesis.strategies as st
@@ -27,7 +28,7 @@ def test_list(tmpdir, runner, create):
     assert not result.exception
     assert not result.output.strip()
 
-    create("test.ics", "SUMMARY:harhar\n")
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\n")
     result = runner.invoke(cli, ["list"])
     assert not result.exception
     assert "harhar" in result.output
@@ -57,14 +58,14 @@ def test_no_extra_whitespace(tmpdir, runner, create):
     assert not result.exception
     assert result.output == "\n"
 
-    create("test.ics", "SUMMARY:harhar\n")
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\n")
     result = runner.invoke(cli, ["list"])
     assert not result.exception
     assert len(result.output.splitlines()) == 1
 
 
 def test_percent(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:harhar\nPERCENT-COMPLETE:78\n")
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\nPERCENT-COMPLETE:78\n")
     result = runner.invoke(cli, ["list"])
     assert not result.exception
     assert "78%" in result.output
@@ -122,7 +123,9 @@ def test_list_inexistant(tmpdir, runner, create):
 
 
 def test_show_existing(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:harhar\nDESCRIPTION:Lots of text. Yum!\n")
+    create(
+        "test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\nDESCRIPTION:Lots of text. Yum!\n"
+    )
     result = runner.invoke(cli, ["list"])
     result = runner.invoke(cli, ["show", "1"])
     assert not result.exception
@@ -131,7 +134,7 @@ def test_show_existing(tmpdir, runner, create):
 
 
 def test_show_inexistant(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:harhar\n")
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\n")
     result = runner.invoke(cli, ["list"])
     result = runner.invoke(cli, ["show", "2"])
     assert result.exit_code == 20
@@ -170,14 +173,14 @@ def test_two_events(tmpdir, runner):
 
 
 def test_default_command(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:harhar\n")
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\n")
     result = runner.invoke(cli)
     assert not result.exception
     assert "harhar" in result.output
 
 
 def test_delete(runner, create):
-    create("test.ics", "SUMMARY:harhar\n")
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\n")
     result = runner.invoke(cli, ["list"])
     assert not result.exception
     result = runner.invoke(cli, ["delete", "1", "--yes"])
@@ -200,7 +203,7 @@ def test_delete_prompt(todo_factory, runner, todos):
 
 def test_copy(tmpdir, runner, create):
     tmpdir.mkdir("other_list")
-    create("test.ics", "SUMMARY:test_copy\n")
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:test_copy\n")
     result = runner.invoke(cli, ["list"])
     assert not result.exception
     assert "test_copy" in result.output
@@ -217,7 +220,7 @@ def test_copy(tmpdir, runner, create):
 
 def test_move(tmpdir, runner, create):
     tmpdir.mkdir("other_list")
-    create("test.ics", "SUMMARY:test_move\n")
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:test_move\n")
     result = runner.invoke(cli, ["list"])
     assert not result.exception
     assert "test_move" in result.output
@@ -344,8 +347,16 @@ def test_sorting_fields(tmpdir, runner, default_database):
 
 
 def test_sorting_output(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:aaa\nDUE;VALUE=DATE-TIME;TZID=ART:20160102T000000\n")
-    create("test2.ics", "SUMMARY:bbb\nDUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n")
+    create(
+        "test.ics",
+        f"UID:{uuid4()}\nSUMMARY:aaa\n"
+        "DUE;VALUE=DATE-TIME;TZID=ART:20160102T000000\n",
+    )
+    create(
+        "test2.ics",
+        f"UID:{uuid4()}\nSUMMARY:bbb\n"
+        "DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n",
+    )
 
     examples = [("-summary", ["aaa", "bbb"]), ("due", ["aaa", "bbb"])]
 
@@ -371,8 +382,12 @@ def test_sorting_output(tmpdir, runner, create):
 
 
 def test_sorting_null_values(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:aaa\nPRIORITY:9\n")
-    create("test2.ics", "SUMMARY:bbb\nDUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n")
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:aaa\nPRIORITY:9\n")
+    create(
+        "test2.ics",
+        f"UID:{uuid4()}\nSUMMARY:bbb\n"
+        "DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n",
+    )
 
     result = runner.invoke(cli)
     assert not result.exception
@@ -528,7 +543,7 @@ def test_empty_list(tmpdir, runner, create):
 
 
 def test_show_location(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:harhar\nLOCATION:Boston\n")
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\nLOCATION:Boston\n")
 
     result = runner.invoke(cli, ["show", "1"])
     assert "Boston" in result.output
@@ -551,11 +566,13 @@ def test_sort_mixed_timezones(runner, create):
     """
     create(
         "test.ics",
-        "SUMMARY:first\nDUE;VALUE=DATE-TIME;TZID=CET:20170304T180000\n",  # 1700 UTC
+        f"UID:{uuid4()}\nSUMMARY:first\nDUE;"
+        "VALUE=DATE-TIME;TZID=CET:20170304T180000\n",  # 1700 UTC
     )
     create(
         "test2.ics",
-        "SUMMARY:second\nDUE;VALUE=DATE-TIME;TZID=HST:20170304T080000\n",  # 1800 UTC
+        f"UID:{uuid4()}\nSUMMARY:second\nDUE;"
+        "VALUE=DATE-TIME;TZID=HST:20170304T080000\n",  # 1800 UTC
     )
 
     result = runner.invoke(cli, ["list", "--status", "ANY"])
@@ -587,7 +604,9 @@ def test_due_bad_date(runner):
 
 
 def test_multiple_todos_in_file(runner, create):
-    path = create("test.ics", "SUMMARY:a\nEND:VTODO\nBEGIN:VTODO\nSUMMARY:b\n")
+    path = create(
+        "test.ics", f"UID:{uuid4()}\nSUMMARY:a\nEND:VTODO\nBEGIN:VTODO\nSUMMARY:b\n"
+    )
 
     for _ in range(2):
         with patch("todoman.model.logger", spec=True) as mocked_logger:
@@ -845,6 +864,40 @@ def test_invoke_invalid_command(runner, tmpdir, config):
     assert "Error: Invalid setting for [default_command]" in result.output
 
 
+def test_new_categories_single(runner):
+    result = runner.invoke(cli, ["new", "-l", "default", "--category", "mine", "title"])
+
+    assert "[mine]" in result.output
+
+
+def test_new_categories_multiple(runner):
+    result = runner.invoke(
+        cli, ["new", "-l", "default", "-c", "first", "-c", "second", "title"]
+    )
+
+    assert "[first, second]" in result.output
+
+
+def test_list_categories_single(tmpdir, runner, create):
+    category = "fizzbuzz"
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\nCATEGORIES:{category}\n")
+    result = runner.invoke(cli, ["list", "--category", category])
+    assert not result.exception
+    assert category in result.output
+
+
+def test_list_categories_multiple(tmpdir, runner, create):
+    category = ["git", "gud"]
+    create("test.ics", f"SUMMARY:harhar\nCATEGORIES:{category[0]}\n")
+    create("test1.ics", f"SUMMARY:harhar1\nCATEGORIES:{category[1]}\n")
+    result = runner.invoke(
+        cli, ["list", "--category", category[0], "--category", category[1]]
+    )
+    assert not result.exception
+    assert category[0] in result.output
+    assert category[1] in result.output
+
+
 def test_show_priority(runner, todo_factory, todos):
     todo_factory(summary="harhar\n", priority=1)
 
@@ -964,7 +1017,7 @@ def test_default_command_args(config, runner):
         reverse=False,
         lists=[],
         location=None,
-        category=None,
+        categories=(),
         grep=None,
         start=None,
         startable=None,

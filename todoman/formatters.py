@@ -70,6 +70,12 @@ class DefaultFormatter:
             percent = todo.percent_complete or ""
             if percent:
                 percent = f" ({percent}%)"
+
+            if todo.categories:
+                categories = " [" + ", ".join(todo.categories) + "]"
+            else:
+                categories = ""
+
             priority = click.style(
                 self.format_priority_compact(todo.priority),
                 fg="magenta",
@@ -112,8 +118,10 @@ class DefaultFormatter:
             # TODO: add spaces on the left based on max todos"
 
             # FIXME: double space when no priority
+            # split into parts to satisfy linter line too long
             table.append(
-                f"[{completed}] {todo.id} {priority} {due} {recurring}{summary}"
+                f"[{completed}] {todo.id} {priority} {due} "
+                f"{recurring}{summary}{categories}"
             )
 
         return "\n".join(table)
@@ -147,6 +155,14 @@ class DefaultFormatter:
             return dt.strftime(self.datetime_format)
         elif isinstance(dt, date):
             return dt.strftime(self.date_format)
+
+    def format_categories(self, categories):
+        return ", ".join(categories)
+
+    def parse_categories(self, categories):
+        # existing code assumes categories is list,
+        # but click passes tuple
+        return list(categories)
 
     def parse_priority(self, priority: Optional[str]) -> Optional[int]:
         if priority is None or priority == "":
@@ -243,6 +259,7 @@ class PorcelainFormatter(DefaultFormatter):
             "list": todo.list.name,
             "percent": todo.percent_complete,
             "summary": todo.summary,
+            "categories": todo.categories,
             "priority": todo.priority,
             "location": todo.location,
             "description": todo.description,

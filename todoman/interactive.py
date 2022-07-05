@@ -34,6 +34,7 @@ class TodoEditor:
             ("Summary", self._summary),
             ("Description", self._description),
             ("Location", self._location),
+            ("Categories", self._categories),
             ("Start", self._dtstart),
             ("Due", self._due),
             ("Completed", self._completed),
@@ -64,6 +65,10 @@ class TodoEditor:
             parent=self,
             edit_text=self.todo.description,
             multiline=True,
+        )
+        self._categories = widgets.ExtendedEdit(
+            parent=self,
+            edit_text=self.formatter.format_categories(self.todo.categories),
         )
         self._location = widgets.ExtendedEdit(
             parent=self,
@@ -157,6 +162,7 @@ class TodoEditor:
         elif self.todo.is_completed and not self._completed.get_state():
             self.todo.status = "NEEDS-ACTION"
             self.todo.completed_at = None
+        self.todo.categories = [c.strip() for c in self.categories.split(",")]
         self.todo.priority = self.priority
 
         # TODO: categories
@@ -191,6 +197,10 @@ class TodoEditor:
     @property
     def dtstart(self):
         return self._dtstart.edit_text
+
+    @property
+    def categories(self):
+        return self._categories.edit_text
 
     @property
     def priority(self):

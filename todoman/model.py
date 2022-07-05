@@ -420,7 +420,7 @@ class Cache:
     may be used for filtering/sorting.
     """
 
-    SCHEMA_VERSION = 7
+    SCHEMA_VERSION = 9
 
     def __init__(self, path: str):
         self.cache_path = str(path)
@@ -445,17 +445,22 @@ class Cache:
         except sqlite3.OperationalError:
             return False
 
+    def drop_tables(self):
+
+        self._conn.executescript(
+            """
+            DROP TABLE IF EXISTS todos;
+            DROP TABLE IF EXISTS lists;
+            DROP TABLE IF EXISTS files;
+            DROP TABLE IF EXISTS categories;
+        """
+        )
+
     def create_tables(self):
         if self.is_latest_version():
             return
 
-        self._conn.executescript(
-            """
-            DROP TABLE IF EXISTS lists;
-            DROP TABLE IF EXISTS files;
-            DROP TABLE IF EXISTS todos;
-        """
-        )
+        self.drop_tables()
 
         self._conn.execute('CREATE TABLE IF NOT EXISTS meta ("version" INT)')
 
@@ -492,6 +497,19 @@ class Cache:
 
         self._conn.execute(
             """
+            CREATE TABLE IF NOT EXISTS categories (
+                "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                "todos_id" INTEGER NOT NULL,
+                "category" TEXT,
+
+                CONSTRAINT category_unique UNIQUE (todos_id,category),
+                FOREIGN KEY(todos_id) REFERENCES todos(id) ON DELETE CASCADE
+            );
+        """
+        )
+
+        self._conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS todos (
                 "file_path" TEXT,
 
@@ -510,7 +528,6 @@ class Cache:
                 "status" TEXT,
                 "description" TEXT,
                 "location" TEXT,
-                "categories" TEXT,
                 "sequence" INTEGER,
                 "last_modified" INTEGER,
                 "rrule" TEXT,
@@ -581,6 +598,20 @@ class Cache:
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExists("file", list_name) from e
 
+    def add_category(self, todos_id, category):
+        try:
+            self._conn.execute(
+                """
+               INSERT INTO categories (
+                   todos_id,
+                   category
+               ) VALUES (?, ?);
+               """,
+                (todos_id, category),
+            )
+        except sqlite3.IntegrityError as e:
+            raise exceptions.AlreadyExists("category", category) from e
+
     def _serialize_datetime(
         self,
         todo: icalendar.Todo,
@@ -613,13 +644,6 @@ class Cache:
 
         return rrule.to_ical().decode()
 
-    def _serialize_categories(self, todo, field) -> str:
-        categories = todo.get(field, [])
-        if not categories:
-            return ""
-
-        return ",".join([str(category) for category in categories.cats])
-
     def add_vtodo(self, todo: icalendar.Todo, file_path: str, id=None) -> int:
         """
         Adds a todo into the cache.
@@ -645,11 +669,10 @@ class Cache:
                 status,
                 description,
                 location,
-                categories,
                 sequence,
                 last_modified,
                 rrule
-            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                 ?)
             """
 
@@ -675,7 +698,6 @@ class Cache:
             todo.get("status", "NEEDS-ACTION"),
             todo.get("description", None),
             todo.get("location", None),
-            self._serialize_categories(todo, "categories"),
             todo.get("sequence", 1),
             self._serialize_datetime(todo, "last-modified")[0],
             self._serialize_rrule(todo, "rrule"),
@@ -694,14 +716,18 @@ class Cache:
         finally:
             cursor.close()
 
+        if todo.get("categories"):
+            for category in todo.get("categories").cats:
+                self.add_category(rv, category)
+
         return rv
 
     def todos(
         self,
         lists=(),
+        categories=None,
         priority=None,
         location="",
-        category="",
         grep="",
         sort=(),
         reverse=True,
@@ -723,7 +749,7 @@ class Cache:
         :param list lists: Only return todos for these lists.
         :param str location: Only return todos with a location containing this
             string.
-        :param str category: Only return todos with a category containing this
+        :param str categories: Only return todos with a category containing this
             string.
         :param str grep: Filter common fields with this substring.
         :param list sort: Order returned todos by these fields. Field names
@@ -758,15 +784,20 @@ class Cache:
             q = ", ".join(["?"] * len(lists))
             extra_where.append(f"AND files.list_name IN ({q})")
             params.extend(lists)
+        if categories:
+            category_slots = ", ".join(["?"] * len(categories))
+            extra_where.append(
+                "AND upper(categories.category) IN ({category_slots})".format(
+                    category_slots=category_slots
+                )
+            )
+            params = params + [category.upper() for category in categories]
         if priority:
             extra_where.append("AND PRIORITY > 0 AND PRIORITY <= ?")
             params.append(f"{priority}")
         if location:
             extra_where.append("AND location LIKE ?")
             params.append(f"%{location}%")
-        if category:
-            extra_where.append("AND categories LIKE ?")
-            params.append(f"%{category}%")
         if grep:
             # # requires sqlite with pcre, which won't be available everywhere:
             # extra_where.append('AND summary REGEXP ?')
@@ -811,10 +842,14 @@ class Cache:
             order = order.replace(" DESC", " asc").replace(" ASC", " desc")
 
         query = """
-              SELECT todos.*, files.list_name, files.path
-                FROM todos, files
-               WHERE todos.file_path = files.path {}
-            ORDER BY {}
+        SELECT DISTINCT todos.*, files.list_name, files.path,
+          group_concat(category) AS categories
+        FROM todos, files
+        LEFT JOIN categories
+        ON categories.todos_id = todos.id
+        WHERE todos.file_path = files.path {}
+        GROUP BY uid
+        ORDER BY {}
         """.format(
             " ".join(extra_where),
             order,
@@ -856,6 +891,12 @@ class Cache:
         else:
             return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
 
+    def _categories_from_db(self, categories):
+        if categories:
+            return categories.split(",")
+
+        return []
+
     def _todo_from_db(self, row: dict) -> Todo:
         todo = Todo()
         todo.id = row["id"]
@@ -863,6 +904,7 @@ class Cache:
         todo.summary = row["summary"]
         todo.due = self._date_from_db(row["due"], row["due_dt"])
         todo.start = self._date_from_db(row["start"], row["start_dt"])
+        todo.categories = self._categories_from_db(row["categories"])
         todo.priority = row["priority"]
         todo.created_at = self._datetime_from_db(row["created_at"])
         todo.completed_at = self._datetime_from_db(row["completed_at"])
@@ -871,6 +913,8 @@ class Cache:
         todo.status = row["status"]
         todo.description = row["description"]
         todo.location = row["location"]
+
+        logger.debug("todo.categories: %s\n", todo.categories)
         todo.sequence = row["sequence"]
         todo.last_modified = row["last_modified"]
         todo.list = self.lists_map[row["list_name"]]
@@ -908,10 +952,14 @@ class Cache:
         # XXX: DON'T USE READ_ONLY
         result = self._conn.execute(
             """
-            SELECT todos.*, files.list_name, files.path
-              FROM todos, files
+            SELECT todos.*, files.list_name, files.path,
+              group_concat(category) AS categories
+            FROM todos, files
+            LEFT JOIN categories
+            ON categories.todos_id = todos.id
             WHERE files.path = todos.file_path
               AND todos.id = ?
+            GROUP BY uid
         """,
             (id,),
         ).fetchone()

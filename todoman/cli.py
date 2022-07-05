@@ -81,6 +81,11 @@ def _validate_date_param(ctx, param, val):
         raise click.BadParameter(e)
 
 
+def _validate_categories_param(ctx, param, val):
+    ctx = ctx.find_object(AppContext)
+    return ctx.formatter.parse_categories(val)
+
+
 def _validate_priority_param(ctx, param, val):
     ctx = ctx.find_object(AppContext)
     try:
@@ -148,6 +153,14 @@ def validate_status(ctx=None, param=None, val=None) -> str:
 
 def _todo_property_options(command):
     click.option(
+        "--category",
+        "-c",
+        multiple=True,
+        default=(),
+        callback=_validate_categories_param,
+        help="Task categories. Can be used multiple times.",
+    )(command)
+    click.option(
         "--priority",
         default="",
         callback=_validate_priority_param,
@@ -176,6 +189,10 @@ def _todo_property_options(command):
         kw["todo_properties"] = {
             key: kw.pop(key) for key in ("due", "start", "location", "priority")
         }
+        # longform is singular since user can pass it multiple times, but
+        # in actuality it's plural, so manually changing for #cache.todos.
+        kw["todo_properties"]["categories"] = kw.pop("category")
+
         return command(*a, **kw)
 
     return command_wrap
@@ -359,7 +376,7 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
         todo.priority = default_priority
 
     for key, value in todo_properties.items():
-        if value:
+        if value is not None:
             setattr(todo, key, value)
     todo.summary = " ".join(summary)
 
@@ -404,7 +421,7 @@ def edit(ctx, id, todo_properties, interactive, raw):
 
     changes = False
     for key, value in todo_properties.items():
-        if value is not None:
+        if value is not None and value != []:
             changes = True
             setattr(todo, key, value)
 
@@ -548,7 +565,6 @@ def move(ctx, list, ids):
 @pass_ctx
 @click.argument("lists", nargs=-1, callback=_validate_lists_param)
 @click.option("--location", help="Only show tasks with location containg TEXT")
-@click.option("--category", help="Only show tasks with category containg TEXT")
 @click.option("--grep", help="Only show tasks with message containg TEXT")
 @click.option(
     "--sort",
@@ -567,6 +583,14 @@ def move(ctx, list, ids):
 )
 @click.option(
     "--due", default=None, help="Only show tasks due in INTEGER hours", type=int
+)
+@click.option(
+    "--category",
+    "-c",
+    multiple=True,
+    default=(),
+    help="Only show tasks with specified categories.",
+    callback=_validate_categories_param,
 )
 @click.option(
     "--priority",
@@ -628,6 +652,8 @@ def list(ctx, *args, **kwargs):
     hide_list = (len([_ for _ in ctx.db.lists()]) == 1) or (  # noqa: C416
         len(kwargs["lists"]) == 1
     )
+
+    kwargs["categories"] = kwargs.pop("category")
 
     todos = ctx.db.todos(**kwargs)
     click.echo(ctx.formatter.compact_multiple(todos, hide_list))

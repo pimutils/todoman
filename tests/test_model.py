@@ -2,6 +2,7 @@ from datetime import date
 from datetime import datetime
 from datetime import timedelta
 from unittest.mock import patch
+from uuid import uuid4
 
 import pytest
 import pytz
@@ -21,7 +22,9 @@ def test_querying(create, tmpdir):
         for i, location in enumerate("abc"):
             create(
                 f"test{i}.ics",
-                ("SUMMARY:test_querying\r\nLOCATION:{}\r\n").format(location),
+                ("UID:{}\nSUMMARY:test_querying\r\nLOCATION:{}\r\n").format(
+                    uuid4(), location
+                ),
                 list_name=list,
             )
 
@@ -35,8 +38,16 @@ def test_querying(create, tmpdir):
 
 
 def test_retain_tz(tmpdir, create, todos):
-    create("ar.ics", "SUMMARY:blah.ar\nDUE;VALUE=DATE-TIME;TZID=HST:20160102T000000\n")
-    create("de.ics", "SUMMARY:blah.de\nDUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n")
+    create(
+        "ar.ics",
+        f"UID:{uuid4()}\nSUMMARY:blah.ar\n"
+        "DUE;VALUE=DATE-TIME;TZID=HST:20160102T000000\n",
+    )
+    create(
+        "de.ics",
+        f"UID:{uuid4()}\nSUMMARY:blah.de\n"
+        "DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n",
+    )
 
     todos = list(todos())
 
@@ -57,7 +68,7 @@ def test_due_date(tmpdir, create, todos):
 def test_change_paths(tmpdir, create):
     old_todos = set("abcdefghijk")
     for x in old_todos:
-        create(f"{x}.ics", f"SUMMARY:{x}\n", x)
+        create(f"{x}.ics", f"UID:{uuid4()}\nSUMMARY:{x}\n", x)
 
     tmpdir.mkdir("3")
 
@@ -127,8 +138,8 @@ def test_list_no_colour(tmpdir):
 
 def test_database_priority_sorting(create, todos):
     for i in [1, 5, 9, 0]:
-        create(f"test{i}.ics", f"PRIORITY:{i}\n")
-    create("test_none.ics", "SUMMARY:No priority (eg: None)\n")
+        create(f"test{i}.ics", f"UID:{uuid4()}\nPRIORITY:{i}\n")
+    create("test_none.ics", f"UID:{uuid4()}\nSUMMARY:No priority (eg: None)\n")
 
     todos = list(todos())
 
@@ -159,6 +170,43 @@ def test_retain_unknown_fields(tmpdir, create, default_database):
     assert "SUMMARY:RAWR" in lines
     assert 'DESCRIPTION:Rawr means "I love you" in dinosaur.' in lines
     assert "X-RAWR-TYPE:Reptar" in lines
+
+
+def test_category_integrity(tmpdir, create, default_database):
+    create("test.ics", "UID:AVERYUNIQUEID\nSUMMARY:RAWR\n")
+    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
+
+    todo = db.todo(1, read_only=False)
+    todo.categories = ["hi", "hi"]
+
+    with pytest.raises(AlreadyExists):
+        default_database.save(todo)
+
+
+def test_category_deletes_on_todo_delete(tmpdir, create, default_database):
+    uid = "my_id"
+    create("test.ics", f"UID:{uid}\nSUMMARY:RAWR\n")
+    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
+
+    todo = db.todo(1, read_only=False)
+    todo.categories = ["my_cat"]
+    default_database.save(todo)
+
+    assert default_database.todos().__next__().uid == uid
+
+    default_database.delete(todo)
+    default_database.update_cache()
+
+    query = """
+        SELECT distinct category
+        FROM categories
+        WHERE categories.todos_id = '{}'
+        """.format(
+        todo.id,
+    )
+
+    categories = default_database.cache._conn.execute(query).fetchall()
+    assert categories == []
 
 
 def test_todo_setters(todo_factory):

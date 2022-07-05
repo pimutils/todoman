@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from uuid import uuid4
 
 import pytz
 
@@ -21,6 +22,7 @@ def test_list_all(tmpdir, runner, create):
 
     expected = [
         {
+            "categories": [],
             "completed": True,
             "completed_at": 1545765154,
             "description": "",
@@ -51,6 +53,7 @@ def test_list_due_date(tmpdir, runner, create):
 
     expected = [
         {
+            "categories": [],
             "completed": True,
             "completed_at": None,
             "description": "",
@@ -69,11 +72,15 @@ def test_list_due_date(tmpdir, runner, create):
 
 
 def test_list_nodue(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:Do stuff\nPERCENT-COMPLETE:12\nPRIORITY:4\n")
+    create(
+        "test.ics",
+        f"UID:{uuid4()}\nSUMMARY:Do stuff\nPERCENT-COMPLETE:12\nPRIORITY:4\n",
+    )
     result = runner.invoke(cli, ["--porcelain", "list"])
 
     expected = [
         {
+            "categories": [],
             "completed": False,
             "completed_at": None,
             "description": "",
@@ -95,10 +102,10 @@ def test_list_priority(tmpdir, runner, create):
     result = runner.invoke(cli, ["--porcelain", "list"], catch_exceptions=False)
     assert not result.exception
     assert result.output.strip() == "[]"
-    create("one.ics", "SUMMARY:haha\nPRIORITY:4\n")
-    create("two.ics", "SUMMARY:hoho\nPRIORITY:9\n")
-    create("three.ics", "SUMMARY:hehe\nPRIORITY:5\n")
-    create("four.ics", "SUMMARY:huhu\n")
+    create("one.ics", f"UID:{uuid4()}\nSUMMARY:haha\nPRIORITY:4\n")
+    create("two.ics", f"UID:{uuid4()}\nSUMMARY:hoho\nPRIORITY:9\n")
+    create("three.ics", f"UID:{uuid4()}\nSUMMARY:hehe\nPRIORITY:5\n")
+    create("four.ics", f"UID:{uuid4()}\nSUMMARY:huhu\n")
 
     result_high = runner.invoke(cli, ["--porcelain", "list", "--priority=4"])
     assert not result_high.exception
@@ -133,10 +140,15 @@ def test_list_priority(tmpdir, runner, create):
 
 
 def test_show(tmpdir, runner, create):
-    create("test.ics", "SUMMARY:harhar\nDESCRIPTION:Lots of text. Yum!\nPRIORITY:5\n")
+    create(
+        "test.ics",
+        f"UID:{uuid4()}\nSUMMARY:harhar\n"
+        "DESCRIPTION:Lots of text. Yum!\nPRIORITY:5\n",
+    )
     result = runner.invoke(cli, ["--porcelain", "show", "1"])
 
     expected = {
+        "categories": [],
         "completed": False,
         "completed_at": None,
         "description": "Lots of text. Yum!",
@@ -158,6 +170,7 @@ def test_simple_action(todo_factory):
     todo = todo_factory(id=7, location="Downtown")
 
     expected = {
+        "categories": [],
         "completed": False,
         "completed_at": None,
         "description": "",
