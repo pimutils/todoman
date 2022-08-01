@@ -713,6 +713,7 @@ class Cache:
         try:
             cursor.execute(sql, params)
             rv = cursor.lastrowid
+            assert rv is not None
         finally:
             cursor.close()
 
