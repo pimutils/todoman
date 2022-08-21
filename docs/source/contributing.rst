@@ -28,8 +28,8 @@ of any issues when attempting to commit. This will also run ``black`` to
 reformat code that may have any inconsistencies.
 
 Commits should follow `Git Commit Guidelines`_ whenever possible, including
-rewriting branch histories to remove any noise, and using a 50-message
-imperative present tense for commit summary messages.
+rewriting branch histories to remove any noise, and using a imperative present
+tense for commit summary messages (50 characters maximum).
 
 All commits should pass all tests to facilitate bisecting in future.
 
