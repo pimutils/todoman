@@ -1,32 +1,29 @@
+from __future__ import annotations
+
 import importlib
 import os
 from os.path import exists
 from os.path import join
 from typing import Any
 from typing import Callable
-from typing import List
 from typing import NamedTuple
-from typing import Optional
-from typing import Tuple
-from typing import Type
-from typing import Union
 
 import xdg.BaseDirectory
 
 from todoman import __documentation__
 
 
-def expand_path(path):
+def expand_path(path: str) -> str:
     """expands `~` as well as variable names"""
     return os.path.expanduser(os.path.expandvars(path))
 
 
-def validate_cache_path(path):
+def validate_cache_path(path: str) -> str:
     path = path.replace("$XDG_CACHE_HOME", xdg.BaseDirectory.xdg_cache_home)
     return expand_path(path)
 
 
-def validate_date_format(fmt):
+def validate_date_format(fmt: str) -> str:
     if any(x in fmt for x in ("%H", "%M", "%S", "%X")):
         raise ConfigurationException(
             "Found time component in `date_format`, please use `time_format` for that."
@@ -34,7 +31,7 @@ def validate_date_format(fmt):
     return fmt
 
 
-def validate_time_format(fmt):
+def validate_time_format(fmt: str) -> str:
     if any(x in fmt for x in ("%Y", "%y", "%m", "%d", "%x")):
         raise ConfigurationException(
             "Found date component in `time_format`, please use `date_format` for that."
@@ -42,13 +39,13 @@ def validate_time_format(fmt):
     return fmt
 
 
-def validate_color_config(value: str):
+def validate_color_config(value: str) -> str:
     if value not in ["always", "auto", "never"]:
         raise ConfigurationException("Invalid `color` settings.")
     return value
 
 
-def validate_default_priority(value: int):
+def validate_default_priority(value: int | None) -> int | None:
     if value and not (0 <= value <= 9):
         raise ConfigurationException("Invalid `default_priority` settings.")
     return value
@@ -56,16 +53,16 @@ def validate_default_priority(value: int):
 
 class ConfigEntry(NamedTuple):
     name: str
-    type: Union[Type, Tuple[Type]]
+    type: type | tuple[type]
     default: Any
     description: str
-    validation: Optional[Callable]
+    validation: Callable | None
 
 
 NO_DEFAULT = object()
 
 # A list of tuples (name, type, default, description, validation)
-CONFIG_SPEC: List[ConfigEntry] = [
+CONFIG_SPEC: list[ConfigEntry] = [
     ConfigEntry(
         "path",
         str,
