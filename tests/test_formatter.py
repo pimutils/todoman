@@ -59,6 +59,9 @@ def test_format_priority(default_formatter):
     for i in range(6, 10):
         assert default_formatter.format_priority(i) == "low"
 
+    with pytest.raises(ValueError):
+        assert default_formatter.format_priority(12)
+
 
 def test_format_priority_compact(default_formatter):
     assert default_formatter.format_priority_compact(None) == ""
@@ -68,6 +71,9 @@ def test_format_priority_compact(default_formatter):
         assert default_formatter.format_priority_compact(i) == "!!!"
     for i in range(6, 10):
         assert default_formatter.format_priority_compact(i) == "!"
+
+    with pytest.raises(ValueError):
+        assert default_formatter.format_priority_compact(12)
 
 
 def test_format_date(default_formatter):

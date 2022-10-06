@@ -188,6 +188,8 @@ class DefaultFormatter:
         elif 6 <= priority <= 9:
             return "low"
 
+        raise ValueError("priority is an invalid value")
+
     def format_priority_compact(self, priority: Optional[int]) -> str:
         if not priority:
             return ""
@@ -197,6 +199,8 @@ class DefaultFormatter:
             return "!!"
         elif 6 <= priority <= 9:
             return "!"
+
+        raise ValueError("priority is an invalid value")
 
     def parse_datetime(self, dt: str) -> Optional[date]:
         if not dt:
