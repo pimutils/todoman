@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="todoman",
-    description="A simple CalDav-based todo manager.",
+    description="A simple icalendar-based todo manager.",
     author="Hugo Osvaldo Barrera",
     author_email="hugo@barrera.io",
     url="https://github.com/pimutils/todoman",
