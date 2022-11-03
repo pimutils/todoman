@@ -105,3 +105,7 @@ If your packages are generated using python wheels, this should not be an issue
 (much like it won't be an issue for users installing via ``pip``).
 
 .. _setup.py: https://github.com/pimutils/todoman/blob/main/setup.py
+
+Additionally, `jq` is dependency for zsh's autocompletion. For platforms where
+`zsh` is the default shell, it is recommended to list `jq` as a dependency, for
+others adding it as an optional dependency should suffice.
