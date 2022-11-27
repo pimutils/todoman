@@ -71,10 +71,10 @@ class Todo:
 
     def __init__(
         self,
-        filename: str = None,
-        mtime: int = None,
+        filename: str | None = None,
+        mtime: int | None = None,
         new: bool = False,
-        list: TodoList = None,
+        list: TodoList | None = None,
     ):
         """
         Creates a new todo using `todo` as a source.
@@ -996,7 +996,7 @@ class Cache:
 
 
 class TodoList:
-    def __init__(self, name: str, path: str, colour: str = None):
+    def __init__(self, name: str, path: str, colour: str | None = None):
         self.path = path
         self.name = name
         self.colour = colour
