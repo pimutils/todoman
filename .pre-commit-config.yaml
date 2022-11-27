@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v4.4.0
     hooks:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
@@ -18,19 +18,19 @@ repos:
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/flake8
-    rev: "5.0.4" # pick a git hash / tag to point to
+    rev: "6.0.0" # pick a git hash / tag to point to
     hooks:
       - id: flake8
         additional_dependencies:
           - flake8-comprehensions
           - flake8-bugbear
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.2.0
+    rev: v3.2.2
     hooks:
     -   id: pyupgrade
-        args: [--py37-plus]
+        args: [--py38-plus]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v0.982"
+    rev: "v0.991"
     hooks:
       - id: mypy
         additional_dependencies:
