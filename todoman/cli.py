@@ -79,7 +79,7 @@ def _validate_date_param(ctx, param, val):
     try:
         return ctx.formatter.parse_datetime(val)
     except ValueError as e:
-        raise click.BadParameter(e)
+        raise click.BadParameter(e) from None
 
 
 def _validate_categories_param(ctx, param, val):
@@ -92,7 +92,7 @@ def _validate_priority_param(ctx, param, val):
     try:
         return ctx.formatter.parse_priority(val)
     except ValueError as e:
-        raise click.BadParameter(e)
+        raise click.BadParameter(e) from None
 
 
 def _validate_start_date_param(ctx, param, val):
@@ -109,7 +109,7 @@ def _validate_start_date_param(ctx, param, val):
         dt = ctx.formatter.parse_datetime(val[1])
         return is_before, dt
     except ValueError as e:
-        raise click.BadParameter(e)
+        raise click.BadParameter(e) from None
 
 
 def _validate_startable_param(ctx, param, val):
@@ -279,7 +279,7 @@ def cli(click_ctx, colour, porcelain, humanize, config):
     try:
         ctx.config = load_config(config)
     except ConfigurationException as e:
-        raise click.ClickException(e.args[0])
+        raise click.ClickException(e.args[0]) from None
 
     if porcelain and humanize:
         raise click.ClickException(
