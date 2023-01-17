@@ -29,9 +29,8 @@ def test_xdg_nonexistant(runner):
 
 
 def test_xdg_existant(runner, tmpdir, config):
-    with tmpdir.mkdir("todoman").join("config.py").open("w") as f:
-        with config.open() as c:
-            f.write(c.read())
+    with tmpdir.mkdir("todoman").join("config.py").open("w") as f, config.open() as c:
+        f.write(c.read())
 
     with patch("xdg.BaseDirectory.xdg_config_dirs", [str(tmpdir)]):
         result = CliRunner().invoke(
