@@ -16,7 +16,7 @@ from todoman.formatters import DefaultFormatter
 from todoman.formatters import HumanizedFormatter
 
 
-@pytest.fixture
+@pytest.fixture()
 def default_database(tmpdir):
     return model.Database(
         [tmpdir.mkdir("default")],
@@ -24,7 +24,7 @@ def default_database(tmpdir):
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def config(tmpdir, default_database):
     config_path = tmpdir.join("config.py")
     config_path.write(
@@ -36,7 +36,7 @@ def config(tmpdir, default_database):
     return config_path
 
 
-@pytest.fixture
+@pytest.fixture()
 def runner(config, sleep):
     class SleepyCliRunner(CliRunner):
         """
@@ -50,7 +50,7 @@ def runner(config, sleep):
     return SleepyCliRunner(env={"TODOMAN_CONFIG": str(config)})
 
 
-@pytest.fixture
+@pytest.fixture()
 def create(tmpdir):
     def inner(name, content, list_name="default"):
         path = tmpdir.ensure_dir(list_name).join(name)
@@ -62,7 +62,7 @@ def create(tmpdir):
     return inner
 
 
-@pytest.fixture
+@pytest.fixture()
 def now_for_tz():
     def inner(tz="CET"):
         """
@@ -77,7 +77,7 @@ def now_for_tz():
     return inner
 
 
-@pytest.fixture
+@pytest.fixture()
 def todo_factory(default_database):
     def inner(**attributes):
         todo = model.Todo(new=True)
@@ -94,13 +94,13 @@ def todo_factory(default_database):
     return inner
 
 
-@pytest.fixture
+@pytest.fixture()
 def default_formatter():
     formatter = DefaultFormatter(tz_override=pytz.timezone("CET"))
     return formatter
 
 
-@pytest.fixture
+@pytest.fixture()
 def humanized_formatter():
     formatter = HumanizedFormatter(tz_override=pytz.timezone("CET"))
     return formatter
@@ -148,7 +148,7 @@ def sleep(tmpdir_factory):
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def todos(default_database, sleep):
     def inner(**filters):
         sleep()
