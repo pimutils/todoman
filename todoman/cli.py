@@ -1,3 +1,4 @@
+import contextlib
 import functools
 import glob
 import locale
@@ -332,13 +333,11 @@ def invoke_command(click_ctx, command):
     click_ctx.invoke(cli.commands[name], *args, **opts)
 
 
-try:  # pragma: no cover
+with contextlib.suppress(ImportError):
     import click_repl
 
     click_repl.register_repl(cli)
     click_repl.register_repl(cli, name="shell")
-except ImportError:
-    pass
 
 
 @cli.command()

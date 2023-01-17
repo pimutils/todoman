@@ -1,3 +1,4 @@
+import contextlib
 import json
 from datetime import date
 from datetime import datetime
@@ -211,22 +212,16 @@ class DefaultFormatter:
 
     def _parse_datetime_naive(self, dt: str) -> date:
         """Parse dt and returns a naive datetime or a date"""
-        try:
+        with contextlib.suppress(ValueError):
             return datetime.strptime(dt, self.datetime_format)
-        except ValueError:
-            pass
 
-        try:
+        with contextlib.suppress(ValueError):
             return datetime.strptime(dt, self.date_format).date()
-        except ValueError:
-            pass
 
-        try:
+        with contextlib.suppress(ValueError):
             return datetime.combine(
                 self.now.date(), datetime.strptime(dt, self.time_format).time()
             )
-        except ValueError:
-            pass
 
         rv, pd_ctx = self._parsedatetime_calendar.parse(dt)
         if not pd_ctx.hasDateOrTime:
