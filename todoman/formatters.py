@@ -284,7 +284,7 @@ class PorcelainFormatter(DefaultFormatter):
             else:
                 raise ValueError("Priority has to be in the range 0-9")
         except ValueError as e:
-            raise click.BadParameter(str(e))
+            raise click.BadParameter(str(e)) from None
 
     def detailed(self, todo: Todo) -> str:
         return self.compact(todo)
