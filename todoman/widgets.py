@@ -74,10 +74,7 @@ class ExtendedEdit(urwid.Edit):
         t = text[: self.edit_pos].rstrip()
 
         words = re.findall(r"[\w]+|[^\w\s]", t, re.UNICODE)
-        if t == "":
-            f_text = t
-        else:
-            f_text = t[: len(t) - len(words[-1])]
+        f_text = t if t == "" else t[: len(t) - len(words[-1])]
 
         self.set_edit_text(f_text + text[self.edit_pos :])
         self.set_edit_pos(len(f_text))
@@ -97,10 +94,7 @@ class ExtendedEdit(urwid.Edit):
         text = self.get_edit_text()
         eol = text.find("\n", self.edit_pos)
 
-        if eol == -1:
-            after_eol = ""
-        else:
-            after_eol = text[eol:]
+        after_eol = "" if eol == -1 else text[eol:]
 
         self.set_edit_text(text[: self.edit_pos] + after_eol)
 
