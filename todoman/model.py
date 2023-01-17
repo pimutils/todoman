@@ -297,7 +297,6 @@ class VtodoWriter:
         "due": "due",
         "location": "location",
         "percent_complete": "percent-complete",
-        "priority": "priority",
         "status": "status",
         "created_at": "created",
         "last_modified": "last-modified",
