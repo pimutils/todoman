@@ -1,7 +1,6 @@
-flake8
-flake8-import-order
 freezegun
 hypothesis
 pytest
 pytest-cov
 pytest-runner
+ruff
