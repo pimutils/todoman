@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 from setuptools import setup
 
+with open("README.rst") as r:
+    long_description = r.read()
+with open("requirements-dev.txt") as r:
+    tests_require = (r.readlines(),)
+with open("requirements-docs.txt") as r:
+    docs = r.readlines()
+
 setup(
     name="todoman",
     description="A simple icalendar-based todo manager.",
@@ -22,11 +29,11 @@ setup(
         "pyxdg",
         "urwid",
     ],
-    long_description=open("README.rst").read(),
+    long_description=long_description,
     setup_requires=["setuptools_scm"],
-    tests_require=open("requirements-dev.txt").readlines(),
+    tests_require=tests_require,
     extras_require={
-        "docs": open("requirements-docs.txt").readlines(),
+        "docs": docs,
         "repl": ["click-repl>=0.1.6"],
     },
     classifiers=[
