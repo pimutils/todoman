@@ -1,3 +1,29 @@
+[tool.ruff]
+exclude = [
+    ".tox",
+    "build",
+    ".eggs",
+]
+select = [
+    "E",
+    "F",
+    "W",
+    "B",
+    "I",
+    "UP",
+    # "N",
+    # "ANN",
+    # "A",
+    "C4",
+    # "PT",
+    # "SIM",
+    "TID",
+]
+target-version = "py38"
+
+[tool.ruff.isort]
+force-single-line = true
+
 [build-system]
 requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
 
