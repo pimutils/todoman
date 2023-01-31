@@ -26,4 +26,3 @@ repos:
     rev: 'v0.0.238'
     hooks:
       - id: ruff
-        args: ["--force-exclude"]
