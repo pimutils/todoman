@@ -8,6 +8,7 @@ from datetime import date
 from datetime import datetime
 from datetime import time
 from datetime import timedelta
+from functools import cached_property
 from os.path import normpath
 from os.path import split
 from typing import Iterable
@@ -27,24 +28,6 @@ logger = logging.getLogger(name=__name__)
 # We were doing this all over the place (even if unused!), so at least only do
 # it once.
 LOCAL_TIMEZONE = tzlocal()
-
-
-class cached_property:
-    """A read-only @property that is only evaluated once. Only usable on class
-    instances' methods.
-    """
-
-    def __init__(self, fget, doc=None):
-        self.__name__ = fget.__name__
-        self.__module__ = fget.__module__
-        self.__doc__ = doc or fget.__doc__
-        self.fget = fget
-
-    def __get__(self, obj, cls):
-        if obj is None:
-            return self
-        obj.__dict__[self.__name__] = result = self.fget(obj)
-        return result
 
 
 class Todo:
