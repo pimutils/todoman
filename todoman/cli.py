@@ -12,7 +12,7 @@ import click_log
 
 from todoman import exceptions
 from todoman import formatters
-from todoman.configuration import ConfigurationException
+from todoman.configuration import ConfigurationError
 from todoman.configuration import load_config
 from todoman.interactive import TodoEditor
 from todoman.model import Database
@@ -26,7 +26,7 @@ click_log.basic_config()
 def handle_error():
     try:
         yield
-    except exceptions.TodomanException as e:
+    except exceptions.TodomanError as e:
         click.echo(e)
         sys.exit(e.EXIT_CODE)
 
@@ -278,7 +278,7 @@ def cli(click_ctx, colour, porcelain, humanize, config):
     ctx = click_ctx.ensure_object(AppContext)
     try:
         ctx.config = load_config(config)
-    except ConfigurationException as e:
+    except ConfigurationError as e:
         raise click.ClickException(e.args[0]) from None
 
     if porcelain and humanize:
@@ -308,7 +308,7 @@ def cli(click_ctx, colour, porcelain, humanize, config):
         if isdir(path) and not path.endswith("__pycache__")
     ]
     if len(paths) == 0:
-        raise exceptions.NoListsFound(ctx.config["path"])
+        raise exceptions.NoListsFoundError(ctx.config["path"])
 
     ctx.db = Database(paths, ctx.config["cache_path"])
 

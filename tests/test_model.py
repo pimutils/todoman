@@ -10,7 +10,7 @@ from dateutil.tz import tzlocal
 from dateutil.tz.tz import tzoffset
 from freezegun import freeze_time
 
-from todoman.exceptions import AlreadyExists
+from todoman.exceptions import AlreadyExistsError
 from todoman.model import Database
 from todoman.model import Todo
 from todoman.model import TodoList
@@ -179,7 +179,7 @@ def test_category_integrity(tmpdir, create, default_database):
     todo = db.todo(1, read_only=False)
     todo.categories = ["hi", "hi"]
 
-    with pytest.raises(AlreadyExists):
+    with pytest.raises(AlreadyExistsError):
         default_database.save(todo)
 
 
@@ -449,7 +449,7 @@ def test_duplicate_list(tmpdir):
     with tmpdir.join("personal2").join("displayname").open("w") as f:
         f.write("personal")
 
-    with pytest.raises(AlreadyExists):
+    with pytest.raises(AlreadyExistsError):
         Database(
             [tmpdir.join("personal1"), tmpdir.join("personal2")],
             tmpdir.join("cache.sqlite3"),

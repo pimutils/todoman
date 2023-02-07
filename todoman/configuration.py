@@ -25,7 +25,7 @@ def validate_cache_path(path: str) -> str:
 
 def validate_date_format(fmt: str) -> str:
     if any(x in fmt for x in ("%H", "%M", "%S", "%X")):
-        raise ConfigurationException(
+        raise ConfigurationError(
             "Found time component in `date_format`, please use `time_format` for that."
         )
     return fmt
@@ -33,7 +33,7 @@ def validate_date_format(fmt: str) -> str:
 
 def validate_time_format(fmt: str) -> str:
     if any(x in fmt for x in ("%Y", "%y", "%m", "%d", "%x")):
-        raise ConfigurationException(
+        raise ConfigurationError(
             "Found date component in `time_format`, please use `date_format` for that."
         )
     return fmt
@@ -41,13 +41,13 @@ def validate_time_format(fmt: str) -> str:
 
 def validate_color_config(value: str) -> str:
     if value not in ["always", "auto", "never"]:
-        raise ConfigurationException("Invalid `color` settings.")
+        raise ConfigurationError("Invalid `color` settings.")
     return value
 
 
 def validate_default_priority(value: int | None) -> int | None:
     if value and not (0 <= value <= 9):
-        raise ConfigurationException("Invalid `default_priority` settings.")
+        raise ConfigurationError("Invalid `default_priority` settings.")
     return value
 
 
@@ -193,7 +193,7 @@ Highest priority is 1, lowest priority is 10, and 0 means no priority at all.
 ]
 
 
-class ConfigurationException(Exception):
+class ConfigurationError(Exception):
     def __init__(self, msg):
         super().__init__(
             (
@@ -212,11 +212,9 @@ def find_config(config_path=None):
                 break
 
     if not config_path:
-        raise ConfigurationException("No configuration file found.\n\n")
+        raise ConfigurationError("No configuration file found.\n\n")
     elif not exists(config_path):
-        raise ConfigurationException(
-            f"Configuration file {config_path} does not exist.\n"
-        )
+        raise ConfigurationError(f"Configuration file {config_path} does not exist.\n")
     else:
         return config_path
 
@@ -233,11 +231,11 @@ def load_config(custom_path=None):
     for name, type_, default, _description, validation in CONFIG_SPEC:
         value = getattr(config_source, name, default)
         if value == NO_DEFAULT:
-            raise ConfigurationException(f"Missing '{name}' setting.")
+            raise ConfigurationError(f"Missing '{name}' setting.")
         if not isinstance(value, type_):
             expected = type_.__name__
             actual = value.__class__.__name__
-            raise ConfigurationException(
+            raise ConfigurationError(
                 f"Bad {name} setting. Invalid type "
                 f"(expected {expected}, got {actual})."
             )

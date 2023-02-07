@@ -1,4 +1,4 @@
-class TodomanException(Exception):
+class TodomanError(Exception):
     """
     Base class for all our exceptions.
 
@@ -8,14 +8,14 @@ class TodomanException(Exception):
     pass
 
 
-class NoSuchTodo(TodomanException):
+class NoSuchTodoError(TodomanError):
     EXIT_CODE = 20
 
     def __str__(self):
         return f"No todo with id {self.args[0]}."
 
 
-class ReadOnlyTodo(TodomanException):
+class ReadOnlyTodoError(TodomanError):
     EXIT_CODE = 21
 
     def __str__(self):
@@ -26,7 +26,7 @@ class ReadOnlyTodo(TodomanException):
         )
 
 
-class NoListsFound(TodomanException):
+class NoListsFoundError(TodomanError):
     EXIT_CODE = 22
 
     def __str__(self):
@@ -35,7 +35,7 @@ class NoListsFound(TodomanException):
         )
 
 
-class AlreadyExists(TodomanException):
+class AlreadyExistsError(TodomanError):
     """
     Raised when two objects have a same identity.
 

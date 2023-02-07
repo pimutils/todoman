@@ -4,7 +4,7 @@ import pytest
 from click.testing import CliRunner
 
 from todoman.cli import cli
-from todoman.configuration import ConfigurationException
+from todoman.configuration import ConfigurationError
 from todoman.configuration import load_config
 
 
@@ -154,5 +154,5 @@ def test_colour_validation_invalid(config):
     with patch(
         "todoman.configuration.find_config",
         return_value=(str(config)),
-    ), pytest.raises(ConfigurationException):
+    ), pytest.raises(ConfigurationError):
         load_config()

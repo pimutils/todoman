@@ -525,7 +525,7 @@ def test_edit_inexistant(runner):
     """Tests that we show the right output and exit code for inexistant ids."""
     result = runner.invoke(cli, ["edit", "1", "--due", "2017-04-01"])
     assert result.exception
-    assert result.exit_code == exceptions.NoSuchTodo.EXIT_CODE
+    assert result.exit_code == exceptions.NoSuchTodoError.EXIT_CODE
     assert result.output.strip() == "No todo with id 1."
 
 
@@ -937,7 +937,7 @@ def test_duplicate_list(tmpdir, runner):
 
     result = runner.invoke(cli, ["list"])
     assert result.exception
-    assert result.exit_code == exceptions.AlreadyExists.EXIT_CODE
+    assert result.exit_code == exceptions.AlreadyExistsError.EXIT_CODE
     assert (
         result.output.strip() == "More than one list has the same identity: personal."
     )

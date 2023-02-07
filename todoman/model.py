@@ -557,7 +557,7 @@ class Cache:
                 ),
             )
         except sqlite3.IntegrityError as e:
-            raise exceptions.AlreadyExists("list", name) from e
+            raise exceptions.AlreadyExistsError("list", name) from e
 
         return self.add_list(name, path, colour, mtime)
 
@@ -578,7 +578,7 @@ class Cache:
                 ),
             )
         except sqlite3.IntegrityError as e:
-            raise exceptions.AlreadyExists("file", list_name) from e
+            raise exceptions.AlreadyExistsError("file", list_name) from e
 
     def add_category(self, todos_id, category):
         try:
@@ -592,7 +592,7 @@ class Cache:
                 (todos_id, category),
             )
         except sqlite3.IntegrityError as e:
-            raise exceptions.AlreadyExists("category", category) from e
+            raise exceptions.AlreadyExistsError("category", category) from e
 
     def _serialize_datetime(
         self,
@@ -948,7 +948,7 @@ class Cache:
         ).fetchone()
 
         if not result:
-            raise exceptions.NoSuchTodo(id)
+            raise exceptions.NoSuchTodoError(id)
 
         if not read_only:
             count = self._conn.execute(
@@ -961,7 +961,7 @@ class Cache:
                 (result["path"],),
             ).fetchone()
             if count["c"] > 1:
-                raise exceptions.ReadOnlyTodo(result["path"])
+                raise exceptions.ReadOnlyTodoError(result["path"])
 
         return self._todo_from_db(result)
 
@@ -1067,7 +1067,7 @@ class Database:
 
             try:
                 self.cache.add_file(list_name, entry_path, mtime)
-            except exceptions.AlreadyExists:
+            except exceptions.AlreadyExistsError:
                 logger.debug("File already in cache: %s", entry_path)
                 continue
 
