@@ -39,7 +39,7 @@ def test_serializer_raises(todo_factory):
     todo = todo_factory()
     writter = VtodoWriter(todo)
 
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="Unknown field nonexistant"):
         writter.serialize_field("nonexistant", 7)
 
 

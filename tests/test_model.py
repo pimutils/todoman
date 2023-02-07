@@ -340,7 +340,7 @@ def test_save_recurring_related_with_date(default_database, todo_factory, todos)
 
 def test_todo_filename_absolute_path():
     Todo(filename="test.ics")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Must not be an absolute path: /test.ics"):
         Todo(filename="/test.ics")
 
 

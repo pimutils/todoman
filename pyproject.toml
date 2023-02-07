@@ -10,7 +10,7 @@ select = [
     # "ANN",
     # "A",
     "C4",
-    # "PT",
+    "PT",
     "SIM",
     "TID",
 ]

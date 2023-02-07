@@ -264,7 +264,7 @@ def test_default_list(tmpdir, runner, create, config):
 
 
 @pytest.mark.parametrize(
-    "default_due, expected_due_hours",
+    ("default_due", "expected_due_hours"),
     [(None, 24), (1, 1), (0, None)],
     ids=["not specified", "greater than 0", "0"],
 )

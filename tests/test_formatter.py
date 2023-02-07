@@ -59,7 +59,7 @@ def test_format_priority(default_formatter):
     for i in range(6, 10):
         assert default_formatter.format_priority(i) == "low"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="priority is an invalid value"):
         assert default_formatter.format_priority(12)
 
 
@@ -72,7 +72,7 @@ def test_format_priority_compact(default_formatter):
     for i in range(6, 10):
         assert default_formatter.format_priority_compact(i) == "!"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="priority is an invalid value"):
         assert default_formatter.format_priority_compact(12)
 
 
@@ -186,5 +186,5 @@ def test_format_multiple_without_list(default_formatter, todo_factory):
     todo = todo_factory()
     todo.list = None
     assert not todo.list
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Cannot format todo without a list"):
         default_formatter.compact_multiple([todo])
