@@ -598,8 +598,9 @@ def test_due_bad_date(runner):
 
     assert result.exception
     assert (
-        "Error: Invalid value for '--due' / '-d': Time description not "
-        "recognized: Not a date" == result.output.strip().splitlines()[-1]
+        result.output.strip().splitlines()[-1]
+        == "Error: Invalid value for '--due' / '-d': Time description not "
+        "recognized: Not a date"
     )
 
 
