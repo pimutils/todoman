@@ -1,9 +1,4 @@
 [tool.ruff]
-exclude = [
-    ".tox",
-    "build",
-    ".eggs",
-]
 select = [
     "E",
     "F",
