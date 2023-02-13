@@ -68,6 +68,20 @@ given field, it will be printed as ``null``.
 
 Fields MAY be added in future, but will never be removed.
 
+Conky
+`````
+
+Todoman can be used with `Conky`_  by using one of the shell execution
+`variables`_.
+Given the nature of pimutils utilities, there is no need to query new information
+every time conky updates so ``execi`` will be the best option most of the time.
+
+Adding ``${execi 30 todo}`` inside the text section will display the output of the
+command and update it every 30 seconds.
+
+.. _conky: https://conky.cc
+.. _variables: https://conky.sourceforge.net/variables.html
+
 Sorting
 -------
 
