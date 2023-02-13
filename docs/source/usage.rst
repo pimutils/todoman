@@ -79,8 +79,11 @@ every time conky updates so ``execi`` will be the best option most of the time.
 Adding ``${execi 30 todo}`` inside the text section will display the output of the
 command and update it every 30 seconds.
 
+A working configuration can be found `here`_.
+
 .. _conky: https://conky.cc
 .. _variables: https://conky.sourceforge.net/variables.html
+.. _here: https://github.com/r4ulill0/todoman/blob/main/docs/examples/conky.conf
 
 Sorting
 -------
