@@ -26,6 +26,7 @@ Authors are listed in alphabetical order.
 * Nicolas Évrard <nicoe@openhex.org>
 * Pascal Wichmann <wichmannpas@gmail.com>
 * Paweł Fertyk <pfertyk@openmailbox.org>
+* Raúl Medina <raulmgcontact@gmail.com>
 * Rimsha Khan <rimshakhan.rk03@gmail.com>
 * Sakshi Saraswat <saraswatsakshi.121@gmail.com>
 * Stephan Weller <stephan.weller@web.de>
