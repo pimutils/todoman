@@ -118,7 +118,6 @@ class ExtendedEdit(urwid.Edit):
 
 
 class PrioritySelector(urwid.Button):
-
     HELP = [
         ("left", "Lower Priority"),
         ("right", "Higher Priority"),

@@ -428,7 +428,6 @@ class Cache:
             return False
 
     def drop_tables(self):
-
         self._conn.executescript(
             """
             DROP TABLE IF EXISTS todos;
