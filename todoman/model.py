@@ -990,6 +990,8 @@ class TodoList:
         except OSError:
             logger.debug("No colour for list %s", path)
 
+        return None
+
     @staticmethod
     def name_for_path(path: str) -> str:
         try:

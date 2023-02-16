@@ -28,8 +28,6 @@ version_scheme = "post-release"
 
 [tool.mypy]
 ignore_missing_imports = true
-# See https://github.com/python/mypy/issues/7511:
-warn_no_return = false
 
 [tool.pytest.ini_options]
 testpaths = "tests"
