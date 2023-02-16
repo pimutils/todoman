@@ -25,3 +25,8 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
 [tool.setuptools_scm]
 write_to = "todoman/version.py"
 version_scheme = "post-release"
+
+[tool.mypy]
+ignore_missing_imports = true
+# See https://github.com/python/mypy/issues/7511:
+warn_no_return = false
