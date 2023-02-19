@@ -9,6 +9,7 @@ from uuid import uuid4
 import click
 import hypothesis.strategies as st
 import pytest
+import pytz
 from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
@@ -747,6 +748,54 @@ def test_done_recurring(runner, todo_factory, todos):
     assert todo.percent_complete == 0
     assert todo.is_completed is False
     assert todo.rrule == rrule
+
+
+def test_undo(runner, todo_factory, todos):
+    completed_at = datetime.datetime.now(tz=pytz.UTC)
+    percentage = 100
+    todo = todo_factory(completed_at=completed_at, percent_complete=percentage)
+
+    result = runner.invoke(cli, ["undo", "1"])
+    assert not result.exception
+
+    todo = next(todos(status="ANY"))
+    assert todo.percent_complete == 0
+    assert todo.is_completed is False
+    assert not todo.rrule
+
+
+def test_undo_recurring(runner, default_database, todo_factory, todos):
+    rrule = "FREQ=DAILY;UNTIL=20990315T020000Z"
+    recurred = todo_factory(id=2, rrule=rrule)
+
+    completed_at = datetime.datetime.now(tz=pytz.UTC)
+    percentage = 100
+    related = [recurred]
+    original = todo_factory(
+        id=1,
+        rrule=None,
+        completed_at=completed_at,
+        percent_complete=percentage,
+        related=related,
+    )
+    assert original.related
+
+    default_database.update_cache()
+    result = runner.invoke(cli, ["undo", "1"])
+    assert not result.exception
+
+    default_database.update_cache()
+
+    todos = todos(status="ANY")
+    todo = next(todos)
+
+    assert todo.percent_complete == 0
+    assert todo.is_completed is False
+    assert not todo.related
+    assert todo.rrule == rrule
+
+    todo = next(todos)
+    assert not todo
 
 
 def test_cancel(runner, todo_factory, todos):

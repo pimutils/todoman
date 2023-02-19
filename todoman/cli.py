@@ -476,6 +476,30 @@ def done(ctx, todos):
     type=click.IntRange(0),
     callback=_validate_todos,
 )
+# @catch_errors
+def undo(ctx, todos):
+    """Undo one or more tasks."""
+    toremove = []
+    for todo in todos:
+        removable = todo.undo()
+        if removable:
+            toremove.append(removable)
+        ctx.db.save(todo)
+        click.echo(ctx.formatter.detailed(todo))
+
+    for todo in toremove:
+        ctx.db.delete(todo)
+
+
+@cli.command()
+@pass_ctx
+@click.argument(
+    "todos",
+    nargs=-1,
+    required=True,
+    type=click.IntRange(0),
+    callback=_validate_todos,
+)
 @catch_errors
 def cancel(ctx, todos):
     """Cancel one or more tasks."""

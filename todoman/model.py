@@ -252,6 +252,27 @@ class Todo:
         self.percent_complete = 100
         self.status = "COMPLETED"
 
+    def undo(self) -> Todo | None:
+        """
+        Immediately restores this todo. Marks it as needs action, resets the
+        percentage to 0 and deletes the completed_at datetime.
+
+        If this todo belongs to a series, the one created at completion will
+        be deleted.
+
+        Returns the todo that will be deleted.
+        """
+        original = None
+        if self.is_recurring and self.related:
+            original = self.related.pop()
+            self.rrule = original.rrule
+
+        self.completed_at = None
+        self.percent_complete = 0
+        self.status = "NEEDS-ACTION"
+
+        return original
+
     @cached_property
     def path(self) -> str:
         if not self.list:
