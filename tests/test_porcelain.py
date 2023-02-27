@@ -15,6 +15,7 @@ def test_list_all(tmpdir, runner, create):
         "STATUS:COMPLETED\n"
         "COMPLETED:20181225T191234Z\n"
         "DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n"
+        "DTSTART:20160101T000000Z\n"
         "PERCENT-COMPLETE:26\n"
         "LOCATION:Wherever\n",
     )
@@ -32,6 +33,39 @@ def test_list_all(tmpdir, runner, create):
             "location": "Wherever",
             "percent": 26,
             "priority": 0,
+            "start": 1451606400,
+            "summary": "Do stuff",
+        }
+    ]
+
+    assert not result.exception
+    assert result.output.strip() == json.dumps(expected, indent=4, sort_keys=True)
+
+
+def test_list_start_date(tmpdir, runner, create):
+    create(
+        "test.ics",
+        "SUMMARY:Do stuff\n"
+        "STATUS:COMPLETED\n"
+        "DTSTART;VALUE=DATE:20160102\n"
+        "PERCENT-COMPLETE:26\n"
+        "LOCATION:Wherever\n",
+    )
+    result = runner.invoke(cli, ["--porcelain", "list", "--status", "ANY"])
+
+    expected = [
+        {
+            "categories": [],
+            "completed": True,
+            "completed_at": None,
+            "description": "",
+            "due": None,
+            "id": 1,
+            "list": "default",
+            "location": "Wherever",
+            "percent": 26,
+            "priority": 0,
+            "start": 1451692800,
             "summary": "Do stuff",
         }
     ]
@@ -63,6 +97,7 @@ def test_list_due_date(tmpdir, runner, create):
             "location": "Wherever",
             "percent": 26,
             "priority": 0,
+            "start": None,
             "summary": "Do stuff",
         }
     ]
@@ -90,6 +125,7 @@ def test_list_nodue(tmpdir, runner, create):
             "location": "",
             "percent": 12,
             "priority": 4,
+            "start": None,
             "summary": "Do stuff",
         }
     ]
@@ -158,6 +194,7 @@ def test_show(tmpdir, runner, create):
         "location": "",
         "percent": 0,
         "priority": 5,
+        "start": None,
         "summary": "harhar",
     }
 
@@ -180,6 +217,7 @@ def test_simple_action(todo_factory):
         "location": "Downtown",
         "percent": 0,
         "priority": 0,
+        "start": None,
         "summary": "YARR!",
     }
 

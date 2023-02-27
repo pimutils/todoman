@@ -253,6 +253,7 @@ class PorcelainFormatter(DefaultFormatter):
     def _todo_as_dict(self, todo):
         return {
             "completed": todo.is_completed,
+            "start": self.format_datetime(todo.start),
             "due": self.format_datetime(todo.due),
             "id": todo.id,
             "list": todo.list.name,
