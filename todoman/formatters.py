@@ -83,19 +83,7 @@ class DefaultFormatter:
             )
 
             due = self.format_datetime(todo.due) or "(no due date)"
-            now = self.now if isinstance(todo.due, datetime) else self.now.date()
-
-            due_colour = None
-            if todo.due:
-                if todo.due <= now and not todo.is_completed:
-                    due_colour = "red"
-                elif todo.due >= now + timedelta(hours=24):
-                    due_colour = "white"
-                elif todo.due >= now:
-                    due_colour = "yellow"
-            else:
-                due_colour = "white"
-
+            due_colour = self._due_colour(todo)
             if due_colour:
                 due = click.style(str(due), fg=due_colour)
 
@@ -126,6 +114,18 @@ class DefaultFormatter:
             )
 
         return "\n".join(table)
+
+    def _due_colour(self, todo: Todo) -> str:
+        now = self.now if isinstance(todo.due, datetime) else self.now.date()
+        if todo.due:
+            if todo.due <= now and not todo.is_completed:
+                return "red"
+            elif todo.due >= now + timedelta(hours=24):
+                return "white"
+            elif todo.due >= now:
+                return "yellow"
+
+        return "white"
 
     def _format_multiline(self, title: str, value: str) -> str:
         formatted_title = click.style(title, fg="white")
