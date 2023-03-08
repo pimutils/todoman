@@ -47,3 +47,16 @@ class AlreadyExistsError(TodomanError):
 
     def __str__(self):
         return "More than one {} has the same identity: {}.".format(*self.args)
+
+
+class FormatError(TodomanError):
+    """
+    Raised when data passed to todoman does not have the correct format.
+
+    Can occur when JSON is read from command line.
+    """
+
+    EXIT_CODE = 24
+
+    def __str__(self):
+        return "Invalid input {} for format {} in property {}.".format(*self.args)

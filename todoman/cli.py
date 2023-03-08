@@ -12,6 +12,7 @@ import click_log
 
 from todoman import exceptions
 from todoman import formatters
+from todoman import parsers
 from todoman.configuration import ConfigurationError
 from todoman.configuration import load_config
 from todoman.interactive import TodoEditor
@@ -355,43 +356,48 @@ with contextlib.suppress(ImportError):
     default=False,
     help="Read task description from stdin.",
 )
+# TODO(skowalak): Generalize JSON option
+@click.option(
+    "--read-json",
+    "-j",
+    is_flag=True,
+    default=False,
+    help="Read a task representation in JSON format from stdin.",
+)
 @_todo_property_options
 @_interactive_option
 @pass_ctx
 @catch_errors
-def new(ctx, summary, list, todo_properties, read_description, interactive):
+def new(ctx, summary, list, read_json, todo_properties, read_description, interactive):
     """
     Create a new task with SUMMARY.
     """
 
-    todo = Todo(new=True, list=list)
+    # if read-json is enabled, ignore all other options and parse stdin
+    if read_json:
+        parser = parsers.JsonParser(list_=list, new=True, ctx=ctx)
+        todos = parser.parse("".join(sys.stdin))
+    else:
+        parser = parsers.DefaultParser(list_=list, new=True, ctx=ctx)
+        if read_description:
+            todo_properties["description"] = "".join(sys.stdin)
 
-    default_due = ctx.config["default_due"]
-    if default_due:
-        todo.due = todo.created_at + timedelta(hours=default_due)
+        todo_properties["summary"] = " ".join(summary)
 
-    default_priority = ctx.config["default_priority"]
-    if default_priority is not None:
-        todo.priority = default_priority
+        # this will always return a list with only one element
+        todos = parser.parse(todo_properties)
 
-    for key, value in todo_properties.items():
-        if value is not None:
-            setattr(todo, key, value)
-    todo.summary = " ".join(summary)
+    for todo in todos:
+        if interactive or (not summary and interactive is None):
+            ui = TodoEditor(todo, ctx.db.lists(), ctx.ui_formatter)
+            ui.edit()
+            click.echo()  # work around lines going missing after urwid
 
-    if read_description:
-        todo.description = "\n".join(sys.stdin)
+        if not todo.summary:
+            raise click.UsageError("No SUMMARY specified")
 
-    if interactive or (not summary and interactive is None):
-        ui = TodoEditor(todo, ctx.db.lists(), ctx.ui_formatter)
-        ui.edit()
-        click.echo()  # work around lines going missing after urwid
-
-    if not todo.summary:
-        raise click.UsageError("No SUMMARY specified")
-
-    ctx.db.save(todo)
-    click.echo(ctx.formatter.detailed(todo))
+        ctx.db.save(todo)
+        click.echo(ctx.formatter.detailed(todo))
 
 
 @cli.command()
