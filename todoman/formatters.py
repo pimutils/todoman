@@ -223,7 +223,8 @@ class DefaultFormatter:
                 self.now.date(), datetime.strptime(dt, self.time_format).time()
             )
 
-        rv, pd_ctx = self._parsedatetime_calendar.parse(dt)
+        now = datetime.datetime.now(self.tz)
+        rv, pd_ctx = self._parsedatetime_calendar.parse(dt, now)
         if not pd_ctx.hasDateOrTime:
             raise ValueError(f"Time description not recognized: {dt}")
         return datetime.fromtimestamp(mktime(rv))
