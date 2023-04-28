@@ -253,10 +253,10 @@ class Todo:
         self.status = "COMPLETED"
 
     def undo(self) -> Todo | None:
-        """
-        Immediately restores this todo. Marks it as needs action, resets the
-        percentage to 0 and deletes the completed_at datetime.
+        """Immediately restores this todo.
 
+        Marks it as needs action, resets the percentage to 0 and deletes the
+        completed_at datetime.
         If this todo belongs to a series, the one created at completion will
         be deleted.
 
