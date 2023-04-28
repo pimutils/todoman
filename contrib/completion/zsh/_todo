@@ -19,6 +19,22 @@ local common_options_interactive=(
 local common_options_location=(
 	'--location=[The location where this todo takes place]:LOCATION:'
 )
+local common_options_category=(
+    \*{-c,--category=}'[Task categories. Can be used multiple times]:TEXT:__todo_existing_categories'
+)
+# }}}
+# {{{ general helper: check if jq is installed
+__todo_check_jq(){
+	# checking if the command jq exists and it's version
+	# credit: http://stackoverflow.com/a/592649/4935114
+	jq_version=$(jq --version 2>/dev/null)
+	if [ ${${jq_version#jq\-}//./} -lt 15 ]; then
+		_message "we can't complete tasks unless you'll install the latest version of jq: https://stedolan.github.io/jq/"
+		return 1
+    else
+        return 0
+	fi
+}
 # }}}
 # {{{ option helper: color mode
 __color_mode(){
@@ -44,7 +60,7 @@ __todo_set_conf(){
 __todo_set_conf_path(){
 	if __todo_set_conf; then
 		tasks_lists_path="$(sed -n -e "s/^\\s*path\\s*=\\s*['\"]\\(.*\\)['\"]$/\\1/p" $todoman_configuration_file 2>/dev/null)"
-		# the eval echo is needed since the path may contain ~ which should be evalueated to $HOME
+		# the eval echo is needed since the path may contain ~ which should be evaluated to $HOME
 		tasks_lists_dir="$(eval echo ${tasks_lists_path%/\**})"
 		if [[ -z "${tasks_lists_path}" || ! -d "${tasks_lists_dir}" ]]; then
 			return 1
@@ -104,16 +120,21 @@ __todo_command(){
 	_describe "command" commands
 }
 # }}}
+# {{{ argument helper: available categories
+__todo_existing_categories(){
+    __todo_check_jq || return 1
+    local -a categories
+    IFS=$'\n'
+    for category in $(todo --porcelain list | jq --raw-output '[ .[] | .categories[] ] | unique[]'); do
+        categories+="$category"
+    done
+    _describe categories categories
+}
+# }}}
 # {{{ argument helper: available tasks choice
 __todo_tasks(){
-	# checking if the command jq exists and it's version
-	# credit: http://stackoverflow.com/a/592649/4935114
-	jq_version=$(jq --version 2>/dev/null)
-	if [ ${${jq_version#jq\-}//./} -lt 15 ]; then
-		_message "we can't complete tasks unless you'll install the latest version of jq: https://stedolan.github.io/jq/"
-		return
-	fi
-	# $1 is a comma-seperated list of statuses to show when trying to complete this
+    __todo_check_jq || return 1
+	# $1 is a comma-separated list of statuses to show when trying to complete this
 	local status_search_query="$1"
 	local -a tasks
 	IFS=$'\n'
@@ -220,6 +241,7 @@ local _command_edit_options=(
 	"${common_options_due[@]}"
 	"${common_options_priority[@]}"
 	"${common_options_location[@]}"
+	"${common_options_category[@]}"
 	"${common_options_interactive[@]}"
 )
 _todo_edit(){
@@ -235,14 +257,14 @@ _todo_flush(){
 # {{{ command `list`
 _command_list_options=(
 	"${common_options_location[@]}"
-	'--category=[Only show tasks with category containg TEXT]:TEXT:__todo_existing_categories'
-	'--grep=[Only show tasks with message containg TEXT]:TEXT:'
+	"${common_options_category[@]}"
+	'--grep=[Only show tasks with message containing TEXT]:TEXT:'
 	'--sort=[Sort tasks using these fields]:TEXT:(description location status summary uid rrule percent_complete priority sequence categories completed_at created_at dtstamp start due last_modified)'
 	'(--reverse --no-reverse)'{--reverse,--no-reverse}'[sort tasks in reverse order (see --sort)]'
 	"${common_options_start[@]}"
 	"${common_options_due[@]}"
 	'--priority=[Only show tasks with priority at least as high as TEXT]:TEXT:("low" "medium" "high")'
-	'--startable[Show only todos which should can be started today]'
+	'--startable[Show only todos which can be started today]'
 	{-s,--status=}'[Show only todos with the provided comma-separated statuses]:STATUS:{_values -s , "status" "NEEDS-ACTION" "CANCELLED" "COMPLETED" "IN-PROCESS" "ANY"}'
 	"${common_options_help[@]}"
 )
@@ -263,7 +285,8 @@ local _command_new_options=(
 	"${common_options_due[@]}"
 	"${common_options_help[@]}"
 	{-l,--list=}'[The list to move the tasks to]:TEXT:__todo_lists'
-	'--location[The location where this todo takes place.]:TEXT:__todo_existing_locations'
+	"${common_options_location[@]}"
+	"${common_options_category[@]}"
 	"${common_options_priority[@]}"
 	"${common_options_interactive[@]}"
 )
