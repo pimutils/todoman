@@ -538,4 +538,4 @@ def test_todo_path_without_list(tmpdir):
     todo = Todo()
 
     with pytest.raises(ValueError, match="A todo without a list does not have a path."):
-        todo.path
+        todo.path  # noqa: B018  # expression raises

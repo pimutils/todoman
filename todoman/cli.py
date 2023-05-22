@@ -4,8 +4,10 @@ import glob
 import locale
 import sys
 from contextlib import contextmanager
+from datetime import datetime
 from datetime import timedelta
 from os.path import isdir
+from typing import Tuple
 
 import click
 import click_log
@@ -95,10 +97,10 @@ def _validate_priority_param(ctx, param, val):
         raise click.BadParameter(e) from None
 
 
-def _validate_start_date_param(ctx, param, val):
+def _validate_start_date_param(ctx, param, val) -> Tuple[bool, datetime] | None:
     ctx = ctx.find_object(AppContext)
     if not val:
-        return val
+        return None
 
     if len(val) != 2 or val[0] not in ["before", "after"]:
         raise click.BadParameter("Format should be '[before|after] [DATE]'")
