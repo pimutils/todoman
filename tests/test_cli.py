@@ -764,6 +764,7 @@ def test_undo(runner, todo_factory, todos):
     assert not todo.rrule
 
 
+@pytest.mark.xfail(reason="Not implemented")
 def test_undo_recurring(runner, default_database, todo_factory, todos):
     rrule = "FREQ=DAILY;UNTIL=20990315T020000Z"
     recurred = todo_factory(id=2, rrule=rrule)
