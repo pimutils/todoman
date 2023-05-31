@@ -18,12 +18,10 @@ from todoman.model import Todo
 from todoman.model import TodoList
 
 
-def rgb_to_ansi(colour: Optional[str]) -> Optional[str]:
+def rgb_to_ansi(colour: str) -> str:
     """
     Convert a string containing an RGB colour to ANSI escapes
     """
-    if not colour or not colour.startswith("#"):
-        return None
 
     r, g, b = colour[1:3], colour[3:5], colour[5:7]
 
@@ -31,6 +29,30 @@ def rgb_to_ansi(colour: Optional[str]) -> Optional[str]:
         return None
 
     return f"\33[38;2;{int(r, 16)!s};{int(g, 16)!s};{int(b, 16)!s}m"
+
+
+def colour_to_ansi(colour: Optional[str]) -> Optional[str]:
+    """
+    Convert a string containing a colour (either RGB or colour name) to ANSI escapes
+    """
+    if not colour:
+        return None
+    if colour.startswith("#"):
+        return rgb_to_ansi(colour)
+
+    bright = "bright" in colour
+
+    colour = colour.replace("bright ", "")
+
+    colours = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]
+
+    try:
+        ansi_number = colours.index(colour)
+    except ValueError:
+        return None
+
+    suffix = ";1" if bright else ""
+    return f"\33[3{ansi_number}{suffix}m"
 
 
 class DefaultFormatter:
@@ -230,7 +252,7 @@ class DefaultFormatter:
 
     def format_database(self, database: TodoList):
         return "{}@{}".format(
-            rgb_to_ansi(database.colour) or "", click.style(database.name)
+            colour_to_ansi(database.colour) or "", click.style(database.name)
         )
 
 
