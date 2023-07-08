@@ -1,11 +1,11 @@
 image: archlinux
 packages:
   - python-build
-  - python-pip
+  - python-pipx
   - python-pre-commit
+  - python-setuptools-scm
   - python-tox
   - python-wheel
-  - python-setuptools-scm
   - twine
 sources:
   - https://github.com/pimutils/todoman
@@ -16,7 +16,7 @@ environment:
   CI: true
 tasks:
   - setup: |
-      sudo pip install codecov
+      sudo pipx install codecov
   - test: |
       # Test without pyicu installed:
       cd todoman
