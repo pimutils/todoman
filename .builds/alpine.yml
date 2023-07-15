@@ -1,9 +1,9 @@
 image: alpine/3.18
 packages:
-  - py-pip
-  - py-tox
-  - icu-dev
   - alpine-sdk
+  - icu-dev
+  - py3-pip
+  - py3-tox
   - python3-dev
 sources:
   - https://github.com/pimutils/todoman
