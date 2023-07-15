@@ -9,6 +9,8 @@ v4.3.0
 
 * Add support for Python 3.11. Todoman already worked with Python 3.11, but is
   now tested with this Python version in CI and has the relevant classifiers.
+* Improved zsh shell completion.
+* Dropped ``setup.py`` in favour of ``pyproject.toml``.
 
 v4.2.0
 ------
