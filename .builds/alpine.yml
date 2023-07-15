@@ -14,17 +14,14 @@ tasks:
   - setup: |
       sudo pip install codecov
   - test: |
-      # Test without pyicu installed:
       cd todoman
       tox -e py
       codecov
   - test-pyicu: |
-      # Test with pyicu installed:
       cd todoman
-      TOXENV=pyicu tox
+      tox -e pyicu
       codecov
   - test-repl: |
-      # Test repl repl:
       cd todoman
-      TOXENV=repl tox
+      tox -e repl
       codecov
