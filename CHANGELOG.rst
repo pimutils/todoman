@@ -4,6 +4,12 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v4.3.0
+------
+
+* Add support for Python 3.11. Todoman already worked with Python 3.11, but is
+  now tested with this Python version in CI and has the relevant classifiers.
+
 v4.2.0
 ------
 
