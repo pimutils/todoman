@@ -9,11 +9,11 @@ repos:
       - id: check-added-large-files
       - id: debug-statements
   - repo: https://github.com/psf/black
-    rev: "23.3.0"
+    rev: "23.7.0"
     hooks:
       - id: black
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.2.0"
+    rev: "v1.4.1"
     hooks:
       - id: mypy
         additional_dependencies:
@@ -22,8 +22,8 @@ repos:
           - types-freezegun
           - types-pytz
           - types-python-dateutil
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.0.265'
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 'v0.0.278'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
