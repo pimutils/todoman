@@ -22,9 +22,7 @@ def test_querying(create, tmpdir):
         for i, location in enumerate("abc"):
             create(
                 f"test{i}.ics",
-                ("UID:{}\nSUMMARY:test_querying\r\nLOCATION:{}\r\n").format(
-                    uuid4(), location
-                ),
+                f"UID:{uuid4()}\nSUMMARY:test_querying\r\nLOCATION:{location}\r\n",
                 list_name=list,
             )
 

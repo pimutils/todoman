@@ -90,19 +90,12 @@ class DefaultFormatter:
             recurring = "⟳" if todo.is_recurring else ""
 
             if hide_list:
-                summary = "{} {}".format(
-                    todo.summary,
-                    percent,
-                )
+                summary = f"{todo.summary} {percent}"
             else:
                 if not todo.list:
                     raise ValueError("Cannot format todo without a list")
 
-                summary = "{} {}{}".format(
-                    todo.summary,
-                    self.format_database(todo.list),
-                    percent,
-                )
+                summary = f"{todo.summary} {self.format_database(todo.list)}{percent}"
 
             # TODO: add spaces on the left based on max todos"
 

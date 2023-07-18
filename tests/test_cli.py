@@ -535,9 +535,7 @@ def test_empty_list(tmpdir, runner, create):
             item.remove()
 
     result = runner.invoke(cli)
-    expected = (
-        "No lists found matching {}/*, create a directory for a new list"
-    ).format(tmpdir)
+    expected = f"No lists found matching {tmpdir}/*, create a directory for a new list"
 
     assert expected in result.output
 
