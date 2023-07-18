@@ -769,9 +769,7 @@ class Cache:
         if categories:
             category_slots = ", ".join(["?"] * len(categories))
             extra_where.append(
-                "AND upper(categories.category) IN ({category_slots})".format(
-                    category_slots=category_slots
-                )
+                f"AND upper(categories.category) IN ({category_slots})"
             )
             params = params + [category.upper() for category in categories]
         if priority:
