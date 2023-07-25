@@ -195,13 +195,11 @@ def test_category_deletes_on_todo_delete(tmpdir, create, default_database):
     default_database.delete(todo)
     default_database.update_cache()
 
-    query = """
+    query = f"""
         SELECT distinct category
         FROM categories
-        WHERE categories.todos_id = '{}'
-        """.format(
-        todo.id,
-    )
+        WHERE categories.todos_id = '{todo.id}'
+        """
 
     categories = default_database.cache._conn.execute(query).fetchall()
     assert categories == []
