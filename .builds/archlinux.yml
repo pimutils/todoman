@@ -32,6 +32,7 @@ tasks:
       codecov
   - package: |
       cd todoman
+      git fetch --tags
       python -m build --no-isolation
       git describe --exact-match --tags || complete-build
   - publish: |
