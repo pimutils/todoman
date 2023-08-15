@@ -196,10 +196,10 @@ Highest priority is 1, lowest priority is 10, and 0 means no priority at all.
 class ConfigurationError(Exception):
     def __init__(self, msg):
         super().__init__(
-            (
-                "{}\nFor details on the configuration format and a sample file, "
-                "see\n{}configure.html"
-            ).format(msg, __documentation__)
+
+                f"{msg}\nFor details on the configuration format and a sample file, "
+                f"see\n{__documentation__}configure.html"
+
         )
 
 
