@@ -708,17 +708,17 @@ class Cache:
 
     def todos(
         self,
-        lists=(),
-        categories=None,
-        priority=None,
-        location="",
-        grep="",
-        sort=(),
-        reverse=True,
-        due=None,
-        start=None,
+        lists: Iterable = (),
+        categories: str | None = None,
+        priority: str | None = None,
+        location: str = "",
+        grep: str = "",
+        sort: Iterable = (),
+        reverse: bool = True,
+        due: int | None = None,
+        start: tuple[bool, datetime] | None = None,
         startable=False,
-        status="NEEDS-ACTION,IN-PROCESS",
+        status: str = "NEEDS-ACTION,IN-PROCESS",
     ) -> Iterable[Todo]:
         """
         Returns filtered cached todos, in a specified order.
@@ -730,24 +730,18 @@ class Cache:
             due
             -created_at
 
-        :param list lists: Only return todos for these lists.
-        :param str location: Only return todos with a location containing this
-            string.
-        :param str categories: Only return todos with a category containing this
-            string.
-        :param str grep: Filter common fields with this substring.
-        :param list sort: Order returned todos by these fields. Field names
+        :param lists: Only return todos for these lists.
+        :param location: Only return todos with a location containing this string.
+        :param categories: Only return todos with a category containing this string.
+        :param grep: Filter common fields with this substring.
+        :param sort: Order returned todos by these fields. Field names
             with a ``-`` prepended will be used to sort in reverse order.
-        :param bool reverse: Reverse the order of the todos after sorting.
-        :param int due: Return only todos due within ``due`` hours.
-        :param str priority: Only return todos with priority at least as
-            high as specified.
-        :param tuple(bool, datetime) start: Return only todos before/after
-            ``start`` date
-        :param list(str) status: Return only todos with any of the given
-            statuses.
+        :param reverse: Reverse the order of the todos after sorting.
+        :param due: Return only todos due within ``due`` hours.
+        :param priority: Only return todos with priority at least as high as specified.
+        :param  start: Return only todos before/after ``start`` date
+        :param  status: Return only todos with any of the given statuses.
         :return: A sorted, filtered list of todos.
-        :rtype: generator
         """
         extra_where = []
         params: list = []
@@ -790,13 +784,13 @@ class Cache:
             params.append(max_due)
         if start:
             is_before, dt = start
-            dt = dt.timestamp()
+            timestamp = dt.timestamp()
             if is_before:
                 extra_where.append("AND start <= ?")
-                params.append(dt)
+                params.append(timestamp)
             else:
                 extra_where.append("AND start >= ?")
-                params.append(dt)
+                params.append(timestamp)
         if startable:
             extra_where.append("AND (start IS NULL OR start <= ?)")
             params.append(datetime.now().timestamp())
