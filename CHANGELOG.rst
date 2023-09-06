@@ -4,6 +4,17 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v4.3.2
+------
+
+* Fixed issue when filtering categories with Cyrillic characters. This likely
+  also fixes similar issues with other non-ascii scripts.
+
+v4.3.1
+------
+
+* Identical to v4.3.0, which was not properly published to PyPI.
+
 v4.3.0
 ------
 
