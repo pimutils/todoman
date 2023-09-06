@@ -11,6 +11,7 @@ from datetime import timedelta
 from functools import cached_property
 from os.path import normpath
 from os.path import split
+from typing import Any
 from typing import Iterable
 from uuid import uuid4
 
@@ -51,6 +52,7 @@ class Todo:
     related: list[Todo]
     rrule: str | None
     start: date | None
+    id: int | None
 
     def __init__(
         self,
@@ -58,7 +60,7 @@ class Todo:
         mtime: int | None = None,
         new: bool = False,
         list: TodoList | None = None,
-    ):
+    ) -> None:
         """
         Creates a new todo using `todo` as a source.
 
@@ -163,7 +165,7 @@ class Todo:
         "NEEDS-ACTION",
     )
 
-    def __setattr__(self, name: str, value):
+    def __setattr__(self, name: str, value) -> None:
         """Check type and avoid setting fields to None"""
         """when that is not a valid attribue."""
 
@@ -211,7 +213,7 @@ class Todo:
     def is_recurring(self) -> bool:
         return bool(self.rrule)
 
-    def _apply_recurrence_to_dt(self, dt) -> datetime | None:
+    def _apply_recurrence_to_dt(self, dt: date | None) -> datetime | None:
         if not dt:
             return None
 
@@ -222,7 +224,7 @@ class Todo:
 
         return recurrence.after(dt)
 
-    def _create_next_instance(self):
+    def _create_next_instance(self) -> Todo:
         copy = self.clone()
         copy.due = self._apply_recurrence_to_dt(self.due)
         copy.start = self._apply_recurrence_to_dt(self.start)
@@ -286,7 +288,7 @@ class VtodoWriter:
         "rrule": "rrule",
     }
 
-    def __init__(self, todo: Todo):
+    def __init__(self, todo: Todo) -> None:
         self.todo = todo
 
     def normalize_datetime(self, dt: date) -> date:
@@ -310,7 +312,7 @@ class VtodoWriter:
 
         return dt.astimezone(pytz.UTC)
 
-    def serialize_field(self, name: str, value):
+    def serialize_field(self, name: str, value: Any) -> int | str | date:
         if name in Todo.RRULE_FIELDS:
             return icalendar.vRecur.from_ical(value)
         if name in Todo.DATETIME_FIELDS:
@@ -324,14 +326,14 @@ class VtodoWriter:
 
         raise Exception(f"Unknown field {name} serialized.")
 
-    def set_field(self, name: str, value):
+    def set_field(self, name: str, value: Any) -> None:
         # If serialized value is None:
         self.vtodo.pop(name)
         if value:
             logger.debug("Setting field %s to %s.", name, value)
             self.vtodo.add(name, value)
 
-    def serialize(self, original=None):
+    def serialize(self, original: icalendar.Todo = None) -> icalendar.Todo:
         """Serialize a Todo into a VTODO."""
         if not original:
             original = icalendar.Todo()
@@ -354,7 +356,7 @@ class VtodoWriter:
             for component in cal.walk("VTODO"):
                 return component
 
-    def write(self):
+    def write(self) -> icalendar.Todo:
         if os.path.exists(self.todo.path):
             self._write_existing(self.todo.path)
         else:
@@ -362,7 +364,7 @@ class VtodoWriter:
 
         return self.vtodo
 
-    def _write_existing(self, path):
+    def _write_existing(self, path: str) -> None:
         original = self._read(path)
         vtodo = self.serialize(original)
 
@@ -375,7 +377,7 @@ class VtodoWriter:
         with AtomicWriter(path, "wb", overwrite=True).open() as f:
             f.write(cal.to_ical())
 
-    def _write_new(self, path):
+    def _write_new(self, path: str) -> icalendar.Todo:
         vtodo = self.serialize()
 
         c = icalendar.Calendar()
@@ -404,7 +406,7 @@ class Cache:
 
     SCHEMA_VERSION = 10
 
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
         self.cache_path = str(path)
         os.makedirs(os.path.dirname(self.cache_path), exist_ok=True)
 
@@ -417,7 +419,7 @@ class Cache:
     def save_to_disk(self) -> None:
         self._conn.commit()
 
-    def is_latest_version(self):
+    def is_latest_version(self) -> bool:
         """Checks if the cache DB schema is the latest version."""
         try:
             return self._conn.execute(
@@ -427,7 +429,7 @@ class Cache:
         except sqlite3.OperationalError:
             return False
 
-    def drop_tables(self):
+    def drop_tables(self) -> None:
         self._conn.executescript(
             """
             DROP TABLE IF EXISTS todos;
@@ -437,7 +439,7 @@ class Cache:
         """
         )
 
-    def create_tables(self):
+    def create_tables(self) -> None:
         if self.is_latest_version():
             return
 
@@ -519,12 +521,11 @@ class Cache:
         """
         )
 
-    def clear(self):
+    def clear(self) -> None:
         self._conn.close()
         os.remove(self.cache_path)
-        self._conn = None
 
-    def add_list(self, name: str, path: str, colour: str, mtime: int):
+    def add_list(self, name: str, path: str, colour: str | None, mtime: int) -> str:
         """
         Inserts a new list into the cache.
 
@@ -561,7 +562,7 @@ class Cache:
 
         return self.add_list(name, path, colour, mtime)
 
-    def add_file(self, list_name: str, path: str, mtime: int):
+    def add_file(self, list_name: str, path: str, mtime: int) -> None:
         try:
             self._conn.execute(
                 """
@@ -580,7 +581,7 @@ class Cache:
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExistsError("file", list_name) from e
 
-    def add_category(self, todos_id, category):
+    def add_category(self, todos_id: int, category: str) -> None:
         try:
             self._conn.execute(
                 """
@@ -620,18 +621,22 @@ class Cache:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
         return dt.timestamp(), is_date
 
-    def _serialize_rrule(self, todo, field) -> str | None:
+    def _serialize_rrule(self, todo: icalendar.Todo, field: str) -> str | None:
         rrule = todo.get(field)
         if not rrule:
             return None
 
         return rrule.to_ical().decode()
 
-    def add_vtodo(self, todo: icalendar.Todo, file_path: str, id=None) -> int:
-        """
-        Adds a todo into the cache.
+    def add_vtodo(
+        self,
+        todo: icalendar.Todo,
+        file_path: str,
+        id: int | None = None,
+    ) -> int:
+        """Adds a todo into the cache.
 
-        :param icalendar.Todo todo: The icalendar component object on which
+        :param todo: The icalendar component object on which
         """
 
         sql = """
@@ -717,7 +722,7 @@ class Cache:
         reverse: bool = True,
         due: int | None = None,
         start: tuple[bool, datetime] | None = None,
-        startable=False,
+        startable: bool = False,
         status: str = "NEEDS-ACTION,IN-PROCESS",
     ) -> Iterable[Todo]:
         """
@@ -850,22 +855,22 @@ class Cache:
             seen_paths.add(path)
             yield todo
 
-    def _datetime_from_db(self, dt) -> datetime | None:
+    def _datetime_from_db(self, dt: float) -> datetime | None:
         if dt:
             return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
         return None
 
-    def _date_from_db(self, dt, is_date=False) -> date | None:
+    def _date_from_db(self, dt: float, is_date: bool = False) -> date | None:
         """Deserialise a date (possible datetime)."""
         if not dt:
-            return dt
+            return None
 
         if is_date:
             return datetime.fromtimestamp(dt, LOCAL_TIMEZONE).date()
         else:
             return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
 
-    def _categories_from_db(self, categories):
+    def _categories_from_db(self, categories: str) -> list[str]:
         if categories:
             return categories.split(",")
 
@@ -922,7 +927,7 @@ class Cache:
     def delete_list(self, name: str) -> None:
         self._conn.execute("DELETE FROM lists WHERE lists.name = ?", (name,))
 
-    def todo(self, id: int, read_only=False) -> Todo:
+    def todo(self, id: int, read_only: bool = False) -> Todo:
         # XXX: DON'T USE READ_ONLY
         result = self._conn.execute(
             """
@@ -969,7 +974,7 @@ class Cache:
 
 
 class TodoList:
-    def __init__(self, name: str, path: str, colour: str | None = None):
+    def __init__(self, name: str, path: str, colour: str | None = None) -> None:
         self.path = path
         self.name = name
         self.colour = colour
@@ -1008,7 +1013,7 @@ class TodoList:
         else:
             return 0
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, TodoList):
             return self.name == other.name
         return object.__eq__(self, other)
@@ -1026,7 +1031,7 @@ class Database:
     classes.
     """
 
-    def __init__(self, paths, cache_path):
+    def __init__(self, paths: Iterable[str], cache_path: str) -> None:
         self.cache = Cache(cache_path)
         self.paths = [str(path) for path in paths]
         self.update_cache()
@@ -1074,10 +1079,10 @@ class Database:
 
         self.cache.save_to_disk()
 
-    def todos(self, **kwargs) -> Iterable[Todo]:
+    def todos(self, **kwargs: Any) -> Iterable[Todo]:
         return self.cache.todos(**kwargs)
 
-    def todo(self, id: int, **kwargs) -> Todo:
+    def todo(self, id: int, **kwargs: Any) -> Todo:
         return self.cache.todo(id, **kwargs)
 
     def lists(self) -> Iterable[TodoList]:
@@ -1103,7 +1108,7 @@ class Database:
                 self.delete(todo)
 
         self.cache.clear()
-        self.cache = None
+        self.cache = Cache(self.cache.cache_path)
 
     def save(self, todo: Todo) -> None:
         if not todo.list:
