@@ -374,7 +374,7 @@ def test_sorting_output(tmpdir, runner, create):
     )
 
     for args, order in all_examples:
-        result = runner.invoke(cli, ["list"] + args)
+        result = runner.invoke(cli, ["list", *args])
         assert not result.exception
         lines = result.output.splitlines()
         for i, task in enumerate(order):
@@ -794,7 +794,7 @@ def test_status_validation():
 
     @given(
         statuses=st.lists(
-            st.sampled_from(Todo.VALID_STATUSES + ("ANY",)),
+            st.sampled_from((*Todo.VALID_STATUSES, "ANY")),
             min_size=1,
             max_size=5,
             unique=True,

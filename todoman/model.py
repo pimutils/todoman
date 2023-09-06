@@ -692,7 +692,7 @@ class Cache:
         ]
 
         if id:
-            params = [id] + params
+            params = [id, *params]
             sql = sql.format("id,\n", "?, ")
         else:
             sql = sql.format("", "")

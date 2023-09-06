@@ -51,7 +51,7 @@ class TodoEditor:
             urwid.SimpleListWalker([grid, spacer, self._status, buttons])
         )
         right_column = urwid.ListBox(
-            urwid.SimpleListWalker([urwid.Text("List:\n")] + self.list_selector)
+            urwid.SimpleListWalker([urwid.Text("List:\n"), *self.list_selector])
         )
 
         self._ui = urwid.Columns([self.left_column, right_column])
