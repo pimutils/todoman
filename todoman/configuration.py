@@ -128,7 +128,7 @@ If false, datetimes will be formatted using ``date_format`` and
     ),
     ConfigEntry(
         "default_list",
-        (str, None.__class__),  # type: ignore
+        (str, None.__class__),  # type: ignore[arg-type]
         None,
         """
 The default list for adding a todo. If you do not specify this option, you
@@ -183,7 +183,7 @@ When running ``todo`` with no commands, run this command.
     ),
     ConfigEntry(
         "default_priority",
-        (int, None.__class__),  # type: ignore
+        (int, None.__class__),  # type: ignore[arg-type]
         None,
         """
 The default priority of a task on creation.
