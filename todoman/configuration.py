@@ -212,10 +212,9 @@ def find_config(config_path: str | None = None) -> str:
 
     if not config_path:
         raise ConfigurationError("No configuration file found.\n\n")
-    elif not exists(config_path):
+    if not exists(config_path):
         raise ConfigurationError(f"Configuration file {config_path} does not exist.\n")
-    else:
-        return config_path
+    return config_path
 
 
 def load_config(custom_path: str | None = None) -> dict:

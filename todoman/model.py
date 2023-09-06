@@ -868,8 +868,7 @@ class Cache:
 
         if is_date:
             return datetime.fromtimestamp(dt, LOCAL_TIMEZONE).date()
-        else:
-            return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
+        return datetime.fromtimestamp(dt, LOCAL_TIMEZONE)
 
     def _categories_from_db(self, categories: str) -> list[str]:
         if categories:
@@ -1011,8 +1010,7 @@ class TodoList:
 
         if mtimes:
             return max(mtimes)
-        else:
-            return 0
+        return 0
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, TodoList):

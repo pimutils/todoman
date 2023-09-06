@@ -150,9 +150,9 @@ class DefaultFormatter(Formatter):
         if todo.due:
             if todo.due <= now and not todo.is_completed:
                 return "red"
-            elif todo.due >= now + timedelta(hours=24):
+            if todo.due >= now + timedelta(hours=24):
                 return "white"
-            elif todo.due >= now:
+            if todo.due >= now:
                 return "yellow"
 
         return "white"
@@ -162,8 +162,7 @@ class DefaultFormatter(Formatter):
 
         if value.strip().count("\n") == 0:
             return f"\n\n{formatted_title}: {value}"
-        else:
-            return f"\n\n{formatted_title}:\n{value}"
+        return f"\n\n{formatted_title}:\n{value}"
 
     def detailed(self, todo: Todo) -> str:
         extra_lines = []
@@ -178,9 +177,9 @@ class DefaultFormatter(Formatter):
     def format_datetime(self, dt: date | None) -> str | int | None:
         if not dt:
             return ""
-        elif isinstance(dt, datetime):
+        if isinstance(dt, datetime):
             return dt.strftime(self.datetime_format)
-        elif isinstance(dt, date):
+        if isinstance(dt, date):
             return dt.strftime(self.date_format)
         return None
 
@@ -197,23 +196,22 @@ class DefaultFormatter(Formatter):
             return None
         if priority == "low":
             return 9
-        elif priority == "medium":
+        if priority == "medium":
             return 5
-        elif priority == "high":
+        if priority == "high":
             return 4
-        elif priority == "none":
+        if priority == "none":
             return 0
-        else:
-            raise ValueError("Priority has to be one of low, medium, high or none")
+        raise ValueError("Priority has to be one of low, medium, high or none")
 
     def format_priority(self, priority: int | None) -> str:
         if not priority:
             return "none"
-        elif 1 <= priority <= 4:
+        if 1 <= priority <= 4:
             return "high"
-        elif priority == 5:
+        if priority == 5:
             return "medium"
-        elif 6 <= priority <= 9:
+        if 6 <= priority <= 9:
             return "low"
 
         raise ValueError("priority is an invalid value")
@@ -221,11 +219,11 @@ class DefaultFormatter(Formatter):
     def format_priority_compact(self, priority: int | None) -> str:
         if not priority:
             return ""
-        elif 1 <= priority <= 4:
+        if 1 <= priority <= 4:
             return "!!!"
-        elif priority == 5:
+        if priority == 5:
             return "!!"
-        elif 6 <= priority <= 9:
+        if 6 <= priority <= 9:
             return "!"
 
         raise ValueError("priority is an invalid value")
@@ -309,8 +307,7 @@ class PorcelainFormatter(DefaultFormatter):
         try:
             if int(priority) in range(10):
                 return int(priority)
-            else:
-                raise ValueError("Priority has to be in the range 0-9")
+            raise ValueError("Priority has to be in the range 0-9")
         except ValueError as e:
             raise click.BadParameter(str(e)) from None
 
@@ -324,11 +321,9 @@ class PorcelainFormatter(DefaultFormatter):
             else:
                 dt = value
             return int(dt.timestamp())
-        else:
-            return None
+        return None
 
     def parse_datetime(self, value: str | None) -> datetime | None:
         if value:
             return datetime.fromtimestamp(float(value), tz=pytz.UTC)
-        else:
-            return None
+        return None
