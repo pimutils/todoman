@@ -114,12 +114,12 @@ class Todo:
         """
         todo = Todo(new=True, list=self.list)
 
-        fields = (
-            Todo.STRING_FIELDS
-            + Todo.INT_FIELDS
-            + Todo.LIST_FIELDS
-            + Todo.DATETIME_FIELDS
-        )
+        fields = [
+            *Todo.STRING_FIELDS,
+            *Todo.INT_FIELDS,
+            *Todo.LIST_FIELDS,
+            *Todo.DATETIME_FIELDS,
+        ]
         fields.remove("uid")
 
         for field in fields:
@@ -127,33 +127,29 @@ class Todo:
 
         return todo
 
-    STRING_FIELDS = [
+    STRING_FIELDS = (
         "description",
         "location",
         "status",
         "summary",
         "uid",
         "rrule",
-    ]
-    INT_FIELDS = [
+    )
+    INT_FIELDS = (
         "percent_complete",
         "priority",
         "sequence",
-    ]
-    LIST_FIELDS = [
-        "categories",
-    ]
-    DATETIME_FIELDS = [
+    )
+    LIST_FIELDS = ("categories",)
+    DATETIME_FIELDS = (
         "completed_at",
         "created_at",
         "dtstamp",
         "start",
         "due",
         "last_modified",
-    ]
-    RRULE_FIELDS = [
-        "rrule",
-    ]
+    )
+    RRULE_FIELDS = ("rrule",)
     ALL_SUPPORTED_FIELDS = (
         DATETIME_FIELDS + INT_FIELDS + LIST_FIELDS + RRULE_FIELDS + STRING_FIELDS
     )
