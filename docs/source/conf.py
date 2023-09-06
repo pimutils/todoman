@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# noqa: INP001
 
 import todoman
 from todoman.configuration import CONFIG_SPEC
