@@ -148,7 +148,7 @@ class TodoEditor:
         except Exception as e:
             self.set_status(("error", str(e)))
         else:
-            raise urwid.ExitMainLoop()
+            raise urwid.ExitMainLoop
 
     def _save_inner(self):
         self.todo.list = self.current_list
