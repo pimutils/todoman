@@ -1001,7 +1001,7 @@ def test_invalid_default_priority(config, runner, create):
 
 def test_default_command_args(config, runner):
     config.write(
-        'default_command = "list --sort=due --due 168 ' '--priority low --no-reverse"',
+        'default_command = "list --sort=due --due 168 --priority low --no-reverse"',
         "a",
     )
 
