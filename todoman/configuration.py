@@ -141,7 +141,7 @@ must use the ``--list`` / ``-l`` option every time you add a todo.
         int,
         24,
         """
-The default difference (in hours) between new todo’s due date and creation
+The default difference (in hours) between new todo's due date and creation
 date. If not specified, the value is 24. If set to 0, the due date for new
 todos will not be set.
 """,
