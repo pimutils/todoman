@@ -96,14 +96,12 @@ def todo_factory(default_database):
 
 @pytest.fixture()
 def default_formatter():
-    formatter = DefaultFormatter(tz_override=pytz.timezone("CET"))
-    return formatter
+    return DefaultFormatter(tz_override=pytz.timezone("CET"))
 
 
 @pytest.fixture()
 def humanized_formatter():
-    formatter = HumanizedFormatter(tz_override=pytz.timezone("CET"))
-    return formatter
+    return HumanizedFormatter(tz_override=pytz.timezone("CET"))
 
 
 @pytest.fixture(scope="session")
