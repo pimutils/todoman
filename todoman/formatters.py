@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import contextlib
 import json
+from abc import ABC
+from abc import abstractmethod
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
@@ -34,7 +36,41 @@ def rgb_to_ansi(colour: str | None) -> str | None:
     return f"\33[38;2;{int(r, 16)!s};{int(g, 16)!s};{int(b, 16)!s}m"
 
 
-class DefaultFormatter:
+class Formatter(ABC):
+    @abstractmethod
+    def compact(self, todo: Todo) -> str:
+        """Render a compact todo (usually in a single line)"""
+
+    @abstractmethod
+    def compact_multiple(self, todos: Iterable[Todo], hide_list: bool = False) -> str:
+        """Same as compact() but for multiple todos."""
+
+    @abstractmethod
+    def simple_action(self, action: str, todo: Todo) -> str:
+        """Render an action related to a todo (e.g.: compelete, undo, etc)."""
+
+    @abstractmethod
+    def parse_priority(self, priority: str | None) -> int | None:
+        """Parse a priority"""
+
+    @abstractmethod
+    def detailed(self, todo: Todo) -> str:
+        """Returns a detailed representation of a task."""
+
+    @abstractmethod
+    def format_datetime(self, value: date | None) -> str | int | None:
+        """Format an optional datetime."""
+
+    @abstractmethod
+    def parse_datetime(self, value: str | None) -> date | None:
+        """Parse an optional datetime."""
+
+    @abstractmethod
+    def format_database(self, database: TodoList) -> str:
+        """Format the name of a single database."""
+
+
+class DefaultFormatter(Formatter):
     def __init__(
         self,
         date_format: str = "%Y-%m-%d",
@@ -130,10 +166,6 @@ class DefaultFormatter:
             return f"\n\n{formatted_title}:\n{value}"
 
     def detailed(self, todo: Todo) -> str:
-        """Returns a detailed representation of a task.
-
-        :param todo: The todo component.
-        """
         extra_lines = []
         if todo.description:
             extra_lines.append(self._format_multiline("Description", todo.description))
@@ -197,7 +229,7 @@ class DefaultFormatter:
 
         raise ValueError("priority is an invalid value")
 
-    def parse_datetime(self, dt: str) -> date | None:
+    def parse_datetime(self, dt: str | None) -> date | None:
         if not dt:
             return None
 
@@ -294,7 +326,7 @@ class PorcelainFormatter(DefaultFormatter):
         else:
             return None
 
-    def parse_datetime(self, value: str) -> datetime | None:
+    def parse_datetime(self, value: str | None) -> datetime | None:
         if value:
             return datetime.fromtimestamp(float(value), tz=pytz.UTC)
         else:
