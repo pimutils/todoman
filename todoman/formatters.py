@@ -1,12 +1,13 @@
+from __future__ import annotations
+
 import contextlib
 import json
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
+from datetime import tzinfo
 from time import mktime
 from typing import Iterable
-from typing import Optional
-from typing import Union
 
 import click
 import humanize
@@ -18,7 +19,7 @@ from todoman.model import Todo
 from todoman.model import TodoList
 
 
-def rgb_to_ansi(colour: Optional[str]) -> Optional[str]:
+def rgb_to_ansi(colour: str | None) -> str | None:
     """
     Convert a string containing an RGB colour to ANSI escapes
     """
@@ -36,11 +37,11 @@ def rgb_to_ansi(colour: Optional[str]) -> Optional[str]:
 class DefaultFormatter:
     def __init__(
         self,
-        date_format="%Y-%m-%d",
-        time_format="%H:%M",
-        dt_separator=" ",
-        tz_override=None,
-    ):
+        date_format: str = "%Y-%m-%d",
+        time_format: str = "%H:%M",
+        dt_separator: str = " ",
+        tz_override: tzinfo | None = None,
+    ) -> None:
         self.date_format = date_format
         self.time_format = time_format
         self.dt_separator = dt_separator
@@ -61,7 +62,7 @@ class DefaultFormatter:
     def compact(self, todo: Todo) -> str:
         return self.compact_multiple([todo])
 
-    def compact_multiple(self, todos: Iterable[Todo], hide_list=False) -> str:
+    def compact_multiple(self, todos: Iterable[Todo], hide_list: bool = False) -> str:
         # TODO: format lines fuidly and drop the table
         # it can end up being more readable when too many columns are empty.
         # show dates that are in the future in yellow (in 24hs) or grey (future)
@@ -142,7 +143,7 @@ class DefaultFormatter:
 
         return f"{self.compact(todo)}{''.join(extra_lines)}"
 
-    def format_datetime(self, dt: Optional[date]) -> Union[str, int, None]:
+    def format_datetime(self, dt: date | None) -> str | int | None:
         if not dt:
             return ""
         elif isinstance(dt, datetime):
@@ -150,15 +151,15 @@ class DefaultFormatter:
         elif isinstance(dt, date):
             return dt.strftime(self.date_format)
 
-    def format_categories(self, categories):
+    def format_categories(self, categories: Iterable[str]) -> str:
         return ", ".join(categories)
 
-    def parse_categories(self, categories):
+    def parse_categories(self, categories: str) -> list[str]:
         # existing code assumes categories is list,
         # but click passes tuple
         return list(categories)
 
-    def parse_priority(self, priority: Optional[str]) -> Optional[int]:
+    def parse_priority(self, priority: str | None) -> int | None:
         if priority is None or priority == "":
             return None
         if priority == "low":
@@ -172,7 +173,7 @@ class DefaultFormatter:
         else:
             raise ValueError("Priority has to be one of low, medium, high or none")
 
-    def format_priority(self, priority: Optional[int]) -> str:
+    def format_priority(self, priority: int | None) -> str:
         if not priority:
             return "none"
         elif 1 <= priority <= 4:
@@ -184,7 +185,7 @@ class DefaultFormatter:
 
         raise ValueError("priority is an invalid value")
 
-    def format_priority_compact(self, priority: Optional[int]) -> str:
+    def format_priority_compact(self, priority: int | None) -> str:
         if not priority:
             return ""
         elif 1 <= priority <= 4:
@@ -196,7 +197,7 @@ class DefaultFormatter:
 
         raise ValueError("priority is an invalid value")
 
-    def parse_datetime(self, dt: str) -> Optional[date]:
+    def parse_datetime(self, dt: str) -> date | None:
         if not dt:
             return None
 
@@ -221,14 +222,14 @@ class DefaultFormatter:
             raise ValueError(f"Time description not recognized: {dt}")
         return datetime.fromtimestamp(mktime(rv))
 
-    def format_database(self, database: TodoList):
+    def format_database(self, database: TodoList) -> str:
         return "{}@{}".format(
             rgb_to_ansi(database.colour) or "", click.style(database.name)
         )
 
 
 class HumanizedFormatter(DefaultFormatter):
-    def format_datetime(self, dt: Optional[date]) -> str:
+    def format_datetime(self, dt: date | None) -> str:
         if not dt:
             return ""
 
@@ -243,13 +244,13 @@ class HumanizedFormatter(DefaultFormatter):
 
 
 class PorcelainFormatter(DefaultFormatter):
-    def _todo_as_dict(self, todo):
+    def _todo_as_dict(self, todo: Todo) -> dict:
         return {
             "completed": todo.is_completed,
             "start": self.format_datetime(todo.start),
             "due": self.format_datetime(todo.due),
             "id": todo.id,
-            "list": todo.list.name,
+            "list": todo.list.name if todo.list else None,
             "percent": todo.percent_complete,
             "summary": todo.summary,
             "categories": todo.categories,
@@ -262,14 +263,14 @@ class PorcelainFormatter(DefaultFormatter):
     def compact(self, todo: Todo) -> str:
         return json.dumps(self._todo_as_dict(todo), indent=4, sort_keys=True)
 
-    def compact_multiple(self, todos: Iterable[Todo], hide_list=False) -> str:
+    def compact_multiple(self, todos: Iterable[Todo], hide_list: bool = False) -> str:
         data = [self._todo_as_dict(todo) for todo in todos]
         return json.dumps(data, indent=4, sort_keys=True)
 
     def simple_action(self, action: str, todo: Todo) -> str:
         return self.compact(todo)
 
-    def parse_priority(self, priority: Optional[str]) -> Optional[int]:
+    def parse_priority(self, priority: str | None) -> int | None:
         if priority is None:
             return None
         try:
@@ -283,7 +284,7 @@ class PorcelainFormatter(DefaultFormatter):
     def detailed(self, todo: Todo) -> str:
         return self.compact(todo)
 
-    def format_datetime(self, value: Optional[date]) -> Optional[int]:
+    def format_datetime(self, value: date | None) -> int | None:
         if value:
             if not isinstance(value, datetime):
                 dt = datetime.fromordinal(value.toordinal())
@@ -293,8 +294,8 @@ class PorcelainFormatter(DefaultFormatter):
         else:
             return None
 
-    def parse_datetime(self, value):
+    def parse_datetime(self, value: str) -> datetime | None:
         if value:
-            return datetime.fromtimestamp(value, tz=pytz.UTC)
+            return datetime.fromtimestamp(float(value), tz=pytz.UTC)
         else:
             return None
