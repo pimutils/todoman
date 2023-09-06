@@ -402,7 +402,7 @@ class Cache:
     may be used for filtering/sorting.
     """
 
-    SCHEMA_VERSION = 9
+    SCHEMA_VERSION = 10
 
     def __init__(self, path: str):
         self.cache_path = str(path)
@@ -482,6 +482,7 @@ class Cache:
                 "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                 "todos_id" INTEGER NOT NULL,
                 "category" TEXT,
+                "category_upper" TEXT,
 
                 CONSTRAINT category_unique UNIQUE (todos_id,category),
                 FOREIGN KEY(todos_id) REFERENCES todos(id) ON DELETE CASCADE
@@ -585,10 +586,11 @@ class Cache:
                 """
                INSERT INTO categories (
                    todos_id,
-                   category
-               ) VALUES (?, ?);
+                   category,
+                   category_upper
+               ) VALUES (?, ?, ?);
                """,
-                (todos_id, category),
+                (todos_id, category, category.upper()),
             )
         except sqlite3.IntegrityError as e:
             raise exceptions.AlreadyExistsError("category", category) from e
@@ -768,7 +770,7 @@ class Cache:
             params.extend(lists)
         if categories:
             category_slots = ", ".join(["?"] * len(categories))
-            extra_where.append(f"AND upper(categories.category) IN ({category_slots})")
+            extra_where.append(f"AND categories.category_upper IN ({category_slots})")
             params = params + [category.upper() for category in categories]
         if priority:
             extra_where.append("AND PRIORITY > 0 AND PRIORITY <= ?")

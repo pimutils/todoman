@@ -72,11 +72,20 @@ def test_category(tmpdir, runner, create):
     create("one.ics", f"UID:{uuid4()}\nSUMMARY:haha\nCATEGORIES:work,trip\n")
     create("two.ics", "CATEGORIES:trip\nSUMMARY:hoho\n")
     create("three.ics", f"UID:{uuid4()}\nSUMMARY:harhar\n")
+    create("four.ics", f"UID:{uuid4()}\nSUMMARY:harharho\nCATEGORIES:ý,Дом\n")
     result = runner.invoke(cli, ["list", "--category", "work"])
     assert not result.exception
     assert "haha" in result.output
     assert "hoho" not in result.output
     assert "harhar" not in result.output
+
+    # non-ASCII categories
+    result = runner.invoke(cli, ["list", "--category", "ý"])
+    assert not result.exception
+    assert "harharho" in result.output
+    result = runner.invoke(cli, ["list", "--category", "Дом"])
+    assert not result.exception
+    assert "harharho" in result.output
 
 
 def test_grep(tmpdir, runner, create):
