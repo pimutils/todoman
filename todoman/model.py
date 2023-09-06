@@ -355,6 +355,7 @@ class VtodoWriter:
             cal = icalendar.Calendar.from_ical(cal)
             for component in cal.walk("VTODO"):
                 return component
+            return None
 
     def write(self) -> icalendar.Todo:
         if os.path.exists(self.todo.path):

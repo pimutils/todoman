@@ -62,6 +62,8 @@ class ExtendedEdit(urwid.Edit):
         else:
             return super().keypress(size, key)
 
+        return None
+
     def _delete_forward_letter(self):
         text = self.get_edit_text()
         pos = self.edit_pos
@@ -154,10 +156,10 @@ class PrioritySelector(urwid.Button):
     def keypress(self, size, key):
         if key in ["right", "enter"]:
             self._update_label(1)
-            return
+            return None
         if key == "left":
             self._update_label(-1)
-            return
+            return None
 
         return super().keypress(size, key)
 

@@ -182,6 +182,7 @@ class DefaultFormatter(Formatter):
             return dt.strftime(self.datetime_format)
         elif isinstance(dt, date):
             return dt.strftime(self.date_format)
+        return None
 
     def format_categories(self, categories: Iterable[str]) -> str:
         return ", ".join(categories)
