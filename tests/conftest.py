@@ -81,7 +81,7 @@ def now_for_tz():
 def todo_factory(default_database):
     def inner(**attributes):
         todo = model.Todo(new=True)
-        todo.list = list(default_database.lists())[0]
+        todo.list = next(iter(default_database.lists()))
 
         attributes.setdefault("summary", "YARR!")
         for name, value in attributes.items():

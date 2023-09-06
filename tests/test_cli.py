@@ -243,7 +243,7 @@ def test_dtstamp(tmpdir, runner, create):
     assert not result.exception
 
     db = Database([tmpdir.join("default")], tmpdir.join("/dtstamp_cache"))
-    todo = list(db.todos())[0]
+    todo = next(iter(db.todos()))
     assert todo.dtstamp is not None
     assert todo.dtstamp == datetime.datetime.now(tz=tzlocal())
 
@@ -259,7 +259,7 @@ def test_default_list(tmpdir, runner, create, config):
     assert not result.exception
 
     db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
-    todo = list(db.todos())[0]
+    todo = next(iter(db.todos()))
     assert todo.summary == "test default list"
 
 
@@ -275,7 +275,7 @@ def test_default_due(tmpdir, runner, create, default_due, expected_due_hours, co
 
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
     db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
-    todo = list(db.todos())[0]
+    todo = next(iter(db.todos()))
 
     if expected_due_hours is None:
         assert todo.due is None
@@ -971,7 +971,7 @@ def test_default_priority(tmpdir, runner, create, config):
 
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
     db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
-    todo = list(db.todos())[0]
+    todo = next(iter(db.todos()))
 
     assert todo.priority == 3
 
@@ -982,7 +982,7 @@ def test_no_default_priority(tmpdir, runner, create):
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
 
     db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
-    todo = list(db.todos())[0]
+    todo = next(iter(db.todos()))
     assert todo.priority == 0
 
     todo_file = tmpdir.join("default").join(todo.filename)
