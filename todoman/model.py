@@ -1014,7 +1014,7 @@ class TodoList:
         else:
             return 0
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, TodoList):
             return self.name == other.name
         return object.__eq__(self, other)
