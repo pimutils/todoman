@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import importlib
 import os
+from importlib.util import module_from_spec
+from importlib.util import spec_from_file_location
 from os.path import exists
 from os.path import join
 from typing import Any
@@ -194,14 +195,14 @@ Highest priority is 1, lowest priority is 10, and 0 means no priority at all.
 
 
 class ConfigurationError(Exception):
-    def __init__(self, msg):
+    def __init__(self, msg: str) -> None:
         super().__init__(
             f"{msg}\nFor details on the configuration format and a sample file, "
             f"see\n{__documentation__}configure.html"
         )
 
 
-def find_config(config_path=None):
+def find_config(config_path: str | None = None) -> str:
     if not config_path:
         for d in xdg.BaseDirectory.xdg_config_dirs:
             path = join(d, "todoman", "config.py")
@@ -217,10 +218,13 @@ def find_config(config_path=None):
         return config_path
 
 
-def load_config(custom_path=None):
+def load_config(custom_path: str | None = None) -> dict:
     path = find_config(custom_path)
-    spec = importlib.util.spec_from_file_location("config", path)
-    config_source = importlib.util.module_from_spec(spec)
+    spec = spec_from_file_location("config", path)
+    if not spec or not spec.loader:
+        raise ConfigurationError("Failed to parse file as spec")
+    config_source = module_from_spec(spec)
+
     spec.loader.exec_module(config_source)
 
     # TODO: Handle SyntaxError
@@ -231,7 +235,10 @@ def load_config(custom_path=None):
         if value == NO_DEFAULT:
             raise ConfigurationError(f"Missing '{name}' setting.")
         if not isinstance(value, type_):
-            expected = type_.__name__
+            if isinstance(type_, tuple):
+                expected = ",".join([t.__name__ for t in type_])
+            else:
+                expected = type_.__name__
             actual = value.__class__.__name__
             raise ConfigurationError(
                 f"Bad {name} setting. Invalid type "
