@@ -307,7 +307,7 @@ class PorcelainFormatter(DefaultFormatter):
         if priority is None:
             return None
         try:
-            if int(priority) in range(0, 10):
+            if int(priority) in range(10):
                 return int(priority)
             else:
                 raise ValueError("Priority has to be in the range 0-9")
