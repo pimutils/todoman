@@ -28,7 +28,7 @@ import urwid
 class ExtendedEdit(urwid.Edit):
     """A text editing widget supporting some more editing commands"""
 
-    HELP = [
+    HELP = (
         ("Ctrl-W", "Delete word"),
         ("Ctrl-U", "Delete until beginning of line"),
         ("Ctrl-K", "Delete until end of line"),
@@ -36,7 +36,7 @@ class ExtendedEdit(urwid.Edit):
         ("Ctrl-E", "Go to end of line"),
         ("Ctrl-D", "Delete forward letter"),
         ("Ctrl-O", "Edit in $EDITOR"),
-    ]
+    )
 
     def __init__(self, parent, *a, **kw):
         self._parent = parent
@@ -120,17 +120,17 @@ class ExtendedEdit(urwid.Edit):
 
 
 class PrioritySelector(urwid.Button):
-    HELP = [
+    HELP = (
         ("left", "Lower Priority"),
         ("right", "Higher Priority"),
-    ]
+    )
 
-    RANGES = [
+    RANGES = (
         [0],
         [9, 8, 7, 6],
         [5],
         [1, 2, 3, 4],
-    ]
+    )
 
     def __init__(self, parent, priority, formatter_function):
         self._parent = parent
