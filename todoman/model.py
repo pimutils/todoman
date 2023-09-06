@@ -710,6 +710,7 @@ class Cache:
 
     def todos(
         self,
+        *,
         lists: Iterable = (),
         categories: str | None = None,
         priority: str | None = None,
