@@ -7,8 +7,7 @@ releases, in reverse chronological order.
 v4.3.2
 ------
 
-* Fixed issue when filtering categories with Cyrillic characters. This likely
-  also fixes similar issues with other non-ascii scripts.
+* Fix filtering for non-ASCII categories.
 
 v4.3.1
 ------
