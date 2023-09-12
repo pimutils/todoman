@@ -20,6 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import re
+from typing import Callable
 
 import click
 import urwid
@@ -132,7 +133,12 @@ class PrioritySelector(urwid.Button):
         [1, 2, 3, 4],
     )
 
-    def __init__(self, parent, priority, formatter_function):
+    def __init__(
+        self,
+        parent: urwid.Widget,
+        priority: int | None,
+        formatter_function: Callable[[int | None], str],
+    ) -> None:
         self._parent = parent
         self._label = urwid.SelectableIcon("", 0)
         urwid.WidgetWrap.__init__(self, self._label)
@@ -141,10 +147,10 @@ class PrioritySelector(urwid.Button):
         self._formatter = formatter_function
         self._set_label()
 
-    def _set_label(self):
+    def _set_label(self) -> None:
         self.set_label(self._formatter(self._priority))
 
-    def _update_label(self, delta=0):
+    def _update_label(self, delta: int = 0) -> None:
         for i, r in enumerate(PrioritySelector.RANGES):
             if self._priority in r:
                 self._priority = PrioritySelector.RANGES[
@@ -153,7 +159,11 @@ class PrioritySelector(urwid.Button):
                 self._set_label()
                 return
 
-    def keypress(self, size, key):
+    def keypress(
+        self,
+        size: tuple[int, int] | tuple[int] | tuple[()],
+        key: str,
+    ) -> None:
         if key in ["right", "enter"]:
             self._update_label(1)
             return None
@@ -164,5 +174,5 @@ class PrioritySelector(urwid.Button):
         return super().keypress(size, key)
 
     @property
-    def priority(self):
+    def priority(self) -> int | None:
         return self._priority
