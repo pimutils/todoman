@@ -1,5 +1,7 @@
 # noqa: INP001
 
+from typing import Iterator
+
 import todoman
 from todoman.configuration import CONFIG_SPEC
 from todoman.configuration import NO_DEFAULT
@@ -7,7 +9,7 @@ from todoman.configuration import NO_DEFAULT
 # -- Generate confspec.rst ----------------------------------------------
 
 
-def confspec_rst():
+def confspec_rst() -> Iterator[str]:
     """Generator that returns lines for the confspec doc page."""
 
     for name, type_, default, description, _validation in sorted(CONFIG_SPEC):
