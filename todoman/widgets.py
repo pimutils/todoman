@@ -39,11 +39,15 @@ class ExtendedEdit(urwid.Edit):
         ("Ctrl-O", "Edit in $EDITOR"),
     )
 
-    def __init__(self, parent, *a, **kw):
+    def __init__(self, parent: urwid.Widget, *a, **kw) -> None:
         self._parent = parent
         super().__init__(*a, **kw)
 
-    def keypress(self, size, key):
+    def keypress(
+        self,
+        size: tuple[int, int] | tuple[int] | tuple[()],
+        key: str,
+    ) -> None:
         if key == "ctrl w":
             self._delete_word()
         elif key == "ctrl u":
@@ -65,13 +69,13 @@ class ExtendedEdit(urwid.Edit):
 
         return None
 
-    def _delete_forward_letter(self):
+    def _delete_forward_letter(self) -> None:
         text = self.get_edit_text()
         pos = self.edit_pos
         text = text[:pos] + text[pos + 1 :]
         self.set_edit_text(text)
 
-    def _delete_word(self):
+    def _delete_word(self) -> None:
         """delete word before cursor"""
         text = self.get_edit_text()
         t = text[: self.edit_pos].rstrip()
@@ -82,7 +86,7 @@ class ExtendedEdit(urwid.Edit):
         self.set_edit_text(f_text + text[self.edit_pos :])
         self.set_edit_pos(len(f_text))
 
-    def _delete_till_beginning_of_line(self):
+    def _delete_till_beginning_of_line(self) -> None:
         """delete till start of line before cursor"""
         text = self.get_edit_text()
         sol = text.rfind("\n", 0, self.edit_pos) + 1
@@ -92,7 +96,7 @@ class ExtendedEdit(urwid.Edit):
         self.set_edit_text(before_line + text[self.edit_pos :])
         self.set_edit_pos(sol)
 
-    def _delete_till_end_of_line(self):
+    def _delete_till_end_of_line(self) -> None:
         """delete till end of line before cursor"""
         text = self.get_edit_text()
         eol = text.find("\n", self.edit_pos)
@@ -101,19 +105,19 @@ class ExtendedEdit(urwid.Edit):
 
         self.set_edit_text(text[: self.edit_pos] + after_eol)
 
-    def _goto_beginning_of_line(self):
+    def _goto_beginning_of_line(self) -> None:
         text = self.get_edit_text()
         sol = text.rfind("\n", 0, self.edit_pos) + 1
         self.set_edit_pos(sol)
 
-    def _goto_end_of_line(self):
+    def _goto_end_of_line(self) -> None:
         text = self.get_edit_text()
         eol = text.find("\n", self.edit_pos)
         if eol == -1:
             eol = len(text)
         self.set_edit_pos(eol)
 
-    def _editor(self):
+    def _editor(self) -> None:
         self._parent._loop.screen.clear()
         new_text = click.edit(self.get_edit_text())
         if new_text is not None:
