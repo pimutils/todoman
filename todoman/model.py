@@ -161,7 +161,7 @@ class Todo:
         "NEEDS-ACTION",
     )
 
-    def __setattr__(self, name: str, value) -> None:
+    def __setattr__(self, name: str, value: None | str | int | list) -> None:
         """Check type and avoid setting fields to None"""
         """when that is not a valid attribue."""
 
@@ -345,11 +345,11 @@ class VtodoWriter:
 
         return self.vtodo
 
-    def _read(self, path):
+    def _read(self, path: str) -> icalendar.Todo:
         with open(path, "rb") as f:
             cal = f.read()
-            cal = icalendar.Calendar.from_ical(cal)
-            for component in cal.walk("VTODO"):
+            data = icalendar.Calendar.from_ical(cal)
+            for component in data.walk("VTODO"):
                 return component
             return None
 
