@@ -4,6 +4,24 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v4.3.2
+------
+
+* Fix filtering for non-ASCII categories.
+
+v4.3.1
+------
+
+* Identical to v4.3.0, which was not properly published to PyPI.
+
+v4.3.0
+------
+
+* Add support for Python 3.11. Todoman already worked with Python 3.11, but is
+  now tested with this Python version in CI and has the relevant classifiers.
+* Improved zsh shell completion.
+* Dropped ``setup.py`` in favour of ``pyproject.toml``.
+
 v4.2.0
 ------
 

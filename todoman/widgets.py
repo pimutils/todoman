@@ -20,6 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import re
+from typing import Callable
 
 import click
 import urwid
@@ -28,7 +29,7 @@ import urwid
 class ExtendedEdit(urwid.Edit):
     """A text editing widget supporting some more editing commands"""
 
-    HELP = [
+    HELP = (
         ("Ctrl-W", "Delete word"),
         ("Ctrl-U", "Delete until beginning of line"),
         ("Ctrl-K", "Delete until end of line"),
@@ -36,13 +37,17 @@ class ExtendedEdit(urwid.Edit):
         ("Ctrl-E", "Go to end of line"),
         ("Ctrl-D", "Delete forward letter"),
         ("Ctrl-O", "Edit in $EDITOR"),
-    ]
+    )
 
-    def __init__(self, parent, *a, **kw):
+    def __init__(self, parent: urwid.Widget, *a, **kw) -> None:
         self._parent = parent
         super().__init__(*a, **kw)
 
-    def keypress(self, size, key):
+    def keypress(
+        self,
+        size: tuple[int, int] | tuple[int] | tuple[()],
+        key: str,
+    ) -> None:
         if key == "ctrl w":
             self._delete_word()
         elif key == "ctrl u":
@@ -62,13 +67,15 @@ class ExtendedEdit(urwid.Edit):
         else:
             return super().keypress(size, key)
 
-    def _delete_forward_letter(self):
+        return None
+
+    def _delete_forward_letter(self) -> None:
         text = self.get_edit_text()
         pos = self.edit_pos
         text = text[:pos] + text[pos + 1 :]
         self.set_edit_text(text)
 
-    def _delete_word(self):
+    def _delete_word(self) -> None:
         """delete word before cursor"""
         text = self.get_edit_text()
         t = text[: self.edit_pos].rstrip()
@@ -79,7 +86,7 @@ class ExtendedEdit(urwid.Edit):
         self.set_edit_text(f_text + text[self.edit_pos :])
         self.set_edit_pos(len(f_text))
 
-    def _delete_till_beginning_of_line(self):
+    def _delete_till_beginning_of_line(self) -> None:
         """delete till start of line before cursor"""
         text = self.get_edit_text()
         sol = text.rfind("\n", 0, self.edit_pos) + 1
@@ -89,7 +96,7 @@ class ExtendedEdit(urwid.Edit):
         self.set_edit_text(before_line + text[self.edit_pos :])
         self.set_edit_pos(sol)
 
-    def _delete_till_end_of_line(self):
+    def _delete_till_end_of_line(self) -> None:
         """delete till end of line before cursor"""
         text = self.get_edit_text()
         eol = text.find("\n", self.edit_pos)
@@ -98,19 +105,19 @@ class ExtendedEdit(urwid.Edit):
 
         self.set_edit_text(text[: self.edit_pos] + after_eol)
 
-    def _goto_beginning_of_line(self):
+    def _goto_beginning_of_line(self) -> None:
         text = self.get_edit_text()
         sol = text.rfind("\n", 0, self.edit_pos) + 1
         self.set_edit_pos(sol)
 
-    def _goto_end_of_line(self):
+    def _goto_end_of_line(self) -> None:
         text = self.get_edit_text()
         eol = text.find("\n", self.edit_pos)
         if eol == -1:
             eol = len(text)
         self.set_edit_pos(eol)
 
-    def _editor(self):
+    def _editor(self) -> None:
         self._parent._loop.screen.clear()
         new_text = click.edit(self.get_edit_text())
         if new_text is not None:
@@ -118,19 +125,24 @@ class ExtendedEdit(urwid.Edit):
 
 
 class PrioritySelector(urwid.Button):
-    HELP = [
+    HELP = (
         ("left", "Lower Priority"),
         ("right", "Higher Priority"),
-    ]
+    )
 
-    RANGES = [
+    RANGES = (
         [0],
         [9, 8, 7, 6],
         [5],
         [1, 2, 3, 4],
-    ]
+    )
 
-    def __init__(self, parent, priority, formatter_function):
+    def __init__(
+        self,
+        parent: urwid.Widget,
+        priority: int | None,
+        formatter_function: Callable[[int | None], str],
+    ) -> None:
         self._parent = parent
         self._label = urwid.SelectableIcon("", 0)
         urwid.WidgetWrap.__init__(self, self._label)
@@ -139,10 +151,10 @@ class PrioritySelector(urwid.Button):
         self._formatter = formatter_function
         self._set_label()
 
-    def _set_label(self):
+    def _set_label(self) -> None:
         self.set_label(self._formatter(self._priority))
 
-    def _update_label(self, delta=0):
+    def _update_label(self, delta: int = 0) -> None:
         for i, r in enumerate(PrioritySelector.RANGES):
             if self._priority in r:
                 self._priority = PrioritySelector.RANGES[
@@ -151,16 +163,20 @@ class PrioritySelector(urwid.Button):
                 self._set_label()
                 return
 
-    def keypress(self, size, key):
+    def keypress(
+        self,
+        size: tuple[int, int] | tuple[int] | tuple[()],
+        key: str,
+    ) -> None:
         if key in ["right", "enter"]:
             self._update_label(1)
-            return
+            return None
         if key == "left":
             self._update_label(-1)
-            return
+            return None
 
         return super().keypress(size, key)
 
     @property
-    def priority(self):
+    def priority(self) -> int | None:
         return self._priority

@@ -5,8 +5,6 @@ class TodomanError(Exception):
     Should not be raised directly.
     """
 
-    pass
-
 
 class NoSuchTodoError(TodomanError):
     EXIT_CODE = 20

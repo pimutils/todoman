@@ -1,6 +1,0 @@
-freezegun
-hypothesis
-pytest
-pytest-cov
-pytest-runner
-ruff

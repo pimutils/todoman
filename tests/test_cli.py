@@ -244,7 +244,7 @@ def test_dtstamp(tmpdir, runner, create):
     assert not result.exception
 
     db = Database([tmpdir.join("default")], tmpdir.join("/dtstamp_cache"))
-    todo = list(db.todos())[0]
+    todo = next(iter(db.todos()))
     assert todo.dtstamp is not None
     assert todo.dtstamp == datetime.datetime.now(tz=tzlocal())
 
@@ -260,7 +260,7 @@ def test_default_list(tmpdir, runner, create, config):
     assert not result.exception
 
     db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
-    todo = list(db.todos())[0]
+    todo = next(iter(db.todos()))
     assert todo.summary == "test default list"
 
 
@@ -276,7 +276,7 @@ def test_default_due(tmpdir, runner, create, default_due, expected_due_hours, co
 
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
     db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
-    todo = list(db.todos())[0]
+    todo = next(iter(db.todos()))
 
     if expected_due_hours is None:
         assert todo.due is None
@@ -375,7 +375,7 @@ def test_sorting_output(tmpdir, runner, create):
     )
 
     for args, order in all_examples:
-        result = runner.invoke(cli, ["list"] + args)
+        result = runner.invoke(cli, ["list", *args])
         assert not result.exception
         lines = result.output.splitlines()
         for i, task in enumerate(order):
@@ -536,9 +536,7 @@ def test_empty_list(tmpdir, runner, create):
             item.remove()
 
     result = runner.invoke(cli)
-    expected = (
-        "No lists found matching {}/*, create a directory for a new list"
-    ).format(tmpdir)
+    expected = f"No lists found matching {tmpdir}/*, create a directory for a new list"
 
     assert expected in result.output
 
@@ -846,7 +844,7 @@ def test_status_validation():
 
     @given(
         statuses=st.lists(
-            st.sampled_from(Todo.VALID_STATUSES + ("ANY",)),
+            st.sampled_from((*Todo.VALID_STATUSES, "ANY")),
             min_size=1,
             max_size=5,
             unique=True,
@@ -1023,7 +1021,7 @@ def test_default_priority(tmpdir, runner, create, config):
 
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
     db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
-    todo = list(db.todos())[0]
+    todo = next(iter(db.todos()))
 
     assert todo.priority == 3
 
@@ -1034,7 +1032,7 @@ def test_no_default_priority(tmpdir, runner, create):
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
 
     db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
-    todo = list(db.todos())[0]
+    todo = next(iter(db.todos()))
     assert todo.priority == 0
 
     todo_file = tmpdir.join("default").join(todo.filename)
@@ -1053,7 +1051,7 @@ def test_invalid_default_priority(config, runner, create):
 
 def test_default_command_args(config, runner):
     config.write(
-        'default_command = "list --sort=due --due 168 ' '--priority low --no-reverse"',
+        'default_command = "list --sort=due --due 168 --priority low --no-reverse"',
         "a",
     )
 

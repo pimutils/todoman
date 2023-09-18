@@ -31,7 +31,7 @@ def config(tmpdir, default_database):
         f'path = "{tmpdir}/*"\n'
         'date_format = "%Y-%m-%d"\n'
         'time_format = ""\n'
-        f'cache_path = "{str(tmpdir.join("cache.sqlite3"))}"\n'
+        f'cache_path = "{tmpdir.join("cache.sqlite3")!s}"\n'
     )
     return config_path
 
@@ -81,7 +81,7 @@ def now_for_tz():
 def todo_factory(default_database):
     def inner(**attributes):
         todo = model.Todo(new=True)
-        todo.list = list(default_database.lists())[0]
+        todo.list = next(iter(default_database.lists()))
 
         attributes.setdefault("summary", "YARR!")
         for name, value in attributes.items():
@@ -96,14 +96,12 @@ def todo_factory(default_database):
 
 @pytest.fixture()
 def default_formatter():
-    formatter = DefaultFormatter(tz_override=pytz.timezone("CET"))
-    return formatter
+    return DefaultFormatter(tz_override=pytz.timezone("CET"))
 
 
 @pytest.fixture()
 def humanized_formatter():
-    formatter = HumanizedFormatter(tz_override=pytz.timezone("CET"))
-    return formatter
+    return HumanizedFormatter(tz_override=pytz.timezone("CET"))
 
 
 @pytest.fixture(scope="session")

@@ -1,3 +1,71 @@
+[project]
+name = "todoman"
+authors = [
+    {name = "Hugo Osvaldo Barrera", email = "hugo@barrera.io"},
+]
+description = "A simple icalendar-based todo manager."
+readme = "README.rst"
+requires-python = ">=3.7"
+# keywords = ["TODO"]
+license = {text = "ISC"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Environment :: Console :: Curses",
+    "License :: OSI Approved :: ISC License (ISCL)",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Office/Business :: Scheduling",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "atomicwrites",
+    "click>=7.1,<9.0",
+    "click-log>=0.2.1",
+    "humanize",
+    "icalendar>=4.0.3",
+    "parsedatetime",
+    "python-dateutil",
+    "pyxdg",
+    "urwid",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = [
+    "freezegun",
+    "hypothesis",
+    "pytest",
+    "pytest-cov",
+    "pytest-runner",
+    "ruff",
+]
+docs = [
+    "sphinx_autorun",
+    "sphinx-click",
+    "sphinx_rtd_theme",
+]
+repl = [
+    "click-repl>=0.1.6",
+]
+
+[project.urls]
+homepage = "https://github.com/pimutils/todoman"
+documentation = "https://todoman.readthedocs.io/"
+changelog = "https://github.com/pimutils/todoman/blob/main/CHANGELOG.rst"
+issues = "https://github.com/pimutils/todoman/issues"
+
+[project.scripts]
+todo = "todoman.cli:cli"
+
+[tool.setuptools]
+packages = ["todoman"]
+
 [tool.ruff]
 select = [
     "E",

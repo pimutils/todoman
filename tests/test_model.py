@@ -22,9 +22,7 @@ def test_querying(create, tmpdir):
         for i, location in enumerate("abc"):
             create(
                 f"test{i}.ics",
-                ("UID:{}\nSUMMARY:test_querying\r\nLOCATION:{}\r\n").format(
-                    uuid4(), location
-                ),
+                f"UID:{uuid4()}\nSUMMARY:test_querying\r\nLOCATION:{location}\r\n",
                 list_name=list,
             )
 
@@ -197,13 +195,11 @@ def test_category_deletes_on_todo_delete(tmpdir, create, default_database):
     default_database.delete(todo)
     default_database.update_cache()
 
-    query = """
+    query = f"""
         SELECT distinct category
         FROM categories
-        WHERE categories.todos_id = '{}'
-        """.format(
-        todo.id,
-    )
+        WHERE categories.todos_id = '{todo.id}'
+        """
 
     categories = default_database.cache._conn.execute(query).fetchall()
     assert categories == []
