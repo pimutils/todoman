@@ -260,16 +260,16 @@ class Todo:
 
         Returns the todo that should be deleted.
         """
-        original = None
+        recurred = None
         if self.is_recurring and self.related:
-            original = self.related.pop()
-            self.rrule = original.rrule
+            recurred = self.related.pop()
+            self.rrule = recurred.rrule
 
         self.completed_at = None
         self.percent_complete = 0
         self.status = "NEEDS-ACTION"
 
-        return original
+        return recurred
 
     @cached_property
     def path(self) -> str:

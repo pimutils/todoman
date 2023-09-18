@@ -478,7 +478,7 @@ def done(ctx, todos):
     type=click.IntRange(0),
     callback=_validate_todos,
 )
-# @catch_errors
+@catch_errors
 def undo(ctx, todos):
     """Undo one or more tasks."""
     toremove = []
