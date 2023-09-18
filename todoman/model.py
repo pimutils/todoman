@@ -258,7 +258,7 @@ class Todo:
         If this todo belongs to a series, the one created at completion will
         be deleted.
 
-        Returns the todo that will be deleted.
+        Returns the todo that should be deleted.
         """
         original = None
         if self.is_recurring and self.related:
