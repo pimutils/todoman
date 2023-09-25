@@ -100,3 +100,8 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = "tests"
 addopts = "--cov=todoman --cov-report=term-missing --color=yes --verbose"
+
+[tool.coverage.report]
+exclude_lines = [
+    "if TYPE_CHECKING:",
+]
