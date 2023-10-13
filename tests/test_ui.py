@@ -138,6 +138,7 @@ def test_save_completed(check, completed, default_formatter, todo_factory):
     assert todo.is_completed is check
 
 
+@pytest.mark.skip("See: https://github.com/pimutils/todoman/issues/537")
 def test_ctrl_c_clears(default_formatter, todo_factory):
     todo = todo_factory()
     editor = TodoEditor(todo, [todo.list], default_formatter)
