@@ -18,7 +18,7 @@ Authors are listed in alphabetical order.
 * Christof Schulze <christof@christofschulze.com>
 * Doron Behar <me@doronbehar.com>
 * Guilhem Saurel <guilhem.saurel@gmail.com>
-* Hugo Osvaldo Barrera <hugo@barrera.io>
+* Hugo Osvaldo Barrera <hugo@whynothugo.nl>
 * Joachim Desroches <joachim.desroches@epfl.ch>
 * José Ribeiro <hello@jlbribeiro.com>
 * Mansimar Kaur <mansimarkaur.mks@gmail.com>

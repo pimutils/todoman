@@ -1,7 +1,7 @@
 [project]
 name = "todoman"
 authors = [
-    {name = "Hugo Osvaldo Barrera", email = "hugo@barrera.io"},
+    {name = "Hugo Osvaldo Barrera", email = "hugo@whynothugo.nl"},
 ]
 description = "A simple icalendar-based todo manager."
 readme = "README.rst"
