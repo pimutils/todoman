@@ -9,6 +9,7 @@ v4.4.0
 
 * Add support for Python 3.12. Todoman already worked with Python 3.12, but is
   now tested with this Python version in CI and has the relevant classifiers.
+* Fix crash when trying to use Python 3.9.
 
 v4.3.2
 ------
