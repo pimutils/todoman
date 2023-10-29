@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class TodomanError(Exception):
     """
     Base class for all our exceptions.

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import functools
 import glob
@@ -7,7 +9,6 @@ from contextlib import contextmanager
 from datetime import datetime
 from datetime import timedelta
 from os.path import isdir
-from typing import Tuple
 
 import click
 import click_log
@@ -97,7 +98,7 @@ def _validate_priority_param(ctx, param, val):
         raise click.BadParameter(e) from None
 
 
-def _validate_start_date_param(ctx, param, val) -> Tuple[bool, datetime] | None:
+def _validate_start_date_param(ctx, param, val) -> tuple[bool, datetime] | None:
     ctx = ctx.find_object(AppContext)
     if not val:
         return None
