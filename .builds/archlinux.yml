@@ -10,7 +10,7 @@ packages:
 sources:
   - https://github.com/pimutils/todoman
 secrets:
-  - 9a8d4d44-96f9-4365-beaa-aaa759c4f1c4
+  - 4db20548-55bc-4769-b6fe-005b20a4efb4 # PyPI token.
 environment:
   CODECOV_TOKEN: a4471483-7f55-411a-bf2f-f65a91013dc4
   CI: true
@@ -37,4 +37,4 @@ tasks:
       git describe --exact-match --tags || complete-build
   - publish: |
       cd todoman
-      twine upload dist/*
+      twine upload --non-interactive dist/*
