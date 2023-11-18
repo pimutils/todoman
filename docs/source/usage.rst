@@ -106,3 +106,10 @@ The tasks can be sorted with the ``--sort`` argument. Sorting may be done accord
     - ``start``
     - ``due``
     - ``last_modified``
+
+It is possible to prepend a ``-`` to a field to sort by that field in ascending
+order (by default they are sorted in descending order).
+
+Example::
+
+    todo list --sort due,-priority

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Hugo Osvaldo Barrera
+# Copyright (c) 2016-2023 Hugo Osvaldo Barrera
 # Copyright (c) 2013-2016 Christian Geier et al.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -19,6 +19,8 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+from __future__ import annotations
+
 import re
 from typing import Callable
 

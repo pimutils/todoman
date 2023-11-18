@@ -1,0 +1,25 @@
+# Run this with:
+#   hut builds submit publish-release.yaml
+image: archlinux
+packages:
+  - python-build
+  - python-setuptools-scm
+  - python-wheel
+  - twine
+sources:
+  - https://github.com/pimutils/todoman
+secrets:
+  - 4db20548-55bc-4769-b6fe-005b20a4efb4 # PyPI token.
+tasks:
+  - check: |
+      cd todoman
+      git fetch --tags
+
+      # Stop here unless this is a tag.
+      git describe --exact-match --tags || complete-build
+  - build: |
+      cd todoman
+      python -m build --no-isolation
+  - publish: |
+      cd todoman
+      twine upload --non-interactive dist/*

@@ -1,4 +1,5 @@
 # noqa: INP001
+from __future__ import annotations
 
 from typing import Iterator
 
@@ -52,8 +53,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 project = "Todoman"
-copyright = "2015-2020, Hugo Osvaldo Barrera"
-author = "Hugo Osvaldo Barrera <hugo@barrera.io>, et al"
+copyright = "2015-2023, Hugo Osvaldo Barrera"
+author = "Hugo Osvaldo Barrera <hugo@whynothugo.nl>, et al"
 
 # The short X.Y version.
 version = todoman.__version__

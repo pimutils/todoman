@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from todoman.cli import cli
 
 if __name__ == "__main__":
