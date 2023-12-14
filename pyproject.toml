@@ -6,7 +6,7 @@ authors = [
 description = "A simple icalendar-based todo manager."
 readme = "README.rst"
 requires-python = ">=3.7"
-# keywords = ["TODO"]
+keywords = ["todo", "task", "icalendar", "cli"]
 license = {text = "ISC"}
 classifiers = [
     "Development Status :: 5 - Production/Stable",
