@@ -381,7 +381,7 @@ class VtodoWriter:
         c.add_component(vtodo)
 
         with AtomicWriter(path, "wb").open() as f:
-            c.add("prodid", "io.barrera.todoman")
+            c.add("prodid", "nl.whynothugo.todoman")
             c.add("version", "2.0")
             f.write(c.to_ical())
 

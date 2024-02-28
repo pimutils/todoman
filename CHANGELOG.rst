@@ -4,6 +4,13 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v4.5.0
+------
+
+* The ``PRODID`` for new entries has changed ``io.barrera.todoman`` to
+  ``nl.whynothugo.todoman``. This has no functional impact, but may be relevant
+  when debugging the origin of specific files.
+
 v4.4.0
 ------
 
