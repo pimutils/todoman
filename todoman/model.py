@@ -963,7 +963,7 @@ class Cache:
         result = self._conn.execute("SELECT path, mtime FROM files")
         for row in result:
             path, mtime = row["path"], row["mtime"]
-            if paths_to_mtime.get(path, None) != mtime:
+            if paths_to_mtime.get(path) != mtime:
                 self.expire_file(path)
 
     def expire_file(self, path: str) -> None:

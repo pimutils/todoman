@@ -68,6 +68,9 @@ todo = "todoman.cli:cli"
 packages = ["todoman"]
 
 [tool.ruff]
+target-version = "py38"
+
+[tool.ruff.lint]
 select = [
     "E",
     "F",
@@ -83,9 +86,8 @@ select = [
     "SIM",
     "TID",
 ]
-target-version = "py38"
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 force-single-line = true
 required-imports = ["from __future__ import annotations"]
 

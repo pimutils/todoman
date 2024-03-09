@@ -21,9 +21,8 @@ class ReadOnlyTodoError(TodomanError):
 
     def __str__(self):
         return (
-            "Todo is in read-only mode because there are multiple todosin {}.".format(
-                self.args[0]
-            )
+            "Todo is in read-only mode because there are multiple todos "
+            f"in {self.args[0]}."
         )
 
 
@@ -31,8 +30,9 @@ class NoListsFoundError(TodomanError):
     EXIT_CODE = 22
 
     def __str__(self):
-        return "No lists found matching {}, create a directory for a new list.".format(
-            self.args[0]
+        return (
+            f"No lists found matching {self.args[0]}, create a "
+            "directory for a new list."
         )
 
 
