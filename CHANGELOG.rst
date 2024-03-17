@@ -10,6 +10,8 @@ v4.5.0
 * The ``PRODID`` for new entries has changed ``io.barrera.todoman`` to
   ``nl.whynothugo.todoman``. This has no functional impact, but may be relevant
   when debugging the origin of specific files.
+* Drop ``sphinx-autorun`` dependency for the docs as it has been unused for some
+  time now anyway.
 
 v4.4.0
 ------
