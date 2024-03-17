@@ -42,7 +42,6 @@ with open("confspec.tmp", "w") as file_:
 extensions = [
     "sphinx_click.ext",
     "sphinx.ext.autodoc",
-    "sphinx_autorun",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "sphinx_rtd_theme",
