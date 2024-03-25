@@ -8,6 +8,7 @@ from datetime import date
 from datetime import datetime
 from datetime import timedelta
 from datetime import tzinfo
+from tabulate import tabulate
 from time import mktime
 from typing import Iterable
 
@@ -73,11 +74,13 @@ class Formatter(ABC):
 class DefaultFormatter(Formatter):
     def __init__(
         self,
+        tablefmt: str = "plain",
         date_format: str = "%Y-%m-%d",
         time_format: str = "%H:%M",
         dt_separator: str = " ",
         tz_override: tzinfo | None = None,
     ) -> None:
+        self.tablefmt = tablefmt
         self.date_format = date_format
         self.time_format = time_format
         self.dt_separator = dt_separator
@@ -126,24 +129,23 @@ class DefaultFormatter(Formatter):
 
             recurring = "⟳" if todo.is_recurring else ""
 
-            if hide_list:
-                summary = f"{todo.summary} {percent}"
-            else:
+            summary = todo.summary
+            if not hide_list:
                 if not todo.list:
                     raise ValueError("Cannot format todo without a list")
 
-                summary = f"{todo.summary} {self.format_database(todo.list)}{percent}"
+                summary = f"{summary} {self.format_database(todo.list)}"
 
-            # TODO: add spaces on the left based on max todos"
+            table.append([
+                f"[{completed}]",
+                todo.id,
+                priority,
+                f"{due}{recurring}",
+                percent,
+                f"{summary}{categories}"
+            ])
 
-            # FIXME: double space when no priority
-            # split into parts to satisfy linter line too long
-            table.append(
-                f"[{completed}] {todo.id} {priority} {due} "
-                f"{recurring}{summary}{categories}"
-            )
-
-        return "\n".join(table)
+        return tabulate(table, tablefmt=self.tablefmt)
 
     def _due_colour(self, todo: Todo) -> str:
         now = self.now if isinstance(todo.due, datetime) else self.now.date()
