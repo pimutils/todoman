@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import contextlib
 import functools
 import glob
 import locale
@@ -336,11 +335,16 @@ def invoke_command(click_ctx, command):
     click_ctx.invoke(cli.commands[name], *args, **opts)
 
 
-with contextlib.suppress(ImportError):
-    import click_repl
+@cli.command()
+@click.pass_context
+def repl(ctx):
+    try:
+        from click_repl import repl
 
-    click_repl.register_repl(cli)
-    click_repl.register_repl(cli, name="shell")
+        repl(ctx)
+    except ImportError as e:
+        click.echo(e)
+        sys.exit(-1)
 
 
 @cli.command()
