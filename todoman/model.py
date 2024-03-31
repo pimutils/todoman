@@ -202,6 +202,10 @@ class Todo:
         return object.__setattr__(self, name, v)
 
     @property
+    def is_cancelled(self) -> bool:
+        return self.status == "CANCELLED"
+
+    @property
     def is_completed(self) -> bool:
         return bool(self.completed_at) or self.status in ("CANCELLED", "COMPLETED")
 

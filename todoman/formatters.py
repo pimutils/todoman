@@ -104,7 +104,11 @@ class DefaultFormatter(Formatter):
         # show dates that are in the future in yellow (in 24hs) or grey (future)
         table = []
         for todo in todos:
-            completed = "X" if todo.is_completed else " "
+            completed = " "
+            if todo.is_cancelled:
+                completed = "-"
+            elif todo.is_completed:
+                completed = "X"
             percent = todo.percent_complete or ""
             if percent:
                 percent = f" ({percent}%)"
