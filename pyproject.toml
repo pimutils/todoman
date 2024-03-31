@@ -38,13 +38,18 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+lint = [
+    "ruff",
+    "mypy",
+    "types-pytz",
+    "types-python-dateutil",
+]
 test = [
     "freezegun",
     "hypothesis",
     "pytest",
     "pytest-cov",
     "pytest-runner",
-    "ruff",
 ]
 docs = [
     "sphinx-click",
