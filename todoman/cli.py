@@ -111,7 +111,7 @@ def _validate_start_date_param(ctx, param, val) -> tuple[bool, datetime] | None:
         dt = ctx.formatter.parse_datetime(val[1])
         return is_before, dt
     except ValueError as e:
-        raise click.BadParameter(e) from None
+        raise click.BadParameter(str(e)) from None
 
 
 def _validate_startable_param(ctx, param, val):
