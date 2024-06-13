@@ -404,6 +404,13 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
 @cli.command()
 @pass_ctx
 @click.option(
+    "--read-description",
+    "-r",
+    is_flag=True,
+    default=False,
+    help="Read task description from stdin.",
+)
+@click.option(
     "--raw",
     is_flag=True,
     help=(
@@ -415,7 +422,7 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
 @_interactive_option
 @with_id_arg
 @catch_errors
-def edit(ctx, id, todo_properties, interactive, raw):
+def edit(ctx, id, todo_properties, interactive, read_description, raw):
     """
     Edit the task with id ID.
     """
@@ -430,6 +437,10 @@ def edit(ctx, id, todo_properties, interactive, raw):
         if value is not None and value != []:
             changes = True
             setattr(todo, key, value)
+
+    if read_description:
+        changes = True
+        todo.description = "\n".join(sys.stdin)
 
     if interactive or (not changes and interactive is None):
         ui = TodoEditor(todo, ctx.db.lists(), ctx.ui_formatter)
