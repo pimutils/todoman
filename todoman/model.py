@@ -61,16 +61,13 @@ class Todo:
         new: bool = False,
         list: TodoList | None = None,
     ) -> None:
-        """
-        Creates a new todo using `todo` as a source.
+        """Creates a new todo using `todo` as a source.
 
-        :param str filename: The name of the file for this todo. Defaults to
-            the <uid>.ics
-        :param mtime int: The last modified time for the file backing this
-            Todo.
-        :param bool new: Indicate that a new Todo is being created and should
-            be populated with default values.
-        :param TodoList list: The list to which this Todo belongs.
+        :param filename: The name of the file for this todo. Defaults to the <uid>.ics
+        :param int: The last modified time for the file backing this Todo.
+        :param new: Indicate that a new Todo is being created and should be populated
+            with default values.
+        :param list: The list to which this Todo belongs.
         """
         self.list = list
         now = datetime.now(LOCAL_TIMEZONE)
