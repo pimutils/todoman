@@ -12,6 +12,7 @@ v4.5.0
   when debugging the origin of specific files.
 * Drop ``sphinx-autorun`` dependency for the docs as it has been unused for some
   time now anyway.
+* Add a new ``path`` command which prints the full file path to a task.
 
 v4.4.0
 ------

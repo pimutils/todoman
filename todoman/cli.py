@@ -458,6 +458,16 @@ def show(ctx, id):
 
 @cli.command()
 @pass_ctx
+@with_id_arg
+@catch_errors
+def path(ctx, id):
+    """Print the path to a task's file."""
+    todo = ctx.db.todo(id, read_only=True)
+    click.echo(todo.path)
+
+
+@cli.command()
+@pass_ctx
 @click.argument(
     "todos",
     nargs=-1,
