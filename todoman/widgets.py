@@ -165,11 +165,7 @@ class PrioritySelector(urwid.Button):
                 self._set_label()
                 return
 
-    def keypress(
-        self,
-        size: tuple[int, int] | tuple[int] | tuple[()],
-        key: str,
-    ) -> None:
+    def keypress(self, size: tuple[int], key: str) -> None:
         if key in ["right", "enter"]:
             self._update_label(1)
             return None

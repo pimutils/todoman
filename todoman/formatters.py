@@ -38,6 +38,15 @@ def rgb_to_ansi(colour: str | None) -> str | None:
 
 class Formatter(ABC):
     @abstractmethod
+    def __init__(
+        self,
+        date_format: str = "%Y-%m-%d",
+        time_format: str = "%H:%M",
+        dt_separator: str = " ",
+    ) -> None:
+        """Create a new formatter instance."""
+
+    @abstractmethod
     def compact(self, todo: Todo) -> str:
         """Render a compact todo (usually in a single line)"""
 
@@ -68,6 +77,18 @@ class Formatter(ABC):
     @abstractmethod
     def format_database(self, database: TodoList) -> str:
         """Format the name of a single database."""
+
+    @abstractmethod
+    def parse_categories(self, categories: str) -> list[str]:
+        """Parse multiple categories."""
+
+    @abstractmethod
+    def format_categories(self, categories: Iterable[str]) -> str:
+        """Format multiple categories."""
+
+    @abstractmethod
+    def format_priority(self, priority: int | None) -> str:
+        """Format a todo priority"""
 
 
 class DefaultFormatter(Formatter):
@@ -174,6 +195,7 @@ class DefaultFormatter(Formatter):
 
         return f"{self.compact(todo)}{''.join(extra_lines)}"
 
+    # FIXME: cannot return `int`, but porcelain subclasses this (it shouldn't)
     def format_datetime(self, dt: date | None) -> str | int | None:
         if not dt:
             return ""
@@ -323,7 +345,7 @@ class PorcelainFormatter(DefaultFormatter):
             return int(dt.timestamp())
         return None
 
-    def parse_datetime(self, value: str | None) -> datetime | None:
+    def parse_datetime(self, value: str | float | None) -> datetime | None:
         if value:
             return datetime.fromtimestamp(float(value), tz=pytz.UTC)
         return None

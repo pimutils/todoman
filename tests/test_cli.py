@@ -789,7 +789,7 @@ def test_status_validation():
         )
     )
     def run_test(statuses):
-        validated = cli.validate_status(val=",".join(statuses)).split(",")
+        validated = cli.validate_status(None, None, val=",".join(statuses)).split(",")
 
         if "ANY" in statuses:
             assert len(validated) == 4
@@ -806,10 +806,10 @@ def test_bad_status_validation():
     from todoman import cli
 
     with pytest.raises(click.BadParameter):
-        cli.validate_status(val="INVALID")
+        cli.validate_status(None, None, val="INVALID")
 
     with pytest.raises(click.BadParameter):
-        cli.validate_status(val="IN-PROGRESS")
+        cli.validate_status(None, None, val="IN-PROGRESS")
 
 
 def test_status_filtering(runner, todo_factory):
