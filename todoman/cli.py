@@ -338,6 +338,7 @@ def invoke_command(click_ctx, command):
 @cli.command()
 @click.pass_context
 def repl(ctx):
+    """Start an interactive shell."""
     try:
         from click_repl import repl
 
