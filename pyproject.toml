@@ -100,7 +100,7 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
 
 [tool.setuptools_scm]
 write_to = "todoman/version.py"
-version_scheme = "post-release"
+version_scheme = "no-guess-dev"
 
 [tool.mypy]
 ignore_missing_imports = true
