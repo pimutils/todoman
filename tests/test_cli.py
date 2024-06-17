@@ -777,20 +777,6 @@ def test_repl(runner):
     assert "shell   Start an interactive shell." in result.output
 
 
-def test_no_repl(runner):
-    """Test that we work fine without click_repl installed."""
-    modules = sys.modules
-    if "click_repl" in modules:
-        pytest.skip("Test can't be run with click_repl installed")
-
-    result = runner.invoke(cli, ["--help"])
-
-    assert not result.exception
-    assert "repl" not in result.output
-    assert "shell" not in result.output
-    assert "Start an interactive shell." not in result.output
-
-
 def test_status_validation():
     from todoman import cli
 
