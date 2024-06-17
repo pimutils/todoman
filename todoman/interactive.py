@@ -1,8 +1,17 @@
 from __future__ import annotations
 
+import typing
+
 import urwid
 
 from todoman import widgets
+
+if typing.TYPE_CHECKING:
+    from typing import Iterable
+
+    from todoman.formatters import Formatter
+    from todoman.model import Todo
+    from todoman.model import TodoList
 
 _palette = [("error", "light red", "")]
 
@@ -12,7 +21,12 @@ class TodoEditor:
     The UI for a single todo entry.
     """
 
-    def __init__(self, todo, lists, formatter):
+    def __init__(
+        self,
+        todo: Todo,
+        lists: Iterable[TodoList],
+        formatter: Formatter,
+    ) -> None:
         """
         :param model.Todo todo: The todo object which will be edited.
         """
@@ -58,7 +72,7 @@ class TodoEditor:
 
         self._ui = urwid.Columns([self.left_column, right_column])
 
-    def _init_basic_fields(self):
+    def _init_basic_fields(self) -> None:
         self._summary = widgets.ExtendedEdit(
             parent=self,
             edit_text=self.todo.summary,
@@ -91,8 +105,8 @@ class TodoEditor:
             formatter_function=self.formatter.format_priority,
         )
 
-    def _init_list_selector(self):
-        self.list_selector = []
+    def _init_list_selector(self) -> None:
+        self.list_selector: list[urwid.RadioButton] = []
         for _list in self.lists:
             urwid.RadioButton(
                 self.list_selector,
@@ -102,7 +116,7 @@ class TodoEditor:
                 user_data=_list,
             )
 
-    def _init_help_text(self):
+    def _init_help_text(self) -> None:
         self._help_text = urwid.Text(
             "\n\n"
             "Global:\n"
@@ -116,21 +130,28 @@ class TodoEditor:
             + "\n".join(f" {k}: {v}" for k, v in widgets.PrioritySelector.HELP)
         )
 
-    def _change_current_list(self, radio_button, new_state, new_list):
+    def _change_current_list(
+        self,
+        radio_button: urwid.RadioButton,
+        new_state: bool,
+        new_list: TodoList,
+    ) -> None:
         if new_state:
             self.current_list = new_list
 
-    def _toggle_help(self):
+    def _toggle_help(self) -> None:
         if self.left_column.body.contents[-1] is self._help_text:
             self.left_column.body.contents.pop()
         else:
             self.left_column.body.contents.append(self._help_text)
+
+        assert self._loop, "Loop must be defined while toggling help"
         self._loop.draw_screen()
 
-    def set_status(self, text):
+    def set_status(self, text: tuple[str, str]) -> None:
         self._status.set_text(text)
 
-    def edit(self):
+    def edit(self) -> None:
         """Shows the UI for editing a given todo."""
         self._loop = urwid.MainLoop(
             self._ui,
@@ -138,13 +159,14 @@ class TodoEditor:
             unhandled_input=self._keypress,
             handle_mouse=False,
         )
+        assert self._loop, "Loop must remain defined"
         try:
             self._loop.run()
         except KeyboardInterrupt:
             self._loop.stop()  # Try to leave terminal in usable state
         self._loop = None
 
-    def _save(self, btn=None):
+    def _save(self, btn: urwid.Button | None = None) -> None:
         try:
             self._save_inner()
         except Exception as e:
@@ -152,7 +174,7 @@ class TodoEditor:
         else:
             raise urwid.ExitMainLoop
 
-    def _save_inner(self):
+    def _save_inner(self) -> None:
         self.todo.list = self.current_list
         self.todo.summary = self.summary
         self.todo.description = self.description
@@ -165,7 +187,7 @@ class TodoEditor:
             self.todo.status = "NEEDS-ACTION"
             self.todo.completed_at = None
         self.todo.categories = [c.strip() for c in self.categories.split(",")]
-        self.todo.priority = self.priority
+        self.todo.priority = self.priority or 0
 
         # TODO: categories
         # TODO: comment
@@ -174,36 +196,36 @@ class TodoEditor:
         # geo (lat, lon)
         # RESOURCE: the main room
 
-    def _keypress(self, key):
+    def _keypress(self, key: str) -> None:
         if key.lower() == "f1":
             self._toggle_help()
         elif key == "ctrl s":
             self._save()
 
     @property
-    def summary(self):
+    def summary(self) -> str:
         return self._summary.edit_text
 
     @property
-    def description(self):
+    def description(self) -> str:
         return self._description.edit_text
 
     @property
-    def location(self):
+    def location(self) -> str:
         return self._location.edit_text
 
     @property
-    def due(self):
+    def due(self) -> str:
         return self._due.edit_text
 
     @property
-    def dtstart(self):
+    def dtstart(self) -> str:
         return self._dtstart.edit_text
 
     @property
-    def categories(self):
+    def categories(self) -> str:
         return self._categories.edit_text
 
     @property
-    def priority(self):
+    def priority(self) -> int | None:
         return self._priority.priority

@@ -11,8 +11,8 @@ from datetime import timedelta
 from functools import cached_property
 from os.path import normpath
 from os.path import split
-from typing import Any
 from typing import Iterable
+from typing import Iterator
 from uuid import uuid4
 
 import icalendar
@@ -305,27 +305,6 @@ class VtodoWriter:
 
         return dt.astimezone(pytz.UTC)
 
-    def serialize_field(self, name: str, value: Any) -> int | str | date:
-        if name in Todo.RRULE_FIELDS:
-            return icalendar.vRecur.from_ical(value)
-        if name in Todo.DATETIME_FIELDS:
-            return self.normalize_datetime(value)
-        if name in Todo.LIST_FIELDS:
-            return value
-        if name in Todo.INT_FIELDS:
-            return int(value)
-        if name in Todo.STRING_FIELDS:
-            return value
-
-        raise Exception(f"Unknown field {name} serialized.")
-
-    def set_field(self, name: str, value: Any) -> None:
-        # If serialized value is None:
-        self.vtodo.pop(name)
-        if value:
-            logger.debug("Setting field %s to %s.", name, value)
-            self.vtodo.add(name, value)
-
     def serialize(self, original: icalendar.Todo = None) -> icalendar.Todo:
         """Serialize a Todo into a VTODO."""
         if not original:
@@ -335,10 +314,24 @@ class VtodoWriter:
         for source, target in self.FIELD_MAP.items():
             self.vtodo.pop(target)
             if getattr(self.todo, source):
-                self.set_field(
-                    target,
-                    self.serialize_field(source, getattr(self.todo, source)),
-                )
+                raw = getattr(self.todo, source)
+                if source in Todo.RRULE_FIELDS:
+                    value = icalendar.vRecur.from_ical(raw)
+                elif source in Todo.DATETIME_FIELDS:
+                    value = self.normalize_datetime(raw)
+                elif source in Todo.LIST_FIELDS:
+                    value = raw
+                elif source in Todo.INT_FIELDS:
+                    value = int(raw)
+                elif source in Todo.STRING_FIELDS:
+                    value = raw
+                else:
+                    raise Exception(f"Unknown field {source} serialized.")
+
+                self.vtodo.pop(target)  # Removes if None, avoids dupes
+                if value:
+                    logger.debug("Setting field %s to %s.", target, value)
+                    self.vtodo.add(target, value)
 
         return self.vtodo
 
@@ -719,7 +712,7 @@ class Cache:
         start: tuple[bool, datetime] | None = None,
         startable: bool = False,
         status: str = "NEEDS-ACTION,IN-PROCESS",
-    ) -> Iterable[Todo]:
+    ) -> Iterator[Todo]:
         """
         Returns filtered cached todos, in a specified order.
 
@@ -739,8 +732,8 @@ class Cache:
         :param reverse: Reverse the order of the todos after sorting.
         :param due: Return only todos due within ``due`` hours.
         :param priority: Only return todos with priority at least as high as specified.
-        :param  start: Return only todos before/after ``start`` date
-        :param  status: Return only todos with any of the given statuses.
+        :param start: Return only todos before/after ``start`` date
+        :param status: Return only todos with any of the given statuses.
         :return: A sorted, filtered list of todos.
         """
         extra_where = []
@@ -895,7 +888,7 @@ class Cache:
         todo.rrule = row["rrule"]
         return todo
 
-    def lists(self) -> Iterable[TodoList]:
+    def lists(self) -> Iterator[TodoList]:
         result = self._conn.execute("SELECT * FROM lists")
         for row in result:
             yield TodoList(
@@ -1072,13 +1065,13 @@ class Database:
 
         self.cache.save_to_disk()
 
-    def todos(self, **kwargs: Any) -> Iterable[Todo]:
+    def todos(self, **kwargs) -> Iterator[Todo]:
         return self.cache.todos(**kwargs)
 
-    def todo(self, id: int, **kwargs: Any) -> Todo:
+    def todo(self, id: int, **kwargs) -> Todo:
         return self.cache.todo(id, **kwargs)
 
-    def lists(self) -> Iterable[TodoList]:
+    def lists(self) -> Iterator[TodoList]:
         return self.cache.lists()
 
     def move(self, todo: Todo, new_list: TodoList, from_list: TodoList) -> None:

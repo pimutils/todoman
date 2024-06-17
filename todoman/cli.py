@@ -5,9 +5,14 @@ import glob
 import locale
 import sys
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import date
 from datetime import timedelta
 from os.path import isdir
+from typing import Callable
+from typing import Iterator
+from typing import Literal
+from typing import ParamSpec
+from typing import TypeVar
 
 import click
 import click_log
@@ -19,13 +24,14 @@ from todoman.configuration import load_config
 from todoman.interactive import TodoEditor
 from todoman.model import Database
 from todoman.model import Todo
+from todoman.model import TodoList
 from todoman.model import cached_property
 
 click_log.basic_config()
 
 
 @contextmanager
-def handle_error():
+def handle_error() -> Iterator[None]:
     try:
         yield
     except exceptions.TodomanError as e:
@@ -33,9 +39,13 @@ def handle_error():
         sys.exit(e.EXIT_CODE)
 
 
-def catch_errors(f):
+_T = TypeVar("_T")
+_P = ParamSpec("_P")
+
+
+def catch_errors(f: Callable[_P, _T]) -> Callable[_P, _T]:
     @functools.wraps(f)
-    def wrapper(*a, **kw):
+    def wrapper(*a, **kw) -> _T:
         with handle_error():
             return f(*a, **kw)
 
@@ -46,12 +56,21 @@ TODO_ID_MIN = 1
 with_id_arg = click.argument("id", type=click.IntRange(min=TODO_ID_MIN))
 
 
-def _validate_lists_param(ctx, param=None, lists=()):
-    return [_validate_list_param(ctx, name=list_) for list_ in lists]
+def _validate_lists_param(
+    ctx: click.Context,
+    param: click.Parameter,
+    lists: list[str],
+) -> list[TodoList]:
+    return [_validate_list_param(ctx, param, name=list_) for list_ in lists]
 
 
-def _validate_list_param(ctx, param=None, name=None):
-    ctx = ctx.find_object(AppContext)
+def _validate_list_param(
+    click_ctx: click.Context,
+    param: click.Parameter,
+    name: str,
+) -> TodoList:
+    ctx = click_ctx.find_object(AppContext)
+    assert ctx, "AppContext must be defined"
     if name is None:
         if ctx.config["default_list"]:
             name = ctx.config["default_list"]
@@ -76,29 +95,49 @@ def _validate_list_param(ctx, param=None, name=None):
     )
 
 
-def _validate_date_param(ctx, param, val):
-    ctx = ctx.find_object(AppContext)
+def _validate_date_param(
+    click_ctx: click.Context,
+    param: click.Parameter,
+    val: str,
+) -> date | None:
+    ctx = click_ctx.find_object(AppContext)
+    assert ctx, "AppContext must be defined"
     try:
         return ctx.formatter.parse_datetime(val)
     except ValueError as e:
-        raise click.BadParameter(e) from None
+        raise click.BadParameter(str(e)) from None
 
 
-def _validate_categories_param(ctx, param, val):
-    ctx = ctx.find_object(AppContext)
+def _validate_categories_param(
+    click_ctx: click.Context,
+    param: click.Parameter,
+    val: str,
+) -> list[str]:
+    ctx = click_ctx.find_object(AppContext)
+    assert ctx, "AppContext must be defined"
     return ctx.formatter.parse_categories(val)
 
 
-def _validate_priority_param(ctx, param, val):
-    ctx = ctx.find_object(AppContext)
+def _validate_priority_param(
+    click_ctx: click.Context,
+    param: click.Parameter,
+    val: str,
+) -> int | None:
+    ctx = click_ctx.find_object(AppContext)
+    assert ctx, "AppContext must be defined"
     try:
         return ctx.formatter.parse_priority(val)
     except ValueError as e:
-        raise click.BadParameter(e) from None
+        raise click.BadParameter(str(e)) from None
 
 
-def _validate_start_date_param(ctx, param, val) -> tuple[bool, datetime] | None:
-    ctx = ctx.find_object(AppContext)
+def _validate_start_date_param(
+    click_ctx: click.Context,
+    param: click.Parameter,
+    val: str,
+) -> tuple[bool, date] | None:
+    ctx = click_ctx.find_object(AppContext)
+    assert ctx, "AppContext must be defined"
     if not val:
         return None
 
@@ -109,23 +148,35 @@ def _validate_start_date_param(ctx, param, val) -> tuple[bool, datetime] | None:
 
     try:
         dt = ctx.formatter.parse_datetime(val[1])
+        if dt is None:
+            return None
         return is_before, dt
     except ValueError as e:
         raise click.BadParameter(str(e)) from None
 
 
-def _validate_startable_param(ctx, param, val):
-    ctx = ctx.find_object(AppContext)
+def _validate_startable_param(
+    click_ctx: click.Context,
+    param: click.Parameter,
+    val: bool,
+) -> bool:
+    ctx = click_ctx.find_object(AppContext)
+    assert ctx, "AppContext must be defined"
     return val or ctx.config["startable"]
 
 
-def _validate_todos(ctx, param, val):
-    ctx = ctx.find_object(AppContext)
+def _validate_todos(
+    click_ctx: click.Context,
+    param: click.Parameter,
+    val: list[int],
+) -> list[Todo]:
+    ctx = click_ctx.find_object(AppContext)
+    assert ctx, "AppContext must be defined"
     with handle_error():
         return [ctx.db.todo(int(id)) for id in val]
 
 
-def _sort_callback(ctx, param, val):
+def _sort_callback(ctx: click.Context, param: click.Parameter, val: str) -> list[str]:
     fields = val.split(",") if val else []
     for field in fields:
         if field.startswith("-"):
@@ -137,7 +188,7 @@ def _sort_callback(ctx, param, val):
     return fields
 
 
-def validate_status(ctx=None, param=None, val=None) -> str:
+def validate_status(ctx: AppContext, param: click.Parameter, val: str) -> str:
     statuses = val.upper().split(",")
 
     if "ANY" in statuses:
@@ -154,7 +205,7 @@ def validate_status(ctx=None, param=None, val=None) -> str:
     return val
 
 
-def _todo_property_options(command):
+def _todo_property_options(command: Callable) -> Callable:
     click.option(
         "--category",
         "-c",
@@ -188,7 +239,7 @@ def _todo_property_options(command):
     )(command)
 
     @functools.wraps(command)
-    def command_wrap(*a, **kw):
+    def command_wrap(*a, **kw) -> click.Command:
         kw["todo_properties"] = {
             key: kw.pop(key) for key in ("due", "start", "location", "priority")
         }
@@ -202,13 +253,12 @@ def _todo_property_options(command):
 
 
 class AppContext:
-    def __init__(self):
-        self.config = None
-        self.db = None
-        self.formatter_class = None
+    config: dict  # TODO: better typing
+    db: Database
+    formatter_class: type[formatters.Formatter]
 
     @cached_property
-    def ui_formatter(self):
+    def ui_formatter(self) -> formatters.Formatter:
         return formatters.DefaultFormatter(
             self.config["date_format"],
             self.config["time_format"],
@@ -216,7 +266,7 @@ class AppContext:
         )
 
     @cached_property
-    def formatter(self):
+    def formatter(self) -> formatters.Formatter:
         return self.formatter_class(
             self.config["date_format"],
             self.config["time_format"],
@@ -276,7 +326,13 @@ _interactive_option = click.option(
 @click.pass_context
 @click.version_option(prog_name="todoman")
 @catch_errors
-def cli(click_ctx, colour, porcelain, humanize, config):
+def cli(
+    click_ctx: click.Context,
+    colour: Literal["always"] | Literal["auto"] | Literal["never"],
+    porcelain: bool,
+    humanize: bool,
+    config: str,
+) -> None:
     ctx = click_ctx.ensure_object(AppContext)
     try:
         ctx.config = load_config(config)
@@ -324,20 +380,21 @@ def cli(click_ctx, colour, porcelain, humanize, config):
         )
 
 
-def invoke_command(click_ctx, command):
+def invoke_command(click_ctx: click.Context, command: str) -> None:
     name, *raw_args = command.split(" ")
     if name not in cli.commands:
         raise click.ClickException("Invalid setting for [default_command]")
     parser = cli.commands[name].make_parser(click_ctx)
     opts, args, param_order = parser.parse_args(raw_args)
     for param in param_order:
-        opts[param.name] = param.handle_parse_result(click_ctx, opts, args)[0]
+        if param.name:
+            opts[param.name] = param.handle_parse_result(click_ctx, opts, args)[0]
     click_ctx.invoke(cli.commands[name], *args, **opts)
 
 
 @cli.command()
 @click.pass_context
-def repl(ctx):
+def repl(ctx: click.Context) -> None:
     """Start an interactive shell."""
     try:
         from click_repl import repl
@@ -367,7 +424,14 @@ def repl(ctx):
 @_interactive_option
 @pass_ctx
 @catch_errors
-def new(ctx, summary, list, todo_properties, read_description, interactive):
+def new(
+    ctx: AppContext,
+    summary: str,
+    list: TodoList,
+    todo_properties: dict,
+    read_description: bool,
+    interactive: bool,
+) -> None:
     """
     Create a new task with SUMMARY.
     """
@@ -376,6 +440,7 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
 
     default_due = ctx.config["default_due"]
     if default_due:
+        assert todo.created_at, "create_at must be defined for new Todo"
         todo.due = todo.created_at + timedelta(hours=default_due)
 
     default_priority = ctx.config["default_priority"]
@@ -416,7 +481,13 @@ def new(ctx, summary, list, todo_properties, read_description, interactive):
 @_interactive_option
 @with_id_arg
 @catch_errors
-def edit(ctx, id, todo_properties, interactive, raw):
+def edit(
+    ctx: AppContext,
+    id: int,
+    todo_properties: dict,
+    interactive: bool,
+    raw: bool,
+) -> None:
     """
     Edit the task with id ID.
     """
@@ -438,6 +509,8 @@ def edit(ctx, id, todo_properties, interactive, raw):
 
     # This little dance avoids duplicates when changing the list:
     new_list = todo.list
+    assert new_list, "New list cannot be None"
+    assert old_list, "Original list cannot be None"
     todo.list = old_list
     ctx.db.save(todo)
     if old_list != new_list:
@@ -449,7 +522,7 @@ def edit(ctx, id, todo_properties, interactive, raw):
 @pass_ctx
 @with_id_arg
 @catch_errors
-def show(ctx, id):
+def show(ctx: AppContext, id: int) -> None:
     """
     Show details about a task.
     """
@@ -461,7 +534,7 @@ def show(ctx, id):
 @pass_ctx
 @with_id_arg
 @catch_errors
-def path(ctx, id):
+def path(ctx: AppContext, id: int) -> None:
     """Print the path to a task's file."""
     todo = ctx.db.todo(id, read_only=True)
     click.echo(todo.path)
@@ -477,7 +550,7 @@ def path(ctx, id):
     callback=_validate_todos,
 )
 @catch_errors
-def done(ctx, todos):
+def done(ctx: AppContext, todos: list[Todo]) -> None:
     """Mark one or more tasks as done."""
     for todo in todos:
         todo.complete()
@@ -495,7 +568,7 @@ def done(ctx, todos):
     callback=_validate_todos,
 )
 @catch_errors
-def cancel(ctx, todos):
+def cancel(ctx: AppContext, todos: list[Todo]) -> None:
     """Cancel one or more tasks."""
     for todo in todos:
         todo.cancel()
@@ -507,7 +580,7 @@ def cancel(ctx, todos):
 @pass_ctx
 @click.confirmation_option(prompt="Are you sure you want to delete all done tasks?")
 @catch_errors
-def flush(ctx):
+def flush(ctx: AppContext) -> None:
     """
     Delete done tasks. This will also clear the cache to reset task IDs.
     """
@@ -521,7 +594,7 @@ def flush(ctx):
 @click.argument("ids", nargs=-1, required=True, type=click.IntRange(0))
 @click.option("--yes", is_flag=True, default=False)
 @catch_errors
-def delete(ctx, ids, yes):
+def delete(ctx: AppContext, ids: list[int], yes: bool) -> None:
     """
     Delete tasks.
 
@@ -551,7 +624,7 @@ def delete(ctx, ids, yes):
 )
 @click.argument("ids", nargs=-1, required=True, type=click.IntRange(0))
 @catch_errors
-def copy(ctx, list, ids):
+def copy(ctx: AppContext, list: TodoList, ids: list[int]) -> None:
     """Copy tasks to another list."""
 
     for id in ids:
@@ -569,12 +642,13 @@ def copy(ctx, list, ids):
 )
 @click.argument("ids", nargs=-1, required=True, type=click.IntRange(0))
 @catch_errors
-def move(ctx, list, ids):
+def move(ctx: AppContext, list: TodoList, ids: list[int]) -> None:
     """Move tasks to another list."""
 
     for id in ids:
         todo = ctx.db.todo(id)
         click.echo(ctx.formatter.compact(todo))
+        assert todo.list, "Source todo must have a list"
         ctx.db.move(todo, new_list=list, from_list=todo.list)
 
 
@@ -648,7 +722,7 @@ def move(ctx, list, ids):
     ),
 )
 @catch_errors
-def list_command(ctx, *args, **kwargs):
+def list_command(ctx: AppContext, *args, **kwargs) -> None:
     """
     List tasks (default). Filters any completed or cancelled tasks by default.
 
