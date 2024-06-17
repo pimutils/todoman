@@ -578,7 +578,7 @@ def move(ctx, list, ids):
         ctx.db.move(todo, new_list=list, from_list=todo.list)
 
 
-@cli.command()
+@cli.command(name="list")
 @pass_ctx
 @click.argument("lists", nargs=-1, callback=_validate_lists_param)
 @click.option("--location", help="Only show tasks with location containg TEXT")
@@ -648,7 +648,7 @@ def move(ctx, list, ids):
     ),
 )
 @catch_errors
-def list(ctx, *args, **kwargs):
+def list_command(ctx, *args, **kwargs):
     """
     List tasks (default). Filters any completed or cancelled tasks by default.
 
