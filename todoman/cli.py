@@ -666,7 +666,7 @@ def list_command(ctx, *args, **kwargs):
     The following commands can further filter shown todos, or include those
     omited by default:
     """
-    hide_list = (len([_ for _ in ctx.db.lists()]) == 1) or (len(kwargs["lists"]) == 1)
+    hide_list = (len(list(ctx.db.lists())) == 1) or (len(kwargs["lists"]) == 1)
 
     kwargs["categories"] = kwargs.pop("category")
 
