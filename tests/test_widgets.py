@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from unittest import mock
 
+from todoman.formatters import DefaultFormatter
 from todoman.widgets import ExtendedEdit
 from todoman.widgets import PrioritySelector
 
@@ -11,133 +12,133 @@ from todoman.widgets import PrioritySelector
 BASE_STRING = "The lazy fox bla bla\n@ät"
 
 
-def test_extended_edit_delete_word():
+def test_extended_edit_delete_word() -> None:
     extended_edit = ExtendedEdit(None)
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 9
-    extended_edit.keypress(10, "ctrl w")
+    extended_edit.keypress((10,), "ctrl w")
     assert extended_edit.edit_pos == 4
     assert extended_edit.get_edit_text() == "The fox bla bla\n@ät"
 
     extended_edit.set_edit_text("The-lazy-fox-bla-bla\n@ät")
     extended_edit.edit_pos = 8
-    extended_edit.keypress(10, "ctrl w")
+    extended_edit.keypress((10,), "ctrl w")
     assert extended_edit.edit_pos == 4
     assert extended_edit.get_edit_text() == "The--fox-bla-bla\n@ät"
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 6
-    extended_edit.keypress(10, "ctrl w")
+    extended_edit.keypress((10,), "ctrl w")
     assert extended_edit.edit_pos == 4
     assert extended_edit.get_edit_text() == "The zy fox bla bla\n@ät"
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 0
-    extended_edit.keypress(10, "ctrl w")
+    extended_edit.keypress((10,), "ctrl w")
     assert extended_edit.edit_pos == 0
     assert extended_edit.get_edit_text() == BASE_STRING
 
 
-def test_extended_edit_delete_sol():
+def test_extended_edit_delete_sol() -> None:
     extended_edit = ExtendedEdit(None)
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 9
-    extended_edit.keypress(10, "ctrl u")
+    extended_edit.keypress((10,), "ctrl u")
     assert extended_edit.edit_pos == 0
     assert extended_edit.get_edit_text() == "fox bla bla\n@ät"
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 0
-    extended_edit.keypress(10, "ctrl u")
+    extended_edit.keypress((10,), "ctrl u")
     assert extended_edit.edit_pos == 0
     assert extended_edit.get_edit_text() == BASE_STRING
 
 
-def test_extended_edit_delete_eol():
+def test_extended_edit_delete_eol() -> None:
     extended_edit = ExtendedEdit(None)
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 9
-    extended_edit.keypress(10, "ctrl k")
+    extended_edit.keypress((10,), "ctrl k")
     assert extended_edit.edit_pos == 9
     assert extended_edit.get_edit_text() == "The lazy \n@ät"
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 20
-    extended_edit.keypress(10, "ctrl k")
+    extended_edit.keypress((10,), "ctrl k")
     assert extended_edit.edit_pos == 20
     assert extended_edit.get_edit_text() == BASE_STRING
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 24
-    extended_edit.keypress(10, "ctrl k")
+    extended_edit.keypress((10,), "ctrl k")
     assert extended_edit.edit_pos == 24
     assert extended_edit.get_edit_text() == BASE_STRING
 
 
-def test_extended_edit_goto_sol():
+def test_extended_edit_goto_sol() -> None:
     extended_edit = ExtendedEdit(None)
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 9
-    extended_edit.keypress(10, "ctrl a")
+    extended_edit.keypress((10,), "ctrl a")
     assert extended_edit.edit_pos == 0
     assert extended_edit.get_edit_text() == BASE_STRING
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 23
-    extended_edit.keypress(10, "ctrl a")
+    extended_edit.keypress((10,), "ctrl a")
     assert extended_edit.edit_pos == 21
     assert extended_edit.get_edit_text() == BASE_STRING
 
 
-def test_extended_edit_goto_eol():
+def test_extended_edit_goto_eol() -> None:
     extended_edit = ExtendedEdit(None)
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 9
-    extended_edit.keypress(10, "ctrl e")
+    extended_edit.keypress((10,), "ctrl e")
     assert extended_edit.edit_pos == 20
     assert extended_edit.get_edit_text() == BASE_STRING
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 22
-    extended_edit.keypress(10, "ctrl e")
+    extended_edit.keypress((10,), "ctrl e")
     assert extended_edit.edit_pos == 24
     assert extended_edit.get_edit_text() == BASE_STRING
 
 
-def test_extended_edit_delete_next_char():
+def test_extended_edit_delete_next_char() -> None:
     extended_edit = ExtendedEdit(None)
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 9
-    extended_edit.keypress(10, "ctrl d")
+    extended_edit.keypress((10,), "ctrl d")
     assert extended_edit.edit_pos == 9
     assert extended_edit.get_edit_text() == "The lazy ox bla bla\n@ät"
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 0
-    extended_edit.keypress(10, "ctrl d")
+    extended_edit.keypress((10,), "ctrl d")
     assert extended_edit.edit_pos == 0
     assert extended_edit.get_edit_text() == "he lazy fox bla bla\n@ät"
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 24
-    extended_edit.keypress(10, "ctrl d")
+    extended_edit.keypress((10,), "ctrl d")
     assert extended_edit.edit_pos == 24
     assert extended_edit.get_edit_text() == "The lazy fox bla bla\n@ät"
 
     extended_edit.set_edit_text(BASE_STRING)
     extended_edit.edit_pos = 24
-    extended_edit.keypress(10, "ctrl d")
+    extended_edit.keypress((10,), "ctrl d")
     assert extended_edit.edit_pos == 24
     assert extended_edit.get_edit_text() == "The lazy fox bla bla\n@ät"
 
 
-def test_extended_edit_input():
+def test_extended_edit_input() -> None:
     """
     Very basic test to make sure we don't break basic editing
 
@@ -151,53 +152,53 @@ def test_extended_edit_input():
     assert extended_edit.get_edit_text() == "hi"
 
 
-def test_extended_edit_editor():
+def test_extended_edit_editor() -> None:
     extended_edit = ExtendedEdit(mock.MagicMock())
     extended_edit.set_edit_text(BASE_STRING)
 
     with mock.patch("click.edit", return_value="Sheep!") as edit:
-        extended_edit.keypress(10, "ctrl o")
+        extended_edit.keypress((10,), "ctrl o")
 
     assert edit.call_count == 1
     assert edit.call_args == mock.call(BASE_STRING)
     assert extended_edit.get_edit_text() == "Sheep!"
 
 
-def test_priority_selector(default_formatter):
+def test_priority_selector(default_formatter:  DefaultFormatter ) -> None:
     selector = PrioritySelector(None, 5, default_formatter.format_priority)
 
     assert selector.label == "medium"
     assert selector.priority == 5
 
-    selector.keypress(10, "right")
+    selector.keypress((10,), "right")
     assert selector.label == "high"
     assert selector.priority == 1
 
-    selector.keypress(10, "left")
-    selector.keypress(10, "left")
+    selector.keypress((10,), "left")
+    selector.keypress((10,), "left")
     assert selector.label == "low"
     assert selector.priority == 9
 
-    selector.keypress(10, "right")
+    selector.keypress((10,), "right")
     assert selector.label == "medium"
     assert selector.priority == 5
 
     # Spin the whoel way around:
     for _ in PrioritySelector.RANGES:
-        selector.keypress(10, "right")
+        selector.keypress((10,), "right")
 
     assert selector.label == "medium"
     assert selector.priority == 5
 
     # Now the other way
     for _ in PrioritySelector.RANGES:
-        selector.keypress(10, "left")
+        selector.keypress((10,), "left")
 
     assert selector.label == "medium"
     assert selector.priority == 5
 
     # Should do nothing:
-    selector.keypress(10, "d")
-    selector.keypress(10, "9")
+    selector.keypress((10,), "d")
+    selector.keypress((10,), "9")
     assert selector.label == "medium"
     assert selector.priority == 5

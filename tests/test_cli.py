@@ -3,14 +3,18 @@ from __future__ import annotations
 import datetime
 import sys
 from os.path import exists
+from typing import Callable
 from unittest import mock
+from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import patch
 from uuid import uuid4
 
 import click
 import hypothesis.strategies as st
+import py
 import pytest
+from click.testing import CliRunner
 from dateutil.tz import tzlocal
 from freezegun import freeze_time
 from hypothesis import given
@@ -19,13 +23,14 @@ from tests.helpers import fs_case_sensitive
 from tests.helpers import pyicu_sensitive
 from todoman.cli import cli
 from todoman.cli import exceptions
+from todoman.interactive import TodoEditor
 from todoman.model import Database
 from todoman.model import Todo
 
 # TODO: test --grep
 
 
-def test_list(tmpdir, runner, create):
+def test_list(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     result = runner.invoke(cli, ["list"], catch_exceptions=False)
     assert not result.exception
     assert not result.output.strip()
@@ -36,7 +41,7 @@ def test_list(tmpdir, runner, create):
     assert "harhar" in result.output
 
 
-def test_no_default_list(runner):
+def test_no_default_list(runner: CliRunner) -> None:
     result = runner.invoke(cli, ["new", "Configure a default list"])
 
     assert result.exception
@@ -46,7 +51,9 @@ def test_no_default_list(runner):
     )
 
 
-def test_no_extra_whitespace(tmpdir, runner, create):
+def test_no_extra_whitespace(
+    tmpdir: py.path.local, runner: CliRunner, create: Callable
+) -> None:
     """
     Test that we don't output extra whitespace
 
@@ -66,7 +73,7 @@ def test_no_extra_whitespace(tmpdir, runner, create):
     assert len(result.output.splitlines()) == 1
 
 
-def test_percent(tmpdir, runner, create):
+def test_percent(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\nPERCENT-COMPLETE:78\n")
     result = runner.invoke(cli, ["list"])
     assert not result.exception
@@ -75,13 +82,22 @@ def test_percent(tmpdir, runner, create):
 
 @fs_case_sensitive
 @pytest.mark.parametrize("list_name", ["default", "DEfault", "deFAUlT"])
-def test_list_case_insensitive(tmpdir, runner, create, list_name):
+def test_list_case_insensitive(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+    list_name: str,
+) -> None:
     result = runner.invoke(cli, ["list", list_name])
     assert not result.exception
 
 
 @fs_case_sensitive
-def test_list_case_insensitive_collision(tmpdir, runner, create):
+def test_list_case_insensitive_collision(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+) -> None:
     """
     Test that the case-insensitive list name matching is not used if
     colliding list names exist.
@@ -99,7 +115,11 @@ def test_list_case_insensitive_collision(tmpdir, runner, create):
 
 
 @fs_case_sensitive
-def test_list_case_insensitive_other_collision(tmpdir, runner, create):
+def test_list_case_insensitive_other_collision(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+) -> None:
     """
     Test that the case-insensitive list name matching is used if a
     collision exists that does not affect the queried list.
@@ -114,7 +134,9 @@ def test_list_case_insensitive_other_collision(tmpdir, runner, create):
     assert not result.exception
 
 
-def test_list_inexistant(tmpdir, runner, create):
+def test_list_inexistant(
+    tmpdir: py.path.local, runner: CliRunner, create: Callable
+) -> None:
     result = runner.invoke(cli, ["list", "nonexistant"])
     assert result.exception
     assert "Error: Invalid value for '[LISTS]...': nonexistant" in result.output
@@ -124,7 +146,9 @@ def test_list_inexistant(tmpdir, runner, create):
     assert "Error: Invalid value for '[LISTS]...': NONexistant" in result.output
 
 
-def test_show_existing(tmpdir, runner, create):
+def test_show_existing(
+    tmpdir: py.path.local, runner: CliRunner, create: Callable
+) -> None:
     create(
         "test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\nDESCRIPTION:Lots of text. Yum!\n"
     )
@@ -135,7 +159,9 @@ def test_show_existing(tmpdir, runner, create):
     assert "Lots of text. Yum!" in result.output
 
 
-def test_show_inexistant(tmpdir, runner, create):
+def test_show_inexistant(
+    tmpdir: py.path.local, runner: CliRunner, create: Callable
+) -> None:
     create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\n")
     result = runner.invoke(cli, ["list"])
     result = runner.invoke(cli, ["show", "2"])
@@ -143,7 +169,7 @@ def test_show_inexistant(tmpdir, runner, create):
     assert result.output == "No todo with id 2.\n"
 
 
-def test_human(runner):
+def test_human(runner: CliRunner) -> None:
     result = runner.invoke(
         cli, ["new", "-l", "default", "-d", "tomorrow", "hail belzebub"]
     )
@@ -156,7 +182,7 @@ def test_human(runner):
 
 
 @pytest.mark.xfail(reason="issue#9")
-def test_two_events(tmpdir, runner):
+def test_two_events(tmpdir: py.path.local, runner: CliRunner) -> None:
     tmpdir.join("default/test.ics").write(
         "BEGIN:VCALENDAR\n"
         "BEGIN:VTODO\n"
@@ -174,14 +200,16 @@ def test_two_events(tmpdir, runner):
     assert "task two" in result.output
 
 
-def test_default_command(tmpdir, runner, create):
+def test_default_command(
+    tmpdir: py.path.local, runner: CliRunner, create: Callable
+) -> None:
     create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\n")
     result = runner.invoke(cli)
     assert not result.exception
     assert "harhar" in result.output
 
 
-def test_delete(runner, create):
+def test_delete(runner: CliRunner, create: Callable) -> None:
     create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\n")
     result = runner.invoke(cli, ["list"])
     assert not result.exception
@@ -192,7 +220,11 @@ def test_delete(runner, create):
     assert not result.output.strip()
 
 
-def test_delete_prompt(todo_factory, runner, todos):
+def test_delete_prompt(
+    todo_factory: Callable,
+    runner: CliRunner,
+    todos: Callable,
+) -> None:
     todo_factory()
 
     result = runner.invoke(cli, ["delete", "1"], input="yes")
@@ -203,7 +235,7 @@ def test_delete_prompt(todo_factory, runner, todos):
     assert len(list(todos())) == 0
 
 
-def test_copy(tmpdir, runner, create):
+def test_copy(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     tmpdir.mkdir("other_list")
     create("test.ics", f"UID:{uuid4()}\nSUMMARY:test_copy\n")
     result = runner.invoke(cli, ["list"])
@@ -220,7 +252,7 @@ def test_copy(tmpdir, runner, create):
     assert "other_list" in result.output
 
 
-def test_move(tmpdir, runner, create):
+def test_move(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     tmpdir.mkdir("other_list")
     create("test.ics", f"UID:{uuid4()}\nSUMMARY:test_move\n")
     result = runner.invoke(cli, ["list"])
@@ -239,7 +271,7 @@ def test_move(tmpdir, runner, create):
 
 @pyicu_sensitive
 @freeze_time("2017-03-17 20:22:19")
-def test_dtstamp(tmpdir, runner, create):
+def test_dtstamp(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     """Test that we add the DTSTAMP to new entries as per RFC5545."""
     result = runner.invoke(cli, ["new", "-l", "default", "test event"])
     assert not result.exception
@@ -250,7 +282,12 @@ def test_dtstamp(tmpdir, runner, create):
     assert todo.dtstamp == datetime.datetime.now(tz=tzlocal())
 
 
-def test_default_list(tmpdir, runner, create, config):
+def test_default_list(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+    config: py.path.local,
+) -> None:
     """Test the default_list config parameter"""
     result = runner.invoke(cli, ["new", "test default list"])
     assert result.exception
@@ -270,7 +307,14 @@ def test_default_list(tmpdir, runner, create, config):
     [(None, 24), (1, 1), (0, None)],
     ids=["not specified", "greater than 0", "0"],
 )
-def test_default_due(tmpdir, runner, create, default_due, expected_due_hours, config):
+def test_default_due(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+    default_due: int | None,
+    expected_due_hours: int | None,
+    config: py.path.local,
+) -> None:
     """Test setting the due date using the default_due config parameter"""
     if default_due is not None:
         config.write(f"default_due = {default_due}\n", "a")
@@ -282,6 +326,8 @@ def test_default_due(tmpdir, runner, create, default_due, expected_due_hours, co
     if expected_due_hours is None:
         assert todo.due is None
     else:
+        assert todo.due
+        assert todo.created_at
         assert (todo.due - todo.created_at) == datetime.timedelta(
             hours=expected_due_hours
         )
@@ -289,7 +335,13 @@ def test_default_due(tmpdir, runner, create, default_due, expected_due_hours, co
 
 @pyicu_sensitive
 @freeze_time(datetime.datetime.now())
-def test_default_due2(tmpdir, runner, create, todos, config):
+def test_default_due2(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+    todos: Callable,
+    config: py.path.local,
+) -> None:
     config.write("default_due = 24\n", "a")
 
     r = runner.invoke(cli, ["new", "-ldefault", "-dtomorrow", "aaa"])
@@ -299,12 +351,16 @@ def test_default_due2(tmpdir, runner, create, todos, config):
     r = runner.invoke(cli, ["new", "-ldefault", "-d", "one hour", "ccc"])
     assert not r.exception
 
-    todos = {t.summary: t for t in todos(status="ANY")}
-    assert todos["aaa"].due.date() == todos["bbb"].due.date()
-    assert todos["ccc"].due == todos["bbb"].due - datetime.timedelta(hours=23)
+    all_todos = {t.summary: t for t in todos(status="ANY")}
+    assert all_todos["aaa"].due.date() == all_todos["bbb"].due.date()
+    assert all_todos["ccc"].due == all_todos["bbb"].due - datetime.timedelta(hours=23)
 
 
-def test_sorting_fields(tmpdir, runner, default_database):
+def test_sorting_fields(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    default_database: Database,
+) -> None:
     tasks = []
     for i in range(1, 10):
         days = datetime.timedelta(days=i)
@@ -338,9 +394,9 @@ def test_sorting_fields(tmpdir, runner, default_database):
             st.sampled_from(fields + tuple("-" + x for x in fields)), unique=True
         )
     )
-    def run_test(sort_key):
-        sort_key = ",".join(sort_key)
-        result = runner.invoke(cli, ["list", "--sort", sort_key])
+    def run_test(sort_key: list[str]) -> None:
+        joined_sort_key = ",".join(sort_key)
+        result = runner.invoke(cli, ["list", "--sort", joined_sort_key])
         assert not result.exception
         assert result.exit_code == 0
         assert len(result.output.strip().splitlines()) == len(tasks)
@@ -348,7 +404,9 @@ def test_sorting_fields(tmpdir, runner, default_database):
     run_test()
 
 
-def test_sorting_output(tmpdir, runner, create):
+def test_sorting_output(
+    tmpdir: py.path.local, runner: CliRunner, create: Callable
+) -> None:
     create(
         "test.ics",
         f"UID:{uuid4()}\nSUMMARY:aaa\n"
@@ -372,7 +430,8 @@ def test_sorting_output(tmpdir, runner, create):
 
     # Testing --no-reverse
     all_examples.extend(
-        (["--no-reverse", "--sort", key], reversed(order)) for key, order in examples
+        (["--no-reverse", "--sort", key], list(reversed(order)))
+        for key, order in examples
     )
 
     for args, order in all_examples:
@@ -383,7 +442,9 @@ def test_sorting_output(tmpdir, runner, create):
             assert task in lines[i]
 
 
-def test_sorting_null_values(tmpdir, runner, create):
+def test_sorting_null_values(
+    tmpdir: py.path.local, runner: CliRunner, create: Callable
+) -> None:
     create("test.ics", f"UID:{uuid4()}\nSUMMARY:aaa\nPRIORITY:9\n")
     create(
         "test2.ics",
@@ -397,7 +458,7 @@ def test_sorting_null_values(tmpdir, runner, create):
     assert "aaa" in result.output.splitlines()[1]
 
 
-def test_sort_invalid_fields(runner):
+def test_sort_invalid_fields(runner: CliRunner) -> None:
     result = runner.invoke(cli, ["list", "--sort", "hats"])
 
     assert result.exception
@@ -405,7 +466,12 @@ def test_sort_invalid_fields(runner):
 
 
 @pytest.mark.parametrize("hours", [72, -72])
-def test_color_due_dates(tmpdir, runner, create, hours):
+def test_color_due_dates(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+    hours: int,
+) -> None:
     due = datetime.datetime.now() + datetime.timedelta(hours=hours)
     create(
         "test.ics",
@@ -428,7 +494,7 @@ def test_color_due_dates(tmpdir, runner, create, hours):
     assert result.output == expected
 
 
-def test_color_flag(runner, todo_factory):
+def test_color_flag(runner: CliRunner, todo_factory: Callable) -> None:
     todo_factory(due=datetime.datetime(2007, 3, 22))
 
     result = runner.invoke(cli, ["--color", "always"], color=True)
@@ -446,7 +512,13 @@ def test_color_flag(runner, todo_factory):
     assert result.output.strip() == "[ ] 1  2007-03-22 YARR! @default"
 
 
-def test_flush(tmpdir, runner, create, todo_factory, todos):
+def test_flush(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+    todo_factory: Callable,
+    todos: Callable,
+) -> None:
     todo_factory(summary="aaa", status="COMPLETED")
     todo_factory(summary="bbb")
 
@@ -461,7 +533,7 @@ def test_flush(tmpdir, runner, create, todo_factory, todos):
     assert all_todos[0].summary == "bbb"
 
 
-def test_edit(runner, default_database, todos):
+def test_edit(runner: CliRunner, default_database: Database, todos: Callable) -> None:
     todo = Todo(new=True)
     todo.list = next(default_database.lists())
     todo.summary = "Eat paint"
@@ -477,7 +549,13 @@ def test_edit(runner, default_database, todos):
     assert todo.summary == "Eat paint"
 
 
-def test_edit_move(runner, todo_factory, default_database, tmpdir, todos):
+def test_edit_move(
+    runner: CliRunner,
+    todo_factory: Callable,
+    default_database: Database,
+    tmpdir: py.path.local,
+    todos: Callable,
+) -> None:
     """
     Test that editing the list in the UI edits the todo as expected
 
@@ -497,7 +575,7 @@ def test_edit_move(runner, todo_factory, default_database, tmpdir, todos):
     lists = list(default_database.lists())
     another_list = next(filter(lambda x: x.name == "another_list", lists))
 
-    def moving_edit(self):
+    def moving_edit(self: TodoEditor) -> None:
         self.current_list = another_list
         self._save_inner()
 
@@ -506,12 +584,16 @@ def test_edit_move(runner, todo_factory, default_database, tmpdir, todos):
 
     assert not result.exception
 
-    todos = list(todos())
-    assert len(todos) == 1
-    assert todos[0].list.name == "another_list"
+    all_todos = list(todos())
+    assert len(all_todos) == 1
+    assert all_todos[0].list.name == "another_list"
 
 
-def test_edit_retains_id(runner, todos, todo_factory):
+def test_edit_retains_id(
+    runner: CliRunner,
+    todos: Callable,
+    todo_factory: Callable,
+) -> None:
     """Tests that we retain a todo's ID after editing."""
     original_id = todo_factory().id
 
@@ -523,7 +605,7 @@ def test_edit_retains_id(runner, todos, todo_factory):
     assert todo.id == original_id
 
 
-def test_edit_inexistant(runner):
+def test_edit_inexistant(runner: CliRunner) -> None:
     """Tests that we show the right output and exit code for inexistant ids."""
     result = runner.invoke(cli, ["edit", "1", "--due", "2017-04-01"])
     assert result.exception
@@ -531,7 +613,7 @@ def test_edit_inexistant(runner):
     assert result.output.strip() == "No todo with id 1."
 
 
-def test_empty_list(tmpdir, runner, create):
+def test_empty_list(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     for item in tmpdir.listdir():
         if item.isdir():
             item.remove()
@@ -542,14 +624,16 @@ def test_empty_list(tmpdir, runner, create):
     assert expected in result.output
 
 
-def test_show_location(tmpdir, runner, create):
+def test_show_location(
+    tmpdir: py.path.local, runner: CliRunner, create: Callable
+) -> None:
     create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\nLOCATION:Boston\n")
 
     result = runner.invoke(cli, ["show", "1"])
     assert "Boston" in result.output
 
 
-def test_location(runner):
+def test_location(runner: CliRunner) -> None:
     result = runner.invoke(
         cli, ["new", "-l", "default", "--location", "Chembur", "Event Test"]
     )
@@ -557,7 +641,7 @@ def test_location(runner):
     assert "Chembur" in result.output
 
 
-def test_sort_mixed_timezones(runner, create):
+def test_sort_mixed_timezones(runner: CliRunner, create: Callable) -> None:
     """
     Test sorting mixed timezones.
 
@@ -583,7 +667,7 @@ def test_sort_mixed_timezones(runner, create):
     assert "first" in result.output.splitlines()[1]
 
 
-def test_humanize_interactive(runner):
+def test_humanize_interactive(runner: CliRunner) -> None:
     result = runner.invoke(cli, ["--humanize", "--porcelain", "list"])
 
     assert result.exception
@@ -593,7 +677,7 @@ def test_humanize_interactive(runner):
     )
 
 
-def test_due_bad_date(runner):
+def test_due_bad_date(runner: CliRunner) -> None:
     result = runner.invoke(cli, ["new", "--due", "Not a date", "Blargh!"])
 
     assert result.exception
@@ -604,7 +688,7 @@ def test_due_bad_date(runner):
     )
 
 
-def test_multiple_todos_in_file(runner, create):
+def test_multiple_todos_in_file(runner: CliRunner, create: Callable) -> None:
     path = create(
         "test.ics", f"UID:{uuid4()}\nSUMMARY:a\nEND:VTODO\nBEGIN:VTODO\nSUMMARY:b\n"
     )
@@ -630,7 +714,7 @@ def test_multiple_todos_in_file(runner, create):
     assert not result.exception
 
 
-def test_todo_new(runner, default_database):
+def test_todo_new(runner: CliRunner, default_database: Database) -> None:
     # This isn't a very thurough test, but at least catches obvious regressions
     # like startup crashes or typos.
 
@@ -643,7 +727,11 @@ def test_todo_new(runner, default_database):
     assert "Error: No SUMMARY specified" in result.output
 
 
-def test_todo_edit(runner, default_database, todo_factory):
+def test_todo_edit(
+    runner: CliRunner,
+    default_database: Database,
+    todo_factory: Callable,
+) -> None:
     # This isn't a very thurough test, but at least catches obvious regressions
     # like startup crashes or typos.
     todo_factory()
@@ -657,7 +745,12 @@ def test_todo_edit(runner, default_database, todo_factory):
 
 @pyicu_sensitive
 @freeze_time("2017, 3, 20")
-def test_list_startable(tmpdir, runner, todo_factory, config):
+def test_list_startable(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    todo_factory: Callable,
+    config: py.path.local,
+) -> None:
     todo_factory(summary="started", start=datetime.datetime(2017, 3, 15))
     todo_factory(summary="nostart")
     todo_factory(summary="unstarted", start=datetime.datetime(2017, 3, 24))
@@ -694,7 +787,7 @@ def test_list_startable(tmpdir, runner, todo_factory, config):
     assert "unstarted" not in result.output
 
 
-def test_bad_start_date(runner):
+def test_bad_start_date(runner: CliRunner) -> None:
     result = runner.invoke(cli, ["list", "--start"])
     assert result.exception
     assert result.output.strip() == "Error: Option '--start' requires 2 arguments."
@@ -715,7 +808,7 @@ def test_bad_start_date(runner):
     assert "Format should be '[before|after] [DATE]'" in result.output
 
 
-def test_done(runner, todo_factory, todos):
+def test_done(runner: CliRunner, todo_factory: Callable, todos: Callable) -> None:
     todo = todo_factory()
 
     result = runner.invoke(cli, ["done", "1"])
@@ -730,26 +823,30 @@ def test_done(runner, todo_factory, todos):
     assert result.output.strip() == "No todo with id 17."
 
 
-def test_done_recurring(runner, todo_factory, todos):
+def test_done_recurring(
+    runner: CliRunner,
+    todo_factory: Callable,
+    todos: Callable,
+) -> None:
     rrule = "FREQ=DAILY;UNTIL=20990315T020000Z"
     todo = todo_factory(rrule=rrule)
 
     result = runner.invoke(cli, ["done", "1"])
     assert not result.exception
 
-    todos = todos(status="ANY")
-    todo = next(todos)
+    all_todos = todos(status="ANY")
+    todo = next(all_todos)
     assert todo.percent_complete == 100
     assert todo.is_completed is True
     assert not todo.rrule
 
-    todo = next(todos)
+    todo = next(all_todos)
     assert todo.percent_complete == 0
     assert todo.is_completed is False
     assert todo.rrule == rrule
 
 
-def test_cancel(runner, todo_factory, todos):
+def test_cancel(runner: CliRunner, todo_factory: Callable, todos: Callable) -> None:
     todo = todo_factory()
 
     result = runner.invoke(cli, ["cancel", "1"])
@@ -759,13 +856,13 @@ def test_cancel(runner, todo_factory, todos):
     assert todo.status == "CANCELLED"
 
 
-def test_id_printed_for_new(runner):
+def test_id_printed_for_new(runner: CliRunner) -> None:
     result = runner.invoke(cli, ["new", "-l", "default", "show me an id"])
     assert not result.exception
     assert result.output.strip().startswith("[ ] 1")
 
 
-def test_repl(runner):
+def test_repl(runner: CliRunner) -> None:
     """Test that repl registers properly."""
     if "click_repl" not in sys.modules:
         pytest.skip('Optional dependency "click_repl" is not installed')
@@ -777,7 +874,7 @@ def test_repl(runner):
     assert "shell   Start an interactive shell." in result.output
 
 
-def test_status_validation():
+def test_status_validation() -> None:
     from todoman import cli
 
     @given(
@@ -788,8 +885,12 @@ def test_status_validation():
             unique=True,
         )
     )
-    def run_test(statuses):
-        validated = cli.validate_status(None, None, val=",".join(statuses)).split(",")
+    def run_test(statuses: list[str]) -> None:
+        validated = cli.validate_status(
+            MagicMock(),
+            MagicMock(),
+            val=",".join(statuses),
+        ).split(",")
 
         if "ANY" in statuses:
             assert len(validated) == 4
@@ -802,17 +903,17 @@ def test_status_validation():
     run_test()
 
 
-def test_bad_status_validation():
+def test_bad_status_validation() -> None:
     from todoman import cli
 
     with pytest.raises(click.BadParameter):
-        cli.validate_status(None, None, val="INVALID")
+        cli.validate_status(MagicMock(), MagicMock(), val="INVALID")
 
     with pytest.raises(click.BadParameter):
-        cli.validate_status(None, None, val="IN-PROGRESS")
+        cli.validate_status(MagicMock(), MagicMock(), val="IN-PROGRESS")
 
 
-def test_status_filtering(runner, todo_factory):
+def test_status_filtering(runner: CliRunner, todo_factory: Callable) -> None:
     todo_factory(summary="one", status="CANCELLED")
     todo_factory(summary="two")
 
@@ -827,7 +928,11 @@ def test_status_filtering(runner, todo_factory):
     assert "two" in result.output
 
 
-def test_invoke_command(runner, tmpdir, config):
+def test_invoke_command(
+    runner: CliRunner,
+    tmpdir: py.path.local,
+    config: py.path.local,
+) -> None:
     config.write('default_command = "flush"\n', "a")
 
     flush = mock.MagicMock()
@@ -842,7 +947,11 @@ def test_invoke_command(runner, tmpdir, config):
     assert flush.call_count == 1
 
 
-def test_invoke_invalid_command(runner, tmpdir, config):
+def test_invoke_invalid_command(
+    runner: CliRunner,
+    tmpdir: py.path.local,
+    config: py.path.local,
+) -> None:
     config.write('default_command = "DoTheRobot"\n', "a")
 
     result = runner.invoke(cli, catch_exceptions=False)
@@ -851,13 +960,13 @@ def test_invoke_invalid_command(runner, tmpdir, config):
     assert "Error: Invalid setting for [default_command]" in result.output
 
 
-def test_new_categories_single(runner):
+def test_new_categories_single(runner: CliRunner) -> None:
     result = runner.invoke(cli, ["new", "-l", "default", "--category", "mine", "title"])
 
     assert "[mine]" in result.output
 
 
-def test_new_categories_multiple(runner):
+def test_new_categories_multiple(runner: CliRunner) -> None:
     result = runner.invoke(
         cli, ["new", "-l", "default", "-c", "first", "-c", "second", "title"]
     )
@@ -865,7 +974,11 @@ def test_new_categories_multiple(runner):
     assert "[first, second]" in result.output
 
 
-def test_list_categories_single(tmpdir, runner, create):
+def test_list_categories_single(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+) -> None:
     category = "fizzbuzz"
     create("test.ics", f"UID:{uuid4()}\nSUMMARY:harhar\nCATEGORIES:{category}\n")
     result = runner.invoke(cli, ["list", "--category", category])
@@ -873,7 +986,11 @@ def test_list_categories_single(tmpdir, runner, create):
     assert category in result.output
 
 
-def test_list_categories_multiple(tmpdir, runner, create):
+def test_list_categories_multiple(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+) -> None:
     category = ["git", "gud"]
     create("test.ics", f"SUMMARY:harhar\nCATEGORIES:{category[0]}\n")
     create("test1.ics", f"SUMMARY:harhar1\nCATEGORIES:{category[1]}\n")
@@ -885,14 +1002,18 @@ def test_list_categories_multiple(tmpdir, runner, create):
     assert category[1] in result.output
 
 
-def test_show_priority(runner, todo_factory, todos):
+def test_show_priority(
+    runner: CliRunner,
+    todo_factory: Callable,
+    todos: Callable,
+) -> None:
     todo_factory(summary="harhar\n", priority=1)
 
     result = runner.invoke(cli, ["show", "1"])
     assert "!!!" in result.output
 
 
-def test_priority(runner):
+def test_priority(runner: CliRunner) -> None:
     result = runner.invoke(
         cli, ["new", "-l", "default", "--priority", "high", "Priority Test"]
     )
@@ -900,7 +1021,7 @@ def test_priority(runner):
     assert "!!!" in result.output
 
 
-def test_porcelain_precedence(runner, tmpdir):
+def test_porcelain_precedence(runner: CliRunner, tmpdir: py.path.local) -> None:
     """Test that --humanize flag takes precedence over `porcelain` config"""
 
     path = tmpdir.join("config")
@@ -912,7 +1033,7 @@ def test_porcelain_precedence(runner, tmpdir):
     assert mocked_formatter.call_count == 1
 
 
-def test_duplicate_list(tmpdir, runner):
+def test_duplicate_list(tmpdir: py.path.local, runner: CliRunner) -> None:
     tmpdir.join("personal1").mkdir()
     with tmpdir.join("personal1").join("displayname").open("w") as f:
         f.write("personal")
@@ -929,7 +1050,7 @@ def test_duplicate_list(tmpdir, runner):
     )
 
 
-def test_edit_raw(todo_factory, runner):
+def test_edit_raw(todo_factory: Callable, runner: CliRunner) -> None:
     todo = todo_factory()
     assert exists(todo.path)
 
@@ -943,7 +1064,7 @@ def test_edit_raw(todo_factory, runner):
     assert not result.output
 
 
-def test_new_description_from_stdin(runner, todos):
+def test_new_description_from_stdin(runner: CliRunner, todos: Callable) -> None:
     result = runner.invoke(
         cli, ["new", "-l", "default", "-r", "hello"], input="world\n"
     )
@@ -953,7 +1074,12 @@ def test_new_description_from_stdin(runner, todos):
     assert "hello" in todo.summary
 
 
-def test_default_priority(tmpdir, runner, create, config):
+def test_default_priority(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+    config: py.path.local,
+) -> None:
     """Test setting the due date using the default_due config parameter"""
     config.write("default_priority = 3\n", "a")
 
@@ -964,7 +1090,9 @@ def test_default_priority(tmpdir, runner, create, config):
     assert todo.priority == 3
 
 
-def test_no_default_priority(tmpdir, runner, create):
+def test_no_default_priority(
+    tmpdir: py.path.local, runner: CliRunner, create: Callable
+) -> None:
     """Test setting the due date using the default_due config parameter"""
 
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
@@ -978,7 +1106,11 @@ def test_no_default_priority(tmpdir, runner, create):
     assert "PRIORITY" not in todo_ics
 
 
-def test_invalid_default_priority(config, runner, create):
+def test_invalid_default_priority(
+    config: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+) -> None:
     """Test setting the due date using the default_due config parameter"""
     config.write("default_priority = 13\n", "a")
 
@@ -987,7 +1119,7 @@ def test_invalid_default_priority(config, runner, create):
     assert "Error: Invalid `default_priority` settings." in result.output
 
 
-def test_default_command_args(config, runner):
+def test_default_command_args(config: py.path.local, runner: CliRunner) -> None:
     config.write(
         'default_command = "list --sort=due --due 168 --priority low --no-reverse"',
         "a",

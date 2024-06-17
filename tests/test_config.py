@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
+import py
 import pytest
 from click.testing import CliRunner
 
@@ -10,7 +11,7 @@ from todoman.configuration import ConfigurationError
 from todoman.configuration import load_config
 
 
-def test_explicit_nonexistant(runner):
+def test_explicit_nonexistant(runner: CliRunner) -> None:
     result = CliRunner().invoke(
         cli,
         env={"TODOMAN_CONFIG": "/nonexistant"},
@@ -20,7 +21,7 @@ def test_explicit_nonexistant(runner):
     assert "Configuration file /nonexistant does not exist" in result.output
 
 
-def test_xdg_nonexistant(runner):
+def test_xdg_nonexistant(runner: CliRunner) -> None:
     with patch("xdg.BaseDirectory.xdg_config_dirs", ["/does-not-exist"]):
         result = CliRunner().invoke(
             cli,
@@ -30,7 +31,11 @@ def test_xdg_nonexistant(runner):
         assert "No configuration file found" in result.output
 
 
-def test_xdg_existant(runner, tmpdir, config):
+def test_xdg_existant(
+    runner: CliRunner,
+    tmpdir: py.path.local,
+    config: py.path.local,
+) -> None:
     with tmpdir.mkdir("todoman").join("config.py").open("w") as f, config.open() as c:
         f.write(c.read())
 
@@ -43,7 +48,11 @@ def test_xdg_existant(runner, tmpdir, config):
         assert not result.output.strip()
 
 
-def test_sane_config(config, runner, tmpdir):
+def test_sane_config(
+    config: py.path.local,
+    runner: CliRunner,
+    tmpdir: py.path.local,
+) -> None:
     config.write(
         'color = "auto"\n'
         'date_format = "%Y-%m-%d"\n'
@@ -58,7 +67,7 @@ def test_sane_config(config, runner, tmpdir):
     assert not result.exception
 
 
-def test_invalid_color(config, runner):
+def test_invalid_color(config: py.path.local, runner: CliRunner) -> None:
     config.write('color = 12\npath = "/"\n')
     result = runner.invoke(cli, ["list"])
     assert result.exception
@@ -68,14 +77,14 @@ def test_invalid_color(config, runner):
     )
 
 
-def test_invalid_color_arg(config, runner):
+def test_invalid_color_arg(config: py.path.local, runner: CliRunner) -> None:
     config.write('path = "/"\n')
     result = runner.invoke(cli, ["--color", "12", "list"])
     assert result.exception
     assert "Usage:" in result.output
 
 
-def test_missing_path(config, runner):
+def test_missing_path(config: py.path.local, runner: CliRunner) -> None:
     config.write('color = "auto"\n')
     result = runner.invoke(cli, ["list"])
     assert result.exception
@@ -83,7 +92,7 @@ def test_missing_path(config, runner):
 
 
 @pytest.mark.xfail(reason="Not implemented")
-def test_extra_entry(config, runner):
+def test_extra_entry(config: py.path.local, runner: CliRunner) -> None:
     config.write("color = auto\ndate_format = %Y-%m-%d\npath = /\nblah = false\n")
     result = runner.invoke(cli, ["list"])
     assert result.exception
@@ -91,14 +100,18 @@ def test_extra_entry(config, runner):
 
 
 @pytest.mark.xfail(reason="Not implemented")
-def test_extra_section(config, runner):
+def test_extra_section(config: py.path.local, runner: CliRunner) -> None:
     config.write("date_format = %Y-%m-%d\npath = /\n[extra]\ncolor = auto\n")
     result = runner.invoke(cli, ["list"])
     assert result.exception
     assert "Invalid configuration section" in result.output
 
 
-def test_missing_cache_dir(config, runner, tmpdir):
+def test_missing_cache_dir(
+    config: py.path.local,
+    runner: CliRunner,
+    tmpdir: py.path.local,
+) -> None:
     cache_dir = tmpdir.join("does").join("not").join("exist")
     cache_file = cache_dir.join("cache.sqlite")
 
@@ -110,7 +123,11 @@ def test_missing_cache_dir(config, runner, tmpdir):
     assert cache_file.isfile()
 
 
-def test_date_field_in_time_format(config, runner, tmpdir):
+def test_date_field_in_time_format(
+    config: py.path.local,
+    runner: CliRunner,
+    tmpdir: py.path.local,
+) -> None:
     config.write('path = "/"\ntime_format = "%Y-%m-%d"\n')
     result = runner.invoke(cli)
     assert result.exception
@@ -120,7 +137,11 @@ def test_date_field_in_time_format(config, runner, tmpdir):
     )
 
 
-def test_date_field_in_time(config, runner, tmpdir):
+def test_date_field_in_time(
+    config: py.path.local,
+    runner: CliRunner,
+    tmpdir: py.path.local,
+) -> None:
     config.write('path = "/"\ndate_format = "%Y-%d-:%M"\n')
     result = runner.invoke(cli)
     assert result.exception
@@ -130,7 +151,7 @@ def test_date_field_in_time(config, runner, tmpdir):
     )
 
 
-def test_colour_validation_auto(config):
+def test_colour_validation_auto(config: py.path.local) -> None:
     with patch(
         "todoman.configuration.find_config",
         return_value=(str(config)),
@@ -140,7 +161,7 @@ def test_colour_validation_auto(config):
     assert cfg["color"] == "auto"
 
 
-def test_colour_validation_always(config):
+def test_colour_validation_always(config: py.path.local) -> None:
     config.write("color = 'always'\n", "a")
     with patch(
         "todoman.configuration.find_config",
@@ -151,7 +172,7 @@ def test_colour_validation_always(config):
     assert cfg["color"] == "always"
 
 
-def test_colour_validation_invalid(config):
+def test_colour_validation_invalid(config: py.path.local) -> None:
     config.write("color = 'on_weekends_only'\n", "a")
     with patch(
         "todoman.configuration.find_config",

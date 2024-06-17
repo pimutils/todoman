@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 import pytest
 
 
-def is_fs_case_sensitive():
+def is_fs_case_sensitive() -> bool | None:
     with TemporaryDirectory() as tmpdir:
         os.mkdir(os.path.join(tmpdir, "casesensitivetest"))
         try:
@@ -20,7 +20,7 @@ def is_fs_case_sensitive():
             return False
 
 
-def is_pyicu_installed():
+def is_pyicu_installed() -> bool:
     try:
         import icu  # noqa: F401: This is an import to tests if it's installed.
     except ImportError:
