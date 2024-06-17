@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from typing import Callable
 from uuid import uuid4
 
+import py
 import pytz
+from click.testing import CliRunner
 
 from todoman.cli import cli
 from todoman.formatters import PorcelainFormatter
 
 
-def test_list_all(tmpdir, runner, create):
+def test_list_all(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     create(
         "test.ics",
         "SUMMARY:Do stuff\n"
@@ -44,7 +47,11 @@ def test_list_all(tmpdir, runner, create):
     assert result.output.strip() == json.dumps(expected, indent=4, sort_keys=True)
 
 
-def test_list_start_date(tmpdir, runner, create):
+def test_list_start_date(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+) -> None:
     create(
         "test.ics",
         "SUMMARY:Do stuff\n"
@@ -76,7 +83,9 @@ def test_list_start_date(tmpdir, runner, create):
     assert result.output.strip() == json.dumps(expected, indent=4, sort_keys=True)
 
 
-def test_list_due_date(tmpdir, runner, create):
+def test_list_due_date(
+    tmpdir: py.path.local, runner: CliRunner, create: Callable
+) -> None:
     create(
         "test.ics",
         "SUMMARY:Do stuff\n"
@@ -108,7 +117,7 @@ def test_list_due_date(tmpdir, runner, create):
     assert result.output.strip() == json.dumps(expected, indent=4, sort_keys=True)
 
 
-def test_list_nodue(tmpdir, runner, create):
+def test_list_nodue(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     create(
         "test.ics",
         f"UID:{uuid4()}\nSUMMARY:Do stuff\nPERCENT-COMPLETE:12\nPRIORITY:4\n",
@@ -136,7 +145,9 @@ def test_list_nodue(tmpdir, runner, create):
     assert result.output.strip() == json.dumps(expected, indent=4, sort_keys=True)
 
 
-def test_list_priority(tmpdir, runner, create):
+def test_list_priority(
+    tmpdir: py.path.local, runner: CliRunner, create: Callable
+) -> None:
     result = runner.invoke(cli, ["--porcelain", "list"], catch_exceptions=False)
     assert not result.exception
     assert result.output.strip() == "[]"
@@ -177,7 +188,7 @@ def test_list_priority(tmpdir, runner, create):
     assert result_error.exception
 
 
-def test_show(tmpdir, runner, create):
+def test_show(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     create(
         "test.ics",
         f"UID:{uuid4()}\nSUMMARY:harhar\n"
@@ -204,7 +215,7 @@ def test_show(tmpdir, runner, create):
     assert result.output.strip() == json.dumps(expected, indent=4, sort_keys=True)
 
 
-def test_simple_action(todo_factory):
+def test_simple_action(todo_factory: Callable) -> None:
     formatter = PorcelainFormatter()
     todo = todo_factory(id=7, location="Downtown")
 
@@ -228,7 +239,7 @@ def test_simple_action(todo_factory):
     )
 
 
-def test_format_datetime():
+def test_format_datetime() -> None:
     formatter = PorcelainFormatter()
 
     dt = datetime(2017, 3, 8, 0, 0, 17, 457955, tzinfo=pytz.UTC)
@@ -237,7 +248,7 @@ def test_format_datetime():
     assert formatter.format_datetime(dt) == t
 
 
-def test_parse_datetime():
+def test_parse_datetime() -> None:
     formatter = PorcelainFormatter()
 
     expected = datetime(2017, 3, 6, 23, 22, 21, 610429, tzinfo=pytz.UTC)
@@ -247,7 +258,7 @@ def test_parse_datetime():
     assert formatter.parse_datetime("") is None
 
 
-def test_formatting_parsing_consitency():
+def test_formatting_parsing_consitency() -> None:
     tz = pytz.timezone("CET")
     dt = datetime(2017, 3, 8, 21, 6, 19).replace(tzinfo=tz)
 

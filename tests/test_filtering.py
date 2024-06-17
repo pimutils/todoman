@@ -2,14 +2,18 @@ from __future__ import annotations
 
 from datetime import datetime
 from datetime import timedelta
+from typing import Callable
 from uuid import uuid4
+
+import py
+from click.testing import CliRunner
 
 from todoman.cli import cli
 from todoman.model import Database
 from todoman.model import Todo
 
 
-def test_priority(tmpdir, runner, create):
+def test_priority(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     result = runner.invoke(cli, ["list"], catch_exceptions=False)
     assert not result.exception
     assert not result.output.strip()
@@ -51,7 +55,7 @@ def test_priority(tmpdir, runner, create):
     assert result_error.exception
 
 
-def test_location(tmpdir, runner, create):
+def test_location(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     result = runner.invoke(cli, ["list"], catch_exceptions=False)
     assert not result.exception
     assert not result.output.strip()
@@ -66,7 +70,7 @@ def test_location(tmpdir, runner, create):
     assert "harhar" not in result.output
 
 
-def test_category(tmpdir, runner, create):
+def test_category(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     result = runner.invoke(cli, ["list"], catch_exceptions=False)
     assert not result.exception
     assert not result.output.strip()
@@ -90,7 +94,7 @@ def test_category(tmpdir, runner, create):
     assert "harharho" in result.output
 
 
-def test_grep(tmpdir, runner, create):
+def test_grep(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     result = runner.invoke(cli, ["list"], catch_exceptions=False)
     assert not result.exception
     assert not result.output.strip()
@@ -126,7 +130,9 @@ def test_grep(tmpdir, runner, create):
     assert "hoho" not in result.output
 
 
-def test_filtering_lists(tmpdir, runner, create):
+def test_filtering_lists(
+    tmpdir: py.path.local, runner: CliRunner, create: Callable
+) -> None:
     tmpdir.mkdir("list_one")
     tmpdir.mkdir("list_two")
     tmpdir.mkdir("list_three")
@@ -163,7 +169,12 @@ def test_filtering_lists(tmpdir, runner, create):
     assert "@list_two" in result.output
 
 
-def test_due_aware(tmpdir, runner, create, now_for_tz):
+def test_due_aware(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+    now_for_tz: Callable[[str], datetime],
+) -> None:
     db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
     list_ = next(db.lists())
 
@@ -185,7 +196,7 @@ def test_due_aware(tmpdir, runner, create, now_for_tz):
     assert todos[3].summary == "1"
 
 
-def test_due_naive(tmpdir, runner, create):
+def test_due_naive(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     now = datetime.now()
 
     for i in [1, 23, 25, 48]:
@@ -207,7 +218,11 @@ def test_due_naive(tmpdir, runner, create):
     assert todos[1].summary == "1"
 
 
-def test_filtering_start(tmpdir, runner, todo_factory):
+def test_filtering_start(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    todo_factory: Callable,
+) -> None:
     today = datetime.now()
     now = today.strftime("%Y-%m-%d")
 
@@ -249,7 +264,7 @@ def test_filtering_start(tmpdir, runner, todo_factory):
     assert "huhu" not in result.output
 
 
-def test_statuses(todo_factory, todos):
+def test_statuses(todo_factory: Callable, todos: Callable) -> None:
     cancelled = todo_factory(status="CANCELLED").uid
     completed = todo_factory(status="COMPLETED").uid
     in_process = todo_factory(status="IN-PROCESS").uid

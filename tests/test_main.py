@@ -5,10 +5,13 @@ import sys
 from subprocess import PIPE
 from subprocess import Popen
 
+import py
+from click.testing import CliRunner
+
 from todoman.cli import cli
 
 
-def test_main(tmpdir, runner):
+def test_main(tmpdir: py.path.local, runner: CliRunner) -> None:
     root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
     env = os.environ.copy()
     env["PYTHONPATH"] = root

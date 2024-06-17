@@ -3,11 +3,15 @@ from __future__ import annotations
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
+from datetime import tzinfo
+from typing import Callable
 from unittest.mock import patch
 from uuid import uuid4
 
+import py
 import pytest
 import pytz
+from click.testing import CliRunner
 from dateutil.tz import tzlocal
 from dateutil.tz.tz import tzoffset
 from freezegun import freeze_time
@@ -18,7 +22,7 @@ from todoman.model import Todo
 from todoman.model import TodoList
 
 
-def test_querying(create, tmpdir):
+def test_querying(create: Callable, tmpdir: py.path.local) -> None:
     for list in "abc":
         for i, location in enumerate("abc"):
             create(
@@ -36,7 +40,7 @@ def test_querying(create, tmpdir):
     assert len(set(db.todos(lists="ab", location="a"))) == 2
 
 
-def test_retain_tz(tmpdir, create, todos):
+def test_retain_tz(tmpdir: py.path.local, create: Callable, todos: Callable) -> None:
     create(
         "ar.ics",
         f"UID:{uuid4()}\nSUMMARY:blah.ar\n"
@@ -48,23 +52,23 @@ def test_retain_tz(tmpdir, create, todos):
         "DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n",
     )
 
-    todos = list(todos())
+    all_todos = list(todos())
 
-    assert len(todos) == 2
-    assert todos[0].due == datetime(2016, 1, 2, 0, 0, tzinfo=tzoffset(None, -36000))
-    assert todos[1].due == datetime(2016, 1, 2, 0, 0, tzinfo=tzoffset(None, 3600))
+    assert len(all_todos) == 2
+    assert all_todos[0].due == datetime(2016, 1, 2, 0, 0, tzinfo=tzoffset(None, -36000))
+    assert all_todos[1].due == datetime(2016, 1, 2, 0, 0, tzinfo=tzoffset(None, 3600))
 
 
-def test_due_date(tmpdir, create, todos):
+def test_due_date(tmpdir: py.path.local, create: Callable, todos: Callable) -> None:
     create("ar.ics", "SUMMARY:blah.ar\nDUE;VALUE=DATE:20170617\n")
 
-    todos = list(todos())
+    all_todos = list(todos())
 
-    assert len(todos) == 1
-    assert todos[0].due == date(2017, 6, 17)
+    assert len(all_todos) == 1
+    assert all_todos[0].due == date(2017, 6, 17)
 
 
-def test_change_paths(tmpdir, create):
+def test_change_paths(tmpdir: py.path.local, create: Callable) -> None:
     old_todos = set("abcdefghijk")
     for x in old_todos:
         create(f"{x}.ics", f"UID:{uuid4()}\nSUMMARY:{x}\n", x)
@@ -82,7 +86,7 @@ def test_change_paths(tmpdir, create):
     assert not list(db.todos())
 
 
-def test_list_displayname(tmpdir):
+def test_list_displayname(tmpdir: py.path.local) -> None:
     tmpdir.join("default").mkdir()
     with tmpdir.join("default").join("displayname").open("w") as f:
         f.write("personal")
@@ -94,7 +98,7 @@ def test_list_displayname(tmpdir):
     assert str(list_) == "personal"
 
 
-def test_list_colour(tmpdir):
+def test_list_colour(tmpdir: py.path.local) -> None:
     tmpdir.join("default").mkdir()
     with tmpdir.join("default").join("color").open("w") as f:
         f.write("#8ab6d2")
@@ -105,7 +109,10 @@ def test_list_colour(tmpdir):
     assert list_.colour == "#8ab6d2"
 
 
-def test_list_colour_cache_invalidation(tmpdir, sleep):
+def test_list_colour_cache_invalidation(
+    tmpdir: py.path.local,
+    sleep: Callable[[], None],
+) -> None:
     tmpdir.join("default").mkdir()
     with tmpdir.join("default").join("color").open("w") as f:
         f.write("#8ab6d2")
@@ -126,7 +133,7 @@ def test_list_colour_cache_invalidation(tmpdir, sleep):
     assert list_.colour == "#f874fd"
 
 
-def test_list_no_colour(tmpdir):
+def test_list_no_colour(tmpdir: py.path.local) -> None:
     tmpdir.join("default").mkdir()
 
     db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
@@ -135,21 +142,25 @@ def test_list_no_colour(tmpdir):
     assert list_.colour is None
 
 
-def test_database_priority_sorting(create, todos):
+def test_database_priority_sorting(create: Callable, todos: Callable) -> None:
     for i in [1, 5, 9, 0]:
         create(f"test{i}.ics", f"UID:{uuid4()}\nPRIORITY:{i}\n")
     create("test_none.ics", f"UID:{uuid4()}\nSUMMARY:No priority (eg: None)\n")
 
-    todos = list(todos())
+    all_todos = list(todos())
 
-    assert todos[0].priority == 0
-    assert todos[1].priority == 0
-    assert todos[2].priority == 9
-    assert todos[3].priority == 5
-    assert todos[4].priority == 1
+    assert all_todos[0].priority == 0
+    assert all_todos[1].priority == 0
+    assert all_todos[2].priority == 9
+    assert all_todos[3].priority == 5
+    assert all_todos[4].priority == 1
 
 
-def test_retain_unknown_fields(tmpdir, create, default_database):
+def test_retain_unknown_fields(
+    tmpdir: py.path.local,
+    create: Callable,
+    default_database: Database,
+) -> None:
     """
     Test that we retain unknown fields after a load/save cycle.
     """
@@ -171,7 +182,11 @@ def test_retain_unknown_fields(tmpdir, create, default_database):
     assert "X-RAWR-TYPE:Reptar" in lines
 
 
-def test_category_integrity(tmpdir, create, default_database):
+def test_category_integrity(
+    tmpdir: py.path.local,
+    create: Callable,
+    default_database: Database,
+) -> None:
     create("test.ics", "UID:AVERYUNIQUEID\nSUMMARY:RAWR\n")
     db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
 
@@ -182,7 +197,11 @@ def test_category_integrity(tmpdir, create, default_database):
         default_database.save(todo)
 
 
-def test_category_deletes_on_todo_delete(tmpdir, create, default_database):
+def test_category_deletes_on_todo_delete(
+    tmpdir: py.path.local,
+    create: Callable,
+    default_database: Database,
+) -> None:
     uid = "my_id"
     create("test.ics", f"UID:{uid}\nSUMMARY:RAWR\n")
     db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
@@ -191,7 +210,7 @@ def test_category_deletes_on_todo_delete(tmpdir, create, default_database):
     todo.categories = ["my_cat"]
     default_database.save(todo)
 
-    assert default_database.todos().__next__().uid == uid
+    assert next(default_database.todos()).uid == uid
 
     default_database.delete(todo)
     default_database.update_cache()
@@ -206,7 +225,7 @@ def test_category_deletes_on_todo_delete(tmpdir, create, default_database):
     assert categories == []
 
 
-def test_todo_setters(todo_factory):
+def test_todo_setters(todo_factory: Callable) -> None:
     todo = todo_factory()
 
     todo.description = "A tea would be nice, thanks."
@@ -233,7 +252,7 @@ def test_todo_setters(todo_factory):
 
 
 @freeze_time("2017-03-19-15")
-def test_is_completed():
+def test_is_completed() -> None:
     completed_at = datetime(2017, 3, 19, 14, tzinfo=pytz.UTC)
 
     todo = Todo()
@@ -255,8 +274,14 @@ def test_is_completed():
     ["20990315T020000Z", "20990315T020000"],  # TZ-aware UNTIL  # TZ-naive UNTIL
 )
 @pytest.mark.parametrize("tz", [pytz.UTC, None])  # TZ-aware todos  # TZ-naive todos
-@pytest.mark.parametrize("due", [True, False])
-def test_complete_recurring(default_database, due, todo_factory, tz, until):
+@pytest.mark.parametrize("is_due", [True, False])
+def test_complete_recurring(
+    default_database: Database,
+    is_due: bool,
+    todo_factory: Callable,
+    tz: tzinfo,
+    until: str,
+) -> None:
     # We'll lose the milis when casting, so:
     now = datetime.now(tz).replace(microsecond=0)
 
@@ -264,10 +289,7 @@ def test_complete_recurring(default_database, due, todo_factory, tz, until):
         pytest.skip("These combinations are invalid, as per the spec.")
 
     original_start = now
-    if due:
-        original_due = now + timedelta(hours=12)
-    else:
-        due = original_due = None
+    original_due = now + timedelta(hours=12) if is_due else None
 
     rrule = f"FREQ=DAILY;UNTIL={until}"
     todo = todo_factory(rrule=rrule, due=original_due, start=original_start)
@@ -275,7 +297,7 @@ def test_complete_recurring(default_database, due, todo_factory, tz, until):
     todo.complete()
     related = todo.related[0]
 
-    if due:
+    if original_due:
         assert todo.due == original_due
     else:
         assert todo.due is None
@@ -283,7 +305,7 @@ def test_complete_recurring(default_database, due, todo_factory, tz, until):
     assert todo.is_completed
     assert not todo.rrule
 
-    if due:
+    if original_due:
         assert related.due == original_due + timedelta(days=1)
     else:
         assert related.due is None
@@ -293,7 +315,11 @@ def test_complete_recurring(default_database, due, todo_factory, tz, until):
     assert related.rrule == rrule
 
 
-def test_save_recurring_related(default_database, todo_factory, todos):
+def test_save_recurring_related(
+    default_database: Database,
+    todo_factory: Callable,
+    todos: Callable,
+) -> None:
     now = datetime.now(pytz.UTC)
     original_due = now + timedelta(hours=12)
     rrule = "FREQ=DAILY;UNTIL=20990315T020000Z"
@@ -302,19 +328,23 @@ def test_save_recurring_related(default_database, todo_factory, todos):
 
     default_database.save(todo)
 
-    todos = todos(status="ANY")
-    todo = next(todos)
+    all_todos = todos(status="ANY")
+    todo = next(all_todos)
     assert todo.percent_complete == 100
     assert todo.is_completed is True
     assert not todo.rrule
 
-    todo = next(todos)
+    todo = next(all_todos)
     assert todo.percent_complete == 0
     assert todo.is_completed is False
     assert todo.rrule == rrule
 
 
-def test_save_recurring_related_with_date(default_database, todo_factory, todos):
+def test_save_recurring_related_with_date(
+    default_database: Database,
+    todo_factory: Callable,
+    todos: Callable,
+) -> None:
     now = date.today()
     original_due = now + timedelta(days=1)
     rrule = "FREQ=DAILY;UNTIL=20990315"
@@ -323,25 +353,25 @@ def test_save_recurring_related_with_date(default_database, todo_factory, todos)
 
     default_database.save(todo)
 
-    todos = todos(status="ANY")
-    todo = next(todos)
+    all_todos = todos(status="ANY")
+    todo = next(all_todos)
     assert todo.percent_complete == 100
     assert todo.is_completed is True
     assert not todo.rrule
 
-    todo = next(todos)
+    todo = next(all_todos)
     assert todo.percent_complete == 0
     assert todo.is_completed is False
     assert todo.rrule == rrule
 
 
-def test_todo_filename_absolute_path():
+def test_todo_filename_absolute_path() -> None:
     Todo(filename="test.ics")
     with pytest.raises(ValueError, match="Must not be an absolute path: /test.ics"):
         Todo(filename="/test.ics")
 
 
-def test_list_equality(tmpdir):
+def test_list_equality(tmpdir: py.path.local) -> None:
     list1 = TodoList(path=str(tmpdir), name="test list")
     list2 = TodoList(path=str(tmpdir), name="test list")
     list3 = TodoList(path=str(tmpdir), name="yet another test list")
@@ -351,7 +381,7 @@ def test_list_equality(tmpdir):
     assert list1 != "test list"
 
 
-def test_clone():
+def test_clone() -> None:
     now = datetime.now(tz=tzlocal())
 
     todo = Todo(new=True)
@@ -359,7 +389,7 @@ def test_clone():
     todo.location = "Home"
     todo.due = now
     todo.uid = "123"
-    todo.id = "123"
+    todo.id = 123
     todo.filename = "123.ics"
 
     clone = todo.clone()
@@ -375,19 +405,29 @@ def test_clone():
 
 
 @freeze_time("2017, 3, 20")
-def test_todos_startable(tmpdir, runner, todo_factory, todos):
+def test_todos_startable(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    todo_factory: Callable,
+    todos: Callable,
+) -> None:
     todo_factory(summary="started", start=datetime(2017, 3, 15))
     todo_factory(summary="nostart")
     todo_factory(summary="unstarted", start=datetime(2017, 3, 24))
 
-    todos = list(todos(startable=True))
+    all_todos = list(todos(startable=True))
 
-    assert len(todos) == 2
-    for todo in todos:
+    assert len(all_todos) == 2
+    for todo in all_todos:
         assert "unstarted" not in todo.summary
 
 
-def test_filename_uid_colision(create, default_database, runner, todos):
+def test_filename_uid_colision(
+    create: Callable,
+    default_database: Database,
+    runner: CliRunner,
+    todos: Callable,
+) -> None:
     create("ABC.ics", "SUMMARY:My UID is not ABC\nUID:NOTABC\n")
     assert len(list(todos())) == 1
 
@@ -399,14 +439,18 @@ def test_filename_uid_colision(create, default_database, runner, todos):
     assert len(list(todos())) == 2
 
 
-def test_hide_cancelled(todos, todo_factory):
+def test_hide_cancelled(todos: Callable, todo_factory: Callable) -> None:
     todo_factory(status="CANCELLED")
 
     assert len(list(todos())) == 0
     assert len(list(todos(status="ANY"))) == 1
 
 
-def test_illegal_start_suppression(create, default_database, todos):
+def test_illegal_start_suppression(
+    create: Callable,
+    default_database: Database,
+    todos: Callable,
+) -> None:
     create(
         "test.ics",
         "SUMMARY:Start doing stuff\n"
@@ -418,13 +462,17 @@ def test_illegal_start_suppression(create, default_database, todos):
     assert todo.due == datetime(2017, 3, 31, 12, tzinfo=tzoffset(None, 7200))
 
 
-def test_default_status(create, todos):
+def test_default_status(create: Callable, todos: Callable) -> None:
     create("test.ics", "SUMMARY:Finish all these status tests\n")
     todo = next(todos())
     assert todo.status == "NEEDS-ACTION"
 
 
-def test_nullify_field(default_database, todo_factory, todos):
+def test_nullify_field(
+    default_database: Database,
+    todo_factory: Callable,
+    todos: Callable,
+) -> None:
     todo_factory(due=datetime.now())
 
     todo = next(todos(status="ANY"))
@@ -437,7 +485,7 @@ def test_nullify_field(default_database, todo_factory, todos):
     assert todo.due is None
 
 
-def test_duplicate_list(tmpdir):
+def test_duplicate_list(tmpdir: py.path.local) -> None:
     tmpdir.join("personal1").mkdir()
     with tmpdir.join("personal1").join("displayname").open("w") as f:
         f.write("personal")
@@ -453,7 +501,11 @@ def test_duplicate_list(tmpdir):
         )
 
 
-def test_unreadable_ics(todo_factory, todos, tmpdir):
+def test_unreadable_ics(
+    todo_factory: Callable,
+    todos: Callable,
+    tmpdir: py.path.local,
+) -> None:
     """
     Test that we properly handle an unreadable ICS file
 
@@ -465,13 +517,16 @@ def test_unreadable_ics(todo_factory, todos, tmpdir):
     todo_factory()
 
     with patch("logging.Logger.exception") as mocked_exception:
-        todos = list(todos())
+        all_todos = list(todos())
 
-    assert len(todos) == 1
+    assert len(all_todos) == 1
     assert mocked_exception.call_count == 1
 
 
-def test_deleting_todo_without_list_fails(tmpdir, default_database):
+def test_deleting_todo_without_list_fails(
+    tmpdir: py.path.local,
+    default_database: Database,
+) -> None:
     db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
     todo = Todo()
 
@@ -479,7 +534,10 @@ def test_deleting_todo_without_list_fails(tmpdir, default_database):
         db.delete(todo)
 
 
-def test_saving_todo_without_list_fails(tmpdir, default_database):
+def test_saving_todo_without_list_fails(
+    tmpdir: py.path.local,
+    default_database: Database,
+) -> None:
     db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
     todo = Todo()
 
@@ -487,7 +545,7 @@ def test_saving_todo_without_list_fails(tmpdir, default_database):
         db.save(todo)
 
 
-def test_todo_path_without_list(tmpdir):
+def test_todo_path_without_list(tmpdir: py.path.local) -> None:
     todo = Todo()
 
     with pytest.raises(ValueError, match="A todo without a list does not have a path."):

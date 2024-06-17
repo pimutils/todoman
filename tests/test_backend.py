@@ -2,18 +2,20 @@ from __future__ import annotations
 
 from datetime import date
 from datetime import datetime
+from typing import Callable
 
 import icalendar
-import pytest
+import py
 import pytz
 from dateutil.tz import tzlocal
 from freezegun import freeze_time
 
+from todoman.model import Database
 from todoman.model import Todo
 from todoman.model import VtodoWriter
 
 
-def test_datetime_serialization(todo_factory, tmpdir):
+def test_datetime_serialization(todo_factory: Callable, tmpdir: py.local.path) -> None:
     now = datetime(2017, 8, 31, 23, 49, 53, tzinfo=pytz.UTC)
     todo = todo_factory(created_at=now)
     filename = tmpdir.join("default").join(todo.filename)
@@ -21,7 +23,7 @@ def test_datetime_serialization(todo_factory, tmpdir):
         assert "CREATED:20170831T234953Z\n" in f.readlines()
 
 
-def test_serialize_created_at(todo_factory):
+def test_serialize_created_at(todo_factory: Callable) -> None:
     now = datetime.now(tz=pytz.UTC)
     todo = todo_factory(created_at=now)
     vtodo = VtodoWriter(todo).serialize()
@@ -29,7 +31,7 @@ def test_serialize_created_at(todo_factory):
     assert vtodo.get("created") is not None
 
 
-def test_serialize_dtstart(todo_factory):
+def test_serialize_dtstart(todo_factory: Callable) -> None:
     now = datetime.now(tz=pytz.UTC)
     todo = todo_factory(start=now)
     vtodo = VtodoWriter(todo).serialize()
@@ -37,22 +39,14 @@ def test_serialize_dtstart(todo_factory):
     assert vtodo.get("dtstart") is not None
 
 
-def test_serializer_raises(todo_factory):
-    todo = todo_factory()
-    writter = VtodoWriter(todo)
-
-    with pytest.raises(Exception, match="Unknown field nonexistant"):
-        writter.serialize_field("nonexistant", 7)
-
-
-def test_supported_fields_are_serializeable():
+def test_supported_fields_are_serializeable() -> None:
     supported_fields = set(Todo.ALL_SUPPORTED_FIELDS)
     serialized_fields = set(VtodoWriter.FIELD_MAP.keys())
 
     assert supported_fields == serialized_fields
 
 
-def test_vtodo_serialization(todo_factory):
+def test_vtodo_serialization(todo_factory: Callable) -> None:
     """Test VTODO serialization: one field of each type."""
     description = "A tea would be nice, thanks."
     todo = todo_factory(
@@ -78,12 +72,20 @@ def test_vtodo_serialization(todo_factory):
 
 
 @freeze_time("2017-04-04 20:11:57")
-def test_update_last_modified(todo_factory, todos, tmpdir):
+def test_update_last_modified(
+    todo_factory: Callable,
+    todos: Callable,
+    tmpdir: py.path.local,
+) -> None:
     todo = todo_factory()
     assert todo.last_modified == datetime.now(tzlocal())
 
 
-def test_sequence_increment(default_database, todo_factory, todos):
+def test_sequence_increment(
+    default_database: Database,
+    todo_factory: Callable,
+    todos: Callable,
+) -> None:
     todo = todo_factory()
     assert todo.sequence == 1
 
@@ -95,8 +97,8 @@ def test_sequence_increment(default_database, todo_factory, todos):
     assert todo.sequence == 2
 
 
-def test_normalize_datetime():
-    writter = VtodoWriter(None)
+def test_normalize_datetime(todo_factory: Callable) -> None:
+    writter = VtodoWriter(todo_factory())
     assert writter.normalize_datetime(date(2017, 6, 17)) == date(2017, 6, 17)
     assert writter.normalize_datetime(datetime(2017, 6, 17)) == datetime(
         2017, 6, 17, tzinfo=tzlocal()

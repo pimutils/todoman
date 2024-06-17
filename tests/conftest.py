@@ -3,11 +3,17 @@ from __future__ import annotations
 import os
 import time
 from datetime import datetime
+from typing import Callable
+from typing import Iterable
+from typing import ParamSpec
+from typing import TypeVar
 from uuid import uuid4
 
+import py
 import pytest
 import pytz
 from click.testing import CliRunner
+from click.testing import Result
 from dateutil.tz import tzlocal
 from hypothesis import HealthCheck
 from hypothesis import Verbosity
@@ -19,7 +25,7 @@ from todoman.formatters import HumanizedFormatter
 
 
 @pytest.fixture()
-def default_database(tmpdir):
+def default_database(tmpdir: py.path.local) -> model.Database:
     return model.Database(
         [tmpdir.mkdir("default")],
         tmpdir.mkdir(uuid4().hex).join("cache.sqlite3"),
@@ -27,7 +33,7 @@ def default_database(tmpdir):
 
 
 @pytest.fixture()
-def config(tmpdir, default_database):
+def config(tmpdir: py.path.local, default_database: model.Database) -> py.path.local:
     config_path = tmpdir.join("config.py")
     config_path.write(
         f'path = "{tmpdir}/*"\n'
@@ -38,14 +44,18 @@ def config(tmpdir, default_database):
     return config_path
 
 
+_T = TypeVar("_T")
+_P = ParamSpec("_P")
+
+
 @pytest.fixture()
-def runner(config, sleep):
+def runner(config: py.path.local, sleep: Callable[[], None]) -> CliRunner:
     class SleepyCliRunner(CliRunner):
         """
         Sleeps before invoking to make sure cache entries have expired.
         """
 
-        def invoke(self, *args, **kwargs):
+        def invoke(self, *args, **kwargs) -> Result:
             sleep()
             return super().invoke(*args, **kwargs)
 
@@ -53,8 +63,8 @@ def runner(config, sleep):
 
 
 @pytest.fixture()
-def create(tmpdir):
-    def inner(name, content, list_name="default"):
+def create(tmpdir: py.path.local) -> Callable[[str, str, str], py.path.local]:
+    def inner(name: str, content: str, list_name: str = "default") -> py.path.local:
         path = tmpdir.ensure_dir(list_name).join(name)
         path.write(
             "BEGIN:VCALENDAR\nBEGIN:VTODO\n" + content + "END:VTODO\nEND:VCALENDAR"
@@ -65,8 +75,8 @@ def create(tmpdir):
 
 
 @pytest.fixture()
-def now_for_tz():
-    def inner(tz="CET"):
+def now_for_tz() -> Callable[[str], datetime]:
+    def inner(tz: str = "CET") -> datetime:
         """
         Provides the current time cast to a given timezone.
 
@@ -80,8 +90,8 @@ def now_for_tz():
 
 
 @pytest.fixture()
-def todo_factory(default_database):
-    def inner(**attributes):
+def todo_factory(default_database: model.Database) -> Callable:
+    def inner(**attributes) -> model.Todo:
         todo = model.Todo(new=True)
         todo.list = next(iter(default_database.lists()))
 
@@ -97,17 +107,17 @@ def todo_factory(default_database):
 
 
 @pytest.fixture()
-def default_formatter():
+def default_formatter() -> DefaultFormatter:
     return DefaultFormatter(tz_override=pytz.timezone("CET"))
 
 
 @pytest.fixture()
-def humanized_formatter():
+def humanized_formatter() -> HumanizedFormatter:
     return HumanizedFormatter(tz_override=pytz.timezone("CET"))
 
 
 @pytest.fixture(scope="session")
-def sleep(tmpdir_factory):
+def sleep(tmpdir_factory: pytest.TempdirFactory) -> Callable[[], None]:
     """
     Sleeps as long as needed for the filesystem's mtime to pick up differences
 
@@ -119,12 +129,12 @@ def sleep(tmpdir_factory):
     """
     tmpfile = tmpdir_factory.mktemp("sleep").join("touch_me")
 
-    def touch_and_mtime():
+    def touch_and_mtime() -> float:
         tmpfile.open("w").close()
         stat = os.stat(str(tmpfile))
         return getattr(stat, "st_mtime_ns", stat.st_mtime)
 
-    def inner():
+    def inner() -> None:
         time.sleep(i)
 
     i = 0.00001
@@ -149,8 +159,8 @@ def sleep(tmpdir_factory):
 
 
 @pytest.fixture()
-def todos(default_database, sleep):
-    def inner(**filters):
+def todos(default_database: model.Database, sleep: Callable[[], None]) -> Callable:
+    def inner(**filters) -> Iterable[model.Todo]:
         sleep()
         default_database.update_cache()
         return default_database.todos(**filters)
