@@ -83,12 +83,17 @@ select = [
     "I",
     "UP",
     "N",
-    # "ANN",
+    "ANN",
     # "A",
     "C4",
     "PT",
     "SIM",
     "TID",
+]
+ignore = [
+  "ANN101",  # Annotation for 'self'
+  "ANN002",  # Annotations for *args
+  "ANN003",  # Annotations for **kwargs
 ]
 
 [tool.ruff.lint.isort]
