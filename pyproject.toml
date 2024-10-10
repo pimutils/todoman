@@ -49,6 +49,7 @@ test = [
     "hypothesis",
     "pytest",
     "pytest-cov",
+    "pytz",
 ]
 docs = [
     "sphinx-click",

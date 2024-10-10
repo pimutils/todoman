@@ -8,6 +8,7 @@ from datetime import date
 from datetime import datetime
 from datetime import time
 from datetime import timedelta
+from datetime import timezone
 from functools import cached_property
 from os.path import normpath
 from os.path import split
@@ -16,7 +17,6 @@ from typing import Iterator
 from uuid import uuid4
 
 import icalendar
-import pytz
 from atomicwrites import AtomicWriter
 from dateutil.rrule import rrulestr
 from dateutil.tz import tzlocal
@@ -303,7 +303,7 @@ class VtodoWriter:
         if not dt.tzinfo:
             dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
 
-        return dt.astimezone(pytz.UTC)
+        return dt.astimezone(timezone.utc)
 
     def serialize(self, original: icalendar.Todo = None) -> icalendar.Todo:
         """Serialize a Todo into a VTODO."""

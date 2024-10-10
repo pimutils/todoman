@@ -7,6 +7,7 @@ from abc import abstractmethod
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
 from datetime import tzinfo
 from time import mktime
 from typing import Iterable
@@ -14,7 +15,6 @@ from typing import Iterable
 import click
 import humanize
 import parsedatetime
-import pytz
 from dateutil.tz import tzlocal
 
 from todoman.model import Todo
@@ -347,5 +347,5 @@ class PorcelainFormatter(DefaultFormatter):
 
     def parse_datetime(self, value: str | float | None) -> datetime | None:
         if value:
-            return datetime.fromtimestamp(float(value), tz=pytz.UTC)
+            return datetime.fromtimestamp(float(value), tz=timezone.utc)
         return None
