@@ -13,6 +13,9 @@ v4.5.0
 * Drop ``sphinx-autorun`` dependency for the docs as it has been unused for some
   time now anyway.
 * Add a new ``path`` command which prints the full file path to a task.
+* Show a clearer error when `click-repl` is missing.
+* Drop usage of ``pytz``. This was previously a transitive dependency via
+  ``icalendar``.
 
 v4.4.0
 ------
