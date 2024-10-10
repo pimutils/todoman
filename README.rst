@@ -1,29 +1,10 @@
 Todoman
 =======
 
-.. image:: https://builds.sr.ht/~whynothugo/todoman.svg
-  :target: https://builds.sr.ht/~whynothugo/todoman
-  :alt: CI status
-
-.. image:: https://codecov.io/gh/pimutils/todoman/branch/main/graph/badge.svg
-  :target: https://codecov.io/gh/pimutils/todoman
-  :alt: Codecov coverage report
-
-.. image:: https://readthedocs.org/projects/todoman/badge/
-  :target: https://todoman.rtfd.org/
-  :alt: documentation
-
-.. image:: https://img.shields.io/pypi/v/todoman.svg
-  :target: https://pypi.python.org/pypi/todoman
-  :alt: version on pypi
-
-.. image:: https://img.shields.io/pypi/l/todoman.svg
-  :target: https://github.com/pimutils/todoman/blob/main/LICENCE
-  :alt: licence
-
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-  :target: https://pypi.org/project/black/
-  :alt: code style: black
+`CI status <https://builds.sr.ht/~whynothugo/todoman/commits/main>`_
+| `Coverage <https://codecov.io/gh/pimutils/todoman>`_
+| `Documentation <https://todoman.rtfd.org/>`_
+| `ISC Licence <https://github.com/pimutils/todoman/blob/main/LICENCE>`_
 
 Todoman is a simple, standards-based, cli todo (aka: task) manager. Todos
 are stored into `icalendar <https://tools.ietf.org/html/rfc5545>`_ files, which
