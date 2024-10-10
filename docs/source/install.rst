@@ -16,8 +16,8 @@ todoman is packaged in the community_ repository, and can be installed using::
 
 .. _community: https://www.archlinux.org/packages/community/any/todoman/
 
-macOS
-~~~~~
+homebrew (macOS)
+~~~~~~~~~~~~~~~~
 
 todoman is packaged in homebrew_, and can be installed using::
 
@@ -25,8 +25,8 @@ todoman is packaged in homebrew_, and can be installed using::
 
 .. _homebrew: https://formulae.brew.sh/formula/todoman
 
-Installation via PIP
---------------------
+PyPI (installatoin via pip)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Since *todoman* is written in python, you can use python's package managers,
 *pip* by executing::
