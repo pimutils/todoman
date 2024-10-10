@@ -32,6 +32,7 @@ dependencies = [
     "icalendar>=4.0.3",
     "parsedatetime",
     "python-dateutil",
+    "pytz",
     "pyxdg",
     "urwid",
 ]
