@@ -15,7 +15,6 @@ classifiers = [
     "Environment :: Console :: Curses",
     "Operating System :: POSIX",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -72,7 +71,7 @@ todo = "todoman.cli:cli"
 packages = ["todoman"]
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 
 [tool.ruff.lint]
 select = [
