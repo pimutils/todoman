@@ -13,8 +13,6 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          - types-atomicwrites
-          - types-tabulate
           - types-freezegun
           - types-pytz
           - types-python-dateutil
