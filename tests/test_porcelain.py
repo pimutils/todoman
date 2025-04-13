@@ -191,8 +191,7 @@ def test_list_priority(
 def test_show(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
     create(
         "test.ics",
-        f"UID:{uuid4()}\nSUMMARY:harhar\n"
-        "DESCRIPTION:Lots of text. Yum!\nPRIORITY:5\n",
+        f"UID:{uuid4()}\nSUMMARY:harhar\nDESCRIPTION:Lots of text. Yum!\nPRIORITY:5\n",
     )
     result = runner.invoke(cli, ["--porcelain", "show", "1"])
 

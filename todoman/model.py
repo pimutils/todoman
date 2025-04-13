@@ -168,33 +168,33 @@ class Todo:
             if value is None:
                 v = ""
             else:
-                assert isinstance(
-                    value, str
-                ), f"Got {type(value)} for {name} where str was expected"
+                assert isinstance(value, str), (
+                    f"Got {type(value)} for {name} where str was expected"
+                )
 
         if name in Todo.STRING_FIELDS:
             if value is None:
                 v = ""
             else:
-                assert isinstance(
-                    value, str
-                ), f"Got {type(value)} for {name} where str was expected"
+                assert isinstance(value, str), (
+                    f"Got {type(value)} for {name} where str was expected"
+                )
 
         if name in Todo.INT_FIELDS:
             if value is None:
                 v = 0
             else:
-                assert isinstance(
-                    value, int
-                ), f"Got {type(value)} for {name} where int was expected"
+                assert isinstance(value, int), (
+                    f"Got {type(value)} for {name} where int was expected"
+                )
 
         if name in Todo.LIST_FIELDS:
             if value is None:
                 v = []
             else:
-                assert isinstance(
-                    value, list
-                ), f"Got {type(value)} for {name} where list was expected"
+                assert isinstance(value, list), (
+                    f"Got {type(value)} for {name} where list was expected"
+                )
 
         return object.__setattr__(self, name, v)
 

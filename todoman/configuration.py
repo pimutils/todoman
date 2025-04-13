@@ -240,8 +240,7 @@ def load_config(custom_path: str | None = None) -> dict:
                 expected = type_.__name__
             actual = value.__class__.__name__
             raise ConfigurationError(
-                f"Bad {name} setting. Invalid type "
-                f"(expected {expected}, got {actual})."
+                f"Bad {name} setting. Invalid type (expected {expected}, got {actual})."
             )
         if validation:
             value = validation(value)

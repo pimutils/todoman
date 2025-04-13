@@ -409,13 +409,11 @@ def test_sorting_output(
 ) -> None:
     create(
         "test.ics",
-        f"UID:{uuid4()}\nSUMMARY:aaa\n"
-        "DUE;VALUE=DATE-TIME;TZID=ART:20160102T000000\n",
+        f"UID:{uuid4()}\nSUMMARY:aaa\nDUE;VALUE=DATE-TIME;TZID=ART:20160102T000000\n",
     )
     create(
         "test2.ics",
-        f"UID:{uuid4()}\nSUMMARY:bbb\n"
-        "DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n",
+        f"UID:{uuid4()}\nSUMMARY:bbb\nDUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n",
     )
 
     examples = [("-summary", ["aaa", "bbb"]), ("due", ["aaa", "bbb"])]
@@ -448,8 +446,7 @@ def test_sorting_null_values(
     create("test.ics", f"UID:{uuid4()}\nSUMMARY:aaa\nPRIORITY:9\n")
     create(
         "test2.ics",
-        f"UID:{uuid4()}\nSUMMARY:bbb\n"
-        "DUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n",
+        f"UID:{uuid4()}\nSUMMARY:bbb\nDUE;VALUE=DATE-TIME;TZID=ART:20160101T000000\n",
     )
 
     result = runner.invoke(cli)
