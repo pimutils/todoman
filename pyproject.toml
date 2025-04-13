@@ -87,7 +87,6 @@ select = [
     "TID",
 ]
 ignore = [
-  "ANN101",  # Annotation for 'self'
   "ANN002",  # Annotations for *args
   "ANN003",  # Annotations for **kwargs
 ]
