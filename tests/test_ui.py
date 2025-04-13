@@ -183,11 +183,12 @@ def test_ctrl_c_clears(default_formatter: Formatter, todo_factory: Callable) -> 
 
     # Simulate that ctrl+c gets pressed, since we can't *really* do that
     # trivially inside unit tests.
-    with mock.patch(
-        "urwid.main_loop.MainLoop.run", side_effect=KeyboardInterrupt
-    ), mock.patch(
-        "urwid.main_loop.MainLoop.stop",
-    ) as mocked_stop:
+    with (
+        mock.patch("urwid.main_loop.MainLoop.run", side_effect=KeyboardInterrupt),
+        mock.patch(
+            "urwid.main_loop.MainLoop.stop",
+        ) as mocked_stop,
+    ):
         editor.edit()
 
     assert mocked_stop.call_count == 1

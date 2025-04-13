@@ -174,8 +174,11 @@ def test_colour_validation_always(config: py.path.local) -> None:
 
 def test_colour_validation_invalid(config: py.path.local) -> None:
     config.write("color = 'on_weekends_only'\n", "a")
-    with patch(
-        "todoman.configuration.find_config",
-        return_value=(str(config)),
-    ), pytest.raises(ConfigurationError):
+    with (
+        patch(
+            "todoman.configuration.find_config",
+            return_value=(str(config)),
+        ),
+        pytest.raises(ConfigurationError),
+    ):
         load_config()

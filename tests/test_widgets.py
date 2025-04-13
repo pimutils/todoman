@@ -164,7 +164,7 @@ def test_extended_edit_editor() -> None:
     assert extended_edit.get_edit_text() == "Sheep!"
 
 
-def test_priority_selector(default_formatter:  DefaultFormatter ) -> None:
+def test_priority_selector(default_formatter: DefaultFormatter) -> None:
     selector = PrioritySelector(None, 5, default_formatter.format_priority)
 
     assert selector.label == "medium"
