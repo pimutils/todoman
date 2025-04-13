@@ -96,7 +96,7 @@ force-single-line = true
 required-imports = ["from __future__ import annotations"]
 
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+requires = ["setuptools>=77", "wheel", "setuptools_scm>=6.2"]
 
 [tool.setuptools_scm]
 write_to = "todoman/version.py"
