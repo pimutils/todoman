@@ -21,3 +21,26 @@ repos:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff-check
+        description: "Lint Python code with ruff"
+        entry: ruff check --force-exclude --fix --exit-non-zero-on-fix
+        language: python
+        "types_or": [python, pyi]
+        require_serial: true
+      - id: ruff-format
+        name: ruff-format
+        description: "Format Python code with ruff"
+        language: system
+        entry: ruff format --force-exclude
+        require_serial: true
+        types_or: [python, pyi]
+      - id: mypy
+        name: mypy
+        language: system
+        entry: mypy
+        types_or: [python, pyi]
+        args: ["--scripts-are-modules"]
+        require_serial: true
