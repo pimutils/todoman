@@ -4,12 +4,12 @@ import functools
 import glob
 import locale
 import sys
+from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import date
 from datetime import timedelta
 from os.path import isdir
 from typing import Callable
-from typing import Iterator
 from typing import Literal
 from typing import ParamSpec
 from typing import TypeVar

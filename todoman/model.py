@@ -4,6 +4,8 @@ import logging
 import os
 import socket
 import sqlite3
+from collections.abc import Iterable
+from collections.abc import Iterator
 from datetime import date
 from datetime import datetime
 from datetime import time
@@ -12,8 +14,6 @@ from datetime import timezone
 from functools import cached_property
 from os.path import normpath
 from os.path import split
-from typing import Iterable
-from typing import Iterator
 from uuid import uuid4
 
 import icalendar

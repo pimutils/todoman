@@ -4,13 +4,13 @@ import contextlib
 import json
 from abc import ABC
 from abc import abstractmethod
+from collections.abc import Iterable
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 from datetime import tzinfo
 from time import mktime
-from typing import Iterable
 
 import click
 import humanize

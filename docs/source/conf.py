@@ -1,7 +1,7 @@
 # noqa: INP001
 from __future__ import annotations
 
-from typing import Iterator
+from collections.abc import Iterator
 
 import todoman
 from todoman.configuration import CONFIG_SPEC

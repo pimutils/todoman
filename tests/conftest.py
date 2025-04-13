@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import os
 import time
+from collections.abc import Iterable
 from datetime import datetime
 from typing import Callable
-from typing import Iterable
 from typing import ParamSpec
 from typing import TypeVar
 from uuid import uuid4
@@ -24,7 +24,7 @@ from todoman.formatters import DefaultFormatter
 from todoman.formatters import HumanizedFormatter
 
 
-@pytest.fixture()
+@pytest.fixture
 def default_database(tmpdir: py.path.local) -> model.Database:
     return model.Database(
         [tmpdir.mkdir("default")],
@@ -32,7 +32,7 @@ def default_database(tmpdir: py.path.local) -> model.Database:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def config(tmpdir: py.path.local, default_database: model.Database) -> py.path.local:
     config_path = tmpdir.join("config.py")
     config_path.write(
@@ -48,7 +48,7 @@ _T = TypeVar("_T")
 _P = ParamSpec("_P")
 
 
-@pytest.fixture()
+@pytest.fixture
 def runner(config: py.path.local, sleep: Callable[[], None]) -> CliRunner:
     class SleepyCliRunner(CliRunner):
         """
@@ -62,7 +62,7 @@ def runner(config: py.path.local, sleep: Callable[[], None]) -> CliRunner:
     return SleepyCliRunner(env={"TODOMAN_CONFIG": str(config)})
 
 
-@pytest.fixture()
+@pytest.fixture
 def create(tmpdir: py.path.local) -> Callable[[str, str, str], py.path.local]:
     def inner(name: str, content: str, list_name: str = "default") -> py.path.local:
         path = tmpdir.ensure_dir(list_name).join(name)
@@ -74,7 +74,7 @@ def create(tmpdir: py.path.local) -> Callable[[str, str, str], py.path.local]:
     return inner
 
 
-@pytest.fixture()
+@pytest.fixture
 def now_for_tz() -> Callable[[str], datetime]:
     def inner(tz: str = "CET") -> datetime:
         """
@@ -89,7 +89,7 @@ def now_for_tz() -> Callable[[str], datetime]:
     return inner
 
 
-@pytest.fixture()
+@pytest.fixture
 def todo_factory(default_database: model.Database) -> Callable:
     def inner(**attributes) -> model.Todo:
         todo = model.Todo(new=True)
@@ -106,12 +106,12 @@ def todo_factory(default_database: model.Database) -> Callable:
     return inner
 
 
-@pytest.fixture()
+@pytest.fixture
 def default_formatter() -> DefaultFormatter:
     return DefaultFormatter(tz_override=pytz.timezone("CET"))
 
 
-@pytest.fixture()
+@pytest.fixture
 def humanized_formatter() -> HumanizedFormatter:
     return HumanizedFormatter(tz_override=pytz.timezone("CET"))
 
@@ -158,7 +158,7 @@ def sleep(tmpdir_factory: pytest.TempdirFactory) -> Callable[[], None]:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def todos(default_database: model.Database, sleep: Callable[[], None]) -> Callable:
     def inner(**filters) -> Iterable[model.Todo]:
         sleep()

@@ -7,7 +7,7 @@ import urwid
 from todoman import widgets
 
 if typing.TYPE_CHECKING:
-    from typing import Iterable
+    from collections.abc import Iterable
 
     from todoman.formatters import Formatter
     from todoman.model import Todo
