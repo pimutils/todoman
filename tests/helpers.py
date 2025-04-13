@@ -22,7 +22,7 @@ def is_fs_case_sensitive() -> bool | None:
 
 def is_pyicu_installed() -> bool:
     try:
-        import icu  # noqa: F401: This is an import to tests if it's installed.
+        import icu  # noqa: F401 # This is an import to tests if it's installed.
     except ImportError:
         return False
     else:
