@@ -87,8 +87,7 @@ def test_invalid_color_arg(config: py.path.local, runner: CliRunner) -> None:
 def test_missing_path(config: py.path.local, runner: CliRunner) -> None:
     config.write('color = "auto"\n')
     result = runner.invoke(cli, ["list"])
-    assert result.exception
-    assert "Error: Missing 'path' setting." in result.output
+    assert not result.exception
 
 
 @pytest.mark.xfail(reason="Not implemented")

@@ -1,5 +1,5 @@
 # A glob expression which matches all directories relevant.
-path = "~/.local/share/calendars/*"
+path = "~/my_calendars/*"
 date_format = "%Y-%m-%d"
 time_format = "%H:%M"
 default_list = "Personal"

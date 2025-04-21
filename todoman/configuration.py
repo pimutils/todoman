@@ -67,7 +67,7 @@ CONFIG_SPEC: list[ConfigEntry] = [
     ConfigEntry(
         "path",
         str,
-        NO_DEFAULT,
+        "~/calendars/",
         """
 A glob pattern matching the directories where your todos are located. This
 pattern will be expanded, and each matching directory (with any icalendar

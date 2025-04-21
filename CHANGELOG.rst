@@ -8,6 +8,9 @@ v4.6.0
 ------
 
 * **BREAKING**: Dropped support for Python 3.8.
+* The default value for ``path`` is now ``~/calendars/*``. Previously this
+  value was required. This change is non-breaking; all existing valid
+  configurations define this value.
 
 v4.5.0
 ------
