@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import glob
+import io
 import locale
 import sys
 from collections.abc import Iterator
@@ -256,6 +257,7 @@ class AppContext:
     config: dict  # TODO: better typing
     db: Database
     formatter_class: type[formatters.Formatter]
+    columns: bool
 
     @cached_property
     def ui_formatter(self) -> formatters.Formatter:
@@ -263,6 +265,7 @@ class AppContext:
             self.config["date_format"],
             self.config["time_format"],
             self.config["dt_separator"],
+            self.columns,
         )
 
     @cached_property
@@ -271,6 +274,7 @@ class AppContext:
             self.config["date_format"],
             self.config["time_format"],
             self.config["dt_separator"],
+            self.columns,
         )
 
 
@@ -301,6 +305,16 @@ _interactive_option = click.option(
     ),
 )
 @click.option(
+    "--columns",
+    default=None,
+    type=click.Choice(["always", "auto", "never"]),
+    help=(
+        "By default todoman will disable column-aligned output entirely (value "
+        "`never`). Set to `auto` to enable column-aligned output if stdout is a TTY, "
+        "or `always` to enable it regardless."
+    ),
+)
+@click.option(
     "--porcelain",
     is_flag=True,
     help=(
@@ -328,10 +342,11 @@ _interactive_option = click.option(
 @catch_errors
 def cli(
     click_ctx: click.Context,
-    colour: Literal["always", "auto", "never"],
+    colour: Literal["always", "auto", "never"] | None,
+    columns: Literal["always", "auto", "never"] | None,
     porcelain: bool,
-    humanize: bool,
-    config: str,
+    humanize: bool | None,
+    config: str | None,
 ) -> None:
     ctx = click_ctx.ensure_object(AppContext)
     try:
@@ -359,6 +374,11 @@ def cli(
         click_ctx.color = True
     elif colour == "never":
         click_ctx.color = False
+
+    if columns == "auto":
+        ctx.columns = isinstance(sys.stdout, io.TextIOBase) and sys.stdout.isatty()
+    else:
+        ctx.columns = columns == "always"
 
     paths = [
         path
