@@ -375,6 +375,7 @@ def cli(
     elif colour == "never":
         click_ctx.color = False
 
+    columns = columns or ctx.config["columns"]
     if columns == "auto":
         ctx.columns = isinstance(sys.stdout, io.TextIOBase) and sys.stdout.isatty()
     else:

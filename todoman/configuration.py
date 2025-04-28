@@ -86,6 +86,18 @@ to enable it regardless. This can be overridden with the ``--color`` option.
         validate_color_config,
     ),
     ConfigEntry(
+        "columns",
+        str,
+        "never",
+        """
+By default todoman will disable column-aligned output entirely (value
+`never`). Set to `auto` to enable column-aligned output if stdout is a TTY,
+or `always` to enable it regardless. This can be overridden with the
+``--columns`` option.
+""",
+        validate_color_config,
+    ),
+    ConfigEntry(
         "date_format",
         str,
         "%x",
