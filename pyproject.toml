@@ -32,6 +32,7 @@ dependencies = [
     "parsedatetime",
     "python-dateutil",
     "pyxdg",
+    "tabulate",
     "urwid",
 ]
 dynamic = ["version"]
