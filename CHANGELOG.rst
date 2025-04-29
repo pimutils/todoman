@@ -11,6 +11,8 @@ v4.6.0
 * The default value for ``path`` is now ``~/calendars/*``. Previously this
   value was required. This change is non-breaking; all existing valid
   configurations define this value.
+* Add a new `columns` option and configuration entry to enable column-aligned
+  output.
 
 v4.5.0
 ------
