@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import glob
+import json
 import locale
 import sys
 from collections.abc import Callable
@@ -661,6 +662,18 @@ def move(ctx: AppContext, list: TodoList, ids: list[int]) -> None:
         click.echo(ctx.formatter.compact(todo))
         assert todo.list, "Source todo must have a list"
         ctx.db.move(todo, new_list=list, from_list=todo.list)
+
+
+@cli.command()
+@pass_ctx
+@catch_errors
+def lists(ctx: AppContext) -> None:
+    """Returns all the lists"""
+
+    lists = [str(lst) for lst in ctx.db.lists()]
+    porcelain = ctx.formatter_class == formatters.PorcelainFormatter
+    text = json.dumps(lists) if porcelain else "\n".join(lists)
+    click.echo(text)
 
 
 @cli.command(name="list")
