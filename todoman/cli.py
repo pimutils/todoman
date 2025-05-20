@@ -8,6 +8,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import date
 from datetime import timedelta
+import json
 from os.path import isdir
 from typing import Callable
 from typing import Literal
@@ -651,6 +652,23 @@ def move(ctx: AppContext, list: TodoList, ids: list[int]) -> None:
         assert todo.list, "Source todo must have a list"
         ctx.db.move(todo, new_list=list, from_list=todo.list)
 
+@cli.command()
+@click.option(
+    "--porcelain",
+    is_flag=True,
+    help=(
+        "Use a JSON format that will "
+        "remain stable regardless of configuration or version."
+    ),
+)
+@pass_ctx
+@catch_errors
+def lists(ctx: AppContext, porcelain: bool) -> None:
+    """Returns all the lists"""
+
+    lists = [str(lst) for lst in ctx.db.lists()]
+    text = json.dumps(lists) if porcelain else "Lists: " + ", ".join(lists)
+    click.echo(text)
 
 @cli.command(name="list")
 @pass_ctx
