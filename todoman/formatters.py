@@ -311,6 +311,7 @@ class PorcelainFormatter(DefaultFormatter):
             "location": todo.location,
             "description": todo.description,
             "completed_at": self.format_datetime(todo.completed_at),
+            "recurring": todo.is_recurring,
         }
 
     def compact(self, todo: Todo) -> str:
