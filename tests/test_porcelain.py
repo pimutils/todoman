@@ -38,6 +38,7 @@ def test_list_all(tmpdir: py.path.local, runner: CliRunner, create: Callable) ->
             "location": "Wherever",
             "percent": 26,
             "priority": 0,
+            "recurring": False,
             "start": 1451606400,
             "summary": "Do stuff",
         }
@@ -74,6 +75,7 @@ def test_list_start_date(
             "location": "Wherever",
             "percent": 26,
             "priority": 0,
+            "recurring": False,
             "start": 1451692800,
             "summary": "Do stuff",
         }
@@ -108,6 +110,7 @@ def test_list_due_date(
             "location": "Wherever",
             "percent": 26,
             "priority": 0,
+            "recurring": False,
             "start": None,
             "summary": "Do stuff",
         }
@@ -135,6 +138,7 @@ def test_list_nodue(tmpdir: py.path.local, runner: CliRunner, create: Callable) 
             "list": "default",
             "location": "",
             "percent": 12,
+            "recurring": False,
             "priority": 4,
             "start": None,
             "summary": "Do stuff",
@@ -206,6 +210,7 @@ def test_show(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> Non
         "location": "",
         "percent": 0,
         "priority": 5,
+        "recurring": False,
         "start": None,
         "summary": "harhar",
     }
@@ -229,6 +234,7 @@ def test_simple_action(todo_factory: Callable) -> None:
         "location": "Downtown",
         "percent": 0,
         "priority": 0,
+        "recurring": False,
         "start": None,
         "summary": "YARR!",
     }
