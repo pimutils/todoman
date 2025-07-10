@@ -24,7 +24,6 @@ classifiers = [
     "Topic :: Utilities",
 ]
 dependencies = [
-    "atomicwrites",
     "click>=7.1,<9.0",
     "click-log>=0.2.1",
     "humanize",

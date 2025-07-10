@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import socket
 import sqlite3
+import tempfile
 from collections.abc import Iterable
 from collections.abc import Iterator
 from datetime import date
@@ -17,7 +19,6 @@ from os.path import split
 from uuid import uuid4
 
 import icalendar
-from atomicwrites import AtomicWriter
 from dateutil.rrule import rrulestr
 from dateutil.tz import tzlocal
 
@@ -258,6 +259,27 @@ class Todo:
         self.status = "CANCELLED"
 
 
+@contextlib.contextmanager
+def atomic_write(dest, overwrite=False):
+    fd, src = tempfile.mkstemp(prefix=os.path.basename(dest), dir=os.path.dirname(dest))
+    file = os.fdopen(fd, mode='wb')
+
+    try:
+        yield file
+    except Exception:
+        os.unlink(src)
+        raise
+    else:
+        file.flush()
+        file.close()
+
+        if overwrite:
+            os.rename(src, dest)
+        else:
+            os.link(src, dest)
+            os.unlink(src)
+
+
 class VtodoWriter:
     """Writes a Todo as a VTODO file."""
 
@@ -361,7 +383,7 @@ class VtodoWriter:
                 if component.get("uid", None) == self.todo.uid:
                     cal.subcomponents[index] = vtodo
 
-        with AtomicWriter(path, "wb", overwrite=True).open() as f:
+        with atomic_write(path, overwrite=True) as f:
             f.write(cal.to_ical())
 
     def _write_new(self, path: str) -> icalendar.Todo:
@@ -370,7 +392,7 @@ class VtodoWriter:
         c = icalendar.Calendar()
         c.add_component(vtodo)
 
-        with AtomicWriter(path, "wb").open() as f:
+        with atomic_write(path) as f:
             c.add("prodid", "nl.whynothugo.todoman")
             c.add("version", "2.0")
             f.write(c.to_ical())
