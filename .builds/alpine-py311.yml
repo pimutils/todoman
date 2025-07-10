@@ -1,4 +1,4 @@
-image: alpine/3.18
+image: alpine/3.19
 packages:
   - alpine-sdk
   - icu-dev
