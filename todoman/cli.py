@@ -453,7 +453,7 @@ def new(
     todo.summary = " ".join(summary)
 
     if read_description:
-        todo.description = "\n".join(sys.stdin)
+        todo.description = sys.stdin.read()
 
     if interactive or (not summary and interactive is None):
         ui = TodoEditor(todo, ctx.db.lists(), ctx.ui_formatter)
