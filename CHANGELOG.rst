@@ -11,6 +11,7 @@ v4.6.0
 * The default value for ``path`` is now ``~/calendars/*``. Previously this
   value was required. This change is non-breaking; all existing valid
   configurations define this value.
+* Drop dependency on ``atomicwrites`` which is now unmaintained.
 
 v4.5.0
 ------
