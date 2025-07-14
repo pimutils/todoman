@@ -2,6 +2,7 @@ image: alpine/3.19
 packages:
   - alpine-sdk
   - icu-dev
+  - pipx
   - py3-pip
   - py3-tox
   - python3-dev
@@ -12,7 +13,8 @@ environment:
   CI: true
 tasks:
   - setup: |
-      sudo pip install codecov
+      pipx install codecov
+      echo "export PATH=/home/build/.local/bin:$PATH" >> $HOME/.buildenv
   - test: |
       cd todoman
       tox -e py
