@@ -12,6 +12,8 @@ v4.6.0
   value was required. This change is non-breaking; all existing valid
   configurations define this value.
 * Drop dependency on ``atomicwrites`` which is now unmaintained.
+* Implement ``--read-description`` for the ``edit`` command.
+* ``setuptools>=77`` is now required at build time.
 
 v4.5.0
 ------
