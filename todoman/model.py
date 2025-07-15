@@ -210,6 +210,7 @@ class Todo:
         if not dt:
             return None
 
+        assert self.rrule is not None, "applying recurrence to todo without rrule"
         recurrence = rrulestr(self.rrule, dtstart=dt)
 
         if isinstance(dt, date) and not isinstance(dt, datetime):
