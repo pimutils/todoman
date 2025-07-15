@@ -26,3 +26,6 @@ tasks:
       cd todoman
       tox -e repl
       codecov
+  - lint: |
+      cd todoman
+      tox -e lint
