@@ -15,12 +15,12 @@ using, for example, *vdirsyncer*.
 Usage
 -----
 
-.. include:: usage.rst
+.. include:: _usage.rst
 
 Configuring
 -----------
 
-.. include:: configure.rst
+.. include:: _configure.rst
 
 Caveats
 -------
