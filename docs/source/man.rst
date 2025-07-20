@@ -3,7 +3,7 @@ Man page
 
 .. click:: todoman.cli:cli
    :prog: todo
-   :show-nested:
+   :nested: short
 
 Description
 -----------
