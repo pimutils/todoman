@@ -47,8 +47,8 @@ CalDAV. `vdirsyncer`_ is the recommended tool for this.
 Interactive shell
 -----------------
 
-If you install `click-repl <https://github.com/untitaker/click-repl>`_, todoman
-gets a new command called ``repl``, which launches an interactive shell with
+If `click-repl <https://github.com/untitaker/click-repl>`_ is installed,
+todoman supports the ``repl`` command, which launches an interactive shell with
 tab-completion.
 
 Integrations
