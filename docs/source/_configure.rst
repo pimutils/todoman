@@ -1,6 +1,3 @@
-Configuring
-===========
-
 You'll need to configure Todoman before the first usage, using its simple
 ini-like configuration file.
 

@@ -1,6 +1,3 @@
-Usage
-=====
-
 Todoman usage is `CLI`_ based (thought there are some TUI bits, and the
 intentions is to also provide a fully `TUI`_-based interface).
 
