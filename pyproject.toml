@@ -71,20 +71,20 @@ packages = ["todoman"]
 
 [tool.ruff.lint]
 extend-select = [
-    "E",
-    "W",
-    "B",
-    "I",
-    "UP",
-    "N",
-    "ANN",
     # "A",
+    "ANN",
+    "B",
     "C4", # Comprehensions
+    "E",
+    "I",
+    "N",
     "PT",
+    "PYI",
+    "RUF",
     "SIM",
     "TID",
-    "RUF",
-    "PYI",
+    "UP",
+    "W",
 ]
 ignore = [
   "ANN002",  # Annotations for *args
