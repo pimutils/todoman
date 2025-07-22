@@ -70,9 +70,8 @@ todo = "todoman.cli:cli"
 packages = ["todoman"]
 
 [tool.ruff.lint]
-select = [
+extend-select = [
     "E",
-    "F",
     "W",
     "B",
     "I",
