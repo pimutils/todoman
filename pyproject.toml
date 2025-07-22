@@ -79,10 +79,12 @@ extend-select = [
     "N",
     "ANN",
     # "A",
-    "C4",
+    "C4", # Comprehensions
     "PT",
     "SIM",
     "TID",
+    "RUF",
+    "PYI",
 ]
 ignore = [
   "ANN002",  # Annotations for *args
