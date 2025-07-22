@@ -328,7 +328,7 @@ _interactive_option = click.option(
 @catch_errors
 def cli(
     click_ctx: click.Context,
-    colour: Literal["always"] | Literal["auto"] | Literal["never"],
+    colour: Literal["always", "auto", "never"],
     porcelain: bool,
     humanize: bool,
     config: str,
