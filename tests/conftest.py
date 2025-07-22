@@ -5,8 +5,6 @@ import time
 from collections.abc import Iterable
 from datetime import datetime
 from typing import Callable
-from typing import ParamSpec
-from typing import TypeVar
 from uuid import uuid4
 
 import py
@@ -42,10 +40,6 @@ def config(tmpdir: py.path.local, default_database: model.Database) -> py.path.l
         f'cache_path = "{tmpdir.join("cache.sqlite3")!s}"\n'
     )
     return config_path
-
-
-_T = TypeVar("_T")
-_P = ParamSpec("_P")
 
 
 @pytest.fixture
