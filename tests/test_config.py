@@ -104,7 +104,7 @@ def test_missing_path(
         description=CONFIG_SPEC[0].description,
         validation=CONFIG_SPEC[0].validation,
     )
-    new_config_spec = [patched_path] + CONFIG_SPEC[1:]
+    new_config_spec = [patched_path, *CONFIG_SPEC[1:]]
 
     with mock.patch("todoman.configuration.CONFIG_SPEC", new_config_spec):
         result = runner.invoke(cli, ["list"])
