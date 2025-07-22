@@ -6,6 +6,7 @@ import os
 import socket
 import sqlite3
 import tempfile
+from collections.abc import Generator
 from collections.abc import Iterable
 from collections.abc import Iterator
 from datetime import date
@@ -16,6 +17,7 @@ from datetime import timezone
 from functools import cached_property
 from os.path import normpath
 from os.path import split
+from typing import IO
 from uuid import uuid4
 
 import icalendar
@@ -261,9 +263,12 @@ class Todo:
 
 
 @contextlib.contextmanager
-def atomic_write(dest, overwrite=False):
+def atomic_write(
+    dest: str,
+    overwrite: bool = False,
+) -> Generator[IO[bytes], None, None]:
     fd, src = tempfile.mkstemp(prefix=os.path.basename(dest), dir=os.path.dirname(dest))
-    file = os.fdopen(fd, mode='wb')
+    file = os.fdopen(fd, mode="wb")
 
     try:
         yield file
