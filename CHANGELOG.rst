@@ -4,6 +4,12 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v4.7.0
+------
+
+* Removed ``bin/todo``. It is no longer requierd, as the entry point generated
+  by setuptools no longer has performance issues.
+
 v4.6.0
 ------
 
