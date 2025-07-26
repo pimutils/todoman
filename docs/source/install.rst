@@ -43,11 +43,10 @@ Manual installation
 -------------------
 
 If pip is not available either (this is most unlikely), you'll need to download
-the source tarball and install via setup.py, though this is not a recommended
+the source tarball and install via pip, though this is not a recommended
 installation method::
 
-    python3 setup.py install
-
+    pip install -e .
 
 bash autocompletion (optional)
 ------------------------------
@@ -87,14 +86,27 @@ Recent versions also have experimental support for pypy3.
 Notes for Packagers
 -------------------
 
-All of todoman's dependencies are listed in the ``install_requires`` section of
-the setup.py_ file. New dependencies will be clearly announced in the
+All of todoman's dependencies are listed in the ``dependencies`` section of
+the pyproject.toml_ file. New dependencies will be clearly announced in the
 ``CHANGELOG.rst`` file for each release. Patch releases (eg: those where only
 the third digit of the version is incremented) **will not** introduce new
 dependencies.
 
-.. _setup.py: https://github.com/pimutils/todoman/blob/main/setup.py
+.. _pyproject.toml: https://github.com/pimutils/todoman/blob/main/pyproject.toml
 
 Additionally, `jq` is dependency for zsh's autocompletion. For platforms where
 `zsh` is the default shell, it is recommended to list `jq` as a dependency, for
 others adding it as an optional dependency should suffice.
+
+A wheel can be build with::
+
+   python -m build
+
+It can then be installed with::
+
+   python3 -m installer .dist/*.whl
+
+When packaging, you usually want to install to a custom directory, rather than
+the root filesystem. For this, use ``-d``::
+
+   python3 -m installer -d "$pkgdir" .dist/*.whl
