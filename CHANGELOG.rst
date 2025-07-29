@@ -4,6 +4,12 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+v4.7.0
+------
+
+* Removed ``bin/todo``. It is no longer requierd, as the entry point generated
+  by setuptools no longer has performance issues.
+
 v4.6.0
 ------
 
@@ -11,6 +17,9 @@ v4.6.0
 * The default value for ``path`` is now ``~/calendars/*``. Previously this
   value was required. This change is non-breaking; all existing valid
   configurations define this value.
+* Drop dependency on ``atomicwrites`` which is now unmaintained.
+* Implement ``--read-description`` for the ``edit`` command.
+* ``setuptools>=77`` is now required at build time.
 
 v4.5.0
 ------

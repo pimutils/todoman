@@ -1,7 +1,8 @@
-image: alpine/3.18
+image: alpine/3.19
 packages:
   - alpine-sdk
   - icu-dev
+  - pipx
   - py3-pip
   - py3-tox
   - python3-dev
@@ -11,8 +12,11 @@ environment:
   CODECOV_TOKEN: a4471483-7f55-411a-bf2f-f65a91013dc4
   CI: true
 tasks:
+  - check-python:
+      python --version | grep 'Python 3.11'
   - setup: |
-      sudo pip install codecov
+      pipx install codecov
+      echo "export PATH=/home/build/.local/bin:$PATH" >> $HOME/.buildenv
   - test: |
       cd todoman
       tox -e py

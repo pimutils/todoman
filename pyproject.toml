@@ -24,7 +24,6 @@ classifiers = [
     "Topic :: Utilities",
 ]
 dependencies = [
-    "atomicwrites",
     "click>=7.1,<9.0",
     "click-log>=0.2.1",
     "humanize",
@@ -71,20 +70,22 @@ todo = "todoman.cli:cli"
 packages = ["todoman"]
 
 [tool.ruff.lint]
-select = [
-    "E",
-    "F",
-    "W",
-    "B",
-    "I",
-    "UP",
-    "N",
-    "ANN",
+extend-select = [
     # "A",
-    "C4",
+    "ANN",
+    "B",
+    "C4", # Comprehensions
+    "E",
+    "I",
+    "INP",
+    "N",
     "PT",
+    "PYI",
+    "RUF",
     "SIM",
     "TID",
+    "UP",
+    "W",
 ]
 ignore = [
   "ANN002",  # Annotations for *args

@@ -16,9 +16,10 @@ working on it.
 Hacking
 ~~~~~~~
 
-Runtime dependencies are listed in ``setup.py``. We recommend that you use
-virtualenv to make sure that no additional dependencies are required without
-them being properly documented.
+Runtime dependencies are listed in ``pyproject.toml``. We recommend that you
+use virtualenv to make sure that no additional dependencies are required
+without them being properly documented.
+
 Run ``pip install -e .`` to install todoman and its dependencies into a
 virtualenv.
 

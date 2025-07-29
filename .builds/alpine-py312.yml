@@ -12,6 +12,8 @@ environment:
   CODECOV_TOKEN: a4471483-7f55-411a-bf2f-f65a91013dc4
   CI: true
 tasks:
+  - check-python:
+      python --version | grep 'Python 3.12'
   - test: |
       cd todoman
       tox -e py
@@ -24,3 +26,6 @@ tasks:
       cd todoman
       tox -e repl
       codecov
+  - lint: |
+      cd todoman
+      tox -e lint

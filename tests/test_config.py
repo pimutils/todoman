@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from unittest import mock
 from unittest.mock import patch
 
 import py
@@ -7,6 +8,8 @@ import pytest
 from click.testing import CliRunner
 
 from todoman.cli import cli
+from todoman.configuration import CONFIG_SPEC
+from todoman.configuration import ConfigEntry
 from todoman.configuration import ConfigurationError
 from todoman.configuration import load_config
 
@@ -84,9 +87,27 @@ def test_invalid_color_arg(config: py.path.local, runner: CliRunner) -> None:
     assert "Usage:" in result.output
 
 
-def test_missing_path(config: py.path.local, runner: CliRunner) -> None:
+def test_missing_path(
+    config: py.path.local,
+    runner: CliRunner,
+    tmpdir: py.path.local,
+) -> None:
     config.write('color = "auto"\n')
-    result = runner.invoke(cli, ["list"])
+
+    temp_calendars = tmpdir.mkdir("calendars")
+    temp_calendars.mkdir("my_list")
+
+    patched_path = ConfigEntry(
+        name=CONFIG_SPEC[0].name,
+        type=CONFIG_SPEC[0].type,
+        default=str(temp_calendars),
+        description=CONFIG_SPEC[0].description,
+        validation=CONFIG_SPEC[0].validation,
+    )
+    new_config_spec = [patched_path, *CONFIG_SPEC[1:]]
+
+    with mock.patch("todoman.configuration.CONFIG_SPEC", new_config_spec):
+        result = runner.invoke(cli, ["list"])
     assert not result.exception
 
 

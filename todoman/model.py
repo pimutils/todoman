@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import socket
 import sqlite3
+import tempfile
+from collections.abc import Generator
 from collections.abc import Iterable
 from collections.abc import Iterator
 from datetime import date
@@ -14,10 +17,11 @@ from datetime import timezone
 from functools import cached_property
 from os.path import normpath
 from os.path import split
+from types import MappingProxyType
+from typing import IO
 from uuid import uuid4
 
 import icalendar
-from atomicwrites import AtomicWriter
 from dateutil.rrule import rrulestr
 from dateutil.tz import tzlocal
 
@@ -210,6 +214,7 @@ class Todo:
         if not dt:
             return None
 
+        assert self.rrule is not None, "applying recurrence to todo without rrule"
         recurrence = rrulestr(self.rrule, dtstart=dt)
 
         if isinstance(dt, date) and not isinstance(dt, datetime):
@@ -258,28 +263,54 @@ class Todo:
         self.status = "CANCELLED"
 
 
+@contextlib.contextmanager
+def atomic_write(
+    dest: str,
+    overwrite: bool = False,
+) -> Generator[IO[bytes], None, None]:
+    fd, src = tempfile.mkstemp(prefix=os.path.basename(dest), dir=os.path.dirname(dest))
+    file = os.fdopen(fd, mode="wb")
+
+    try:
+        yield file
+    except Exception:
+        os.unlink(src)
+        raise
+    else:
+        file.flush()
+        file.close()
+
+        if overwrite:
+            os.rename(src, dest)
+        else:
+            os.link(src, dest)
+            os.unlink(src)
+
+
 class VtodoWriter:
     """Writes a Todo as a VTODO file."""
 
     """Maps Todo field names to VTODO field names"""
-    FIELD_MAP = {
-        "summary": "summary",
-        "priority": "priority",
-        "sequence": "sequence",
-        "uid": "uid",
-        "categories": "categories",
-        "completed_at": "completed",
-        "description": "description",
-        "dtstamp": "dtstamp",
-        "start": "dtstart",
-        "due": "due",
-        "location": "location",
-        "percent_complete": "percent-complete",
-        "status": "status",
-        "created_at": "created",
-        "last_modified": "last-modified",
-        "rrule": "rrule",
-    }
+    FIELD_MAP = MappingProxyType(
+        {
+            "summary": "summary",
+            "priority": "priority",
+            "sequence": "sequence",
+            "uid": "uid",
+            "categories": "categories",
+            "completed_at": "completed",
+            "description": "description",
+            "dtstamp": "dtstamp",
+            "start": "dtstart",
+            "due": "due",
+            "location": "location",
+            "percent_complete": "percent-complete",
+            "status": "status",
+            "created_at": "created",
+            "last_modified": "last-modified",
+            "rrule": "rrule",
+        }
+    )
 
     def __init__(self, todo: Todo) -> None:
         self.todo = todo
@@ -361,7 +392,7 @@ class VtodoWriter:
                 if component.get("uid", None) == self.todo.uid:
                     cal.subcomponents[index] = vtodo
 
-        with AtomicWriter(path, "wb", overwrite=True).open() as f:
+        with atomic_write(path, overwrite=True) as f:
             f.write(cal.to_ical())
 
     def _write_new(self, path: str) -> icalendar.Todo:
@@ -370,7 +401,7 @@ class VtodoWriter:
         c = icalendar.Calendar()
         c.add_component(vtodo)
 
-        with AtomicWriter(path, "wb").open() as f:
+        with atomic_write(path) as f:
             c.add("prodid", "nl.whynothugo.todoman")
             c.add("version", "2.0")
             f.write(c.to_ical())
