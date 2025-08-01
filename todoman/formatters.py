@@ -304,6 +304,7 @@ class PorcelainFormatter(DefaultFormatter):
             "due": self.format_datetime(todo.due),
             "id": todo.id,
             "list": todo.list.name if todo.list else None,
+            "list_colour": todo.list.colour if todo.list else None,
             "percent": todo.percent_complete,
             "summary": todo.summary,
             "categories": todo.categories,
@@ -311,6 +312,7 @@ class PorcelainFormatter(DefaultFormatter):
             "location": todo.location,
             "description": todo.description,
             "completed_at": self.format_datetime(todo.completed_at),
+            "recurring": todo.is_recurring,
         }
 
     def compact(self, todo: Todo) -> str:
