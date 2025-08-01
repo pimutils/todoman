@@ -4,11 +4,11 @@ intentions is to also provide a fully `TUI`_-based interface).
 The default action is ``list``, which outputs all tasks for all calendars, each
 with a semi-permanent unique id::
 
-    1 [ ] !!! 2015-04-30 Close bank account @work (0%)
-    2 [ ] !              Send minipimer back for warranty replacement @home (0%)
-    3 [X]     2015-03-29 Buy soy milk @home (100%)
-    4 [ ] !!             Fix the iPad's screen @home (0%)
-    5 [ ] !!             Fix the Touchpad battery @work (0%)
+    [ ] 1 !!! 2015-04-30 Close bank account @work
+    [ ] 2   !            Send minipimer back for warranty replacement @home
+    [X] 3     2015-03-29 Buy soy milk @home
+    [ ] 4  !!            Fix the iPad's screen @home
+    [ ] 5  !!            Fix the Touchpad battery @work
 
 The columns, in order, are:
 

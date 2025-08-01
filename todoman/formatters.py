@@ -11,6 +11,8 @@ from datetime import timedelta
 from datetime import timezone
 from datetime import tzinfo
 from time import mktime
+from typing import Callable
+from typing import Literal
 
 import click
 import humanize
@@ -36,6 +38,22 @@ def rgb_to_ansi(colour: str | None) -> str | None:
     return f"\33[38;2;{int(r, 16)!s};{int(g, 16)!s};{int(b, 16)!s}m"
 
 
+class Column:
+    format: Callable[[Todo], str]
+    style: Callable[[Todo, str], str] | None
+    align_direction: Literal["left", "right"] = "left"
+
+    def __init__(
+        self,
+        format: Callable[[Todo], str],
+        style: Callable[[Todo, str], str] | None = None,
+        align_direction: Literal["left", "right"] = "left",
+    ) -> None:
+        self.format = format
+        self.style = style
+        self.align_direction = align_direction
+
+
 class Formatter(ABC):
     @abstractmethod
     def __init__(
@@ -43,6 +61,7 @@ class Formatter(ABC):
         date_format: str = "%Y-%m-%d",
         time_format: str = "%H:%M",
         dt_separator: str = " ",
+        columns: bool = False,
     ) -> None:
         """Create a new formatter instance."""
 
@@ -56,7 +75,7 @@ class Formatter(ABC):
 
     @abstractmethod
     def simple_action(self, action: str, todo: Todo) -> str:
-        """Render an action related to a todo (e.g.: compelete, undo, etc)."""
+        """Render an action related to a todo (e.g.: complete, undo, etc)."""
 
     @abstractmethod
     def parse_priority(self, priority: str | None) -> int | None:
@@ -97,6 +116,7 @@ class DefaultFormatter(Formatter):
         date_format: str = "%Y-%m-%d",
         time_format: str = "%H:%M",
         dt_separator: str = " ",
+        columns: bool = False,
         tz_override: tzinfo | None = None,
     ) -> None:
         self.date_format = date_format
@@ -105,6 +125,7 @@ class DefaultFormatter(Formatter):
         self.datetime_format = dt_separator.join(
             filter(bool, (date_format, time_format))
         )
+        self.columns = columns
 
         self.tz = tz_override or tzlocal()
         self.now = datetime.now().replace(tzinfo=self.tz)
@@ -123,48 +144,95 @@ class DefaultFormatter(Formatter):
         # TODO: format lines fuidly and drop the table
         # it can end up being more readable when too many columns are empty.
         # show dates that are in the future in yellow (in 24hs) or grey (future)
-        table = []
-        for todo in todos:
-            completed = "X" if todo.is_completed else " "
-            percent = todo.percent_complete or ""
-            if percent:
-                percent = f" ({percent}%)"
 
-            if todo.categories:
-                categories = " [" + ", ".join(todo.categories) + "]"
-            else:
-                categories = ""
+        columns = {
+            "completed": Column(
+                format=lambda todo: "[X]" if todo.is_completed else "[ ]"
+            ),
+            "id": Column(lambda todo: str(todo.id), align_direction="right"),
+            "priority": Column(
+                format=lambda todo: self.format_priority_compact(todo.priority),
+                style=lambda todo, value: click.style(value, fg="magenta"),
+                align_direction="right",
+            ),
+            "due": Column(
+                format=lambda todo: str(
+                    self.format_datetime(todo.due) or "(no due date)"
+                ),
+                style=lambda todo, value: click.style(value, fg=c)
+                if (c := self._due_colour(todo))
+                else value,
+            ),
+            "report": Column(format=self.format_report),
+        }
 
-            priority = click.style(
-                self.format_priority_compact(todo.priority),
-                fg="magenta",
-            )
+        table = self.format_rows(columns, todos)
+        if self.columns:
+            table = self.columns_aligned_rows(columns, table)
 
-            due = self.format_datetime(todo.due) or "(no due date)"
-            due_colour = self._due_colour(todo)
-            if due_colour:
-                due = click.style(str(due), fg=due_colour)
-
-            recurring = "⟳" if todo.is_recurring else ""
-
-            if hide_list:
-                summary = f"{todo.summary} {percent}"
-            else:
-                if not todo.list:
-                    raise ValueError("Cannot format todo without a list")
-
-                summary = f"{todo.summary} {self.format_database(todo.list)}{percent}"
-
-            # TODO: add spaces on the left based on max todos"
-
-            # FIXME: double space when no priority
-            # split into parts to satisfy linter line too long
-            table.append(
-                f"[{completed}] {todo.id} {priority} {due} "
-                f"{recurring}{summary}{categories}"
-            )
-
+        table = self.style_rows(columns, table)
         return "\n".join(table)
+
+    def format_rows(
+        self, columns: dict[str, Column], todos: Iterable[Todo]
+    ) -> Iterable[tuple[Todo, list[str]]]:
+        for todo in todos:
+            yield (todo, [columns[col].format(todo) for col in columns])
+
+    def columns_aligned_rows(
+        self,
+        columns: dict[str, Column],
+        rows: Iterable[tuple[Todo, list[str]]],
+    ) -> Iterable[tuple[Todo, list[str]]]:
+        rows = list(rows)  # materialize the iterator
+        max_lengths = [0 for _ in columns]
+        for _, cols in rows:
+            for i, col in enumerate(cols):
+                max_lengths[i] = max(max_lengths[i], len(col))
+
+        for todo, cols in rows:
+            formatted = []
+            for i, (col, conf) in enumerate(zip(cols, columns.values())):
+                if conf.align_direction == "right":
+                    formatted.append(col.rjust(max_lengths[i]))
+                elif i < len(cols) - 1:
+                    formatted.append(col.ljust(max_lengths[i]))
+                else:
+                    # if last column is left-aligned, don't add spaces
+                    formatted.append(col)
+
+            yield todo, formatted
+
+    def style_rows(
+        self,
+        columns: dict[str, Column],
+        rows: Iterable[tuple[Todo, list[str]]],
+    ) -> Iterable[str]:
+        for todo, cols in rows:
+            yield " ".join(
+                conf.style(todo, col) if conf.style else col
+                for col, conf in zip(cols, columns.values())
+            )
+
+    def format_report(self, todo: Todo, hide_list: bool = False) -> str:
+        percent = todo.percent_complete or ""
+        if percent:
+            percent = f" ({percent}%)"
+
+        categories = " [" + ", ".join(todo.categories) + "]" if todo.categories else ""
+
+        recurring = "⟳" if todo.is_recurring else ""
+
+        if hide_list:
+            summary = f"{todo.summary} {percent}"
+        else:
+            if not todo.list:
+                raise ValueError("Cannot format todo without a list")
+
+            summary = f"{todo.summary} {self.format_database(todo.list)}{percent}"
+
+        # TODO: add spaces on the left based on max todos"
+        return f"{recurring}{summary}{categories}"
 
     def _due_colour(self, todo: Todo) -> str:
         now = self.now if isinstance(todo.due, datetime) else self.now.date()
