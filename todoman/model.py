@@ -55,6 +55,8 @@ class Todo:
     last_modified: datetime | None
     related: list[Todo]
     rrule: str | None
+    related_to: str
+    related_to_reltype: str
     start: date | None
     id: int | None
 
@@ -93,6 +95,8 @@ class Todo:
         self.location = ""
         self.percent_complete = 0
         self.priority = 0
+        self.related_to = ""
+        self.related_to_reltype = ""
         self.rrule = ""
         self.sequence = 0
         self.start = None
@@ -126,6 +130,8 @@ class Todo:
         for field in fields:
             setattr(todo, field, getattr(self, field))
 
+        todo.related_to_reltype = self.related_to_reltype
+
         return todo
 
     STRING_FIELDS = (
@@ -135,6 +141,7 @@ class Todo:
         "summary",
         "uid",
         "rrule",
+        "related_to",
     )
     INT_FIELDS = (
         "percent_complete",
@@ -309,6 +316,7 @@ class VtodoWriter:
             "created_at": "created",
             "last_modified": "last-modified",
             "rrule": "rrule",
+            "related_to": "related-to",
         }
     )
 
@@ -355,7 +363,14 @@ class VtodoWriter:
                 elif source in Todo.INT_FIELDS:
                     value = int(raw)
                 elif source in Todo.STRING_FIELDS:
-                    value = raw
+                    if source == "related_to":
+                        set_params = {}
+                        reltype_value = self.todo.related_to_reltype
+                        if reltype_value != "":
+                            set_params = {'reltype': reltype_value}
+                        value = icalendar.prop.vText(raw, params=set_params)
+                    else:
+                        value = raw
                 else:
                     raise Exception(f"Unknown field {source} serialized.")
 
@@ -418,11 +433,16 @@ class Cache:
     load times, but, more importantly, provides a simpler interface for
     filtering/querying/sorting.
 
+    The `SCHEMA_VERSION` should be incremented when breaking changes to the
+    database are made. For example adding new fields or removing no longer
+    needed fields and etc. This will ensure that the cache is rebuilt
+    automatically after todoman was updated.
+
     [1]: Relevant fields are those we show when listing todos, or those which
     may be used for filtering/sorting.
     """
 
-    SCHEMA_VERSION = 10
+    SCHEMA_VERSION = 11
 
     def __init__(self, path: str) -> None:
         self.cache_path = str(path)
@@ -533,6 +553,8 @@ class Cache:
                 "sequence" INTEGER,
                 "last_modified" INTEGER,
                 "rrule" TEXT,
+                "related_to" TEXT,
+                "related_to_reltype" TEXT,
 
                 FOREIGN KEY(file_path) REFERENCES files(path) ON DELETE CASCADE
             );
@@ -657,6 +679,11 @@ class Cache:
         :param todo: The icalendar component object on which
         """
 
+        got_related_to_reltype = ""
+        got_related_to = todo.get("related-to", "")
+        if got_related_to != "":
+            got_related_to_reltype = got_related_to.params.get("reltype")
+
         sql = """
             INSERT INTO todos (
                 {}
@@ -677,9 +704,11 @@ class Cache:
                 location,
                 sequence,
                 last_modified,
-                rrule
+                rrule,
+                related_to,
+                related_to_reltype
             ) VALUES ({}?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                ?)
+                ?, ?, ?)
             """
 
         due, due_dt = self._serialize_datetime(todo, "due")
@@ -707,6 +736,8 @@ class Cache:
             todo.get("sequence", 1),
             self._serialize_datetime(todo, "last-modified")[0],
             self._serialize_rrule(todo, "rrule"),
+            got_related_to,
+            got_related_to_reltype,
         ]
 
         if id:
@@ -917,6 +948,8 @@ class Cache:
         todo.list = self.lists_map[row["list_name"]]
         todo.filename = os.path.basename(row["path"])
         todo.rrule = row["rrule"]
+        todo.related_to = row["related_to"]
+        todo.related_to_reltype = row["related_to_reltype"]
         return todo
 
     def lists(self) -> Iterator[TodoList]:

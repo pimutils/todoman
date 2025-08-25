@@ -49,6 +49,8 @@ def test_supported_fields_are_serializeable() -> None:
 def test_vtodo_serialization(todo_factory: Callable) -> None:
     """Test VTODO serialization: one field of each type."""
     description = "A tea would be nice, thanks."
+    related_val = "1292818859927632133"
+    related_val_reltype = "PARENT"
     todo = todo_factory(
         categories=["tea", "drinking", "hot"],
         description=description,
@@ -58,6 +60,8 @@ def test_vtodo_serialization(todo_factory: Callable) -> None:
         status="IN-PROCESS",
         summary="Some tea",
         rrule="FREQ=MONTHLY",
+        related_to=related_val,
+        related_to_reltype=related_val_reltype
     )
     writer = VtodoWriter(todo)
     vtodo = writer.serialize()
@@ -69,6 +73,8 @@ def test_vtodo_serialization(todo_factory: Callable) -> None:
     assert vtodo.decoded("dtstart") == date(3000, 3, 21)
     assert str(vtodo.get("status")) == "IN-PROCESS"
     assert vtodo.get("rrule") == icalendar.vRecur.from_ical("FREQ=MONTHLY")
+    assert vtodo.get("related-to") == related_val
+    assert vtodo.get("related-to").params.get('reltype') == related_val_reltype
 
 
 @freeze_time("2017-04-04 20:11:57")
