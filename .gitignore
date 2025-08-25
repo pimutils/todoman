@@ -13,5 +13,6 @@ docs/_build/
 .coverage
 .hypothesis
 *.tmp
+.mypy_cache/
 
 todoman/version.py
