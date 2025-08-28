@@ -111,12 +111,12 @@ We appreciate distributions packaging todoman. Packaging should be relatively
 straightforward following usual Python package guidelines. We recommend that
 you git-clone tags, and build from source, since these tags are GPG signed.
 
-Dependencies are listed in ``setup.py``. Please also try to include the
-extras dependencies as optional dependencies (or what maps best for your
-distribution).
+Dependencies are listed in ``pyproject.toml``. Please also try to include the
+extras dependencies as optional dependencies (or whatever equivalent is best
+for your distribution).
 
-You'll need to run ``python setup.py build`` to generate the
-``todoman/version.py`` file which is necessary at runtime.
+You'll need to run ``python -m build`` to generate the ``todoman/version.py``
+file which is necessary at runtime.
 
 We recommend that you include the :doc:`man` in distribution packages. You can
 build this by running::
