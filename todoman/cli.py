@@ -507,7 +507,7 @@ def edit(
 
     changes = False
     for key, value in todo_properties.items():
-        if value is not None and value != []:
+        if (value is not None or key in ['due']) and value != []:
             changes = True
             setattr(todo, key, value)
 
