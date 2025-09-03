@@ -313,6 +313,8 @@ class PorcelainFormatter(DefaultFormatter):
             "description": todo.description,
             "completed_at": self.format_datetime(todo.completed_at),
             "recurring": todo.is_recurring,
+            "related_to": todo.related_to,
+            "related_to_reltype": todo.related_to_reltype,
         }
 
     def compact(self, todo: Todo) -> str:
