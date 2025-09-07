@@ -108,15 +108,17 @@ def test_format_datetime(default_formatter: DefaultFormatter) -> None:
 def test_detailed_format(runner: CliRunner, todo_factory: Callable) -> None:
     todo_factory(
         description=(
-            "Test detailed formatting\nThis includes multiline descriptions\nBlah!"
+            "Test detailed formatting\n" +
+            "This includes multiline descriptions\n" +
+            "Blah!"
         ),
         location="Over the hills, and far away",
     )
 
-    # TODO:use formatter instead of runner?
+    # TODO: use formatter instead of runner?
     result = runner.invoke(cli, ["show", "1"])
     expected = [
-        "[ ] 1  (no due date) YARR! @default",
+        "[ ] 1 (no due date) YARR! @default",
         "",
         "Description:",
         "Test detailed formatting",
@@ -204,7 +206,7 @@ def test_format_multiple_with_list(
     assert todo.list
     assert (
         default_formatter.compact_multiple([todo])
-        == "[ ] 1 \x1b[35m\x1b[0m \x1b[37m(no due date)\x1b[0m YARR! @default\x1b[0m"
+        == "[ ] 1 \x1b[37m(no due date)\x1b[0m YARR! @default\x1b[0m"
     )
 
 
