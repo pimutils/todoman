@@ -20,7 +20,6 @@ from dateutil.tz import tzlocal
 from todoman.model import Todo
 from todoman.model import TodoList
 
-
 def rgb_to_ansi(colour: str | None) -> str | None:
     """
     Convert a string containing an RGB colour to ANSI escapes
@@ -119,52 +118,151 @@ class DefaultFormatter(Formatter):
     def compact(self, todo: Todo) -> str:
         return self.compact_multiple([todo])
 
-    def compact_multiple(self, todos: Iterable[Todo], hide_list: bool = False) -> str:
-        # TODO: format lines fuidly and drop the table
-        # it can end up being more readable when too many columns are empty.
-        # show dates that are in the future in yellow (in 24hs) or grey (future)
-        table = []
+    def compact_multiple(self, todos: Iterable[Todo],
+                         hide_list: bool = False) -> str:
+        # TODO: show dates that are in the future in yellow (in 24hs)
+        # or grey (future)
+
+        # Holds information needed to properly order the text output.
+        #
+        # key: UID of todo
+        # value: list which contains 2 elements:
+        #            0: the formatted todo text line for the output
+        #            1: a dictionary which represents child todos which have
+        #               the same structure as the parent
+        tree: dict[str, list] = {}
+
+        # Holds all of the todo relationships in the form of key-value pairs.
+        #
+        # key: child
+        # value: list which contains 2 elements:
+        #            0: parent
+        #            1: any special information like "SIBLING"
+        related_todos: dict[str, list] = {}
+
         for todo in todos:
+            # If RELTYPE is empty, the default is PARENT.
+            # Source:
+            # https://www.rfc-editor.org/rfc/rfc5545#section-3.2.15
+            #
+            # "To preserve backwards compatibility, the value type MUST be
+            # UID when the PARENT, SIBLING, or CHILD relationships
+            # are specified."
+            # Source:
+            # https://www.rfc-editor.org/rfc/rfc9253#section-9.1
+            if todo.related_to != "":
+                if todo.related_to_reltype == "PARENT" \
+                        or todo.related_to_reltype == "":
+                    related_todos[todo.uid] = [todo.related_to, None]
+                elif todo.related_to_reltype == "CHILD":
+                    related_todos[todo.related_to] = [todo.uid, None]
+                elif todo.related_to_reltype == "SIBLING":
+                    related_todos[todo.uid] = [todo.related_to, "SIBLING"]
+
             completed = "X" if todo.is_completed else " "
+
             percent = todo.percent_complete or ""
             if percent:
                 percent = f" ({percent}%)"
 
             if todo.categories:
-                categories = " [" + ", ".join(todo.categories) + "]"
+                categories = "[" + ", ".join(todo.categories) + "]"
             else:
                 categories = ""
 
-            priority = click.style(
-                self.format_priority_compact(todo.priority),
-                fg="magenta",
-            )
+            priority = self.format_priority_compact(todo.priority)
+            if priority != "":
+                priority = click.style(priority + " ", fg="magenta",)
 
             due = self.format_datetime(todo.due) or "(no due date)"
             due_colour = self._due_colour(todo)
             if due_colour:
                 due = click.style(str(due), fg=due_colour)
 
-            recurring = "⟳" if todo.is_recurring else ""
+            recurring = "⟳ " if todo.is_recurring else ""
 
             if hide_list:
-                summary = f"{todo.summary} {percent}"
+                summary = f"{todo.summary}{percent}"
             else:
                 if not todo.list:
                     raise ValueError("Cannot format todo without a list")
 
-                summary = f"{todo.summary} {self.format_database(todo.list)}{percent}"
+                summary = f"{todo.summary} "\
+                          f"{self.format_database(todo.list)}{percent}"
 
-            # TODO: add spaces on the left based on max todos"
+            tree[todo.uid] = [f"[{completed}] {todo.id} {priority}{due} "
+                              f"{recurring}{summary} {categories}\n",
+                              None]
 
-            # FIXME: double space when no priority
-            # split into parts to satisfy linter line too long
-            table.append(
-                f"[{completed}] {todo.id} {priority} {due} "
-                f"{recurring}{summary}{categories}"
-            )
+        self._tree_reorder_related(tree, related_todos)
 
-        return "\n".join(table)
+        return self._join_tree(tree).strip()
+
+    def _tree_reorder_related(self, tree: dict[str, list],
+                              related_todos: dict[str, list]) -> None:
+        """Move all related todos to their proper positions within the tree
+        dictionary."""
+        store_path: list = []
+        for related, related_to in related_todos.items():
+            # Find the root parent todo of the `related_to` todo.
+            related_to_path_tracer: str = related_to[0]
+            related_dict: dict[str, list] = tree
+            while related_to_path_tracer in related_todos:
+                related_to_path_tracer = \
+                        related_todos[related_to_path_tracer][0]
+                store_path.append(related_to_path_tracer)
+
+            # Walk from the parent root todo, down to the
+            # `related_to` todo itself.
+            store_path.reverse()
+            # If `related_to` is a SIBLING, walk one todo backwards towards the
+            # root parent todo. If there is no path to be walked,
+            # just ignore it.
+            with contextlib.suppress(IndexError):
+                if related_to[1] == "SIBLING":
+                    related_to[0] = store_path.pop()
+            for inwards in store_path:
+                try:
+                    related_dict = related_dict[inwards][1]
+                    if related_dict is None:
+                        break
+                except KeyError:
+                    related_dict = tree
+                    break
+
+            self._tree_move_related(related, related_to[0],
+                                    tree, related_dict)
+
+            store_path.clear()
+
+    def _tree_move_related(self, related: str, to: str,
+                           tree: dict[str, list],
+                           related_dict: dict[str, list] | None) -> None:
+        """Move a todo from the top of the tree dictionary, to the child
+        dictionary of a todo."""
+        if related_dict is None:
+            related_dict = tree
+
+        if related not in tree or to not in related_dict:
+            return
+
+        if related_dict[to][1] is None:
+            related_dict[to][1] = {related: tree.pop(related)}
+        else:
+            related_dict[to][1][related] = tree.pop(related)
+
+    def _join_tree(self, tree: dict[str, list], space: str = "") -> str:
+        """Recursively walk the whole tree dictionary and combine all todos as
+        an indented text output."""
+        output: str = ""
+        prev_space: str = space
+        for _, val in tree.items():
+            output = output + space + val[0]
+            if val[1] is not None:
+                space = space + "    "
+                output = output + self._join_tree(val[1], space)
+            space = prev_space
+        return output
 
     def _due_colour(self, todo: Todo) -> str:
         now = self.now if isinstance(todo.due, datetime) else self.now.date()
