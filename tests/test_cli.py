@@ -484,13 +484,9 @@ def test_color_due_dates(
     assert not result.exception
     due_str = due.strftime("%Y-%m-%d")
     if hours == 72:
-        expected = (
-            f"[ ] 1 \x1b[35m\x1b[0m \x1b[37m{due_str}\x1b[0m aaa @default\x1b[0m\n"
-        )
+        expected = f"[ ] 1 \x1b[37m{due_str}\x1b[0m aaa @default\x1b[0m\n"
     else:
-        expected = (
-            f"[ ] 1 \x1b[35m\x1b[0m \x1b[31m{due_str}\x1b[0m aaa @default\x1b[0m\n"
-        )
+        expected = f"[ ] 1 \x1b[31m{due_str}\x1b[0m aaa @default\x1b[0m\n"
     assert result.output == expected
 
 
@@ -499,17 +495,15 @@ def test_color_flag(runner: CliRunner, todo_factory: Callable) -> None:
 
     result = runner.invoke(cli, ["--color", "always"], color=True)
     assert (
-        result.output.strip()
-        == "[ ] 1 \x1b[35m\x1b[0m \x1b[31m2007-03-22\x1b[0m YARR! @default\x1b[0m"
+        result.output.strip() == "[ ] 1 \x1b[31m2007-03-22\x1b[0m YARR! @default\x1b[0m"
     )
     result = runner.invoke(cli, color=True)
     assert (
-        result.output.strip()
-        == "[ ] 1 \x1b[35m\x1b[0m \x1b[31m2007-03-22\x1b[0m YARR! @default\x1b[0m"
+        result.output.strip() == "[ ] 1 \x1b[31m2007-03-22\x1b[0m YARR! @default\x1b[0m"
     )
 
     result = runner.invoke(cli, ["--color", "never"], color=True)
-    assert result.output.strip() == "[ ] 1  2007-03-22 YARR! @default"
+    assert result.output.strip() == "[ ] 1 2007-03-22 YARR! @default"
 
 
 def test_flush(
