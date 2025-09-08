@@ -34,3 +34,4 @@ Authors are listed in alphabetical order.
 * Swati Garg <swati4star@gmail.com>
 * Thomas Glanzmann <thomas@glanzmann.de>
 * https://github.com/Pikrass
+* https://github.com/powerjungle
