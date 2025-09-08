@@ -472,7 +472,8 @@ def test_color_due_dates(
     due = datetime.datetime.now() + datetime.timedelta(hours=hours)
     create(
         "test.ics",
-        "SUMMARY:aaa\nSTATUS:IN-PROCESS\nDUE;VALUE=DATE-TIME;TZID=ART:{}\n".format(
+        "SUMMARY:aaa\nSTATUS:IN-PROCESS\nDUE;VALUE=DATE-TIME;TZID=ART:{}\n"
+        .format(
             due.strftime("%Y%m%dT%H%M%S")
         ),
     )
@@ -482,11 +483,11 @@ def test_color_due_dates(
     due_str = due.strftime("%Y-%m-%d")
     if hours == 72:
         expected = (
-            f"[ ] 1 \x1b[35m\x1b[0m \x1b[37m{due_str}\x1b[0m aaa @default\x1b[0m\n"
+            f"[ ] 1 \x1b[37m{due_str}\x1b[0m aaa @default\x1b[0m\n"
         )
     else:
         expected = (
-            f"[ ] 1 \x1b[35m\x1b[0m \x1b[31m{due_str}\x1b[0m aaa @default\x1b[0m\n"
+            f"[ ] 1 \x1b[31m{due_str}\x1b[0m aaa @default\x1b[0m\n"
         )
     assert result.output == expected
 
@@ -497,16 +498,16 @@ def test_color_flag(runner: CliRunner, todo_factory: Callable) -> None:
     result = runner.invoke(cli, ["--color", "always"], color=True)
     assert (
         result.output.strip()
-        == "[ ] 1 \x1b[35m\x1b[0m \x1b[31m2007-03-22\x1b[0m YARR! @default\x1b[0m"
+        == "[ ] 1 \x1b[31m2007-03-22\x1b[0m YARR! @default\x1b[0m"
     )
     result = runner.invoke(cli, color=True)
     assert (
         result.output.strip()
-        == "[ ] 1 \x1b[35m\x1b[0m \x1b[31m2007-03-22\x1b[0m YARR! @default\x1b[0m"
+        == "[ ] 1 \x1b[31m2007-03-22\x1b[0m YARR! @default\x1b[0m"
     )
 
     result = runner.invoke(cli, ["--color", "never"], color=True)
-    assert result.output.strip() == "[ ] 1  2007-03-22 YARR! @default"
+    assert result.output.strip() == "[ ] 1 2007-03-22 YARR! @default"
 
 
 def test_flush(

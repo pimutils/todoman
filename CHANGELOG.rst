@@ -4,8 +4,22 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
-v4.7.0
+v5.0.0
 ------
+
+Breaking changes to the database
+********************************
+
+Added support for RELATED-TO property and RELTYPE parameter, allowing the
+parsing and creation of subtasks. This requires adding two new columns to
+the database.
+
+The cache has to be deleted manually and recreated if the cache was previously
+created using a version of the code, that is older than this release.
+
+No changes to the configuration or lists is needed.
+
+The tasks are now printed as a tree when subtasks are present.
 
 * Removed ``bin/todo``. It is no longer requierd, as the entry point generated
   by setuptools no longer has performance issues.

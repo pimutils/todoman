@@ -53,7 +53,9 @@ def catch_errors(f: Callable[_P, _T]) -> Callable[_P, _T]:
 
 
 TODO_ID_MIN = 1
-with_id_arg = click.argument("id", type=click.IntRange(min=TODO_ID_MIN))
+CLICK_TYPE_ID = click.IntRange(min=TODO_ID_MIN)
+
+with_id_arg = click.argument("id", type=CLICK_TYPE_ID)
 
 
 def _validate_lists_param(
@@ -220,9 +222,10 @@ def _todo_property_options(command: Callable) -> Callable:
         callback=_validate_priority_param,
         help="Priority for this task",
     )(command)
-    click.option("--location", help="The location where this todo takes place.")(
-        command
-    )
+    click.option(
+        "--location",
+        help="The location where this todo takes place."
+    )(command)
     click.option(
         "--due",
         "-d",
@@ -238,10 +241,19 @@ def _todo_property_options(command: Callable) -> Callable:
         help="When the task starts.",
     )(command)
 
+    # Merges all different property arguments into one dictionary
+    # `todo_properties` argument, so that it can be directly looped through
+    # easily for directly setting the `todoman.model.Todo` class attributes
+    # from within a command function.
+    #
+    # The names of the options are the same as the
+    # `todoman.model.Todo` class attributes.
     @functools.wraps(command)
     def command_wrap(*a, **kw) -> click.Command:
         kw["todo_properties"] = {
-            key: kw.pop(key) for key in ("due", "start", "location", "priority")
+            key: kw.pop(key) for key in (
+                "due", "start", "location", "priority"
+            )
         }
         # longform is singular since user can pass it multiple times, but
         # in actuality it's plural, so manually changing for #cache.todos.
@@ -282,6 +294,21 @@ _interactive_option = click.option(
     is_flag=True,
     default=None,
     help="Go into interactive mode before saving the task.",
+)
+
+_subtask_option = click.option(
+    "--subtask-for",
+    is_flag=False,
+    default=None,
+    type=CLICK_TYPE_ID,
+    help="Set task to be a subtask for the given id.",
+)
+
+_not_subtask_option = click.option(
+    "--not-subtask",
+    is_flag=True,
+    default=False,
+    help="Make task no longer be a subtask.",
 )
 
 
@@ -422,6 +449,7 @@ def repl(ctx: click.Context) -> None:
 )
 @_todo_property_options
 @_interactive_option
+@_subtask_option
 @pass_ctx
 @catch_errors
 def new(
@@ -431,6 +459,7 @@ def new(
     todo_properties: dict,
     read_description: bool,
     interactive: bool,
+    subtask_for: int | None
 ) -> None:
     """
     Create a new task with SUMMARY.
@@ -451,6 +480,11 @@ def new(
         if value is not None:
             setattr(todo, key, value)
     todo.summary = " ".join(summary)
+
+    if subtask_for is not None:
+        parent_todo = ctx.db.todo(subtask_for)
+        todo.related_to = parent_todo.uid
+        todo.related_to_reltype = "PARENT"
 
     if read_description:
         todo.description = sys.stdin.read()
@@ -486,6 +520,8 @@ def new(
 )
 @_todo_property_options
 @_interactive_option
+@_subtask_option
+@_not_subtask_option
 @with_id_arg
 @catch_errors
 def edit(
@@ -495,6 +531,8 @@ def edit(
     interactive: bool,
     read_description: bool,
     raw: bool,
+    subtask_for: int | None,
+    not_subtask: bool
 ) -> None:
     """
     Edit the task with id ID.
@@ -515,6 +553,17 @@ def edit(
         changes = True
         todo.description = sys.stdin.read()
 
+    if subtask_for is not None and not_subtask is False:
+        changes = True
+        parent_todo = ctx.db.todo(subtask_for)
+        todo.related_to = parent_todo.uid
+        todo.related_to_reltype = "PARENT"
+
+    if not_subtask:
+        changes = True
+        todo.related_to = ""
+        todo.related_to_reltype = ""
+
     if interactive or (not changes and interactive is None):
         ui = TodoEditor(todo, ctx.db.lists(), ctx.ui_formatter)
         ui.edit()
@@ -527,6 +576,7 @@ def edit(
     ctx.db.save(todo)
     if old_list != new_list:
         ctx.db.move(todo, new_list=new_list, from_list=old_list)
+
     click.echo(ctx.formatter.detailed(todo))
 
 
