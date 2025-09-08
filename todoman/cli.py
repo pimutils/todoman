@@ -220,9 +220,10 @@ def _todo_property_options(command: Callable) -> Callable:
         callback=_validate_priority_param,
         help="Priority for this task",
     )(command)
-    click.option("--location", help="The location where this todo takes place.")(
-        command
-    )
+    click.option(
+        "--location",
+        help="The location where this todo takes place."
+    )(command)
     click.option(
         "--due",
         "-d",
@@ -238,10 +239,19 @@ def _todo_property_options(command: Callable) -> Callable:
         help="When the task starts.",
     )(command)
 
+    # Merges all different property arguments into one dictionary
+    # `todo_properties` argument, so that it can be directly looped through
+    # easily for directly setting the `todoman.model.Todo` class attributes
+    # from within a command function.
+    #
+    # The names of the options are the same as the
+    # `todoman.model.Todo` class attributes.
     @functools.wraps(command)
     def command_wrap(*a, **kw) -> click.Command:
         kw["todo_properties"] = {
-            key: kw.pop(key) for key in ("due", "start", "location", "priority")
+            key: kw.pop(key) for key in (
+                "due", "start", "location", "priority"
+            )
         }
         # longform is singular since user can pass it multiple times, but
         # in actuality it's plural, so manually changing for #cache.todos.
