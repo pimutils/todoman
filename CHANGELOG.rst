@@ -9,6 +9,11 @@ v4.7.0
 
 * Removed ``bin/todo``. It is no longer requierd, as the entry point generated
   by setuptools no longer has performance issues.
+* Added support for RELATED-TO property and RELTYPE parameter, allowing the
+  parsing and creation of subtasks. This requires adding two new columns to
+  the database. The `SCHEMA_VERSION` has been incremented, so the cache will
+  be recreated. No changes to the configuration or lists is needed. The tasks
+  are now printed as a tree when subtasks are present.
 
 v4.6.0
 ------
