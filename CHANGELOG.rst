@@ -9,6 +9,7 @@ v4.7.0
 
 * Removed ``bin/todo``. It is no longer requierd, as the entry point generated
   by setuptools no longer has performance issues.
+* Added shell completions for fish.
 
 v4.6.0
 ------
