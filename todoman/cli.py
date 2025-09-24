@@ -260,6 +260,7 @@ class AppContext:
     @cached_property
     def ui_formatter(self) -> formatters.Formatter:
         return formatters.DefaultFormatter(
+            self.config["tableformat"],
             self.config["date_format"],
             self.config["time_format"],
             self.config["dt_separator"],
@@ -268,6 +269,7 @@ class AppContext:
     @cached_property
     def formatter(self) -> formatters.Formatter:
         return self.formatter_class(
+            self.config["tableformat"],
             self.config["date_format"],
             self.config["time_format"],
             self.config["dt_separator"],

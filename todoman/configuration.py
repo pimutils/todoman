@@ -24,6 +24,9 @@ def validate_cache_path(path: str) -> str:
     return expand_path(path)
 
 
+def validate_tableformat(tablefmt: str) -> str:
+    return tablefmt
+
 def validate_date_format(fmt: str) -> str:
     if any(x in fmt for x in ("%H", "%M", "%S", "%X")):
         raise ConfigurationError(
@@ -73,6 +76,15 @@ A glob pattern matching the directories where your todos are located. This
 pattern will be expanded, and each matching directory (with any icalendar
 files) will be treated as a list.""",
         expand_path,
+    ),
+    ConfigEntry(
+        "tableformat",
+        str,
+        "plain",
+        """
+The name of a TableFormat a la tabulate which will be used to display
+any tabular data.""",
+        validate_tableformat,
     ),
     ConfigEntry(
         "color",
