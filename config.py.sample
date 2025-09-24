@@ -1,5 +1,6 @@
 # A glob expression which matches all directories relevant.
 path = "~/my_calendars/*"
+columns = "auto" # never (default) / always / auto
 date_format = "%Y-%m-%d"
 time_format = "%H:%M"
 default_list = "Personal"

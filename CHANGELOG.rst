@@ -9,6 +9,8 @@ v4.7.0
 
 * Removed ``bin/todo``. It is no longer requierd, as the entry point generated
   by setuptools no longer has performance issues.
+* Add a new `columns` option and configuration entry to enable column-aligned
+  output.
 
 v4.6.0
 ------
