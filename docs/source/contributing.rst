@@ -23,6 +23,11 @@ without them being properly documented.
 Run ``pip install -e .`` to install todoman and its dependencies into a
 virtualenv.
 
+If the database is changed in a breaking way, the ``SCHEMA_VERSION`` variable
+in the class ``Cache`` has to be incremented to allow the cache to be recreated
+after todoman has been updated. An example would be adding new fields or
+removing old unnecessary fields and etc.
+
 We use ``pre-commit`` to run style and convention checks. Run ``pre-commit
 install``` to install our git-hooks. These will check code style and inform you
 of any issues when attempting to commit. This will also run ``black`` to
