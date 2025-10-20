@@ -367,7 +367,7 @@ def test_save_recurring_related_with_date(
 
 def test_todo_filename_absolute_path() -> None:
     Todo(filename="test.ics")
-    with pytest.raises(ValueError, match="Must not be an absolute path: /test.ics"):
+    with pytest.raises(ValueError, match="Must not be an absolute path: /test\\.ics"):
         Todo(filename="/test.ics")
 
 
@@ -530,7 +530,7 @@ def test_deleting_todo_without_list_fails(
     db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
     todo = Todo()
 
-    with pytest.raises(ValueError, match="Cannot delete Todo without a list."):
+    with pytest.raises(ValueError, match="Cannot delete Todo without a list\\."):
         db.delete(todo)
 
 
@@ -541,12 +541,15 @@ def test_saving_todo_without_list_fails(
     db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
     todo = Todo()
 
-    with pytest.raises(ValueError, match="Cannot save Todo without a list."):
+    with pytest.raises(ValueError, match="Cannot save Todo without a list\\."):
         db.save(todo)
 
 
 def test_todo_path_without_list(tmpdir: py.path.local) -> None:
     todo = Todo()
 
-    with pytest.raises(ValueError, match="A todo without a list does not have a path."):
+    with pytest.raises(
+        ValueError,
+        match="A todo without a list does not have a path\\.",
+    ):
         todo.path  # noqa: B018  # expression raises
