@@ -78,6 +78,7 @@ extend-select = [
     "E",
     "I",
     "INP",
+    "LOG",
     "N",
     "PT",
     "PYI",
