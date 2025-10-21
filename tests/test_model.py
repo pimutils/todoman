@@ -250,6 +250,12 @@ def test_todo_setters(todo_factory: Callable) -> None:
     todo.due = None
     assert todo.due is None
 
+    todo.related_to = "123"
+    assert todo.related_to == "123"
+
+    todo.related_to_reltype = "CHILD"
+    assert todo.related_to_reltype == "CHILD"
+
 
 @freeze_time("2017-03-19-15")
 def test_is_completed() -> None:
@@ -391,6 +397,8 @@ def test_clone() -> None:
     todo.uid = "123"
     todo.id = 123
     todo.filename = "123.ics"
+    todo.related_to = "12345678"
+    todo.related_to_reltype = "PARENT"
 
     clone = todo.clone()
 
@@ -402,6 +410,8 @@ def test_clone() -> None:
     assert clone.id is None
     assert todo.filename != clone.filename
     assert clone.uid in clone.filename
+    assert todo.related_to == clone.related_to
+    assert todo.related_to_reltype == clone.related_to_reltype
 
 
 @freeze_time("2017, 3, 20")
