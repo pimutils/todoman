@@ -210,17 +210,22 @@ class Todo:
     def is_recurring(self) -> bool:
         return bool(self.rrule)
 
-    def _apply_recurrence_to_dt(self, dt: date | None) -> datetime | None:
+    def _apply_recurrence_to_dt(self, dt: date | None) -> date | datetime | None:
         if not dt:
             return None
 
         assert self.rrule is not None, "applying recurrence to todo without rrule"
         recurrence = rrulestr(self.rrule, dtstart=dt)
 
-        if isinstance(dt, date) and not isinstance(dt, datetime):
+        if dateonly := not isinstance(dt, datetime):
             dt = datetime.combine(dt, time.min)
 
-        return recurrence.after(dt)
+        nxt = recurrence.after(dt)
+
+        if dateonly and nxt is not None:
+            return nxt.date()
+
+        return nxt
 
     def _create_next_instance(self) -> Todo:
         copy = self.clone()
