@@ -76,6 +76,8 @@ extend-select = [
     "B",
     "C4", # Comprehensions
     "E",
+    # "FBT",
+    "FURB",
     "I",
     "INP",
     "LOG",

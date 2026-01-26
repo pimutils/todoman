@@ -179,8 +179,7 @@ def _validate_todos(
 def _sort_callback(ctx: click.Context, param: click.Parameter, val: str) -> list[str]:
     fields = val.split(",") if val else []
     for field in fields:
-        if field.startswith("-"):
-            field = field[1:]
+        field = field.removeprefix("-")
 
         if field not in Todo.ALL_SUPPORTED_FIELDS and field != "id":
             raise click.BadParameter(f"Unknown field '{field}'")
