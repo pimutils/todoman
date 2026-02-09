@@ -336,7 +336,7 @@ class VtodoWriter:
 
         return dt.astimezone(timezone.utc)
 
-    def serialize(self, original: icalendar.Todo = None) -> icalendar.Todo:
+    def serialize(self, original: icalendar.Todo | None = None) -> icalendar.Todo:
         """Serialize a Todo into a VTODO."""
         if not original:
             original = icalendar.Todo()
@@ -366,7 +366,7 @@ class VtodoWriter:
 
         return self.vtodo
 
-    def _read(self, path: str) -> icalendar.Todo:
+    def _read(self, path: str) -> icalendar.Todo | None:
         with open(path, "rb") as f:
             cal = f.read()
             data = icalendar.Calendar.from_ical(cal)
@@ -383,7 +383,9 @@ class VtodoWriter:
         return self.vtodo
 
     def _write_existing(self, path: str) -> None:
+        """Write an updated version of an existing todo."""
         original = self._read(path)
+        assert original is not None
         vtodo = self.serialize(original)
 
         with open(path, "rb") as f:
