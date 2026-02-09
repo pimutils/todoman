@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
 from datetime import tzinfo
-from typing import Callable
 from unittest.mock import patch
 from uuid import uuid4
 

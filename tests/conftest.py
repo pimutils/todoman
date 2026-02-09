@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import os
 import time
+from collections.abc import Callable
 from collections.abc import Iterable
 from datetime import datetime
-from typing import Callable
 from uuid import uuid4
 
 import py

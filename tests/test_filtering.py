@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import datetime
 from datetime import timedelta
-from typing import Callable
 from uuid import uuid4
 
 import py

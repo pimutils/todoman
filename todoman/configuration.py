@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from importlib.util import module_from_spec
 from importlib.util import spec_from_file_location
 from os.path import exists
 from os.path import join
 from typing import Any
-from typing import Callable
 from typing import NamedTuple
 
 import xdg.BaseDirectory

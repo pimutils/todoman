@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import datetime
 import sys
+from collections.abc import Callable
 from os.path import exists
-from typing import Callable
 from unittest import mock
 from unittest.mock import MagicMock
 from unittest.mock import call
