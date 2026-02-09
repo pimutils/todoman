@@ -7,6 +7,7 @@ releases, in reverse chronological order.
 v4.7.0
 ------
 
+* **BREAKING**: Dropped support for Python 3.9.
 * Removed ``bin/todo``. It is no longer requierd, as the entry point generated
   by setuptools no longer has performance issues.
 * Added shell completions for fish.

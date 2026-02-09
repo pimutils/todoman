@@ -86,8 +86,8 @@ like ``/usr/share/fish/vendor_completions.d`` for system-wide files.
 Requirements
 ------------
 
-Todoman requires python 3.9 or later. Installation of required libraries can be
-done via pip, or your OS's package manager.
+Todoman requires python 3.10 or later. Installation of required libraries can
+be done via pip, or your OS's package manager.
 
 Recent versions also have experimental support for pypy3.
 

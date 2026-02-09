@@ -5,7 +5,7 @@ authors = [
 ]
 description = "A simple icalendar-based todo manager."
 readme = "README.rst"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 keywords = ["todo", "task", "icalendar", "cli"]
 license = "ISC"
 license-files = ["LICENCE"]
@@ -15,7 +15,6 @@ classifiers = [
     "Environment :: Console :: Curses",
     "Operating System :: POSIX",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
