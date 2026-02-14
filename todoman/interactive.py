@@ -8,12 +8,26 @@ from todoman import widgets
 
 if typing.TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Sequence
 
     from todoman.formatters import Formatter
     from todoman.model import Todo
     from todoman.model import TodoList
 
-_palette = [("error", "light red", "")]
+_palette: list[tuple[str, str, str] | tuple[str, str, str, str, str, str]] = [
+    ("error", "light red", "")
+]
+
+
+def parse_list_colour(colour: str | None) -> str | None:
+    """Normalize hex colour, dropping alpha channel if present."""
+    if not colour or not colour.startswith("#"):
+        return None
+
+    if len(colour) == 9:
+        return colour[:7]
+
+    return colour if len(colour) == 7 else None
 
 
 class TodoEditor:
@@ -106,14 +120,30 @@ class TodoEditor:
         )
 
     def _init_list_selector(self) -> None:
+        label: str | list[Sequence[str]]
+
         self.list_selector: list[urwid.RadioButton] = []
-        for _list in self.lists:
+        for i, list_ in enumerate(self.lists):
+            if list_.colour:
+                normalized_colour = parse_list_colour(list_.colour)
+                if normalized_colour:
+                    palette_name = f"list_color_{i}"
+                    label = [
+                        (palette_name, "■"),
+                        " ",
+                        list_.name,
+                    ]
+                else:
+                    label = f"■ {list_.name}"
+            else:
+                label = f"■ {list_.name}"
+
             urwid.RadioButton(
                 self.list_selector,
-                _list.name,
-                state=_list == self.current_list,
+                label,
+                state=list_ == self.current_list,
                 on_state_change=self._change_current_list,
-                user_data=_list,
+                user_data=list_,
             )
 
     def _init_help_text(self) -> None:
@@ -153,13 +183,26 @@ class TodoEditor:
 
     def edit(self) -> None:
         """Shows the UI for editing a given todo."""
+        # Setting a colour requires building a custom pallette.
+        palette = list(_palette)
+        for i, _list in enumerate(self.lists):
+            if _list.colour:
+                normalized_colour = parse_list_colour(_list.colour)
+                if normalized_colour:
+                    palette_name = f"list_color_{i}"
+                    # urwid requires a fallback; just use the default.
+                    # (name, fg_16, bg_16, mono, fg_high, bg_high)
+                    palette.append((palette_name, "", "", "", normalized_colour, ""))
+
         self._loop = urwid.MainLoop(
             self._ui,
-            palette=_palette,
+            palette=palette,
             unhandled_input=self._keypress,
             handle_mouse=False,
         )
         assert self._loop, "Loop must remain defined"
+        self._loop.screen.set_terminal_properties(colors=2**24)
+
         try:
             self._loop.run()
         except KeyboardInterrupt:
