@@ -9,6 +9,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import date
 from datetime import timedelta
+from functools import cached_property
 from os.path import isdir
 from typing import Literal
 from typing import ParamSpec
@@ -25,7 +26,6 @@ from todoman.interactive import TodoEditor
 from todoman.model import Database
 from todoman.model import Todo
 from todoman.model import TodoList
-from todoman.model import cached_property
 
 click_log.basic_config()
 
