@@ -6,8 +6,7 @@ _todo_get_ids()
 
 _todo_get_lists()
 {
-	local pattern='^\s*"list": "\(.*\)",'
-	todo --porcelain list | grep -o "${pattern}" | sed -e "s/${pattern}/\1/" | sort | uniq
+	todo --porcelain lists | jq --raw-output '.[]' | sort
 }
 
 _todo_get_locations()

@@ -165,35 +165,13 @@ __todo_lists_cache_policy(){
 # }}}
 # {{{ option helper: available lists
 __todo_lists(){
-	if __todo_set_conf_path; then
-		local update_policy
-		zstyle -s ":completion:${curcontext}:" cache-policy update_policy
-		if [[ -z "$update_policy" ]]; then
-			zstyle ":completion:${curcontext}:" cache-policy __todo_lists_cache_policy
-		fi
-		local -a tasks_lists
-		if _cache_invalid todoman_lists || ! _retrieve_cache todoman_lists; then
-			if [[ ${tasks_lists_path} =~ '/*$' ]]; then
-				for dir in $(eval echo ${tasks_lists_path}); do
-					if grep "VTODO" -q -R "${dir}"; then
-						list_name="${dir##*/}"
-						tasks_lists+=("${list_name}")
-					fi
-				done
-			fi
-			_store_cache todoman_lists tasks_lists
-		fi
-		if [[ "${#tasks_lists[@]}" == 1 ]]; then
-			_message "only one list was detected: (\"${tasks_lists[1]}\")"
-			return
-		else
-			_describe "available lists" tasks_lists
-			return
-		fi
-	else
-		_message -e "no 'path = ' string was found in todoman's default configuration file ($todoman_configuration_file)"
-		return
-	fi
+	__todo_check_jq || return 1
+	local -a tasks_lists
+	IFS=$'\n'
+	for list_name in $(todo --porcelain lists | jq --raw-output '.[]'); do
+		tasks_lists+=("${list_name}")
+	done
+	_describe "available lists" tasks_lists
 }
 # }}}
 # {{{ command `cancel`
@@ -275,6 +253,12 @@ _todo_list(){
 		'1: :__todo_lists' \
 }
 # }}}
+# {{{ command `lists`
+_todo_lists(){
+	_arguments \
+		"${common_options_help[@]}"
+}
+# }}}
 # {{{ command `move`
 _todo_move(){
 	_todo_copy
@@ -338,6 +322,9 @@ case $state in
 				;;
 			list)
 				_todo_list
+				;;
+			lists)
+				_todo_lists
 				;;
 			move)
 				_todo_move
