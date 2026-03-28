@@ -126,7 +126,7 @@ _todo_complete()
 				arg_list=""
 			;;
 			*)
-				arg_list="cancel copy delete done edit flush list move new show"
+				arg_list="cancel copy delete done edit flush list lists move new show"
 			;;
 		esac
 	fi

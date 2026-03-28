@@ -113,6 +113,7 @@ __todo_command(){
 		'edit:Edit the task with id ID'
 		'flush:Delete done tasks'
 		'list:List tasks'
+		'lists:Return all the lists'
 		'move:Move tasks to another list'
 		'new:Create a new task with SUMMARY'
 		'show:Show details about a task'
