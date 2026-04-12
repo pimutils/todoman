@@ -1042,12 +1042,9 @@ class TodoList:
 
 
 class Database:
-    """
-    This class is essentially a wrapper around all the lists (which in turn,
-    contain all the todos).
+    """Wrapper around all lists (which in turn, contain all the todos).
 
-    Caching in abstracted inside this class, and is transparent to outside
-    classes.
+    Caching in abstracted inside this class, and is transparent to outside classes.
     """
 
     def __init__(self, paths: Iterable[str], cache_path: str) -> None:
