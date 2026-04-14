@@ -22,7 +22,8 @@ def test_list_all(tmpdir: py.path.local, runner: CliRunner, create: Callable) ->
         "DUE;VALUE=DATE-TIME;TZID=CET:20160102T000000\n"
         "DTSTART:20160101T000000Z\n"
         "PERCENT-COMPLETE:26\n"
-        "LOCATION:Wherever\n",
+        "LOCATION:Wherever\n"
+        "RELATED-TO;RELTYPE=PARENT:123456789\n",
     )
     result = runner.invoke(cli, ["--porcelain", "list", "--status", "ANY"])
 
@@ -40,6 +41,8 @@ def test_list_all(tmpdir: py.path.local, runner: CliRunner, create: Callable) ->
             "percent": 26,
             "priority": 0,
             "recurring": False,
+            "related_to": "123456789",
+            "related_to_reltype": "PARENT",
             "start": 1451606400,
             "summary": "Do stuff",
         }
@@ -78,6 +81,8 @@ def test_list_start_date(
             "percent": 26,
             "priority": 0,
             "recurring": False,
+            "related_to": "",
+            "related_to_reltype": "",
             "start": 1451692800,
             "summary": "Do stuff",
         }
@@ -114,6 +119,8 @@ def test_list_due_date(
             "percent": 26,
             "priority": 0,
             "recurring": False,
+            "related_to": "",
+            "related_to_reltype": "",
             "start": None,
             "summary": "Do stuff",
         }
@@ -143,6 +150,8 @@ def test_list_nodue(tmpdir: py.path.local, runner: CliRunner, create: Callable) 
             "location": "",
             "percent": 12,
             "recurring": False,
+            "related_to": "",
+            "related_to_reltype": "",
             "priority": 4,
             "start": None,
             "summary": "Do stuff",
@@ -216,6 +225,8 @@ def test_show(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> Non
         "percent": 0,
         "priority": 5,
         "recurring": False,
+        "related_to": "",
+        "related_to_reltype": "",
         "start": None,
         "summary": "harhar",
     }
@@ -241,6 +252,8 @@ def test_simple_action(todo_factory: Callable) -> None:
         "percent": 0,
         "priority": 0,
         "recurring": False,
+        "related_to": "",
+        "related_to_reltype": "",
         "start": None,
         "summary": "YARR!",
     }

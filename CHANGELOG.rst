@@ -12,6 +12,11 @@ v4.7.0
   by setuptools no longer has performance issues.
 * Added shell completions for fish.
 * Implement a new ``lists`` command to display all lists.
+* Added support for RELATED-TO property and RELTYPE parameter, allowing the
+  parsing and creation of subtasks. This requires adding two new columns to
+  the database. The `SCHEMA_VERSION` has been incremented, so the cache will
+  be recreated. No changes to the configuration or lists is needed. The tasks
+  are now printed as a tree when subtasks are present.
 
 v4.6.0
 ------
