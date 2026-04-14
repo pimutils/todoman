@@ -371,6 +371,7 @@ class VtodoWriter:
             cal = f.read()
             data = icalendar.Calendar.from_ical(cal)
             for component in data.walk("VTODO"):
+                # TODO: use cal.todos after icalendar>=7
                 assert isinstance(component, icalendar.Todo)
                 return component
             return None
@@ -1096,6 +1097,7 @@ class Database:
                 with open(entry_path, "rb") as f:
                     cal = icalendar.Calendar.from_ical(f.read())
                     for component in cal.walk("VTODO"):
+                        # TODO: use cal.todos after icalendar>=7
                         assert isinstance(component, icalendar.Todo)
                         self.cache.add_vtodo(component, entry_path)
             except Exception:
