@@ -58,9 +58,7 @@ def test_humanized_date(
     due = now_for_tz(tz) + timedelta(seconds=seconds)
     create(
         "test.ics",
-        "SUMMARY:Hi human!\nDUE;VALUE=DATE;TZID={}:{}\n".format(
-            tz, due.strftime("%Y%m%d")
-        ),
+        "SUMMARY:Hi human!\nDUE;VALUE=DATE:{}\n".format(due.strftime("%Y%m%d")),
     )
 
     result = runner.invoke(cli, ["--humanize", "list", "--status", "ANY"])
