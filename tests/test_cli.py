@@ -280,6 +280,7 @@ def test_dtstamp(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> 
     todo = next(iter(db.todos()))
     assert todo.dtstamp is not None
     assert todo.dtstamp == datetime.datetime.now(tz=tzlocal())
+    db.close()  # leaks in case of failure
 
 
 def test_default_list(
@@ -300,6 +301,7 @@ def test_default_list(
     db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
     todo = next(iter(db.todos()))
     assert todo.summary == "test default list"
+    db.close()  # leaks in case of failure
 
 
 @pytest.mark.parametrize(
@@ -331,6 +333,7 @@ def test_default_due(
         assert (todo.due - todo.created_at) == datetime.timedelta(
             hours=expected_due_hours
         )
+    db.close()  # leaks in case of failure
 
 
 @pyicu_sensitive
@@ -1085,6 +1088,7 @@ def test_default_priority(
     todo = next(iter(db.todos()))
 
     assert todo.priority == 3
+    db.close()  # leaks in case of failure
 
 
 def test_no_default_priority(
@@ -1101,6 +1105,7 @@ def test_no_default_priority(
     todo_file = tmpdir.join("default").join(todo.filename)
     todo_ics = todo_file.read_text("utf-8")
     assert "PRIORITY" not in todo_ics
+    db.close()  # leaks in case of failure
 
 
 def test_invalid_default_priority(

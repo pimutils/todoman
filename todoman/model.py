@@ -439,6 +439,9 @@ class Cache:
     def save_to_disk(self) -> None:
         self._conn.commit()
 
+    def close(self) -> None:
+        self._conn.close()
+
     def is_latest_version(self) -> bool:
         """Checks if the cache DB schema is the latest version."""
         try:
@@ -1051,6 +1054,9 @@ class Database:
         self.cache = Cache(cache_path)
         self.paths = [str(path) for path in paths]
         self.update_cache()
+
+    def close(self) -> None:
+        self.cache.close()
 
     def update_cache(self) -> None:
         paths = {path: TodoList.mtime_for_path(path) for path in self.paths}

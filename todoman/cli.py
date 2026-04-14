@@ -369,6 +369,7 @@ def cli(
         raise exceptions.NoListsFoundError(ctx.config["path"])
 
     ctx.db = Database(paths, ctx.config["cache_path"])
+    click_ctx.call_on_close(ctx.db.close)
 
     # Make python actually use LC_TIME, or the user's locale settings
     locale.setlocale(locale.LC_TIME, "")

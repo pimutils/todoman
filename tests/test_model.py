@@ -38,6 +38,7 @@ def test_querying(create: Callable, tmpdir: py.path.local) -> None:
     assert len(set(db.todos())) == 9
     assert len(set(db.todos(lists="ab"))) == 6
     assert len(set(db.todos(lists="ab", location="a"))) == 2
+    db.close()  # leaks in case of failure
 
 
 def test_retain_tz(tmpdir: py.path.local, create: Callable, todos: Callable) -> None:
@@ -84,6 +85,7 @@ def test_change_paths(tmpdir: py.path.local, create: Callable) -> None:
 
     assert len(list(db.lists())) == 1
     assert not list(db.todos())
+    db.close()  # leaks in case of failure
 
 
 def test_list_displayname(tmpdir: py.path.local) -> None:
@@ -96,6 +98,7 @@ def test_list_displayname(tmpdir: py.path.local) -> None:
 
     assert list_.name == "personal"
     assert str(list_) == "personal"
+    db.close()  # leaks in case of failure
 
 
 def test_list_colour(tmpdir: py.path.local) -> None:
@@ -107,6 +110,7 @@ def test_list_colour(tmpdir: py.path.local) -> None:
     list_ = next(db.lists())
 
     assert list_.colour == "#8ab6d2"
+    db.close()  # leaks in case of failure
 
 
 def test_list_colour_cache_invalidation(
@@ -121,6 +125,7 @@ def test_list_colour_cache_invalidation(
     list_ = next(db.lists())
 
     assert list_.colour == "#8ab6d2"
+    db.close()  # leaks in case of failure
 
     sleep()
 
@@ -131,6 +136,7 @@ def test_list_colour_cache_invalidation(
     list_ = next(db.lists())
 
     assert list_.colour == "#f874fd"
+    db.close()  # leaks in case of failure
 
 
 def test_list_no_colour(tmpdir: py.path.local) -> None:
@@ -140,6 +146,7 @@ def test_list_no_colour(tmpdir: py.path.local) -> None:
     list_ = next(db.lists())
 
     assert list_.colour is None
+    db.close()  # leaks in case of failure
 
 
 def test_database_priority_sorting(create: Callable, todos: Callable) -> None:
@@ -180,6 +187,7 @@ def test_retain_unknown_fields(
     assert "SUMMARY:RAWR" in lines
     assert 'DESCRIPTION:Rawr means "I love you" in dinosaur.' in lines
     assert "X-RAWR-TYPE:Reptar" in lines
+    db.close()  # leaks in case of failure
 
 
 def test_category_integrity(
@@ -195,6 +203,7 @@ def test_category_integrity(
 
     with pytest.raises(AlreadyExistsError):
         default_database.save(todo)
+    db.close()  # leaks in case of failure
 
 
 def test_category_deletes_on_todo_delete(
@@ -223,6 +232,7 @@ def test_category_deletes_on_todo_delete(
 
     categories = default_database.cache._conn.execute(query).fetchall()
     assert categories == []
+    db.close()  # leaks in case of failure
 
 
 def test_todo_setters(todo_factory: Callable) -> None:
@@ -532,6 +542,7 @@ def test_deleting_todo_without_list_fails(
 
     with pytest.raises(ValueError, match="Cannot delete Todo without a list\\."):
         db.delete(todo)
+    db.close()  # leaks in case of failure
 
 
 def test_saving_todo_without_list_fails(
@@ -543,6 +554,7 @@ def test_saving_todo_without_list_fails(
 
     with pytest.raises(ValueError, match="Cannot save Todo without a list\\."):
         db.save(todo)
+    db.close()  # leaks in case of failure
 
 
 def test_todo_path_without_list(tmpdir: py.path.local) -> None:

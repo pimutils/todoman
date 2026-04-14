@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import time
 from collections.abc import Callable
+from collections.abc import Generator
 from collections.abc import Iterable
 from datetime import datetime
 from uuid import uuid4
@@ -23,11 +24,13 @@ from todoman.formatters import HumanizedFormatter
 
 
 @pytest.fixture
-def default_database(tmpdir: py.path.local) -> model.Database:
-    return model.Database(
+def default_database(tmpdir: py.path.local) -> Generator[model.Database, None, None]:
+    db = model.Database(
         [tmpdir.mkdir("default")],
         tmpdir.mkdir(uuid4().hex).join("cache.sqlite3"),
     )
+    yield db
+    db.close()
 
 
 @pytest.fixture

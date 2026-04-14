@@ -194,6 +194,7 @@ def test_due_aware(
     assert todos[1].summary == "23"
     assert todos[2].summary == "1"
     assert todos[3].summary == "1"
+    db.close()  # leaks in case of failure
 
 
 def test_due_naive(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
@@ -216,6 +217,7 @@ def test_due_naive(tmpdir: py.path.local, runner: CliRunner, create: Callable) -
     assert len(todos) == 2
     assert todos[0].summary == "23"
     assert todos[1].summary == "1"
+    db.close()  # leaks in case of failure
 
 
 def test_filtering_start(
