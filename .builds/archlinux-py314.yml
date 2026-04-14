@@ -16,7 +16,7 @@ environment:
   CI: true
 tasks:
   - check-python:
-      python --version | grep 'Python 3.13'
+      python --version | grep 'Python 3.14'
   - setup: |
       pipx install codecov
       echo "export PATH=/home/build/.local/bin:$PATH" >> $HOME/.buildenv
