@@ -12,6 +12,8 @@ v4.7.0
   by setuptools no longer has performance issues.
 * Added shell completions for fish.
 * Implement a new ``lists`` command to display all lists.
+* Fix a time erroneously being added to the following instance when a recurring
+  item is completed.
 
 v4.6.0
 ------
