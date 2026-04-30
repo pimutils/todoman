@@ -67,7 +67,7 @@ class Formatter(ABC):
         """Returns a detailed representation of a task."""
 
     @abstractmethod
-    def format_datetime(self, value: date | None) -> str | int | None:
+    def format_datetime(self, value: date | None) -> str | None:
         """Format an optional datetime."""
 
     @abstractmethod
@@ -196,7 +196,7 @@ class DefaultFormatter(Formatter):
         return f"{self.compact(todo)}{''.join(extra_lines)}"
 
     # FIXME: cannot return `int`, but porcelain subclasses this (it shouldn't)
-    def format_datetime(self, dt: date | None) -> str | int | None:
+    def format_datetime(self, dt: date | None) -> str | None:
         if not dt:
             return ""
         if isinstance(dt, datetime):
