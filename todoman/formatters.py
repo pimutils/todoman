@@ -78,9 +78,11 @@ class Formatter(ABC):
     def format_database(self, database: TodoList) -> str:
         """Format the name of a single database."""
 
-    @abstractmethod
     def parse_categories(self, categories: str) -> list[str]:
         """Parse multiple categories."""
+        # existing code assumes categories is list,
+        # but click passes tuple
+        return list(categories)
 
     @abstractmethod
     def format_categories(self, categories: Iterable[str]) -> str:
@@ -205,11 +207,6 @@ class DefaultFormatter(Formatter):
 
     def format_categories(self, categories: Iterable[str]) -> str:
         return ", ".join(categories)
-
-    def parse_categories(self, categories: str) -> list[str]:
-        # existing code assumes categories is list,
-        # but click passes tuple
-        return list(categories)
 
     def parse_priority(self, priority: str | None) -> int | None:
         if priority is None or priority == "":
