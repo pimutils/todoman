@@ -9,7 +9,7 @@ from todoman import widgets
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from todoman.formatters import Formatter
+    from todoman.formatters import InteractiveFormatter
     from todoman.model import Todo
     from todoman.model import TodoList
 
@@ -25,7 +25,7 @@ class TodoEditor:
         self,
         todo: Todo,
         lists: Iterable[TodoList],
-        formatter: Formatter,
+        formatter: InteractiveFormatter,
     ) -> None:
         """
         :param model.Todo todo: The todo object which will be edited.

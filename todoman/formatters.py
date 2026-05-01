@@ -74,26 +74,49 @@ class Formatter(ABC):
     def parse_datetime(self, value: str | None) -> date | None:
         """Parse an optional datetime."""
 
-    @abstractmethod
-    def format_database(self, database: TodoList) -> str:
-        """Format the name of a single database."""
-
     def parse_categories(self, categories: str) -> list[str]:
         """Parse multiple categories."""
         # existing code assumes categories is list,
         # but click passes tuple
         return list(categories)
 
+
+class InteractiveFormatter(Formatter):
+    """Formatter usable in the TUI"""
+
     @abstractmethod
+    def __init__(
+        self,
+        date_format: str = "%Y-%m-%d",
+        time_format: str = "%H:%M",
+        dt_separator: str = " ",
+    ) -> None:
+        """Create a new formatter instance."""
+
     def format_categories(self, categories: Iterable[str]) -> str:
         """Format multiple categories."""
+        return ", ".join(categories)
 
-    @abstractmethod
+    def format_database(self, database: TodoList) -> str:
+        """Format the name of a single database."""
+        return "{}@{}".format(
+            rgb_to_ansi(database.colour) or "", click.style(database.name)
+        )
+
     def format_priority(self, priority: int | None) -> str:
-        """Format a todo priority"""
+        if not priority:
+            return "none"
+        if 1 <= priority <= 4:
+            return "high"
+        if priority == 5:
+            return "medium"
+        if 6 <= priority <= 9:
+            return "low"
+
+        raise ValueError("priority is an invalid value")
 
 
-class DefaultFormatter(Formatter):
+class DefaultFormatter(InteractiveFormatter):
     def __init__(
         self,
         date_format: str = "%Y-%m-%d",
@@ -197,16 +220,12 @@ class DefaultFormatter(Formatter):
 
         return f"{self.compact(todo)}{''.join(extra_lines)}"
 
-    # FIXME: cannot return `int`, but porcelain subclasses this (it shouldn't)
-    def format_datetime(self, dt: date | None) -> str | int | None:
+    def format_datetime(self, dt: date | None) -> str | None:
         if not dt:
             return ""
         if isinstance(dt, datetime):
             return dt.strftime(self.datetime_format)
         return dt.strftime(self.date_format)
-
-    def format_categories(self, categories: Iterable[str]) -> str:
-        return ", ".join(categories)
 
     def parse_priority(self, priority: str | None) -> int | None:
         if priority is None or priority == "":
@@ -220,18 +239,6 @@ class DefaultFormatter(Formatter):
         if priority == "none":
             return 0
         raise ValueError("Priority has to be one of low, medium, high or none")
-
-    def format_priority(self, priority: int | None) -> str:
-        if not priority:
-            return "none"
-        if 1 <= priority <= 4:
-            return "high"
-        if priority == 5:
-            return "medium"
-        if 6 <= priority <= 9:
-            return "low"
-
-        raise ValueError("priority is an invalid value")
 
     def format_priority_compact(self, priority: int | None) -> str:
         if not priority:
@@ -270,11 +277,6 @@ class DefaultFormatter(Formatter):
             raise ValueError(f"Time description not recognized: {dt}")
         return datetime.fromtimestamp(mktime(rv))
 
-    def format_database(self, database: TodoList) -> str:
-        return "{}@{}".format(
-            rgb_to_ansi(database.colour) or "", click.style(database.name)
-        )
-
 
 class HumanizedFormatter(DefaultFormatter):
     def format_datetime(self, dt: date | None) -> str:
@@ -291,7 +293,17 @@ class HumanizedFormatter(DefaultFormatter):
         return rv
 
 
-class PorcelainFormatter(DefaultFormatter):
+class PorcelainFormatter(Formatter):
+    def __init__(
+        self,
+        date_format: str = "%Y-%m-%d",
+        time_format: str = "%H:%M",
+        dt_separator: str = " ",
+        tz_override: tzinfo | None = None,
+    ) -> None:
+        # tz_override is accepted for compatibility but not used - porcelain uses UTC
+        pass
+
     def _todo_as_dict(self, todo: Todo) -> dict:
         return {
             "completed": todo.is_completed,

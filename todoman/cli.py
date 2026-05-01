@@ -258,7 +258,7 @@ class AppContext:
     formatter_class: type[formatters.Formatter]
 
     @cached_property
-    def ui_formatter(self) -> formatters.Formatter:
+    def ui_formatter(self) -> formatters.InteractiveFormatter:
         return formatters.DefaultFormatter(
             self.config["date_format"],
             self.config["time_format"],

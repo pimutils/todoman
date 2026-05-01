@@ -11,7 +11,7 @@ from freezegun import freeze_time
 from urwid import ExitMainLoop
 
 from todoman.formatters import DefaultFormatter
-from todoman.formatters import Formatter
+from todoman.formatters import InteractiveFormatter
 from todoman.interactive import TodoEditor
 from todoman.model import Database
 
@@ -37,7 +37,7 @@ def test_todo_editor_priority(
 def test_todo_editor_list(
     default_database: Database,
     todo_factory: Callable,
-    default_formatter: Formatter,
+    default_formatter: InteractiveFormatter,
     tmpdir: py.path.local,
 ) -> None:
     tmpdir.mkdir("another_list")
@@ -70,7 +70,7 @@ def test_todo_editor_list(
 def test_todo_editor_summary(
     default_database: Database,
     todo_factory: Callable,
-    default_formatter: Formatter,
+    default_formatter: InteractiveFormatter,
 ) -> None:
     todo = todo_factory()
     lists = list(default_database.lists())
@@ -109,7 +109,7 @@ def test_todo_editor_due(
 
 def test_toggle_help(
     default_database: Database,
-    default_formatter: Formatter,
+    default_formatter: InteractiveFormatter,
     todo_factory: Callable,
 ) -> None:
     todo = todo_factory()
@@ -139,7 +139,7 @@ def test_toggle_help(
 
 def test_show_save_errors(
     default_database: Database,
-    default_formatter: Formatter,
+    default_formatter: InteractiveFormatter,
     todo_factory: Callable,
 ) -> None:
     todo = todo_factory()
@@ -162,7 +162,7 @@ def test_show_save_errors(
 def test_save_completed(
     check: bool,
     completed: bool,
-    default_formatter: Formatter,
+    default_formatter: InteractiveFormatter,
     todo_factory: Callable,
 ) -> None:
     todo = todo_factory()
@@ -177,7 +177,10 @@ def test_save_completed(
 
 
 @pytest.mark.skip("See: https://github.com/pimutils/todoman/issues/537")
-def test_ctrl_c_clears(default_formatter: Formatter, todo_factory: Callable) -> None:
+def test_ctrl_c_clears(
+    default_formatter: InteractiveFormatter,
+    todo_factory: Callable,
+) -> None:
     todo = todo_factory()
     editor = TodoEditor(todo, [todo.list], default_formatter)
 
