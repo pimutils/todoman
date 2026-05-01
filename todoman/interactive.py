@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING
 
 import urwid
 
 from todoman import widgets
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from todoman.formatters import Formatter
