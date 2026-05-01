@@ -101,6 +101,7 @@ def test_format_datetime(default_formatter: DefaultFormatter) -> None:
         default_formatter.format_datetime(datetime(2017, 3, 4, 17, 00))
         == "2017-03-04 17:00"
     )
+    assert default_formatter.format_datetime(None) == ""
 
 
 def test_detailed_format(runner: CliRunner, todo_factory: Callable) -> None:
