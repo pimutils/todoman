@@ -201,9 +201,7 @@ class DefaultFormatter(Formatter):
             return ""
         if isinstance(dt, datetime):
             return dt.strftime(self.datetime_format)
-        if isinstance(dt, date):
-            return dt.strftime(self.date_format)
-        return None
+        return dt.strftime(self.date_format)
 
     def format_categories(self, categories: Iterable[str]) -> str:
         return ", ".join(categories)
