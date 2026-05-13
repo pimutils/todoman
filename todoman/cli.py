@@ -471,6 +471,11 @@ def new(
 @cli.command()
 @pass_ctx
 @click.option(
+    "--summary",
+    default=None,
+    help="Summary (title) of the task.",
+)
+@click.option(
     "--read-description",
     "-r",
     is_flag=True,
@@ -496,6 +501,7 @@ def edit(
     interactive: bool,
     read_description: bool,
     raw: bool,
+    summary: str | None,
 ) -> None:
     """
     Edit the task with id ID.
@@ -511,6 +517,10 @@ def edit(
         if value is not None and value != []:
             changes = True
             setattr(todo, key, value)
+
+    if summary is not None:
+        changes = True
+        todo.summary = summary
 
     if read_description:
         changes = True

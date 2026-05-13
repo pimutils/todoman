@@ -549,6 +549,22 @@ def test_edit(runner: CliRunner, default_database: Database, todos: Callable) ->
     assert todo.summary == "Eat paint"
 
 
+def test_edit_summary(
+    runner: CliRunner, default_database: Database, todos: Callable
+) -> None:
+    todo = Todo(new=True)
+    todo.list = next(default_database.lists())
+    todo.summary = "Eat paint"
+    default_database.save(todo)
+
+    result = runner.invoke(cli, ["edit", "1", "--summary", "Eat soup"])
+    assert not result.exception
+    assert "Eat soup" in result.output
+
+    todo = next(todos(status="ANY"))
+    assert todo.summary == "Eat soup"
+
+
 def test_edit_move(
     runner: CliRunner,
     todo_factory: Callable,
