@@ -276,11 +276,10 @@ def test_dtstamp(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> 
     result = runner.invoke(cli, ["new", "-l", "default", "test event"])
     assert not result.exception
 
-    db = Database([tmpdir.join("default")], tmpdir.join("/dtstamp_cache"))
-    todo = next(iter(db.todos()))
-    assert todo.dtstamp is not None
-    assert todo.dtstamp == datetime.datetime.now(tz=tzlocal())
-    db.close()  # leaks in case of failure
+    with Database([tmpdir.join("default")], tmpdir.join("/dtstamp_cache")) as db:
+        todo = next(iter(db.todos()))
+        assert todo.dtstamp is not None
+        assert todo.dtstamp == datetime.datetime.now(tz=tzlocal())
 
 
 def test_default_list(
@@ -298,10 +297,9 @@ def test_default_list(
     result = runner.invoke(cli, ["new", "test default list"])
     assert not result.exception
 
-    db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
-    todo = next(iter(db.todos()))
-    assert todo.summary == "test default list"
-    db.close()  # leaks in case of failure
+    with Database([tmpdir.join("default")], tmpdir.join("/default_list")) as db:
+        todo = next(iter(db.todos()))
+        assert todo.summary == "test default list"
 
 
 @pytest.mark.parametrize(
@@ -322,18 +320,17 @@ def test_default_due(
         config.write(f"default_due = {default_due}\n", "a")
 
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
-    db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
-    todo = next(iter(db.todos()))
+    with Database([tmpdir.join("default")], tmpdir.join("/default_list")) as db:
+        todo = next(iter(db.todos()))
 
-    if expected_due_hours is None:
-        assert todo.due is None
-    else:
-        assert todo.due
-        assert todo.created_at
-        assert (todo.due - todo.created_at) == datetime.timedelta(
-            hours=expected_due_hours
-        )
-    db.close()  # leaks in case of failure
+        if expected_due_hours is None:
+            assert todo.due is None
+        else:
+            assert todo.due
+            assert todo.created_at
+            assert (todo.due - todo.created_at) == datetime.timedelta(
+                hours=expected_due_hours
+            )
 
 
 @pyicu_sensitive
@@ -1100,11 +1097,10 @@ def test_default_priority(
     config.write("default_priority = 3\n", "a")
 
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
-    db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
-    todo = next(iter(db.todos()))
+    with Database([tmpdir.join("default")], tmpdir.join("/default_list")) as db:
+        todo = next(iter(db.todos()))
 
-    assert todo.priority == 3
-    db.close()  # leaks in case of failure
+        assert todo.priority == 3
 
 
 def test_no_default_priority(
@@ -1114,14 +1110,13 @@ def test_no_default_priority(
 
     runner.invoke(cli, ["new", "-l", "default", "aaa"])
 
-    db = Database([tmpdir.join("default")], tmpdir.join("/default_list"))
-    todo = next(iter(db.todos()))
-    assert todo.priority == 0
+    with Database([tmpdir.join("default")], tmpdir.join("/default_list")) as db:
+        todo = next(iter(db.todos()))
+        assert todo.priority == 0
 
-    todo_file = tmpdir.join("default").join(todo.filename)
-    todo_ics = todo_file.read_text("utf-8")
-    assert "PRIORITY" not in todo_ics
-    db.close()  # leaks in case of failure
+        todo_file = tmpdir.join("default").join(todo.filename)
+        todo_ics = todo_file.read_text("utf-8")
+        assert "PRIORITY" not in todo_ics
 
 
 def test_invalid_default_priority(

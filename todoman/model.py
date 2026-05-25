@@ -19,6 +19,7 @@ from os.path import normpath
 from os.path import split
 from types import MappingProxyType
 from typing import IO
+from typing import Self
 from uuid import uuid4
 
 import icalendar
@@ -442,6 +443,12 @@ class Cache:
         self._conn.execute("PRAGMA foreign_keys = ON")
 
         self.create_tables()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        self.close()
 
     def save_to_disk(self) -> None:
         self._conn.commit()
@@ -1064,6 +1071,12 @@ class Database:
         self.cache = Cache(cache_path)
         self.paths = [str(path) for path in paths]
         self.update_cache()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        self.close()
 
     def close(self) -> None:
         self.cache.close()

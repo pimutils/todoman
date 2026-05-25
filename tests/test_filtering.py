@@ -175,26 +175,25 @@ def test_due_aware(
     create: Callable,
     now_for_tz: Callable[[str], datetime],
 ) -> None:
-    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
-    list_ = next(db.lists())
+    with Database([tmpdir.join("default")], tmpdir.join("cache.sqlite")) as db:
+        list_ = next(db.lists())
 
-    for tz in ["CET", "HST"]:
-        for i in [1, 23, 25, 48]:
-            todo = Todo(new=True)
-            todo.due = now_for_tz(tz) + timedelta(hours=i)
-            todo.summary = f"{i}"
+        for tz in ["CET", "HST"]:
+            for i in [1, 23, 25, 48]:
+                todo = Todo(new=True)
+                todo.due = now_for_tz(tz) + timedelta(hours=i)
+                todo.summary = f"{i}"
 
-            todo.list = list_
-            db.save(todo)
+                todo.list = list_
+                db.save(todo)
 
-    todos = list(db.todos(due=24))
+        todos = list(db.todos(due=24))
 
-    assert len(todos) == 4
-    assert todos[0].summary == "23"
-    assert todos[1].summary == "23"
-    assert todos[2].summary == "1"
-    assert todos[3].summary == "1"
-    db.close()  # leaks in case of failure
+        assert len(todos) == 4
+        assert todos[0].summary == "23"
+        assert todos[1].summary == "23"
+        assert todos[2].summary == "1"
+        assert todos[3].summary == "1"
 
 
 def test_due_naive(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> None:
@@ -211,13 +210,12 @@ def test_due_naive(tmpdir: py.path.local, runner: CliRunner, create: Callable) -
             ),
         )
 
-    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
-    todos = list(db.todos(due=24))
+    with Database([tmpdir.join("default")], tmpdir.join("cache.sqlite")) as db:
+        todos = list(db.todos(due=24))
 
-    assert len(todos) == 2
-    assert todos[0].summary == "23"
-    assert todos[1].summary == "1"
-    db.close()  # leaks in case of failure
+        assert len(todos) == 2
+        assert todos[0].summary == "23"
+        assert todos[1].summary == "1"
 
 
 def test_filtering_start(

@@ -31,14 +31,12 @@ def test_querying(create: Callable, tmpdir: py.path.local) -> None:
                 list_name=list,
             )
 
-    db = Database(
+    with Database(
         [str(tmpdir.ensure_dir(list_)) for list_ in "abc"], str(tmpdir.join("cache"))
-    )
-
-    assert len(set(db.todos())) == 9
-    assert len(set(db.todos(lists="ab"))) == 6
-    assert len(set(db.todos(lists="ab", location="a"))) == 2
-    db.close()  # leaks in case of failure
+    ) as db:
+        assert len(set(db.todos())) == 9
+        assert len(set(db.todos(lists="ab"))) == 6
+        assert len(set(db.todos(lists="ab", location="a"))) == 2
 
 
 def test_retain_tz(tmpdir: py.path.local, create: Callable, todos: Callable) -> None:
@@ -76,16 +74,16 @@ def test_change_paths(tmpdir: py.path.local, create: Callable) -> None:
 
     tmpdir.mkdir("3")
 
-    db = Database([tmpdir.join(x) for x in old_todos], tmpdir.join("cache.sqlite"))
+    with Database(
+        [tmpdir.join(x) for x in old_todos], tmpdir.join("cache.sqlite")
+    ) as db:
+        assert {t.summary for t in db.todos()} == old_todos
 
-    assert {t.summary for t in db.todos()} == old_todos
+        db.paths = [str(tmpdir.join("3"))]
+        db.update_cache()
 
-    db.paths = [str(tmpdir.join("3"))]
-    db.update_cache()
-
-    assert len(list(db.lists())) == 1
-    assert not list(db.todos())
-    db.close()  # leaks in case of failure
+        assert len(list(db.lists())) == 1
+        assert not list(db.todos())
 
 
 def test_list_displayname(tmpdir: py.path.local) -> None:
@@ -93,12 +91,11 @@ def test_list_displayname(tmpdir: py.path.local) -> None:
     with tmpdir.join("default").join("displayname").open("w") as f:
         f.write("personal")
 
-    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
-    list_ = next(db.lists())
+    with Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3")) as db:
+        list_ = next(db.lists())
 
-    assert list_.name == "personal"
-    assert str(list_) == "personal"
-    db.close()  # leaks in case of failure
+        assert list_.name == "personal"
+        assert str(list_) == "personal"
 
 
 def test_list_colour(tmpdir: py.path.local) -> None:
@@ -106,11 +103,10 @@ def test_list_colour(tmpdir: py.path.local) -> None:
     with tmpdir.join("default").join("color").open("w") as f:
         f.write("#8ab6d2")
 
-    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
-    list_ = next(db.lists())
+    with Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3")) as db:
+        list_ = next(db.lists())
 
-    assert list_.colour == "#8ab6d2"
-    db.close()  # leaks in case of failure
+        assert list_.colour == "#8ab6d2"
 
 
 def test_list_colour_cache_invalidation(
@@ -121,32 +117,29 @@ def test_list_colour_cache_invalidation(
     with tmpdir.join("default").join("color").open("w") as f:
         f.write("#8ab6d2")
 
-    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
-    list_ = next(db.lists())
+    with Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3")) as db:
+        list_ = next(db.lists())
 
-    assert list_.colour == "#8ab6d2"
-    db.close()  # leaks in case of failure
+        assert list_.colour == "#8ab6d2"
 
     sleep()
 
     with tmpdir.join("default").join("color").open("w") as f:
         f.write("#f874fd")
 
-    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
-    list_ = next(db.lists())
+    with Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3")) as db:
+        list_ = next(db.lists())
 
-    assert list_.colour == "#f874fd"
-    db.close()  # leaks in case of failure
+        assert list_.colour == "#f874fd"
 
 
 def test_list_no_colour(tmpdir: py.path.local) -> None:
     tmpdir.join("default").mkdir()
 
-    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
-    list_ = next(db.lists())
+    with Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3")) as db:
+        list_ = next(db.lists())
 
-    assert list_.colour is None
-    db.close()  # leaks in case of failure
+        assert list_.colour is None
 
 
 def test_database_priority_sorting(create: Callable, todos: Callable) -> None:
@@ -173,21 +166,20 @@ def test_retain_unknown_fields(
     """
     create("test.ics", "UID:AVERYUNIQUEID\nSUMMARY:RAWR\nX-RAWR-TYPE:Reptar\n")
 
-    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
-    todo = db.todo(1, read_only=False)
+    with Database([tmpdir.join("default")], tmpdir.join("cache.sqlite")) as db:
+        todo = db.todo(1, read_only=False)
 
-    todo.description = 'Rawr means "I love you" in dinosaur.'
-    default_database.save(todo)
+        todo.description = 'Rawr means "I love you" in dinosaur.'
+        default_database.save(todo)
 
-    path = tmpdir.join("default").join("test.ics")
-    with path.open() as f:
-        vtodo = f.read()
-    lines = vtodo.splitlines()
+        path = tmpdir.join("default").join("test.ics")
+        with path.open() as f:
+            vtodo = f.read()
+        lines = vtodo.splitlines()
 
-    assert "SUMMARY:RAWR" in lines
-    assert 'DESCRIPTION:Rawr means "I love you" in dinosaur.' in lines
-    assert "X-RAWR-TYPE:Reptar" in lines
-    db.close()  # leaks in case of failure
+        assert "SUMMARY:RAWR" in lines
+        assert 'DESCRIPTION:Rawr means "I love you" in dinosaur.' in lines
+        assert "X-RAWR-TYPE:Reptar" in lines
 
 
 def test_category_integrity(
@@ -196,14 +188,12 @@ def test_category_integrity(
     default_database: Database,
 ) -> None:
     create("test.ics", "UID:AVERYUNIQUEID\nSUMMARY:RAWR\n")
-    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
+    with Database([tmpdir.join("default")], tmpdir.join("cache.sqlite")) as db:
+        todo = db.todo(1, read_only=False)
+        todo.categories = ["hi", "hi"]
 
-    todo = db.todo(1, read_only=False)
-    todo.categories = ["hi", "hi"]
-
-    with pytest.raises(AlreadyExistsError):
-        default_database.save(todo)
-    db.close()  # leaks in case of failure
+        with pytest.raises(AlreadyExistsError):
+            default_database.save(todo)
 
 
 def test_category_deletes_on_todo_delete(
@@ -213,26 +203,24 @@ def test_category_deletes_on_todo_delete(
 ) -> None:
     uid = "my_id"
     create("test.ics", f"UID:{uid}\nSUMMARY:RAWR\n")
-    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite"))
+    with Database([tmpdir.join("default")], tmpdir.join("cache.sqlite")) as db:
+        todo = db.todo(1, read_only=False)
+        todo.categories = ["my_cat"]
+        default_database.save(todo)
 
-    todo = db.todo(1, read_only=False)
-    todo.categories = ["my_cat"]
-    default_database.save(todo)
+        assert next(default_database.todos()).uid == uid
 
-    assert next(default_database.todos()).uid == uid
+        default_database.delete(todo)
+        default_database.update_cache()
 
-    default_database.delete(todo)
-    default_database.update_cache()
+        query = f"""
+            SELECT distinct category
+            FROM categories
+            WHERE categories.todos_id = '{todo.id}'
+            """
 
-    query = f"""
-        SELECT distinct category
-        FROM categories
-        WHERE categories.todos_id = '{todo.id}'
-        """
-
-    categories = default_database.cache._conn.execute(query).fetchall()
-    assert categories == []
-    db.close()  # leaks in case of failure
+        categories = default_database.cache._conn.execute(query).fetchall()
+        assert categories == []
 
 
 def test_todo_setters(todo_factory: Callable) -> None:
@@ -537,24 +525,22 @@ def test_deleting_todo_without_list_fails(
     tmpdir: py.path.local,
     default_database: Database,
 ) -> None:
-    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
-    todo = Todo()
+    with Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3")) as db:
+        todo = Todo()
 
-    with pytest.raises(ValueError, match="Cannot delete Todo without a list\\."):
-        db.delete(todo)
-    db.close()  # leaks in case of failure
+        with pytest.raises(ValueError, match="Cannot delete Todo without a list\\."):
+            db.delete(todo)
 
 
 def test_saving_todo_without_list_fails(
     tmpdir: py.path.local,
     default_database: Database,
 ) -> None:
-    db = Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3"))
-    todo = Todo()
+    with Database([tmpdir.join("default")], tmpdir.join("cache.sqlite3")) as db:
+        todo = Todo()
 
-    with pytest.raises(ValueError, match="Cannot save Todo without a list\\."):
-        db.save(todo)
-    db.close()  # leaks in case of failure
+        with pytest.raises(ValueError, match="Cannot save Todo without a list\\."):
+            db.save(todo)
 
 
 def test_todo_path_without_list(tmpdir: py.path.local) -> None:
