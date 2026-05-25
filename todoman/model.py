@@ -735,9 +735,12 @@ class Cache:
         finally:
             cursor.close()
 
-        if todo.get("categories"):
-            for category in todo.get("categories").cats:
-                self.add_category(rv, category)
+        if category_lines := todo.get("categories"):
+            if not isinstance(category_lines, list):
+                category_lines = [category_lines]
+            for line in category_lines:
+                for category in line.cats:
+                    self.add_category(rv, category)
 
         return rv
 

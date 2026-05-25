@@ -565,3 +565,36 @@ def test_todo_path_without_list(tmpdir: py.path.local) -> None:
         match="A todo without a list does not have a path\\.",
     ):
         todo.path  # noqa: B018  # expression raises
+
+
+def test_single_category_line(
+    tmpdir: py.path.local,
+    create: Callable,
+    default_database: Database,
+    todos: Callable,
+) -> None:
+    create(
+        "test.ics",
+        "SUMMARY:Test multiple category lines\n"
+        "CATEGORIES:testing,categories\n"
+        "DTSTART;VALUE=DATE-TIME;TZID=CET:20260525T132246\n",
+    )
+    todo = next(todos())
+    assert todo.categories == ["categories", "testing"]
+
+
+def test_multiple_category_lines(
+    tmpdir: py.path.local,
+    create: Callable,
+    default_database: Database,
+    todos: Callable,
+) -> None:
+    create(
+        "test.ics",
+        "SUMMARY:Test multiple category lines\n"
+        "CATEGORIES:testing\n"
+        "CATEGORIES:categories\n"
+        "DTSTART;VALUE=DATE-TIME;TZID=CET:20260525T132246\n",
+    )
+    todo = next(todos())
+    assert todo.categories == ["categories", "testing"]
