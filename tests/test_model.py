@@ -567,12 +567,7 @@ def test_todo_path_without_list(tmpdir: py.path.local) -> None:
         todo.path  # noqa: B018  # expression raises
 
 
-def test_single_category_line(
-    tmpdir: py.path.local,
-    create: Callable,
-    default_database: Database,
-    todos: Callable,
-) -> None:
+def test_single_category_line(create: Callable, todos: Callable) -> None:
     create(
         "test.ics",
         "SUMMARY:Test multiple category lines\n"
@@ -583,12 +578,7 @@ def test_single_category_line(
     assert todo.categories == ["categories", "testing"]
 
 
-def test_multiple_category_lines(
-    tmpdir: py.path.local,
-    create: Callable,
-    default_database: Database,
-    todos: Callable,
-) -> None:
+def test_multiple_category_lines(create: Callable, todos: Callable) -> None:
     create(
         "test.ics",
         "SUMMARY:Test multiple category lines\n"
