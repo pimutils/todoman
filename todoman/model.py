@@ -1070,7 +1070,11 @@ class Database:
     def __init__(self, paths: Iterable[str], cache_path: str) -> None:
         self.cache = Cache(cache_path)
         self.paths = [str(path) for path in paths]
-        self.update_cache()
+        try:
+            self.update_cache()
+        except BaseException:
+            self.cache.close()
+            raise
 
     def __enter__(self) -> Self:
         return self
