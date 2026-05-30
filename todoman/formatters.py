@@ -182,10 +182,10 @@ class DefaultFormatter(InteractiveFormatter):
 
             # TODO: add spaces on the left based on max todos"
 
-            # FIXME: double space when no priority
             # split into parts to satisfy linter line too long
+            priority_str = f"{priority} " if priority else ""
             table.append(
-                f"[{completed}] {todo.id} {priority} {due} "
+                f"[{completed}] {todo.id} {priority_str}{due} "
                 f"{recurring}{summary}{categories}"
             )
 
