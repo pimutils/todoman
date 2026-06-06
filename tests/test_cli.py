@@ -40,6 +40,15 @@ def test_list(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> Non
     assert not result.exception
     assert "harhar" in result.output
 
+def test_categories(runner, create):
+    create(
+        "one.ics",
+        "SUMMARY:test\nCATEGORIES:work,home\n",
+    )
+    result = runner.invoke(cli, ["categories"])
+    assert result.exit_code == 0
+    assert "work" in result.output
+    assert "home" in result.output
 
 def test_no_default_list(runner: CliRunner) -> None:
     result = runner.invoke(cli, ["new", "Configure a default list"])
