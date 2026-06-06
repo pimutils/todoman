@@ -686,6 +686,7 @@ def lists(ctx: AppContext) -> None:
     text = json.dumps(lists) if porcelain else "\n".join(lists)
     click.echo(text)
 
+
 @cli.command()
 @pass_ctx
 @catch_errors
@@ -695,6 +696,7 @@ def categories(ctx: AppContext) -> None:
     porcelain = ctx.formatter_class == formatters.PorcelainFormatter
     text = json.dumps(categories) if porcelain else "\n".join(categories)
     click.echo(text)
+
 
 @cli.command(name="list")
 @pass_ctx

@@ -1194,5 +1194,6 @@ class Database:
         finally:
             cursor.close()
 
+
 def _getmtime(path: str) -> int:
     return os.stat(path).st_mtime_ns
