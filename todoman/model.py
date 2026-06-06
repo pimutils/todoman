@@ -1180,6 +1180,20 @@ class Database:
         todo.id = self.cache.add_vtodo(vtodo, todo.path, todo.id)
         self.cache.save_to_disk()
 
+    def categories(self) -> list[str]:
+        cursor = self.cache._conn.cursor()
+        try:
+            rows = cursor.execute(
+                """
+                SELECT DISTINCT category
+                FROM categories
+                ORDER BY category
+                """
+            ).fetchall()
+            return [row[0] for row in rows]
+        finally:
+            cursor.close()
+
 
 def _getmtime(path: str) -> int:
     return os.stat(path).st_mtime_ns

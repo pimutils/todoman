@@ -687,6 +687,17 @@ def lists(ctx: AppContext) -> None:
     click.echo(text)
 
 
+@cli.command()
+@pass_ctx
+@catch_errors
+def categories(ctx: AppContext) -> None:
+    """Returns all the categories"""
+    categories = ctx.db.categories()
+    porcelain = ctx.formatter_class == formatters.PorcelainFormatter
+    text = json.dumps(categories) if porcelain else "\n".join(categories)
+    click.echo(text)
+
+
 @cli.command(name="list")
 @pass_ctx
 @click.argument("lists", nargs=-1, callback=_validate_lists_param)
