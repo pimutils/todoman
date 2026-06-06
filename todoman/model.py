@@ -1181,7 +1181,7 @@ class Database:
         self.cache.save_to_disk()
 
     def categories(self) -> list[str]:
-        cursor = self._conn.cursor()
+        cursor = self.cache._conn.cursor()
         try:
             rows = cursor.execute(
                 """
