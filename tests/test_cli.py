@@ -40,7 +40,7 @@ def test_list(tmpdir: py.path.local, runner: CliRunner, create: Callable) -> Non
     assert not result.exception
     assert "harhar" in result.output
 
-def test_categories(runner, create):
+def test_categories(runner: CliRunner, create: Callable) -> None:
     create(
         "one.ics",
         "SUMMARY:test\nCATEGORIES:work,home\n",
