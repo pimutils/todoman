@@ -21,7 +21,9 @@ import click_log
 
 from todoman import exceptions
 from todoman import formatters
+from todoman.configuration import CONFIG_SPEC
 from todoman.configuration import ConfigurationError
+from todoman.configuration import expand_path
 from todoman.configuration import load_config
 from todoman.interactive import TodoEditor
 from todoman.model import Database
@@ -205,6 +207,15 @@ def validate_status(ctx: AppContext, param: click.Parameter, val: str) -> str:
     return val
 
 
+def glob_path(path: str) -> list[str]:
+    paths = [
+        path
+        for path in glob.iglob(path)
+        if isdir(path) and not path.endswith("__pycache__")
+    ]
+    return paths
+
+
 def _todo_property_options(command: Callable) -> Callable:
     click.option(
         "--category",
@@ -360,13 +371,23 @@ def cli(
     elif colour == "never":
         click_ctx.color = False
 
-    paths = [
-        path
-        for path in glob.iglob(ctx.config["path"])
-        if isdir(path) and not path.endswith("__pycache__")
-    ]
+    # XXX: There is no good way to check if an option has been explicitly set.
+    default_path = expand_path(CONFIG_SPEC[0].default)
+    if ctx.config["path"] != default_path and len(ctx.config["paths"]) != 0:
+        raise ConfigurationError("Both 'path' and 'paths' is set, use one.")
+
+    # If "paths" is unset, fallback to the old "path" config option.
+    paths = ctx.config["paths"]
     if len(paths) == 0:
-        raise exceptions.NoListsFoundError(ctx.config["path"])
+        paths = glob_path(ctx.config["path"])
+        if len(paths) == 0:
+            raise exceptions.NoListsFoundError(ctx.config["path"])
+    else:
+        paths = [p for x in paths for p in glob_path(x)]
+        if len(paths) == 0:
+            raise exceptions.NoListsFoundError(ctx.config["paths"])
+        elif len(paths) != len(set(paths)):
+            raise exceptions.DuplicatedPathError(ctx.config["paths"])
 
     ctx.db = Database(paths, ctx.config["cache_path"])
     click_ctx.call_on_close(ctx.db.close)

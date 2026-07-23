@@ -19,6 +19,10 @@ def expand_path(path: str) -> str:
     return os.path.expanduser(os.path.expandvars(path))
 
 
+def expand_paths(paths: list[str]) -> list[str]:
+    return list(map(expand_path, paths))
+
+
 def validate_cache_path(path: str) -> str:
     path = path.replace("$XDG_CACHE_HOME", xdg.BaseDirectory.xdg_cache_home)
     return expand_path(path)
@@ -73,6 +77,16 @@ A glob pattern matching the directories where your todos are located. This
 pattern will be expanded, and each matching directory (with any icalendar
 files) will be treated as a list.""",
         expand_path,
+    ),
+    ConfigEntry(
+        "paths",
+        list,
+        [],
+        """
+A list of glob patterns matching directories where your todos are located.
+If unset, this defaults to the value of the ``path`` configuration option.
+""",
+        expand_paths,
     ),
     ConfigEntry(
         "color",

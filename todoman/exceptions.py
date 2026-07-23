@@ -52,3 +52,10 @@ class AlreadyExistsError(TodomanError):
 
     def __str__(self) -> str:
         return "More than one {} has the same identity: {}.".format(*self.args)
+
+
+class DuplicatedPathError(TodomanError):
+    EXIT_CODE = 24
+
+    def __str__(self) -> str:
+        return f"List {self.args[0]} contains duplicated entries after glob expansion."

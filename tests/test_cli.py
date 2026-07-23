@@ -1046,6 +1046,56 @@ def test_porcelain_precedence(runner: CliRunner, tmpdir: py.path.local) -> None:
     assert mocked_formatter.call_count == 1
 
 
+def test_path_and_paths_entry(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+    config: py.path.local,
+) -> None:
+    config.write(f'path = "{tmpdir}"\n', "a")
+    config.write(f'paths = ["{tmpdir}"]\n', "a")
+
+    result = runner.invoke(cli, ["list"])
+    assert result.exception
+    assert "Both 'path' and 'paths' is set, use one." in str(result.exception)
+
+
+def test_duplicated_expanded_directories(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+    config: py.path.local,
+) -> None:
+    parent = tmpdir.dirname
+    config.write(f'paths = ["{tmpdir}", "{parent}/*"]\n')
+
+    result = runner.invoke(cli, ["list"])
+    assert result.exception
+    assert result.exit_code == exceptions.DuplicatedPathError.EXIT_CODE
+
+
+def test_list_multiple_paths(
+    tmpdir: py.path.local,
+    runner: CliRunner,
+    create: Callable,
+    config: py.path.local,
+) -> None:
+    tmpdir.join("dir1").mkdir()
+    tmpdir.join("dir2").mkdir()
+    config.write(f'paths = ["{tmpdir.join("dir1")}", "{tmpdir.join("dir2")}"]\n')
+
+    result = runner.invoke(cli, ["list"], catch_exceptions=False)
+    assert not result.exception
+
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:from1\n", "dir1")
+    create("test.ics", f"UID:{uuid4()}\nSUMMARY:from2\n", "dir2")
+
+    result = runner.invoke(cli, ["list"])
+    assert not result.exception
+    assert "from1" in result.output
+    assert "from2" in result.output
+
+
 def test_duplicate_list(tmpdir: py.path.local, runner: CliRunner) -> None:
     tmpdir.join("personal1").mkdir()
     with tmpdir.join("personal1").join("displayname").open("w") as f:
