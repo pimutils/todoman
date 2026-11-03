@@ -4,6 +4,12 @@ Changelog
 This file contains a brief summary of new features and dependency changes or
 releases, in reverse chronological order.
 
+Unreleased
+----------
+
+* Fix a crash in ``todo list --start`` when the given value has a date but no
+  time. It now means the start of that day.
+
 v4.7.0
 ------
 

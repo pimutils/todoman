@@ -762,7 +762,7 @@ class Cache:
         sort: Iterable = (),
         reverse: bool = True,
         due: int | None = None,
-        start: tuple[bool, datetime] | None = None,
+        start: tuple[bool, date] | None = None,
         startable: bool = False,
         status: str = "NEEDS-ACTION,IN-PROCESS",
     ) -> Iterator[Todo]:
@@ -830,6 +830,9 @@ class Cache:
             params.append(max_due)
         if start:
             is_before, dt = start
+            if not isinstance(dt, datetime):
+                # A date has no time of its own, so compare against its first moment.
+                dt = datetime.combine(dt, time.min)
             timestamp = dt.timestamp()
             if is_before:
                 extra_where.append("AND start <= ?")

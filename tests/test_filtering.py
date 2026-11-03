@@ -264,6 +264,36 @@ def test_filtering_start(
     assert "huhu" not in result.output
 
 
+def test_filtering_start_date_without_time(
+    config: py.path.local,
+    runner: CliRunner,
+    todo_factory: Callable,
+) -> None:
+    # With a time_format set, a value without a time parses as a date, not a datetime.
+    config.write('time_format = "%H:%M"\n', "a")
+
+    today = datetime.now()
+    yesterday = (today - timedelta(days=1)).strftime("%Y-%m-%d")
+    tomorrow = (today + timedelta(days=1)).strftime("%Y-%m-%d")
+
+    todo_factory(summary="haha", start=today)
+    todo_factory(summary="hihi", start=today - timedelta(days=2))
+
+    result = runner.invoke(cli, ["list", "--start", "before", yesterday])
+    assert not result.exception
+    assert "hihi" in result.output
+    assert "haha" not in result.output
+
+    result = runner.invoke(cli, ["list", "--start", "after", yesterday])
+    assert not result.exception
+    assert "haha" in result.output
+    assert "hihi" not in result.output
+
+    result = runner.invoke(cli, ["list", "--start", "after", tomorrow])
+    assert not result.exception
+    assert not result.output.strip()
+
+
 def test_statuses(todo_factory: Callable, todos: Callable) -> None:
     cancelled = todo_factory(status="CANCELLED").uid
     completed = todo_factory(status="COMPLETED").uid
