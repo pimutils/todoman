@@ -32,5 +32,6 @@ Authors are listed in alphabetical order.
 * Stephan Weller <stephan.weller@web.de>
 * Styx Meiseles <opensource@0styx0.xyz>
 * Swati Garg <swati4star@gmail.com>
+* TheeCoderAhmed
 * Thomas Glanzmann <thomas@glanzmann.de>
 * https://github.com/Pikrass
