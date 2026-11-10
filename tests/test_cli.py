@@ -1155,3 +1155,23 @@ def test_default_command_args(config: py.path.local, runner: CliRunner) -> None:
         startable=None,
         status="NEEDS-ACTION,IN-PROCESS",
     )
+
+
+def test_repl_without_click_repl_exits_1(
+    tmpdir: py.path.local, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`todo repl` without the optional click-repl extra must exit 1 (not -1/255)."""
+    tmpdir.mkdir("default")
+    base = str(tmpdir).replace("\\", "/")
+    config_path = tmpdir.join("config.py")
+    config_path.write(
+        f'path = "{base}/*"\n'
+        'date_format = "%Y-%m-%d"\n'
+        'time_format = ""\n'
+        f'cache_path = "{base}/cache.sqlite3"\n'
+    )
+    monkeypatch.setitem(sys.modules, "click_repl", None)
+    runner = CliRunner(env={"TODOMAN_CONFIG": str(config_path)})
+    result = runner.invoke(cli, ["repl"])
+    assert result.exit_code == 1
+    assert "click_repl" in result.output

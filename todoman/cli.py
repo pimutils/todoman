@@ -403,7 +403,7 @@ def repl(ctx: click.Context) -> None:
         repl(ctx)
     except ImportError as e:
         click.echo(e)
-        sys.exit(-1)
+        sys.exit(1)
 
 
 @cli.command()
